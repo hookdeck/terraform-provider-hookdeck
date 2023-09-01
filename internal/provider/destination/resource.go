@@ -61,7 +61,7 @@ func (r *destinationResource) Create(ctx context.Context, req resource.CreateReq
 	}
 
 	// Create resource
-	destination, err := r.client.Destinations().CreateDestination(context.Background(), data.ToCreatePayload())
+	destination, err := r.client.Destination.Create(context.Background(), data.ToCreatePayload())
 	if err != nil {
 		resp.Diagnostics.AddError("Error creating destination", err.Error())
 		return
@@ -82,7 +82,7 @@ func (r *destinationResource) Read(ctx context.Context, req resource.ReadRequest
 	}
 
 	// Get refreshed resource value
-	destination, err := r.client.Destinations().GetDestination(context.Background(), data.ID.ValueString())
+	destination, err := r.client.Destination.Retrieve(context.Background(), data.ID.ValueString())
 	if err != nil {
 		resp.Diagnostics.AddError("Error reading destination", err.Error())
 		return
@@ -103,7 +103,7 @@ func (r *destinationResource) Update(ctx context.Context, req resource.UpdateReq
 	}
 
 	// Update existing resource
-	destination, err := r.client.Destinations().UpdateDestination(context.Background(), data.ID.ValueString(), data.ToUpdatePayload())
+	destination, err := r.client.Destination.Update(context.Background(), data.ID.ValueString(), data.ToUpdatePayload())
 	if err != nil {
 		resp.Diagnostics.AddError("Error updating destination", err.Error())
 		return
@@ -124,7 +124,7 @@ func (r *destinationResource) Delete(ctx context.Context, req resource.DeleteReq
 	}
 
 	// Delete existing resource
-	_, err := r.client.Destinations().DeleteDestination(context.Background(), data.ID.ValueString())
+	_, err := r.client.Destination.Delete(context.Background(), data.ID.ValueString())
 	if err != nil {
 		resp.Diagnostics.AddError("Error deleting destination", err.Error())
 	}

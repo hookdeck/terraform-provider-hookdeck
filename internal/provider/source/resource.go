@@ -62,7 +62,7 @@ func (r *sourceResource) Create(ctx context.Context, req resource.CreateRequest,
 	}
 
 	// Create resource
-	source, err := r.client.Sources().CreateSource(context.Background(), data.ToCreatePayload())
+	source, err := r.client.Source.Create(context.Background(), data.ToCreatePayload())
 	if err != nil {
 		resp.Diagnostics.AddError("Error creating source", err.Error())
 		return
@@ -83,7 +83,7 @@ func (r *sourceResource) Read(ctx context.Context, req resource.ReadRequest, res
 	}
 
 	// Get refreshed resource value
-	source, err := r.client.Sources().GetSource(context.Background(), data.ID.ValueString(), &hookdeck.GetSourceRequest{})
+	source, err := r.client.Source.Retrieve(context.Background(), data.ID.ValueString(), &hookdeck.SourceRetrieveRequest{})
 	if err != nil {
 		resp.Diagnostics.AddError("Error reading source", err.Error())
 		return
@@ -104,7 +104,7 @@ func (r *sourceResource) Update(ctx context.Context, req resource.UpdateRequest,
 	}
 
 	// Update existing resource
-	source, err := r.client.Sources().UpdateSource(context.Background(), data.ID.ValueString(), data.ToUpdatePayload())
+	source, err := r.client.Source.Update(context.Background(), data.ID.ValueString(), data.ToUpdatePayload())
 	if err != nil {
 		resp.Diagnostics.AddError("Error updating source", err.Error())
 		return
@@ -125,7 +125,7 @@ func (r *sourceResource) Delete(ctx context.Context, req resource.DeleteRequest,
 	}
 
 	// Delete existing resource
-	_, err := r.client.Sources().DeleteSource(context.Background(), data.ID.ValueString())
+	_, err := r.client.Source.Delete(context.Background(), data.ID.ValueString())
 	if err != nil {
 		resp.Diagnostics.AddError("Error deleting source", err.Error())
 	}

@@ -123,7 +123,7 @@ func (m *destinationResourceModel) Refresh(destination *hookdeck.Destination) {
 	}
 }
 
-func (m *destinationResourceModel) ToCreatePayload() *hookdeck.CreateDestinationRequest {
+func (m *destinationResourceModel) ToCreatePayload() *hookdeck.DestinationCreateRequest {
 	authMethod := m.getAuthMethod()
 	cliPath := new(string)
 	if !m.CliPath.IsUnknown() && !m.CliPath.IsNull() {
@@ -149,10 +149,10 @@ func (m *destinationResourceModel) ToCreatePayload() *hookdeck.CreateDestination
 	} else {
 		rateLimit = nil
 	}
-	rateLimitPeriod := new(hookdeck.CreateDestinationRequestRateLimitPeriod)
+	rateLimitPeriod := new(hookdeck.DestinationCreateRequestRateLimitPeriod)
 	if rateLimit != nil {
 		if !m.RateLimitPeriod.IsUnknown() && !m.RateLimitPeriod.IsNull() {
-			*rateLimitPeriod = hookdeck.CreateDestinationRequestRateLimitPeriod(m.RateLimitPeriod.ValueString())
+			*rateLimitPeriod = hookdeck.DestinationCreateRequestRateLimitPeriod(m.RateLimitPeriod.ValueString())
 		} else {
 			rateLimitPeriod = nil
 		}
@@ -165,20 +165,20 @@ func (m *destinationResourceModel) ToCreatePayload() *hookdeck.CreateDestination
 	} else {
 		url = nil
 	}
-	return &hookdeck.CreateDestinationRequest{
-		AuthMethod:             authMethod,
-		CliPath:                cliPath,
-		Description:            m.Description.ValueStringPointer(),
-		HttpMethod:             httpMethod,
+	return &hookdeck.DestinationCreateRequest{
+		AuthMethod:             hookdeck.OptionalOrNull(authMethod),
+		CliPath:                hookdeck.OptionalOrNull(cliPath),
+		Description:            hookdeck.OptionalOrNull(m.Description.ValueStringPointer()),
+		HttpMethod:             hookdeck.OptionalOrNull(httpMethod),
 		Name:                   m.Name.ValueString(),
-		PathForwardingDisabled: pathForwardingDisabled,
-		RateLimit:              rateLimit,
-		RateLimitPeriod:        rateLimitPeriod,
-		Url:                    url,
+		PathForwardingDisabled: hookdeck.OptionalOrNull(pathForwardingDisabled),
+		RateLimit:              hookdeck.OptionalOrNull(rateLimit),
+		RateLimitPeriod:        hookdeck.OptionalOrNull(rateLimitPeriod),
+		Url:                    hookdeck.OptionalOrNull(url),
 	}
 }
 
-func (m *destinationResourceModel) ToUpdatePayload() *hookdeck.UpdateDestinationRequest {
+func (m *destinationResourceModel) ToUpdatePayload() *hookdeck.DestinationUpdateRequest {
 	authMethod := m.getAuthMethod()
 	cliPath := new(string)
 	if !m.CliPath.IsUnknown() && !m.CliPath.IsNull() {
@@ -204,10 +204,10 @@ func (m *destinationResourceModel) ToUpdatePayload() *hookdeck.UpdateDestination
 	} else {
 		rateLimit = nil
 	}
-	rateLimitPeriod := new(hookdeck.UpdateDestinationRequestRateLimitPeriod)
+	rateLimitPeriod := new(hookdeck.DestinationUpdateRequestRateLimitPeriod)
 	if rateLimit != nil {
 		if !m.RateLimitPeriod.IsUnknown() && !m.RateLimitPeriod.IsNull() {
-			*rateLimitPeriod = hookdeck.UpdateDestinationRequestRateLimitPeriod(m.RateLimitPeriod.ValueString())
+			*rateLimitPeriod = hookdeck.DestinationUpdateRequestRateLimitPeriod(m.RateLimitPeriod.ValueString())
 		} else {
 			rateLimitPeriod = nil
 		}
@@ -220,16 +220,16 @@ func (m *destinationResourceModel) ToUpdatePayload() *hookdeck.UpdateDestination
 	} else {
 		url = nil
 	}
-	return &hookdeck.UpdateDestinationRequest{
-		AuthMethod:             authMethod,
-		CliPath:                cliPath,
-		Description:            m.Description.ValueStringPointer(),
-		HttpMethod:             httpMethod,
-		Name:                   m.Name.ValueStringPointer(),
-		PathForwardingDisabled: pathForwardingDisabled,
-		RateLimit:              rateLimit,
-		RateLimitPeriod:        rateLimitPeriod,
-		Url:                    url,
+	return &hookdeck.DestinationUpdateRequest{
+		AuthMethod:             hookdeck.OptionalOrNull(authMethod),
+		CliPath:                hookdeck.OptionalOrNull(cliPath),
+		Description:            hookdeck.OptionalOrNull(m.Description.ValueStringPointer()),
+		HttpMethod:             hookdeck.OptionalOrNull(httpMethod),
+		Name:                   hookdeck.OptionalOrNull(m.Name.ValueStringPointer()),
+		PathForwardingDisabled: hookdeck.OptionalOrNull(pathForwardingDisabled),
+		RateLimit:              hookdeck.OptionalOrNull(rateLimit),
+		RateLimitPeriod:        hookdeck.OptionalOrNull(rateLimitPeriod),
+		Url:                    hookdeck.OptionalOrNull(url),
 	}
 }
 

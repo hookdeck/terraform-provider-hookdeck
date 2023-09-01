@@ -61,7 +61,7 @@ func (r *connectionResource) Create(ctx context.Context, req resource.CreateRequ
 	}
 
 	// Create resource
-	connection, err := r.client.Connections().CreateConnection(context.Background(), data.ToCreatePayload())
+	connection, err := r.client.Connection.Create(context.Background(), data.ToCreatePayload())
 	if err != nil {
 		resp.Diagnostics.AddError("Error creating connection", err.Error())
 		return
@@ -82,7 +82,7 @@ func (r *connectionResource) Read(ctx context.Context, req resource.ReadRequest,
 	}
 
 	// Get refreshed resource value
-	connection, err := r.client.Connections().GetConnection(context.Background(), data.ID.ValueString())
+	connection, err := r.client.Connection.Retrieve(context.Background(), data.ID.ValueString())
 	if err != nil {
 		resp.Diagnostics.AddError("Error reading connection", err.Error())
 		return
@@ -103,7 +103,7 @@ func (r *connectionResource) Update(ctx context.Context, req resource.UpdateRequ
 	}
 
 	// Update existing resource
-	connection, err := r.client.Connections().UpdateConnection(context.Background(), data.ID.ValueString(), data.ToUpdatePayload())
+	connection, err := r.client.Connection.Update(context.Background(), data.ID.ValueString(), data.ToUpdatePayload())
 	if err != nil {
 		resp.Diagnostics.AddError("Error updating connection", err.Error())
 		return
@@ -124,7 +124,7 @@ func (r *connectionResource) Delete(ctx context.Context, req resource.DeleteRequ
 	}
 
 	// Delete existing resource
-	_, err := r.client.Connections().DeleteConnection(context.Background(), data.ID.ValueString())
+	_, err := r.client.Connection.Delete(context.Background(), data.ID.ValueString())
 	if err != nil {
 		resp.Diagnostics.AddError("Error deleting connection", err.Error())
 	}

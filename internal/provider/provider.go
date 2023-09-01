@@ -146,8 +146,8 @@ func (p *hookdeckProvider) Configure(ctx context.Context, req provider.Configure
 
 	// Make the Hookdeck client available during DataSource and Resource
 	// type Configure methods.
-	resp.DataSourceData = &client
-	resp.ResourceData = &client
+	resp.DataSourceData = client
+	resp.ResourceData = client
 
 	tflog.Info(ctx, "Configured Hookdeck client", map[string]any{"success": true})
 }

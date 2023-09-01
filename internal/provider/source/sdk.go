@@ -35,7 +35,7 @@ func (m *sourceResourceModel) Refresh(source *hookdeck.Source) {
 	m.URL = types.StringValue(source.Url)
 }
 
-func (m *sourceResourceModel) ToCreatePayload() *hookdeck.CreateSourceRequest {
+func (m *sourceResourceModel) ToCreatePayload() *hookdeck.SourceCreateRequest {
 	var allowedHTTPMethods []hookdeck.SourceAllowedHttpMethodItem = nil
 	for _, allowedHTTPMethodsItem := range m.AllowedHTTPMethods {
 		allowedHTTPMethods = append(allowedHTTPMethods, hookdeck.SourceAllowedHttpMethodItem(allowedHTTPMethodsItem.ValueString()))
@@ -49,15 +49,15 @@ func (m *sourceResourceModel) ToCreatePayload() *hookdeck.CreateSourceRequest {
 			ContentType: contentType,
 		}
 	}
-	return &hookdeck.CreateSourceRequest{
-		AllowedHttpMethods: &allowedHTTPMethods,
-		CustomResponse:     customResponse,
-		Description:        m.Description.ValueStringPointer(),
+	return &hookdeck.SourceCreateRequest{
+		AllowedHttpMethods: hookdeck.OptionalOrNull(&allowedHTTPMethods),
+		CustomResponse:     hookdeck.OptionalOrNull(customResponse),
+		Description:        hookdeck.OptionalOrNull(m.Description.ValueStringPointer()),
 		Name:               m.Name.ValueString(),
 	}
 }
 
-func (m *sourceResourceModel) ToUpdatePayload() *hookdeck.UpdateSourceRequest {
+func (m *sourceResourceModel) ToUpdatePayload() *hookdeck.SourceUpdateRequest {
 	var allowedHTTPMethods []hookdeck.SourceAllowedHttpMethodItem = nil
 	for _, allowedHTTPMethodsItem := range m.AllowedHTTPMethods {
 		allowedHTTPMethods = append(allowedHTTPMethods, hookdeck.SourceAllowedHttpMethodItem(allowedHTTPMethodsItem.ValueString()))
@@ -71,10 +71,11 @@ func (m *sourceResourceModel) ToUpdatePayload() *hookdeck.UpdateSourceRequest {
 			ContentType: contentType,
 		}
 	}
-	return &hookdeck.UpdateSourceRequest{
-		AllowedHttpMethods: &allowedHTTPMethods,
-		CustomResponse:     customResponse,
-		Description:        m.Description.ValueStringPointer(),
-		Name:               m.Name.ValueStringPointer(),
+
+	return &hookdeck.SourceUpdateRequest{
+		AllowedHttpMethods: hookdeck.OptionalOrNull(&allowedHTTPMethods),
+		CustomResponse:     hookdeck.OptionalOrNull(customResponse),
+		Description:        hookdeck.OptionalOrNull(m.Description.ValueStringPointer()),
+		Name:               hookdeck.OptionalOrNull(m.Name.ValueStringPointer()),
 	}
 }

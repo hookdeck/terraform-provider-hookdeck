@@ -31,20 +31,20 @@ func (m *connectionResourceModel) Refresh(connection *hookdeck.Connection) {
 	m.UpdatedAt = types.StringValue(connection.UpdatedAt.Format(time.RFC3339))
 }
 
-func (m *connectionResourceModel) ToCreatePayload() *hookdeck.CreateConnectionRequest {
-	return &hookdeck.CreateConnectionRequest{
-		Name:          m.Name.ValueStringPointer(),
-		Description:   m.Description.ValueStringPointer(),
-		DestinationId: m.DestinationID.ValueStringPointer(),
+func (m *connectionResourceModel) ToCreatePayload() *hookdeck.ConnectionCreateRequest {
+	return &hookdeck.ConnectionCreateRequest{
+		Name:          hookdeck.OptionalOrNull(m.Name.ValueStringPointer()),
+		Description:   hookdeck.OptionalOrNull(m.Description.ValueStringPointer()),
+		DestinationId: hookdeck.OptionalOrNull(m.DestinationID.ValueStringPointer()),
 		Rules:         m.getRules(),
-		SourceId:      m.SourceID.ValueStringPointer(),
+		SourceId:      hookdeck.OptionalOrNull(m.SourceID.ValueStringPointer()),
 	}
 }
 
-func (m *connectionResourceModel) ToUpdatePayload() *hookdeck.UpdateConnectionRequest {
-	return &hookdeck.UpdateConnectionRequest{
-		Name:        m.Name.ValueStringPointer(),
-		Description: m.Description.ValueStringPointer(),
+func (m *connectionResourceModel) ToUpdatePayload() *hookdeck.ConnectionUpdateRequest {
+	return &hookdeck.ConnectionUpdateRequest{
+		Name:        hookdeck.OptionalOrNull(m.Name.ValueStringPointer()),
+		Description: hookdeck.OptionalOrNull(m.Description.ValueStringPointer()),
 		Rules:       m.getRules(),
 	}
 }
