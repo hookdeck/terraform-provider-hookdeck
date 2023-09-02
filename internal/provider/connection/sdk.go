@@ -1,6 +1,7 @@
 package connection
 
 import (
+	"encoding/json"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -59,11 +60,15 @@ func (m *connectionResourceModel) getRules() []*hookdeck.Rule {
 			}
 			rules = append(rules, hookdeck.NewRuleFromDelayRule(&delayRule))
 		}
-		// if ruleItem.FilterRule != nil {
-		// 	filterRule := hookdeck.FilterRule {
-		// 	}
-		// 	rules = append(rules, hookdeck.NewRuleFromFilterRule(&filterRule))
-		// }
+		if ruleItem.FilterRule != nil {
+			filterRule := hookdeck.FilterRule{
+				Body:    transformFilterRuleProperty(ruleItem.FilterRule.Body),
+				Headers: transformFilterRuleProperty(ruleItem.FilterRule.Headers),
+				Path:    transformFilterRuleProperty(ruleItem.FilterRule.Path),
+				Query:   transformFilterRuleProperty(ruleItem.FilterRule.Query),
+			}
+			rules = append(rules, hookdeck.NewRuleFromFilterRule(&filterRule))
+		}
 		if ruleItem.RetryRule != nil {
 			count := new(int)
 			if !ruleItem.RetryRule.Count.IsUnknown() && !ruleItem.RetryRule.Count.IsNull() {
@@ -95,4 +100,24 @@ func (m *connectionResourceModel) getRules() []*hookdeck.Rule {
 	}
 
 	return rules
+}
+
+func transformFilterRuleProperty(property *filterRuleProperty) *hookdeck.FilterRuleProperty {
+	if !property.Boolean.IsUnknown() && !property.Boolean.IsNull() {
+		return hookdeck.NewFilterRulePropertyFromBooleanOptional(property.Boolean.ValueBoolPointer())
+	}
+	if !property.JSON.IsUnknown() && !property.JSON.IsNull() {
+		// parse string to JSON
+		var jsonData map[string]any
+		jsonBytes := []byte(property.JSON.ValueString())
+		json.Unmarshal(jsonBytes, &jsonData)
+		return hookdeck.NewFilterRulePropertyFromStringUnknownMapOptional(jsonData)
+	}
+	if !property.Number.IsUnknown() && !property.Number.IsNull() {
+		return hookdeck.NewFilterRulePropertyFromDoubleOptional(property.Number.ValueFloat64Pointer())
+	}
+	if !property.String.IsUnknown() && !property.String.IsNull() {
+		return hookdeck.NewFilterRulePropertyFromStringOptional(property.String.ValueStringPointer())
+	}
+	return nil
 }

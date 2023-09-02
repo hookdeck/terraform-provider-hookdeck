@@ -17,8 +17,8 @@ type connectionResourceModel struct {
 }
 
 type rule struct {
-	DelayRule *delayRule `tfsdk:"delay_rule"`
-	// FilterRule    *filterRule    `tfsdk:"filter_rule"`
+	DelayRule     *delayRule     `tfsdk:"delay_rule"`
+	FilterRule    *filterRule    `tfsdk:"filter_rule"`
 	RetryRule     *retryRule     `tfsdk:"retry_rule"`
 	TransformRule *transformRule `tfsdk:"transform_rule"`
 }
@@ -27,12 +27,19 @@ type delayRule struct {
 	Delay types.Int64 `tfsdk:"delay"`
 }
 
-// type filterRule struct {
-// 	Body    types.String `tfsdk:"body"`
-// 	Headers types.String `tfsdk:"headers"`
-// 	Path    types.String `tfsdk:"path"`
-// 	Query   types.String `tfsdk:"query"`
-// }
+type filterRule struct {
+	Body    *filterRuleProperty `tfsdk:"body"`
+	Headers *filterRuleProperty `tfsdk:"headers"`
+	Path    *filterRuleProperty `tfsdk:"path"`
+	Query   *filterRuleProperty `tfsdk:"query"`
+}
+
+type filterRuleProperty struct {
+	Boolean types.Bool    `tfsdk:"boolean"`
+	JSON    types.String  `tfsdk:"json"`
+	Number  types.Float64 `tfsdk:"number"`
+	String  types.String  `tfsdk:"string"`
+}
 
 type retryRule struct {
 	Count    types.Int64  `tfsdk:"count"`

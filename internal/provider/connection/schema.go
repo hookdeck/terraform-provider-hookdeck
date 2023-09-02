@@ -14,6 +14,25 @@ import (
 )
 
 func (r *connectionResource) Schema(_ context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
+	filterRulePropertySchema := schema.SingleNestedAttribute{
+		Optional: true,
+		Attributes: map[string]schema.Attribute{
+			"boolean": schema.BoolAttribute{
+				Optional: true,
+			},
+			"json": schema.StringAttribute{
+				Optional:    true,
+				Description: `Stringied JSON using our filter syntax to filter on request headers`,
+			},
+			"number": schema.Float64Attribute{
+				Optional: true,
+			},
+			"string": schema.StringAttribute{
+				Optional: true,
+			},
+		},
+	}
+
 	resp.Schema = schema.Schema{
 		MarkdownDescription: "Connection Resource",
 
@@ -83,179 +102,15 @@ func (r *connectionResource) Schema(_ context.Context, _ resource.SchemaRequest,
 								},
 							},
 						},
-						// "filter_rule": schema.SingleNestedAttribute{
-						// 	Computed: true,
-						// 	PlanModifiers: []planmodifier.Object{
-						// 		objectplanmodifier.RequiresReplace(),
-						// 	},
-						// 	Optional: true,
-						// 	Attributes: map[string]schema.Attribute{
-						// 		"body": schema.SingleNestedAttribute{
-						// 			Computed: true,
-						// 			PlanModifiers: []planmodifier.Object{
-						// 				objectplanmodifier.RequiresReplace(),
-						// 			},
-						// 			Optional: true,
-						// 			Attributes: map[string]schema.Attribute{
-						// 				"str": schema.StringAttribute{
-						// 					Computed: true,
-						// 					PlanModifiers: []planmodifier.String{
-						// 						stringplanmodifier.RequiresReplace(),
-						// 					},
-						// 					Optional: true,
-						// 				},
-						// 				"float32": schema.NumberAttribute{
-						// 					PlanModifiers: []planmodifier.Number{
-						// 						numberplanmodifier.RequiresReplace(),
-						// 					},
-						// 					Optional: true,
-						// 				},
-						// 				"boolean": schema.BoolAttribute{
-						// 					PlanModifiers: []planmodifier.Bool{
-						// 						boolplanmodifier.RequiresReplace(),
-						// 					},
-						// 					Optional: true,
-						// 				},
-						// 				"connection_filter_property_4": schema.SingleNestedAttribute{
-						// 					Computed: true,
-						// 					PlanModifiers: []planmodifier.Object{
-						// 						objectplanmodifier.RequiresReplace(),
-						// 					},
-						// 					Optional:    true,
-						// 					Attributes:  map[string]schema.Attribute{},
-						// 					Description: `JSON using our filter syntax to filter on request headers`,
-						// 				},
-						// 			},
-						// 			Validators: []validator.Object{
-						// 				validators.ExactlyOneChild(),
-						// 			},
-						// 			Description: `JSON using our filter syntax to filter on request headers`,
-						// 		},
-						// 		"headers": schema.SingleNestedAttribute{
-						// 			Computed: true,
-						// 			PlanModifiers: []planmodifier.Object{
-						// 				objectplanmodifier.RequiresReplace(),
-						// 			},
-						// 			Optional: true,
-						// 			Attributes: map[string]schema.Attribute{
-						// 				"str": schema.StringAttribute{
-						// 					Computed: true,
-						// 					PlanModifiers: []planmodifier.String{
-						// 						stringplanmodifier.RequiresReplace(),
-						// 					},
-						// 					Optional: true,
-						// 				},
-						// 				"float32": schema.NumberAttribute{
-						// 					PlanModifiers: []planmodifier.Number{
-						// 						numberplanmodifier.RequiresReplace(),
-						// 					},
-						// 					Optional: true,
-						// 				},
-						// 				"boolean": schema.BoolAttribute{
-						// 					PlanModifiers: []planmodifier.Bool{
-						// 						boolplanmodifier.RequiresReplace(),
-						// 					},
-						// 					Optional: true,
-						// 				},
-						// 				"connection_filter_property_4": schema.SingleNestedAttribute{
-						// 					Computed: true,
-						// 					PlanModifiers: []planmodifier.Object{
-						// 						objectplanmodifier.RequiresReplace(),
-						// 					},
-						// 					Optional:    true,
-						// 					Attributes:  map[string]schema.Attribute{},
-						// 					Description: `JSON using our filter syntax to filter on request headers`,
-						// 				},
-						// 			},
-						// 			Validators: []validator.Object{
-						// 				validators.ExactlyOneChild(),
-						// 			},
-						// 			Description: `JSON using our filter syntax to filter on request headers`,
-						// 		},
-						// 		"path": schema.SingleNestedAttribute{
-						// 			Computed: true,
-						// 			PlanModifiers: []planmodifier.Object{
-						// 				objectplanmodifier.RequiresReplace(),
-						// 			},
-						// 			Optional: true,
-						// 			Attributes: map[string]schema.Attribute{
-						// 				"str": schema.StringAttribute{
-						// 					Computed: true,
-						// 					PlanModifiers: []planmodifier.String{
-						// 						stringplanmodifier.RequiresReplace(),
-						// 					},
-						// 					Optional: true,
-						// 				},
-						// 				"float32": schema.NumberAttribute{
-						// 					PlanModifiers: []planmodifier.Number{
-						// 						numberplanmodifier.RequiresReplace(),
-						// 					},
-						// 					Optional: true,
-						// 				},
-						// 				"boolean": schema.BoolAttribute{
-						// 					PlanModifiers: []planmodifier.Bool{
-						// 						boolplanmodifier.RequiresReplace(),
-						// 					},
-						// 					Optional: true,
-						// 				},
-						// 				"connection_filter_property_4": schema.SingleNestedAttribute{
-						// 					Computed: true,
-						// 					PlanModifiers: []planmodifier.Object{
-						// 						objectplanmodifier.RequiresReplace(),
-						// 					},
-						// 					Optional:    true,
-						// 					Attributes:  map[string]schema.Attribute{},
-						// 					Description: `JSON using our filter syntax to filter on request headers`,
-						// 				},
-						// 			},
-						// 			Validators: []validator.Object{
-						// 				validators.ExactlyOneChild(),
-						// 			},
-						// 			Description: `JSON using our filter syntax to filter on request headers`,
-						// 		},
-						// 		"query": schema.SingleNestedAttribute{
-						// 			Computed: true,
-						// 			PlanModifiers: []planmodifier.Object{
-						// 				objectplanmodifier.RequiresReplace(),
-						// 			},
-						// 			Optional: true,
-						// 			Attributes: map[string]schema.Attribute{
-						// 				"str": schema.StringAttribute{
-						// 					Computed: true,
-						// 					PlanModifiers: []planmodifier.String{
-						// 						stringplanmodifier.RequiresReplace(),
-						// 					},
-						// 					Optional: true,
-						// 				},
-						// 				"float32": schema.NumberAttribute{
-						// 					PlanModifiers: []planmodifier.Number{
-						// 						numberplanmodifier.RequiresReplace(),
-						// 					},
-						// 					Optional: true,
-						// 				},
-						// 				"boolean": schema.BoolAttribute{
-						// 					PlanModifiers: []planmodifier.Bool{
-						// 						boolplanmodifier.RequiresReplace(),
-						// 					},
-						// 					Optional: true,
-						// 				},
-						// 				"connection_filter_property_4": schema.SingleNestedAttribute{
-						// 					Computed: true,
-						// 					PlanModifiers: []planmodifier.Object{
-						// 						objectplanmodifier.RequiresReplace(),
-						// 					},
-						// 					Optional:    true,
-						// 					Attributes:  map[string]schema.Attribute{},
-						// 					Description: `JSON using our filter syntax to filter on request headers`,
-						// 				},
-						// 			},
-						// 			Validators: []validator.Object{
-						// 				validators.ExactlyOneChild(),
-						// 			},
-						// 			Description: `JSON using our filter syntax to filter on request headers`,
-						// 		},
-						// 	},
-						// },
+						"filter_rule": schema.SingleNestedAttribute{
+							Optional: true,
+							Attributes: map[string]schema.Attribute{
+								"body":    filterRulePropertySchema,
+								"headers": filterRulePropertySchema,
+								"path":    filterRulePropertySchema,
+								"query":   filterRulePropertySchema,
+							},
+						},
 						"retry_rule": schema.SingleNestedAttribute{
 							Optional: true,
 							Attributes: map[string]schema.Attribute{
