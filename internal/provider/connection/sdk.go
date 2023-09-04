@@ -37,7 +37,7 @@ func (m *connectionResourceModel) ToCreatePayload() *hookdeck.ConnectionCreateRe
 		Name:          hookdeck.OptionalOrNull(m.Name.ValueStringPointer()),
 		Description:   hookdeck.OptionalOrNull(m.Description.ValueStringPointer()),
 		DestinationId: hookdeck.OptionalOrNull(m.DestinationID.ValueStringPointer()),
-		Rules:         m.getRules(),
+		Rules:         hookdeck.OptionalOrNull(m.getRules()),
 		SourceId:      hookdeck.OptionalOrNull(m.SourceID.ValueStringPointer()),
 	}
 }
@@ -46,12 +46,12 @@ func (m *connectionResourceModel) ToUpdatePayload() *hookdeck.ConnectionUpdateRe
 	return &hookdeck.ConnectionUpdateRequest{
 		Name:        hookdeck.OptionalOrNull(m.Name.ValueStringPointer()),
 		Description: hookdeck.OptionalOrNull(m.Description.ValueStringPointer()),
-		Rules:       m.getRules(),
+		Rules:       hookdeck.OptionalOrNull(m.getRules()),
 	}
 }
 
-func (m *connectionResourceModel) getRules() []*hookdeck.Rule {
-	var rules []*hookdeck.Rule = nil
+func (m *connectionResourceModel) getRules() *[]*hookdeck.Rule {
+	var rules []*hookdeck.Rule = []*hookdeck.Rule{}
 
 	for _, ruleItem := range m.Rules {
 		if ruleItem.DelayRule != nil {
@@ -97,7 +97,7 @@ func (m *connectionResourceModel) getRules() []*hookdeck.Rule {
 		}
 	}
 
-	return rules
+	return &rules
 }
 
 func transformFilterRuleProperty(property *filterRuleProperty) *hookdeck.FilterRuleProperty {

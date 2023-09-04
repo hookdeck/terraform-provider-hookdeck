@@ -141,8 +141,8 @@ func (p *hookdeckProvider) Configure(ctx context.Context, req provider.Configure
 
 	// Create a new Hookdeck client using the configuration values
 	client := hookdeckClient.NewClient(
-		hookdeckClient.ClientWithBaseURL(apiBase),
-		hookdeckClient.ClientWithAuthToken(apiKey),
+		hookdeckClient.WithBaseURL(apiBase),
+		hookdeckClient.WithAuthToken(apiKey),
 	)
 
 	// Make the Hookdeck client available during DataSource and Resource
