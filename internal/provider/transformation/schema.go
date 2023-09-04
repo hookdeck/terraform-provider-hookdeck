@@ -31,6 +31,7 @@ func (r *transformationResource) Schema(_ context.Context, _ resource.SchemaRequ
 			},
 			"env": schema.StringAttribute{
 				Optional:    true,
+				Sensitive:   true,
 				Description: "Key-value environment variables to be passed to the transformation",
 			},
 			"id": schema.StringAttribute{
