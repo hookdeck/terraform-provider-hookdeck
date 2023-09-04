@@ -90,12 +90,10 @@ func (m *connectionResourceModel) getRules() []*hookdeck.Rule {
 			rules = append(rules, hookdeck.NewRuleFromRetryRule(&retryRule))
 		}
 		if ruleItem.TransformRule != nil {
-			transformRule := hookdeck.TransformRule{
-				TransformReference: &hookdeck.TransformReference{
-					TransformationId: ruleItem.TransformRule.TransformationID.ValueString(),
-				},
-			}
-			rules = append(rules, hookdeck.NewRuleFromTransformRule(&transformRule))
+			transformRule := hookdeck.NewTransformRuleFromTransformReference(&hookdeck.TransformReference{
+				TransformationId: ruleItem.TransformRule.TransformationID.ValueString(),
+			})
+			rules = append(rules, hookdeck.NewRuleFromTransformRule(transformRule))
 		}
 	}
 

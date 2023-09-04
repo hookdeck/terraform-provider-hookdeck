@@ -138,7 +138,7 @@ func (r *connectionResource) Schema(_ context.Context, _ resource.SchemaRequest,
 						"transform_rule": schema.SingleNestedAttribute{
 							Optional: true,
 							Attributes: map[string]schema.Attribute{
-								"transformation_id": schema.Int64Attribute{
+								"transformation_id": schema.StringAttribute{
 									Required:    true,
 									Description: `ID of the attached transformation object.`,
 								},
