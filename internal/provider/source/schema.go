@@ -21,7 +21,7 @@ func (r *sourceResource) Schema(_ context.Context, _ resource.SchemaRequest, res
 	defaultAllowedHttpMethods, _ := types.ListValueFrom(context.Background(), types.StringType, []string{"POST", "PUT", "PATCH", "DELETE"})
 
 	resp.Schema = schema.Schema{
-		Description: "Source DataSource",
+		Description: "Source Resource",
 		Attributes: map[string]schema.Attribute{
 			"allowed_http_methods": schema.ListAttribute{
 				Computed:    true,
