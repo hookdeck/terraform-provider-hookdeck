@@ -101,6 +101,9 @@ func (m *connectionResourceModel) getRules() *[]*hookdeck.Rule {
 }
 
 func transformFilterRuleProperty(property *filterRuleProperty) *hookdeck.FilterRuleProperty {
+	if property == nil {
+		return nil
+	}
 	if !property.Boolean.IsUnknown() && !property.Boolean.IsNull() {
 		return hookdeck.NewFilterRulePropertyFromBooleanOptional(property.Boolean.ValueBoolPointer())
 	}
@@ -112,7 +115,8 @@ func transformFilterRuleProperty(property *filterRuleProperty) *hookdeck.FilterR
 		return hookdeck.NewFilterRulePropertyFromStringUnknownMapOptional(jsonData)
 	}
 	if !property.Number.IsUnknown() && !property.Number.IsNull() {
-		return hookdeck.NewFilterRulePropertyFromDoubleOptional(property.Number.ValueFloat64Pointer())
+		float, _ := property.Number.ValueBigFloat().Float64()
+		return hookdeck.NewFilterRulePropertyFromDoubleOptional(&float)
 	}
 	if !property.String.IsUnknown() && !property.String.IsNull() {
 		return hookdeck.NewFilterRulePropertyFromStringOptional(property.String.ValueStringPointer())

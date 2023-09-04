@@ -24,7 +24,7 @@ func (r *connectionResource) Schema(_ context.Context, _ resource.SchemaRequest,
 				Optional:    true,
 				Description: `Stringied JSON using our filter syntax to filter on request headers`,
 			},
-			"number": schema.Float64Attribute{
+			"number": schema.NumberAttribute{
 				Optional: true,
 			},
 			"string": schema.StringAttribute{

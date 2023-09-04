@@ -35,10 +35,10 @@ type filterRule struct {
 }
 
 type filterRuleProperty struct {
-	Boolean types.Bool    `tfsdk:"boolean"`
-	JSON    types.String  `tfsdk:"json"`
-	Number  types.Float64 `tfsdk:"number"`
-	String  types.String  `tfsdk:"string"`
+	Boolean types.Bool   `tfsdk:"boolean"`
+	JSON    types.String `tfsdk:"json"`
+	Number  types.Number `tfsdk:"number"`
+	String  types.String `tfsdk:"string"`
 }
 
 type retryRule struct {
