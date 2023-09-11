@@ -7,6 +7,7 @@ import (
 	"terraform-provider-hookdeck/internal/provider/connection"
 	"terraform-provider-hookdeck/internal/provider/destination"
 	"terraform-provider-hookdeck/internal/provider/source"
+	"terraform-provider-hookdeck/internal/provider/sourceverification"
 	"terraform-provider-hookdeck/internal/provider/transformation"
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
@@ -158,6 +159,7 @@ func (p *hookdeckProvider) Resources(ctx context.Context) []func() resource.Reso
 		connection.NewConnectionResource,
 		destination.NewDestinationResource,
 		source.NewSourceResource,
+		sourceverification.NewSourceVerificationResource,
 		transformation.NewTransformationResource,
 	}
 }
