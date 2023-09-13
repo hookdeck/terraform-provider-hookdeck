@@ -23,7 +23,7 @@ type typeformSourceVerification struct {
 }
 
 func (m *typeformSourceVerification) toPayload() *hookdeck.VerificationConfig {
-	return hookdeck.NewVerificationConfigFromVerificationTypeform(&hookdeck.VerificationTypeform{
+	return hookdeck.NewVerificationConfigFromTypeform(&hookdeck.VerificationTypeform{
 		Configs: &hookdeck.VerificationTypeformConfigs{
 			WebhookSecretKey: m.WebhookSecretKey.ValueString(),
 		},

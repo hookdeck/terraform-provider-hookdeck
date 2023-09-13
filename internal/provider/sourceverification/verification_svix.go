@@ -23,7 +23,7 @@ type syncteraSourceVerification struct {
 }
 
 func (m *syncteraSourceVerification) toPayload() *hookdeck.VerificationConfig {
-	return hookdeck.NewVerificationConfigFromVerificationSynctera(&hookdeck.VerificationSynctera{
+	return hookdeck.NewVerificationConfigFromSynctera(&hookdeck.VerificationSynctera{
 		Configs: &hookdeck.VerificationSyncteraConfigs{
 			WebhookSecretKey: m.WebhookSecretKey.ValueString(),
 		},

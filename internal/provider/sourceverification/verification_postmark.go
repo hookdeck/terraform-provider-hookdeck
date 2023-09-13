@@ -23,7 +23,7 @@ type postmarkSourceVerification struct {
 }
 
 func (m *postmarkSourceVerification) toPayload() *hookdeck.VerificationConfig {
-	return hookdeck.NewVerificationConfigFromVerificationPostmark(&hookdeck.VerificationPostmark{
+	return hookdeck.NewVerificationConfigFromPostmark(&hookdeck.VerificationPostmark{
 		Configs: &hookdeck.VerificationPostmarkConfigs{
 			WebhookSecretKey: m.WebhookSecretKey.ValueString(),
 		},

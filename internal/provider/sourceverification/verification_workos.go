@@ -23,7 +23,7 @@ type workOSSourceVerification struct {
 }
 
 func (m *workOSSourceVerification) toPayload() *hookdeck.VerificationConfig {
-	return hookdeck.NewVerificationConfigFromVerificationWorkOs(&hookdeck.VerificationWorkOs{
+	return hookdeck.NewVerificationConfigFromWorkos(&hookdeck.VerificationWorkOs{
 		Configs: &hookdeck.VerificationWorkOsConfigs{
 			WebhookSecretKey: m.WebhookSecretKey.ValueString(),
 		},

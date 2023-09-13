@@ -27,7 +27,7 @@ type basicAuthSourceVerification struct {
 }
 
 func (m *basicAuthSourceVerification) toPayload() *hookdeck.VerificationConfig {
-	return hookdeck.NewVerificationConfigFromVerificationBasicAuth(&hookdeck.VerificationBasicAuth{
+	return hookdeck.NewVerificationConfigFromBasicAuth(&hookdeck.VerificationBasicAuth{
 		Configs: &hookdeck.VerificationBasicAuthConfigs{
 			Name:     m.Name.ValueString(),
 			Password: m.Password.ValueString(),

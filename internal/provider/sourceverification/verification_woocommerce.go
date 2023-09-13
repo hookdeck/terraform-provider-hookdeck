@@ -23,7 +23,7 @@ type woocommerceSourceVerification struct {
 }
 
 func (m *woocommerceSourceVerification) toPayload() *hookdeck.VerificationConfig {
-	return hookdeck.NewVerificationConfigFromVerificationWooCommerce(&hookdeck.VerificationWooCommerce{
+	return hookdeck.NewVerificationConfigFromWoocommerce(&hookdeck.VerificationWooCommerce{
 		Configs: &hookdeck.VerificationWooCommerceConfigs{
 			WebhookSecretKey: m.WebhookSecretKey.ValueString(),
 		},

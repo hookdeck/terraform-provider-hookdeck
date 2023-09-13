@@ -23,7 +23,7 @@ type rechargeSourceVerification struct {
 }
 
 func (m *rechargeSourceVerification) toPayload() *hookdeck.VerificationConfig {
-	return hookdeck.NewVerificationConfigFromVerificationRecharge(&hookdeck.VerificationRecharge{
+	return hookdeck.NewVerificationConfigFromRecharge(&hookdeck.VerificationRecharge{
 		Configs: &hookdeck.VerificationRechargeConfigs{
 			WebhookSecretKey: m.WebhookSecretKey.ValueString(),
 		},

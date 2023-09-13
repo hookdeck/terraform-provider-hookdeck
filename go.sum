@@ -28,8 +28,8 @@ github.com/hashicorp/terraform-svchost v0.1.1 h1:EZZimZ1GxdqFRinZ1tpJwVxxt49xc/S
 github.com/hashicorp/terraform-svchost v0.1.1/go.mod h1:mNsjQfZyf/Jhz35v6/0LWcv26+X7JPS+buii2c9/ctc=
 github.com/hashicorp/yamux v0.0.0-20181012175058-2f1d1f20f75d h1:kJCB4vdITiW1eC1vq2e6IsrXKrZit1bv/TDYFGMp4BQ=
 github.com/hashicorp/yamux v0.0.0-20181012175058-2f1d1f20f75d/go.mod h1:+NfK9FKeTrX5uv1uIXGdwYDTeHna2qgaIlx54MXqjAM=
-github.com/hookdeck/hookdeck-go-sdk v0.0.32 h1:M2pllVM5PqAwTfoqdfDFYrDcSvJunUKO3qbTaBEzetU=
-github.com/hookdeck/hookdeck-go-sdk v0.0.32/go.mod h1:kfFn3/WEGcxuPkaaf8lAq9L+3nYg45GwGy4utH/Tnmg=
+github.com/hookdeck/hookdeck-go-sdk v0.0.33 h1:f4ZTmKnKfzfNFaH4H/WBfqS9blDeNiuh1/9xF+IrNao=
+github.com/hookdeck/hookdeck-go-sdk v0.0.33/go.mod h1:kfFn3/WEGcxuPkaaf8lAq9L+3nYg45GwGy4utH/Tnmg=
 github.com/jhump/protoreflect v1.6.0 h1:h5jfMVslIg6l29nsMs0D8Wj17RDVdNYti0vDN/PZZoE=
 github.com/mattn/go-colorable v0.1.9/go.mod h1:u6P/XSegPjTcexA+o6vUJrdnUu04hMope9wVRipJSqc=
 github.com/mattn/go-colorable v0.1.12/go.mod h1:u5H1YNBxpqRaxsYJYSkiCWKzEfiAb1Gb520KVy5xxl4=

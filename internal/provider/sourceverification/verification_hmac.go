@@ -39,7 +39,7 @@ type hmacSourceVerification struct {
 func (m *hmacSourceVerification) toPayload() *hookdeck.VerificationConfig {
 	algorithm, _ := hookdeck.NewHmacAlgorithmsFromString(m.Algorithm.ValueString())
 	encoding, _ := hookdeck.NewVerificationHmacConfigsEncodingFromString(m.Encoding.ValueString())
-	return hookdeck.NewVerificationConfigFromVerificationHmac(&hookdeck.VerificationHmac{
+	return hookdeck.NewVerificationConfigFromHmac(&hookdeck.VerificationHmac{
 		Configs: &hookdeck.VerificationHmacConfigs{
 			Algorithm:        algorithm,
 			Encoding:         encoding,
