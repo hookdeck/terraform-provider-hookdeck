@@ -19,7 +19,6 @@ import (
 )
 
 func (r *destinationResource) Schema(_ context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
-
 	resp.Schema = schema.Schema{
 		MarkdownDescription: "Destination Resource",
 
