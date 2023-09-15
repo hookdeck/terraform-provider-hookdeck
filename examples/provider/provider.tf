@@ -7,8 +7,7 @@ terraform {
 }
 
 provider "hookdeck" {
-  api_base = "https://api.hookdeck.com/2023-07-01"
-  api_key  = var.hookdeck_api_key
+  api_key = var.hookdeck_api_key
 }
 
 # Create a source
