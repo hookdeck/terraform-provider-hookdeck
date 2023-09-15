@@ -48,13 +48,13 @@ func (p *hookdeckProvider) Schema(ctx context.Context, req provider.SchemaReques
 	resp.Schema = schema.Schema{
 		Attributes: map[string]schema.Attribute{
 			"api_base": schema.StringAttribute{
-				Optional:    true,
-				Description: fmt.Sprintf("Hookdeck API Base URL (default: %v)", DEFAULT_HOOKDECK_API_BASE),
+				Optional:            true,
+				MarkdownDescription: fmt.Sprintf("Hookdeck API Base URL. Alternatively, can be configured using the `%s` environment variable. (default: %s)", apiBaseEnvVarKey, defaultHookdeckAPIBase),
 			},
 			"api_key": schema.StringAttribute{
-				Required:    true,
-				Sensitive:   true,
-				Description: "Hookdeck API Key",
+				Optional:            true,
+				Sensitive:           true,
+				MarkdownDescription: fmt.Sprintf("Hookdeck API Key. Alternatively, can be configured using the `%s` environment variable.", apiBaseEnvVarKey),
 			},
 		},
 	}
@@ -79,7 +79,7 @@ func (p *hookdeckProvider) Configure(ctx context.Context, req provider.Configure
 			path.Root("api_base"),
 			"Unknown Hookdeck API Base URL",
 			"The provider cannot create the Hookdeck API client as there is an unknown configuration value for the Hookdeck API base URL. "+
-				"Either target apply the source of the value first, set the value statically in the configuration, or use the HOOKDECK_API_BASE environment variable.",
+				fmt.Sprintf("Either target apply the source of the value first, set the value statically in the configuration, or use the %s environment variable.", apiBaseEnvVarKey),
 		)
 	}
 
@@ -88,7 +88,7 @@ func (p *hookdeckProvider) Configure(ctx context.Context, req provider.Configure
 			path.Root("api_key"),
 			"Unknown Hookdeck API Key",
 			"The provider cannot create the Hookdeck API client as there is an unknown configuration value for the Hookdeck API key. "+
-				"Either target apply the source of the value first, set the value statically in the configuration, or use the HOOKDECK_API_KEY environment variable.",
+				fmt.Sprintf("Either target apply the source of the value first, set the value statically in the configuration, or use the %s environment variable.", apiKeyEnvVarKey),
 		)
 	}
 
@@ -99,8 +99,8 @@ func (p *hookdeckProvider) Configure(ctx context.Context, req provider.Configure
 	// Default values to environment variables, but override
 	// with Terraform configuration value if set.
 
-	apiBase := os.Getenv("HOOKDECK_API_BASE")
-	apiKey := os.Getenv("HOOKDECK_API_KEY")
+	apiBase := os.Getenv(apiBaseEnvVarKey)
+	apiKey := os.Getenv(apiKeyEnvVarKey)
 
 	if !config.APIBase.IsNull() {
 		apiBase = config.APIBase.ValueString()
@@ -114,7 +114,7 @@ func (p *hookdeckProvider) Configure(ctx context.Context, req provider.Configure
 	// errors with provider-specific guidance.
 
 	if apiBase == "" {
-		apiBase = DEFAULT_HOOKDECK_API_BASE
+		apiBase = defaultHookdeckAPIBase
 	}
 
 	if apiKey == "" {
@@ -122,7 +122,7 @@ func (p *hookdeckProvider) Configure(ctx context.Context, req provider.Configure
 			path.Root("api_key"),
 			"Missing Hookdeck API Key",
 			"The provider cannot create the Hookdeck API client as there is a missing or empty value for the Hookdeck API key. "+
-				"Set the api key value in the configuration or use the HOOKDECK_API_KEY environment variable. "+
+				fmt.Sprintf("Set the api key value in the configuration or use the %s environment variable. ", apiKeyEnvVarKey)+
 				"If either is already set, ensure the value is not empty.",
 		)
 	}
@@ -175,4 +175,9 @@ func New(version string) func() provider.Provider {
 	}
 }
 
-const DEFAULT_HOOKDECK_API_BASE = "https://api.hookdeck.com/2023-07-01"
+const (
+	apiBaseEnvVarKey = "HOOKDECK_API_BASE"
+	apiKeyEnvVarKey  = "HOOKDECK_API_KEY"
+
+	defaultHookdeckAPIBase = "https://api.hookdeck.com/2023-07-01"
+)
