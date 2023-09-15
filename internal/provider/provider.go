@@ -2,6 +2,7 @@ package provider
 
 import (
 	"context"
+	"fmt"
 	"os"
 
 	"terraform-provider-hookdeck/internal/provider/connection"
@@ -47,11 +48,13 @@ func (p *hookdeckProvider) Schema(ctx context.Context, req provider.SchemaReques
 	resp.Schema = schema.Schema{
 		Attributes: map[string]schema.Attribute{
 			"api_base": schema.StringAttribute{
-				Optional: true,
+				Optional:    true,
+				Description: fmt.Sprintf("Hookdeck API Base URL (default: %v)", DEFAULT_HOOKDECK_API_BASE),
 			},
 			"api_key": schema.StringAttribute{
-				Optional:  true,
-				Sensitive: true,
+				Required:    true,
+				Sensitive:   true,
+				Description: "Hookdeck API Key",
 			},
 		},
 	}
@@ -111,13 +114,7 @@ func (p *hookdeckProvider) Configure(ctx context.Context, req provider.Configure
 	// errors with provider-specific guidance.
 
 	if apiBase == "" {
-		resp.Diagnostics.AddAttributeError(
-			path.Root("api_base"),
-			"Missing Hookdeck API base URL",
-			"The provider cannot create the Hookdeck API client as there is a missing or empty value for the Hookdeck API base URL. "+
-				"Set the base URL value in the configuration or use the HOOKDECK_API_BASE environment variable. "+
-				"If either is already set, ensure the value is not empty.",
-		)
+		apiBase = DEFAULT_HOOKDECK_API_BASE
 	}
 
 	if apiKey == "" {
@@ -177,3 +174,5 @@ func New(version string) func() provider.Provider {
 		}
 	}
 }
+
+const DEFAULT_HOOKDECK_API_BASE = "https://api.hookdeck.com/2023-07-01"
