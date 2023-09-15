@@ -9,6 +9,7 @@ import (
 	"terraform-provider-hookdeck/internal/provider/source"
 	"terraform-provider-hookdeck/internal/provider/sourceverification"
 	"terraform-provider-hookdeck/internal/provider/transformation"
+	"terraform-provider-hookdeck/internal/provider/webhookregistration"
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/path"
@@ -161,6 +162,7 @@ func (p *hookdeckProvider) Resources(ctx context.Context) []func() resource.Reso
 		source.NewSourceResource,
 		sourceverification.NewSourceVerificationResource,
 		transformation.NewTransformationResource,
+		webhookregistration.NewWebhookRegistrationResource,
 	}
 }
 
