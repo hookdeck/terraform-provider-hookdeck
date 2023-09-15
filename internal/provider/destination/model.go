@@ -15,11 +15,15 @@ type destinationResourceModel struct {
 	ID                     types.String                 `tfsdk:"id"`
 	Name                   types.String                 `tfsdk:"name"`
 	PathForwardingDisabled types.Bool                   `tfsdk:"path_forwarding_disabled"`
-	RateLimit              types.Int64                  `tfsdk:"rate_limit"`
-	RateLimitPeriod        types.String                 `tfsdk:"rate_limit_period"`
+	RateLimit              *rateLimit                   `tfsdk:"rate_limit"`
 	TeamID                 types.String                 `tfsdk:"team_id"`
 	UpdatedAt              types.String                 `tfsdk:"updated_at"`
 	URL                    types.String                 `tfsdk:"url"`
+}
+
+type rateLimit struct {
+	Limit  types.Int64  `tfsdk:"limit"`
+	Period types.String `tfsdk:"period"`
 }
 
 type destinationAuthMethodConfig struct {

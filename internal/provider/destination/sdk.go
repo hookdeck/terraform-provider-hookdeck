@@ -36,14 +36,9 @@ func (m *destinationResourceModel) Refresh(destination *hookdeck.Destination) {
 		m.PathForwardingDisabled = types.BoolNull()
 	}
 	if destination.RateLimit != nil {
-		m.RateLimit = types.Int64Value(int64(*destination.RateLimit))
-	} else {
-		m.RateLimit = types.Int64Null()
-	}
-	if destination.RateLimitPeriod != nil {
-		m.RateLimitPeriod = types.StringValue(string(*destination.RateLimitPeriod))
-	} else {
-		m.RateLimitPeriod = types.StringNull()
+		m.RateLimit = &rateLimit{}
+		m.RateLimit.Limit = types.Int64Value(int64(*destination.RateLimit))
+		m.RateLimit.Period = types.StringValue(string(*destination.RateLimitPeriod))
 	}
 	m.TeamID = types.StringValue(destination.TeamId)
 	m.UpdatedAt = types.StringValue(destination.UpdatedAt.Format(time.RFC3339))
@@ -75,19 +70,12 @@ func (m *destinationResourceModel) ToCreatePayload() *hookdeck.DestinationCreate
 		pathForwardingDisabled = nil
 	}
 	rateLimit := new(int)
-	if !m.RateLimit.IsUnknown() && !m.RateLimit.IsNull() {
-		*rateLimit = int(m.RateLimit.ValueInt64())
+	rateLimitPeriod := new(hookdeck.DestinationCreateRequestRateLimitPeriod)
+	if m.RateLimit != nil {
+		*rateLimit = int(m.RateLimit.Limit.ValueInt64())
+		*rateLimitPeriod = hookdeck.DestinationCreateRequestRateLimitPeriod(m.RateLimit.Period.ValueString())
 	} else {
 		rateLimit = nil
-	}
-	rateLimitPeriod := new(hookdeck.DestinationCreateRequestRateLimitPeriod)
-	if rateLimit != nil {
-		if !m.RateLimitPeriod.IsUnknown() && !m.RateLimitPeriod.IsNull() {
-			*rateLimitPeriod = hookdeck.DestinationCreateRequestRateLimitPeriod(m.RateLimitPeriod.ValueString())
-		} else {
-			rateLimitPeriod = nil
-		}
-	} else {
 		rateLimitPeriod = nil
 	}
 	url := new(string)
@@ -130,19 +118,12 @@ func (m *destinationResourceModel) ToUpdatePayload() *hookdeck.DestinationUpdate
 		pathForwardingDisabled = nil
 	}
 	rateLimit := new(int)
-	if !m.RateLimit.IsUnknown() && !m.RateLimit.IsNull() {
-		*rateLimit = int(m.RateLimit.ValueInt64())
+	rateLimitPeriod := new(hookdeck.DestinationUpdateRequestRateLimitPeriod)
+	if m.RateLimit != nil {
+		*rateLimit = int(m.RateLimit.Limit.ValueInt64())
+		*rateLimitPeriod = hookdeck.DestinationUpdateRequestRateLimitPeriod(m.RateLimit.Period.ValueString())
 	} else {
 		rateLimit = nil
-	}
-	rateLimitPeriod := new(hookdeck.DestinationUpdateRequestRateLimitPeriod)
-	if rateLimit != nil {
-		if !m.RateLimitPeriod.IsUnknown() && !m.RateLimitPeriod.IsNull() {
-			*rateLimitPeriod = hookdeck.DestinationUpdateRequestRateLimitPeriod(m.RateLimitPeriod.ValueString())
-		} else {
-			rateLimitPeriod = nil
-		}
-	} else {
 		rateLimitPeriod = nil
 	}
 	url := new(string)

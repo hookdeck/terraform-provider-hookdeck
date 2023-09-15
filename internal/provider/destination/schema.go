@@ -170,29 +170,33 @@ func (r *destinationResource) Schema(_ context.Context, _ resource.SchemaRequest
 					boolplanmodifier.UseStateForUnknown(),
 				},
 			},
-			"rate_limit": schema.Int64Attribute{
-				Computed: true,
+			"rate_limit": schema.SingleNestedAttribute{
 				Optional: true,
-				PlanModifiers: []planmodifier.Int64{
-					int64planmodifier.UseStateForUnknown(),
+				Attributes: map[string]schema.Attribute{
+					"limit": schema.Int64Attribute{
+						Required: true,
+						PlanModifiers: []planmodifier.Int64{
+							int64planmodifier.UseStateForUnknown(),
+						},
+						Description: `Limit event attempts to receive per period. Max value is workspace plan's max attempts thoughput.`,
+					},
+					"period": schema.StringAttribute{
+						Required: true,
+						Validators: []validator.String{
+							stringvalidator.OneOf(
+								"second",
+								"minute",
+								"hour",
+							),
+						},
+						PlanModifiers: []planmodifier.String{
+							stringplanmodifier.UseStateForUnknown(),
+						},
+						MarkdownDescription: `must be one of ["second", "minute", "hour"]` + "\n" +
+							`Period to rate limit attempts`,
+					},
 				},
-				Description: `Limit event attempts to receive per period. Max value is workspace plan's max attempts thoughput.`,
-			},
-			"rate_limit_period": schema.StringAttribute{
-				Computed: true,
-				Optional: true,
-				Validators: []validator.String{
-					stringvalidator.OneOf(
-						"second",
-						"minute",
-						"hour",
-					),
-				},
-				PlanModifiers: []planmodifier.String{
-					stringplanmodifier.UseStateForUnknown(),
-				},
-				MarkdownDescription: `must be one of ["second", "minute", "hour"]` + "\n" +
-					`Period to rate limit attempts`,
+				Description: "Rate limit",
 			},
 			"team_id": schema.StringAttribute{
 				Computed: true,
