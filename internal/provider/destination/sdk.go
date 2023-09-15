@@ -63,7 +63,7 @@ func (m *destinationResourceModel) ToCreatePayload() *hookdeck.DestinationCreate
 	} else {
 		httpMethod = nil
 	}
-	var pathForwardingDisabled *hookdeckcore.Optional[bool] = nil
+	var pathForwardingDisabled *hookdeckcore.Optional[bool]
 	if !m.PathForwardingDisabled.IsUnknown() && !m.PathForwardingDisabled.IsNull() {
 		pathForwardingDisabled = hookdeck.Optional(m.PathForwardingDisabled.ValueBool())
 	} else {
@@ -224,7 +224,7 @@ func (m *destinationResourceModel) refreshAuthMethod(destination *hookdeck.Desti
 	if destination.AuthMethod.CustomSignature != nil {
 		m.AuthMethod.CustomSignature = &customSignature{}
 		m.AuthMethod.CustomSignature.Key = types.StringValue(destination.AuthMethod.CustomSignature.Config.Key)
-		m.AuthMethod.CustomSignature.SigningSecret = types.StringValue(string(*destination.AuthMethod.CustomSignature.Config.SigningSecret))
+		m.AuthMethod.CustomSignature.SigningSecret = types.StringValue(*destination.AuthMethod.CustomSignature.Config.SigningSecret)
 	}
 
 	if destination.AuthMethod.HookdeckSignature != nil {

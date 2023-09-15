@@ -51,7 +51,9 @@ func (m *transformationResourceModel) getENV() map[string]string {
 	var envData map[string]string = nil
 	if !m.ENV.IsUnknown() && !m.ENV.IsNull() {
 		envBytes := []byte(m.ENV.ValueString())
-		json.Unmarshal(envBytes, &envData)
+		if err := json.Unmarshal(envBytes, &envData); err != nil {
+			return nil
+		}
 	}
 	return envData
 }

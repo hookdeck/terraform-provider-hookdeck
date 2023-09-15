@@ -111,7 +111,9 @@ func transformFilterRuleProperty(property *filterRuleProperty) *hookdeck.FilterR
 		// parse string to JSON
 		var jsonData map[string]any
 		jsonBytes := []byte(property.JSON.ValueString())
-		json.Unmarshal(jsonBytes, &jsonData)
+		if err := json.Unmarshal(jsonBytes, &jsonData); err != nil {
+			return nil
+		}
 		return hookdeck.NewFilterRulePropertyFromStringUnknownMapOptional(jsonData)
 	}
 	if !property.Number.IsUnknown() && !property.Number.IsNull() {

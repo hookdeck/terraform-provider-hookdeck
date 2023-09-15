@@ -12,7 +12,7 @@ func (m *sourceVerificationResourceModel) ToCreatePayload() *hookdeck.SourceUpda
 }
 
 func (m *sourceVerificationResourceModel) ToUpdatePayload() *hookdeck.SourceUpdateRequest {
-	var verification *hookdeck.VerificationConfig = nil
+	var verification *hookdeck.VerificationConfig
 
 	// generic
 	if m.Verification.APIKey != nil {
