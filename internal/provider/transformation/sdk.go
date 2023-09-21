@@ -48,7 +48,7 @@ func (m *transformationResourceModel) ToUpdatePayload() *hookdeck.Transformation
 }
 
 func (m *transformationResourceModel) getENV() map[string]string {
-	var envData map[string]string = nil
+	envData := map[string]string{}
 	if !m.ENV.IsUnknown() && !m.ENV.IsNull() {
 		envBytes := []byte(m.ENV.ValueString())
 		if err := json.Unmarshal(envBytes, &envData); err != nil {
