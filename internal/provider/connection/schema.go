@@ -145,6 +145,9 @@ func (r *connectionResource) Schema(_ context.Context, _ resource.SchemaRequest,
 							},
 						},
 					},
+					Validators: []validator.Object{
+						validators.ExactlyOneChild(),
+					},
 				},
 			},
 			"source_id": schema.StringAttribute{
