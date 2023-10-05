@@ -3,9 +3,12 @@ package transformation
 import (
 	"context"
 	"fmt"
+	"math/rand"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
+	hookdeck "github.com/hookdeck/hookdeck-go-sdk"
 	hookdeckClient "github.com/hookdeck/hookdeck-go-sdk/client"
 )
 
@@ -124,10 +127,26 @@ func (r *transformationResource) Delete(ctx context.Context, req resource.Delete
 	}
 
 	// Delete existing resource
+	// TODO: use delete once the endpoint is ready
 	// _, err := r.client.Transformation.Delete(context.Background(), data.ID.ValueString())
 	// if err != nil {
 	// 	resp.Diagnostics.AddError("Error deleting source", err.Error())
 	// }
+
+	// TODO: remove later
+	// for now, we'll update the transformation to a random ID in this template `deleted-${transformation_name}-${random}`
+	// so users can still create a new transformation with the old name
+	length := 10 // length of random key
+	rand.Seed(time.Now().UnixNano())
+	b := make([]byte, length+2)
+	rand.Read(b)
+	randomizedName := "deleted-" + data.Name.ValueString() + "-" + fmt.Sprintf("%x", b)[2:length+2]
+	_, err := r.client.Transformation.Update(context.Background(), data.ID.ValueString(), &hookdeck.TransformationUpdateRequest{
+		Name: hookdeck.OptionalOrNull(&randomizedName),
+	})
+	if err != nil {
+		resp.Diagnostics.AddError("Error deleting source", err.Error())
+	}
 }
 
 func (r *transformationResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
