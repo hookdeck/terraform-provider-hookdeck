@@ -1,6 +1,6 @@
 # Hookdeck Terraform Provider
 
-_[Hookdeck](https://hookdeck.com) is a prebuilt webhook infrastructure. It gives developers the tooling they need to monitor and troubleshoot all their inbound webhooks. For more information, see the [Ably documentation](https://ably.com/docs)._
+_[Hookdeck](https://hookdeck.com) is a prebuilt webhook infrastructure. It gives developers the tooling they need to monitor and troubleshoot all their inbound webhooks. For more information, see the [Hookdeck documentation](https://hookdeck.com/docs)._
 
 This is a Terraform provider for Hookdeck that enables you to manage your Hookdeck account using IaC (Infrastructure-as-Code), including managing your sources, destinations, connections, transformations, and more. It also enables some webhook registration workflow that allows you to configure webhooks as part of your CI/CD processes.
 
@@ -14,8 +14,8 @@ To install Hookdeck Terraform provider:
 ```hcl
 terraform {
   required_providers {
-    ably = {
-      source  = "ably/ably"
+    hookdeck = {
+      source  = "hookdeck/hookdeck"
       version = "0.1.2"
     }
   }
