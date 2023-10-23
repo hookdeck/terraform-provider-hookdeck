@@ -9,7 +9,7 @@ A rule is a piece of instructional logic that dictates the behavior of events ro
 
 ## Retry rule
 
-The retry rule determines the rate and limit of [automatic retries](automatically-retry-events) on failed events.
+The retry rule determines the rate and limit of [automatic retries](https://hookdeck.com/docs/automatically-retry-events) on failed events.
 
 | Retry Rule Element | Explanation                                                                                                                                                                                   |
 | ------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
