@@ -11,7 +11,7 @@ Hookdeck is a prebuilt webhook infrastructure. It gives developers the tooling t
 
 Once integrated, Hookdeck unlocks an entire suite of tools: [alerting](https://hookdeck.com/docs/notifications), [rate limiting](https://hookdeck.com/docs/set-a-rate-limit), [automatic retries](https://hookdeck.com/docs/automatically-retry-events), [one-to-many delivery](https://hookdeck.com/docs/create-a-destination), [payload transformations](https://hookdeck.com/docs/transformations), local testing via the [CLI](https://hookdeck.com/docs/using-the-cli), a feature-rich [API](https://hookdeck.com/docs/using-the-api), and more. It acts as a proxy – routing webhooks from any [source](https://hookdeck.com/docs/sources) to a specified [destination](destinations) – so you can spend less time maintaining an asynchronous event infrastructure and more time building the features your users care about.
 
--> Visit the [Documentation](https://hookdeck.com/docs/introduction) to learn more about Hookdeck.
+Visit the [Hookdeck documentation](https://hookdeck.com/docs/introduction) to learn more.
 
 ## Terraform
 

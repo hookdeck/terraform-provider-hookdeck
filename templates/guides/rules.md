@@ -17,9 +17,9 @@ The retry rule determines the rate and limit of [automatic retries](automaticall
 | Interval           | The delay between each automatic retry                                                                                                                                                        |
 | Count              | The number of automatic retries Hookdeck will attempt after an event fails                                                                                                                    |
 
-> Automatic retries max out after one week, or {% $MAX_AUTOMATIC_RETRY_ATTEMPTS %} attempts – whichever comes first. Events can be [manually retried](manually-retry-events) after exceeding this limit.
+> Automatic retries max out after one week, or {% $MAX_AUTOMATIC_RETRY_ATTEMPTS %} attempts – whichever comes first. Events can be [manually retried](https://hookdeck.com/docs/manually-retry-events) after exceeding this limit.
 
-Here's how a connection with a linear retry strategy with 5 attempts per hour should look like:
+Here's what a connection with a linear retry strategy with five attempts per hour looks like:
 
 ```hcl
 resource "hookdeck_connection" "my_connection" {
@@ -41,7 +41,7 @@ resource "hookdeck_connection" "my_connection" {
 
 The delay rule allows you to introduce a delay between the moment Hookdeck receives an event, and when it's forwarded to your destination.
 
-Here's how a connection with a 10-second delay rule look like:
+Here's how to configure a connection with a 10-second delay:
 
 ```hcl
 resource "hookdeck_connection" "my_connection" {
@@ -59,7 +59,7 @@ resource "hookdeck_connection" "my_connection" {
 
 ## Filter rule
 
-The filter rule allows you to route webhooks differently based on the contents of their `Headers`, `Body`, `Query`, and/or `Path`.
+The filter rule allows you to route webhooks based on the contents of their `Headers`, `Body`, `Query`, and/or `Path`.
 
 For more information on how to set up filters, see our [filter documentation](https://hookdeck.com/docs/filters).
 
@@ -134,9 +134,9 @@ resource "hookdeck_connection" "my_connection" {
 
 The transformation rule allows you to modify the payload of a webhook before it gets delivered to a destination.
 
-For more information on how to set up transformations, see our [transformation documentation](https://hookdeck.com/docs/transformations).
+For more information on how to set up transformations, see the [Hookdeck transformation documentation](https://hookdeck.com/docs/transformations).
 
-To use transformation with Terraform, you need to create a new transformation before using it with your connection. Here's how that should look:
+To use transformation with Terraform, you must create a new transformation before using it with your connection. Here's an example transformation:
 
 ```hcl
 resource "hookdeck_transformation" "my_transformation" {
@@ -157,7 +157,7 @@ resource "hookdeck_connection" "my_connection" {
 }
 ```
 
-As the transformation code also expects a stringified function handler, you can also keep your transformation code in a separate file.
+As the transformation code also expects a stringified function handler, you can also keep your transformation code in a separate file:
 
 ```hcl
 resource "hookdeck_transformation" "my_transformation" {
@@ -166,4 +166,4 @@ resource "hookdeck_transformation" "my_transformation" {
 }
 ```
 
--> With Hookdeck Terraform provider, you can keep your filter and transformation code in version control.
+With the Hookdeck Terraform provider, you can keep your filter and transformation code in version control.

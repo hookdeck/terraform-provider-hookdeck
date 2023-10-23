@@ -1,15 +1,15 @@
 # Hookdeck Terraform Provider
 
-_[Hookdeck](https://hookdeck.com) is a prebuilt webhook infrastructure. It gives developers the tooling they need to monitor and troubleshoot all their inbound webhooks. For more information, see the [Hookdeck documentation](https://hookdeck.com/docs)._
+_The [Hookdeck Event Gateway](https://hookdeck.com) enables engineering teams to build, deploy, observe, and scale event-driven applications. For more information, see the [Hookdeck documentation](https://hookdeck.com/docs)._
 
-This is a Terraform provider for Hookdeck that enables you to manage your Hookdeck account using IaC (Infrastructure-as-Code), including managing your sources, destinations, connections, transformations, and more. It also enables some webhook registration workflow that allows you to configure webhooks as part of your CI/CD processes.
+The Hookdeck Terraform provider enables you to manage your Hookdeck workspaces using IaC (Infrastructure-as-Code), including managing your sources, destinations, connections, transformations, and more. It also supports webhook registration workflow that allows you to configure webhooks as part of your CI/CD processes.
 
 ## Installation
 
 To install Hookdeck Terraform provider:
 
 1. Obtain your Hookdeck API key from [the dashboard](https://dashboard.hookdeck.com/workspace/secrets)
-2. Add the following to your Terraform configuration file
+2. Add the following to your Terraform configuration file:
 
 ```hcl
 terraform {
@@ -29,7 +29,7 @@ provider "hookdeck" {
 
 ## Using the provider
 
-This readme gives a basic example; for more examples see the [examples/](examples/) folder, rendered documentation on the [Terraform Registry](https://registry.terraform.io/providers/hookdeck/hookdeck/latest/docs), or [docs folder](docs/) in this repository.
+This README gives a basic example; for more examples, see the [examples/](examples/) folder, the rendered documentation on the [Terraform Registry](https://registry.terraform.io/providers/hookdeck/hookdeck/latest/docs), or [docs folder](docs/) in this repository.
 
 ```hcl
 # Configure a source
