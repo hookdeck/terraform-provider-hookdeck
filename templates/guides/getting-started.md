@@ -19,7 +19,6 @@ Visit the [Hookdeck documentation](https://hookdeck.com/docs/introduction) to le
 
 The Hookdeck Terraform provider helps you utilize Terraform to configure your workspace declaratively instead of relying on the Hookdeck dashboard. You can run Terraform in your CI/CD pipeline and maintain Hookdeck workspace configuration programmatically as part of your deployment workflow.
 
-To get started, follow its documentation to [install Terraform CLI locally](https://developer.hashicorp.com/terraform/downloads).
 
 ## Tutorial
 
