@@ -166,4 +166,10 @@ resource "hookdeck_transformation" "my_transformation" {
 }
 ```
 
+With /transformations/my_transformation.js as follows:
+
+```js
+addHandler('transform', (request, context) => request);
+```
+
 With the Hookdeck Terraform provider, you can keep your filter and transformation code in version control.
