@@ -41,24 +41,36 @@ Optional:
 - `api_key` (Attributes) (see [below for nested schema](#nestedatt--verification--api_key))
 - `aws_sns` (Attributes) (see [below for nested schema](#nestedatt--verification--aws_sns))
 - `basic_auth` (Attributes) (see [below for nested schema](#nestedatt--verification--basic_auth))
+- `cloudsignal` (Attributes) (see [below for nested schema](#nestedatt--verification--cloudsignal))
 - `commercelayer` (Attributes) (see [below for nested schema](#nestedatt--verification--commercelayer))
+- `courier` (Attributes) (see [below for nested schema](#nestedatt--verification--courier))
+- `favro` (Attributes) (see [below for nested schema](#nestedatt--verification--favro))
 - `github` (Attributes) (see [below for nested schema](#nestedatt--verification--github))
 - `gitlab` (Attributes) (see [below for nested schema](#nestedatt--verification--gitlab))
 - `hmac` (Attributes) (see [below for nested schema](#nestedatt--verification--hmac))
 - `mailgun` (Attributes) (see [below for nested schema](#nestedatt--verification--mailgun))
+- `nmi` (Attributes) (see [below for nested schema](#nestedatt--verification--nmi))
 - `oura` (Attributes) (see [below for nested schema](#nestedatt--verification--oura))
+- `persona` (Attributes) (see [below for nested schema](#nestedatt--verification--persona))
 - `pipedrive` (Attributes) (see [below for nested schema](#nestedatt--verification--pipedrive))
 - `postmark` (Attributes) (see [below for nested schema](#nestedatt--verification--postmark))
 - `property_finder` (Attributes) (see [below for nested schema](#nestedatt--verification--property_finder))
 - `recharge` (Attributes) (see [below for nested schema](#nestedatt--verification--recharge))
+- `repay` (Attributes) (see [below for nested schema](#nestedatt--verification--repay))
+- `sanity` (Attributes) (see [below for nested schema](#nestedatt--verification--sanity))
 - `sendgrid` (Attributes) (see [below for nested schema](#nestedatt--verification--sendgrid))
 - `shopify` (Attributes) (see [below for nested schema](#nestedatt--verification--shopify))
+- `solidgate` (Attributes) (see [below for nested schema](#nestedatt--verification--solidgate))
+- `square` (Attributes) (see [below for nested schema](#nestedatt--verification--square))
 - `stripe` (Attributes) (see [below for nested schema](#nestedatt--verification--stripe))
 - `svix` (Attributes) (see [below for nested schema](#nestedatt--verification--svix))
 - `synctera` (Attributes) (see [below for nested schema](#nestedatt--verification--synctera))
 - `threedeye` (Attributes) (see [below for nested schema](#nestedatt--verification--threedeye))
+- `trello` (Attributes) (see [below for nested schema](#nestedatt--verification--trello))
+- `twitch` (Attributes) (see [below for nested schema](#nestedatt--verification--twitch))
 - `twitter` (Attributes) (see [below for nested schema](#nestedatt--verification--twitter))
 - `typeform` (Attributes) (see [below for nested schema](#nestedatt--verification--typeform))
+- `wix` (Attributes) (see [below for nested schema](#nestedatt--verification--wix))
 - `woocommerce` (Attributes) (see [below for nested schema](#nestedatt--verification--woocommerce))
 - `workos` (Attributes) (see [below for nested schema](#nestedatt--verification--workos))
 - `xero` (Attributes) (see [below for nested schema](#nestedatt--verification--xero))
@@ -102,8 +114,32 @@ Required:
 - `password` (String, Sensitive)
 
 
+<a id="nestedatt--verification--cloudsignal"></a>
+### Nested Schema for `verification.cloudsignal`
+
+Required:
+
+- `api_key` (String, Sensitive)
+
+
 <a id="nestedatt--verification--commercelayer"></a>
 ### Nested Schema for `verification.commercelayer`
+
+Required:
+
+- `webhook_secret_key` (String, Sensitive)
+
+
+<a id="nestedatt--verification--courier"></a>
+### Nested Schema for `verification.courier`
+
+Required:
+
+- `webhook_secret_key` (String, Sensitive)
+
+
+<a id="nestedatt--verification--favro"></a>
+### Nested Schema for `verification.favro`
 
 Required:
 
@@ -145,8 +181,24 @@ Required:
 - `webhook_secret_key` (String, Sensitive)
 
 
+<a id="nestedatt--verification--nmi"></a>
+### Nested Schema for `verification.nmi`
+
+Required:
+
+- `webhook_secret_key` (String, Sensitive)
+
+
 <a id="nestedatt--verification--oura"></a>
 ### Nested Schema for `verification.oura`
+
+Required:
+
+- `webhook_secret_key` (String, Sensitive)
+
+
+<a id="nestedatt--verification--persona"></a>
+### Nested Schema for `verification.persona`
 
 Required:
 
@@ -186,6 +238,22 @@ Required:
 - `webhook_secret_key` (String, Sensitive)
 
 
+<a id="nestedatt--verification--repay"></a>
+### Nested Schema for `verification.repay`
+
+Required:
+
+- `webhook_secret_key` (String, Sensitive)
+
+
+<a id="nestedatt--verification--sanity"></a>
+### Nested Schema for `verification.sanity`
+
+Required:
+
+- `webhook_secret_key` (String, Sensitive)
+
+
 <a id="nestedatt--verification--sendgrid"></a>
 ### Nested Schema for `verification.sendgrid`
 
@@ -196,6 +264,22 @@ Required:
 
 <a id="nestedatt--verification--shopify"></a>
 ### Nested Schema for `verification.shopify`
+
+Required:
+
+- `webhook_secret_key` (String, Sensitive)
+
+
+<a id="nestedatt--verification--solidgate"></a>
+### Nested Schema for `verification.solidgate`
+
+Required:
+
+- `webhook_secret_key` (String, Sensitive)
+
+
+<a id="nestedatt--verification--square"></a>
+### Nested Schema for `verification.square`
 
 Required:
 
@@ -234,6 +318,22 @@ Required:
 - `webhook_secret_key` (String, Sensitive)
 
 
+<a id="nestedatt--verification--trello"></a>
+### Nested Schema for `verification.trello`
+
+Required:
+
+- `webhook_secret_key` (String, Sensitive)
+
+
+<a id="nestedatt--verification--twitch"></a>
+### Nested Schema for `verification.twitch`
+
+Required:
+
+- `webhook_secret_key` (String, Sensitive)
+
+
 <a id="nestedatt--verification--twitter"></a>
 ### Nested Schema for `verification.twitter`
 
@@ -244,6 +344,14 @@ Required:
 
 <a id="nestedatt--verification--typeform"></a>
 ### Nested Schema for `verification.typeform`
+
+Required:
+
+- `webhook_secret_key` (String, Sensitive)
+
+
+<a id="nestedatt--verification--wix"></a>
+### Nested Schema for `verification.wix`
 
 Required:
 

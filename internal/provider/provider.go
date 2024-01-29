@@ -179,5 +179,5 @@ const (
 	apiBaseEnvVarKey = "HOOKDECK_API_BASE"
 	apiKeyEnvVarKey  = "HOOKDECK_API_KEY"
 
-	defaultHookdeckAPIBase = "https://api.hookdeck.com/2023-07-01"
+	defaultHookdeckAPIBase = "https://api.hookdeck.com"
 )
