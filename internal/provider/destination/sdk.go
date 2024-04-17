@@ -9,11 +9,6 @@ import (
 )
 
 func (m *destinationResourceModel) Refresh(destination *hookdeck.Destination) {
-	if destination.ArchivedAt != nil {
-		m.ArchivedAt = types.StringValue(destination.ArchivedAt.Format(time.RFC3339))
-	} else {
-		m.ArchivedAt = types.StringNull()
-	}
 	if destination.AuthMethod != nil {
 		m.refreshAuthMethod(destination)
 	}
@@ -23,6 +18,11 @@ func (m *destinationResourceModel) Refresh(destination *hookdeck.Destination) {
 		m.CliPath = types.StringNull()
 	}
 	m.CreatedAt = types.StringValue(destination.CreatedAt.Format(time.RFC3339))
+	if destination.DisabledAt != nil {
+		m.DisabledAt = types.StringValue(destination.DisabledAt.Format(time.RFC3339))
+	} else {
+		m.DisabledAt = types.StringNull()
+	}
 	if destination.HttpMethod != nil {
 		m.HTTPMethod = types.StringValue(string(*destination.HttpMethod))
 	} else {

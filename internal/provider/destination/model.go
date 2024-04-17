@@ -6,11 +6,11 @@ import (
 )
 
 type destinationResourceModel struct {
-	ArchivedAt             types.String                 `tfsdk:"archived_at"`
 	AuthMethod             *destinationAuthMethodConfig `tfsdk:"auth_method"`
 	CliPath                types.String                 `tfsdk:"cli_path"`
 	CreatedAt              types.String                 `tfsdk:"created_at"`
 	Description            types.String                 `tfsdk:"description"`
+	DisabledAt             types.String                 `tfsdk:"disabled_at"`
 	HTTPMethod             types.String                 `tfsdk:"http_method"`
 	ID                     types.String                 `tfsdk:"id"`
 	Name                   types.String                 `tfsdk:"name"`

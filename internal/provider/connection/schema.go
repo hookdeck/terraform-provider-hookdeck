@@ -37,13 +37,6 @@ func (r *connectionResource) Schema(_ context.Context, _ resource.SchemaRequest,
 		MarkdownDescription: "Connection Resource",
 
 		Attributes: map[string]schema.Attribute{
-			"archived_at": schema.StringAttribute{
-				Computed: true,
-				Validators: []validator.String{
-					validators.IsRFC3339(),
-				},
-				Description: "Date the connection was archived",
-			},
 			"created_at": schema.StringAttribute{
 				Computed: true,
 				Validators: []validator.String{
@@ -67,6 +60,13 @@ func (r *connectionResource) Schema(_ context.Context, _ resource.SchemaRequest,
 					stringplanmodifier.RequiresReplace(),
 				},
 				Description: "ID of a destination to bind to the connection",
+			},
+			"disabled_at": schema.StringAttribute{
+				Computed: true,
+				Validators: []validator.String{
+					validators.IsRFC3339(),
+				},
+				Description: "Date the connection was disabled",
 			},
 			"id": schema.StringAttribute{
 				Computed:    true,

@@ -23,13 +23,6 @@ func (r *destinationResource) Schema(_ context.Context, _ resource.SchemaRequest
 		MarkdownDescription: "Destination Resource",
 
 		Attributes: map[string]schema.Attribute{
-			"archived_at": schema.StringAttribute{
-				Computed: true,
-				Validators: []validator.String{
-					validators.IsRFC3339(),
-				},
-				Description: `Date the destination was archived`,
-			},
 			"auth_method": schema.SingleNestedAttribute{
 				Computed: true,
 				Optional: true,
@@ -136,6 +129,13 @@ func (r *destinationResource) Schema(_ context.Context, _ resource.SchemaRequest
 					stringplanmodifier.UseStateForUnknown(),
 				},
 				Description: "Description for the destination",
+			},
+			"disabled_at": schema.StringAttribute{
+				Computed: true,
+				Validators: []validator.String{
+					validators.IsRFC3339(),
+				},
+				Description: `Date the destination was disabled`,
 			},
 			"http_method": schema.StringAttribute{
 				// Computed: true,
