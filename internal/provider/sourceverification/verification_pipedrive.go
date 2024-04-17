@@ -28,6 +28,7 @@ type pipedriveSourceVerification struct {
 
 func (m *pipedriveSourceVerification) toPayload() *hookdeck.VerificationConfig {
 	return hookdeck.NewVerificationConfigFromVerificationPipedrive(&hookdeck.VerificationPipedrive{
+		Type: hookdeck.VerificationPipedriveTypePipedrive,
 		Configs: &hookdeck.VerificationPipedriveConfigs{
 			Username: m.Username.ValueString(),
 			Password: m.Password.ValueString(),

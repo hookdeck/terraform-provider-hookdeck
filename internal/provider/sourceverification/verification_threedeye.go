@@ -24,6 +24,7 @@ type threeDEyeSourceVerification struct {
 
 func (m *threeDEyeSourceVerification) toPayload() *hookdeck.VerificationConfig {
 	return hookdeck.NewVerificationConfigFromVerification3DEye(&hookdeck.Verification3DEye{
+		Type: hookdeck.Verification3DEyeTypeThreeDEye,
 		Configs: &hookdeck.Verification3DEyeConfigs{
 			WebhookSecretKey: m.WebhookSecretKey.ValueString(),
 		},

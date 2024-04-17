@@ -24,6 +24,7 @@ type adyenSourceVerification struct {
 
 func (m *adyenSourceVerification) toPayload() *hookdeck.VerificationConfig {
 	return hookdeck.NewVerificationConfigFromVerificationAdyen(&hookdeck.VerificationAdyen{
+		Type: hookdeck.VerificationAdyenTypeAdyen,
 		Configs: &hookdeck.VerificationAdyenConfigs{
 			WebhookSecretKey: m.WebhookSecretKey.ValueString(),
 		},

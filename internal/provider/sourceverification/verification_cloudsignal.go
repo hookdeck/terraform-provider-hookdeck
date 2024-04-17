@@ -24,6 +24,7 @@ type cloudsignalSourceVerification struct {
 
 func (m *cloudsignalSourceVerification) toPayload() *hookdeck.VerificationConfig {
 	return hookdeck.NewVerificationConfigFromVerificationCloudSignal(&hookdeck.VerificationCloudSignal{
+		Type: hookdeck.VerificationCloudSignalTypeCloudsignal,
 		Configs: &hookdeck.VerificationCloudSignalConfigs{
 			ApiKey: m.APIKey.ValueString(),
 		},

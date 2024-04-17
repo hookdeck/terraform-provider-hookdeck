@@ -24,6 +24,7 @@ type twitterSourceVerification struct {
 
 func (m *twitterSourceVerification) toPayload() *hookdeck.VerificationConfig {
 	return hookdeck.NewVerificationConfigFromVerificationTwitter(&hookdeck.VerificationTwitter{
+		Type: hookdeck.VerificationTwitterTypeTwitter,
 		Configs: &hookdeck.VerificationTwitterConfigs{
 			ApiKey: m.APIKey.ValueString(),
 		},

@@ -24,6 +24,7 @@ type squareSourceVerification struct {
 
 func (m *squareSourceVerification) toPayload() *hookdeck.VerificationConfig {
 	return hookdeck.NewVerificationConfigFromVerificationSquare(&hookdeck.VerificationSquare{
+		Type: hookdeck.VerificationSquareTypeSquare,
 		Configs: &hookdeck.VerificationSquareConfigs{
 			WebhookSecretKey: m.WebhookSecretKey.ValueString(),
 		},

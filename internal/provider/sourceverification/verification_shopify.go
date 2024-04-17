@@ -24,6 +24,7 @@ type shopifySourceVerification struct {
 
 func (m *shopifySourceVerification) toPayload() *hookdeck.VerificationConfig {
 	return hookdeck.NewVerificationConfigFromVerificationShopify(&hookdeck.VerificationShopify{
+		Type: hookdeck.VerificationShopifyTypeShopify,
 		Configs: &hookdeck.VerificationShopifyConfigs{
 			WebhookSecretKey: m.WebhookSecretKey.ValueString(),
 		},

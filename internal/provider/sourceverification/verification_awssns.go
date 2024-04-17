@@ -17,6 +17,7 @@ type awsSNSSourceVerification struct {
 
 func (m *awsSNSSourceVerification) toPayload() *hookdeck.VerificationConfig {
 	return hookdeck.NewVerificationConfigFromVerificationAwssns(&hookdeck.VerificationAwssns{
+		Type:    hookdeck.VerificationAwssnsTypeAwsSns,
 		Configs: &hookdeck.VerificationAwssnsConfigs{},
 	})
 }

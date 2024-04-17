@@ -24,6 +24,7 @@ type wixSourceVerification struct {
 
 func (m *wixSourceVerification) toPayload() *hookdeck.VerificationConfig {
 	return hookdeck.NewVerificationConfigFromVerificationWix(&hookdeck.VerificationWix{
+		Type: hookdeck.VerificationWixTypeWix,
 		Configs: &hookdeck.VerificationWixConfigs{
 			WebhookSecretKey: m.WebhookSecretKey.ValueString(),
 		},

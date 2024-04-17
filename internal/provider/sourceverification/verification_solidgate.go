@@ -24,6 +24,7 @@ type solidgateSourceVerification struct {
 
 func (m *solidgateSourceVerification) toPayload() *hookdeck.VerificationConfig {
 	return hookdeck.NewVerificationConfigFromVerificationSolidGate(&hookdeck.VerificationSolidGate{
+		Type: hookdeck.VerificationSolidGateTypeSolidgate,
 		Configs: &hookdeck.VerificationSolidGateConfigs{
 			WebhookSecretKey: m.WebhookSecretKey.ValueString(),
 		},

@@ -24,6 +24,7 @@ type trelloSourceVerification struct {
 
 func (m *trelloSourceVerification) toPayload() *hookdeck.VerificationConfig {
 	return hookdeck.NewVerificationConfigFromVerificationTrello(&hookdeck.VerificationTrello{
+		Type: hookdeck.VerificationTrelloTypeTrello,
 		Configs: &hookdeck.VerificationTrelloConfigs{
 			WebhookSecretKey: m.WebhookSecretKey.ValueString(),
 		},

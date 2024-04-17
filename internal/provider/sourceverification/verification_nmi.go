@@ -24,6 +24,7 @@ type nmiSourceVerification struct {
 
 func (m *nmiSourceVerification) toPayload() *hookdeck.VerificationConfig {
 	return hookdeck.NewVerificationConfigFromVerificationNmiPaymentGateway(&hookdeck.VerificationNmiPaymentGateway{
+		Type: hookdeck.VerificationNmiPaymentGatewayTypeNmi,
 		Configs: &hookdeck.VerificationNmiPaymentGatewayConfigs{
 			WebhookSecretKey: m.WebhookSecretKey.ValueString(),
 		},
