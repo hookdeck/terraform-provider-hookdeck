@@ -23,7 +23,7 @@ type zoomSourceVerification struct {
 }
 
 func (m *zoomSourceVerification) toPayload() *hookdeck.VerificationConfig {
-	return hookdeck.NewVerificationConfigFromZoom(&hookdeck.VerificationZoom{
+	return hookdeck.NewVerificationConfigFromVerificationZoom(&hookdeck.VerificationZoom{
 		Configs: &hookdeck.VerificationZoomConfigs{
 			WebhookSecretKey: m.WebhookSecretKey.ValueString(),
 		},

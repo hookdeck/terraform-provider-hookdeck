@@ -23,7 +23,7 @@ type twitchSourceVerification struct {
 }
 
 func (m *twitchSourceVerification) toPayload() *hookdeck.VerificationConfig {
-	return hookdeck.NewVerificationConfigFromTwitch(&hookdeck.VerificationTwitch{
+	return hookdeck.NewVerificationConfigFromVerificationTwitch(&hookdeck.VerificationTwitch{
 		Configs: &hookdeck.VerificationTwitchConfigs{
 			WebhookSecretKey: m.WebhookSecretKey.ValueString(),
 		},

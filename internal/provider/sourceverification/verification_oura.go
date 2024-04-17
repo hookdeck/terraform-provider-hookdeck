@@ -23,7 +23,7 @@ type ouraSourceVerification struct {
 }
 
 func (m *ouraSourceVerification) toPayload() *hookdeck.VerificationConfig {
-	return hookdeck.NewVerificationConfigFromOura(&hookdeck.VerificationOura{
+	return hookdeck.NewVerificationConfigFromVerificationOura(&hookdeck.VerificationOura{
 		Configs: &hookdeck.VerificationOuraConfigs{
 			WebhookSecretKey: m.WebhookSecretKey.ValueString(),
 		},

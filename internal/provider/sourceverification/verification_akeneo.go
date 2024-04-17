@@ -23,7 +23,7 @@ type akeneoSourceVerification struct {
 }
 
 func (m *akeneoSourceVerification) toPayload() *hookdeck.VerificationConfig {
-	return hookdeck.NewVerificationConfigFromAkeneo(&hookdeck.VerificationAkeneo{
+	return hookdeck.NewVerificationConfigFromVerificationAkeneo(&hookdeck.VerificationAkeneo{
 		Configs: &hookdeck.VerificationAkeneoConfigs{
 			WebhookSecretKey: m.WebhookSecretKey.ValueString(),
 		},

@@ -23,7 +23,7 @@ type commercelayerSourceVerification struct {
 }
 
 func (m *commercelayerSourceVerification) toPayload() *hookdeck.VerificationConfig {
-	return hookdeck.NewVerificationConfigFromCommercelayer(&hookdeck.VerificationCommercelayer{
+	return hookdeck.NewVerificationConfigFromVerificationCommercelayer(&hookdeck.VerificationCommercelayer{
 		Configs: &hookdeck.VerificationCommercelayerConfigs{
 			WebhookSecretKey: m.WebhookSecretKey.ValueString(),
 		},

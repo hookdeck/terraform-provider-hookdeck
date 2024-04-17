@@ -23,7 +23,7 @@ type githubSourceVerification struct {
 }
 
 func (m *githubSourceVerification) toPayload() *hookdeck.VerificationConfig {
-	return hookdeck.NewVerificationConfigFromGithub(&hookdeck.VerificationGitHub{
+	return hookdeck.NewVerificationConfigFromVerificationGitHub(&hookdeck.VerificationGitHub{
 		Configs: &hookdeck.VerificationGitHubConfigs{
 			WebhookSecretKey: m.WebhookSecretKey.ValueString(),
 		},

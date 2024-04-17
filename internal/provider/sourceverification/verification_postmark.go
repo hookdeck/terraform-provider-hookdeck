@@ -19,13 +19,15 @@ func postmarkConfigSchema() schema.SingleNestedAttribute {
 }
 
 type postmarkSourceVerification struct {
-	WebhookSecretKey types.String `tfsdk:"webhook_secret_key"`
+	Username types.String `tfsdk:"username"`
+	Password types.String `tfsdk:"password"`
 }
 
 func (m *postmarkSourceVerification) toPayload() *hookdeck.VerificationConfig {
-	return hookdeck.NewVerificationConfigFromPostmark(&hookdeck.VerificationPostmark{
+	return hookdeck.NewVerificationConfigFromVerificationPostmark(&hookdeck.VerificationPostmark{
 		Configs: &hookdeck.VerificationPostmarkConfigs{
-			WebhookSecretKey: m.WebhookSecretKey.ValueString(),
+			Username: m.Username.ValueString(),
+			Password: m.Password.ValueString(),
 		},
 	})
 }

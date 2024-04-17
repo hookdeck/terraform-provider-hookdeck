@@ -23,7 +23,7 @@ type stripeSourceVerification struct {
 }
 
 func (m *stripeSourceVerification) toPayload() *hookdeck.VerificationConfig {
-	return hookdeck.NewVerificationConfigFromStripe(&hookdeck.VerificationStripe{
+	return hookdeck.NewVerificationConfigFromVerificationStripe(&hookdeck.VerificationStripe{
 		Configs: &hookdeck.VerificationStripeConfigs{
 			WebhookSecretKey: m.WebhookSecretKey.ValueString(),
 		},

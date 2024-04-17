@@ -23,7 +23,7 @@ type xeroSourceVerification struct {
 }
 
 func (m *xeroSourceVerification) toPayload() *hookdeck.VerificationConfig {
-	return hookdeck.NewVerificationConfigFromXero(&hookdeck.VerificationXero{
+	return hookdeck.NewVerificationConfigFromVerificationXero(&hookdeck.VerificationXero{
 		Configs: &hookdeck.VerificationXeroConfigs{
 			WebhookSecretKey: m.WebhookSecretKey.ValueString(),
 		},
