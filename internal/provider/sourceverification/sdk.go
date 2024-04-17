@@ -4,7 +4,7 @@ import (
 	hookdeck "github.com/hookdeck/hookdeck-go-sdk"
 )
 
-func (m *sourceVerificationResourceModel) Refresh(verification *hookdeck.VerificationConfig) {
+func (m *sourceVerificationResourceModel) Refresh(verification *hookdeck.SourceVerification) {
 }
 
 func (m *sourceVerificationResourceModel) ToCreatePayload() *hookdeck.SourceUpdateRequest {
