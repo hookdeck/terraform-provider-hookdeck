@@ -54,7 +54,7 @@ func (p *hookdeckProvider) Schema(ctx context.Context, req provider.SchemaReques
 			"api_key": schema.StringAttribute{
 				Optional:            true,
 				Sensitive:           true,
-				MarkdownDescription: fmt.Sprintf("Hookdeck API Key. Alternatively, can be configured using the `%s` environment variable.", apiBaseEnvVarKey),
+				MarkdownDescription: fmt.Sprintf("Hookdeck API Key. Alternatively, can be configured using the `%s` environment variable.", apiKeyEnvVarKey),
 			},
 		},
 	}
