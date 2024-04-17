@@ -63,6 +63,7 @@ func (r *connectionResource) Schema(_ context.Context, _ resource.SchemaRequest,
 			},
 			"disabled_at": schema.StringAttribute{
 				Computed: true,
+				Optional: true,
 				Validators: []validator.String{
 					validators.IsRFC3339(),
 				},
