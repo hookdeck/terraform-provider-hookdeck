@@ -61,12 +61,12 @@ resource "hookdeck_connection" "connection_example" {
 ### Optional
 
 - `description` (String) Description for the connection
+- `disabled_at` (String) Date the connection was disabled
 - `name` (String) A unique, human-friendly name for the connection
 - `rules` (Attributes List) (see [below for nested schema](#nestedatt--rules))
 
 ### Read-Only
 
-- `archived_at` (String) Date the connection was archived
 - `created_at` (String) Date the connection was created
 - `id` (String) ID of the connection
 - `paused_at` (String) Date the connection was paused

@@ -44,28 +44,37 @@ Optional:
 - `cloudsignal` (Attributes) (see [below for nested schema](#nestedatt--verification--cloudsignal))
 - `commercelayer` (Attributes) (see [below for nested schema](#nestedatt--verification--commercelayer))
 - `courier` (Attributes) (see [below for nested schema](#nestedatt--verification--courier))
+- `ebay` (Attributes) (see [below for nested schema](#nestedatt--verification--ebay))
+- `enode` (Attributes) (see [below for nested schema](#nestedatt--verification--enode))
 - `favro` (Attributes) (see [below for nested schema](#nestedatt--verification--favro))
+- `frontapp` (Attributes) (see [below for nested schema](#nestedatt--verification--frontapp))
 - `github` (Attributes) (see [below for nested schema](#nestedatt--verification--github))
 - `gitlab` (Attributes) (see [below for nested schema](#nestedatt--verification--gitlab))
 - `hmac` (Attributes) (see [below for nested schema](#nestedatt--verification--hmac))
+- `linear` (Attributes) (see [below for nested schema](#nestedatt--verification--linear))
 - `mailgun` (Attributes) (see [below for nested schema](#nestedatt--verification--mailgun))
 - `nmi` (Attributes) (see [below for nested schema](#nestedatt--verification--nmi))
+- `orb` (Attributes) (see [below for nested schema](#nestedatt--verification--orb))
 - `oura` (Attributes) (see [below for nested schema](#nestedatt--verification--oura))
 - `persona` (Attributes) (see [below for nested schema](#nestedatt--verification--persona))
 - `pipedrive` (Attributes) (see [below for nested schema](#nestedatt--verification--pipedrive))
 - `postmark` (Attributes) (see [below for nested schema](#nestedatt--verification--postmark))
 - `property_finder` (Attributes) (see [below for nested schema](#nestedatt--verification--property_finder))
+- `pylon` (Attributes) (see [below for nested schema](#nestedatt--verification--pylon))
 - `recharge` (Attributes) (see [below for nested schema](#nestedatt--verification--recharge))
 - `repay` (Attributes) (see [below for nested schema](#nestedatt--verification--repay))
 - `sanity` (Attributes) (see [below for nested schema](#nestedatt--verification--sanity))
 - `sendgrid` (Attributes) (see [below for nested schema](#nestedatt--verification--sendgrid))
 - `shopify` (Attributes) (see [below for nested schema](#nestedatt--verification--shopify))
+- `shopline` (Attributes) (see [below for nested schema](#nestedatt--verification--shopline))
 - `solidgate` (Attributes) (see [below for nested schema](#nestedatt--verification--solidgate))
 - `square` (Attributes) (see [below for nested schema](#nestedatt--verification--square))
 - `stripe` (Attributes) (see [below for nested schema](#nestedatt--verification--stripe))
 - `svix` (Attributes) (see [below for nested schema](#nestedatt--verification--svix))
 - `synctera` (Attributes) (see [below for nested schema](#nestedatt--verification--synctera))
+- `telnyx` (Attributes) (see [below for nested schema](#nestedatt--verification--telnyx))
 - `threedeye` (Attributes) (see [below for nested schema](#nestedatt--verification--threedeye))
+- `tokenio` (Attributes) (see [below for nested schema](#nestedatt--verification--tokenio))
 - `trello` (Attributes) (see [below for nested schema](#nestedatt--verification--trello))
 - `twitch` (Attributes) (see [below for nested schema](#nestedatt--verification--twitch))
 - `twitter` (Attributes) (see [below for nested schema](#nestedatt--verification--twitter))
@@ -138,8 +147,36 @@ Required:
 - `webhook_secret_key` (String, Sensitive)
 
 
+<a id="nestedatt--verification--ebay"></a>
+### Nested Schema for `verification.ebay`
+
+Required:
+
+- `client_id` (String, Sensitive)
+- `client_secret` (String, Sensitive)
+- `dev_id` (String, Sensitive)
+- `environment` (String, Sensitive)
+- `verification_token` (String, Sensitive)
+
+
+<a id="nestedatt--verification--enode"></a>
+### Nested Schema for `verification.enode`
+
+Required:
+
+- `webhook_secret_key` (String, Sensitive)
+
+
 <a id="nestedatt--verification--favro"></a>
 ### Nested Schema for `verification.favro`
+
+Required:
+
+- `webhook_secret_key` (String, Sensitive)
+
+
+<a id="nestedatt--verification--frontapp"></a>
+### Nested Schema for `verification.frontapp`
 
 Required:
 
@@ -173,6 +210,14 @@ Required:
 - `webhook_secret_key` (String, Sensitive)
 
 
+<a id="nestedatt--verification--linear"></a>
+### Nested Schema for `verification.linear`
+
+Required:
+
+- `webhook_secret_key` (String, Sensitive)
+
+
 <a id="nestedatt--verification--mailgun"></a>
 ### Nested Schema for `verification.mailgun`
 
@@ -183,6 +228,14 @@ Required:
 
 <a id="nestedatt--verification--nmi"></a>
 ### Nested Schema for `verification.nmi`
+
+Required:
+
+- `webhook_secret_key` (String, Sensitive)
+
+
+<a id="nestedatt--verification--orb"></a>
+### Nested Schema for `verification.orb`
 
 Required:
 
@@ -230,11 +283,22 @@ Required:
 - `webhook_secret_key` (String, Sensitive)
 
 
+<a id="nestedatt--verification--pylon"></a>
+### Nested Schema for `verification.pylon`
+
+Required:
+
+- `webhook_secret_key` (String, Sensitive)
+
+
 <a id="nestedatt--verification--recharge"></a>
 ### Nested Schema for `verification.recharge`
 
 Required:
 
+- `algorithm` (String)
+- `encoding` (String)
+- `header_key` (String)
 - `webhook_secret_key` (String, Sensitive)
 
 
@@ -264,6 +328,14 @@ Required:
 
 <a id="nestedatt--verification--shopify"></a>
 ### Nested Schema for `verification.shopify`
+
+Required:
+
+- `webhook_secret_key` (String, Sensitive)
+
+
+<a id="nestedatt--verification--shopline"></a>
+### Nested Schema for `verification.shopline`
 
 Required:
 
@@ -310,12 +382,28 @@ Required:
 - `webhook_secret_key` (String, Sensitive)
 
 
+<a id="nestedatt--verification--telnyx"></a>
+### Nested Schema for `verification.telnyx`
+
+Required:
+
+- `public_key` (String, Sensitive)
+
+
 <a id="nestedatt--verification--threedeye"></a>
 ### Nested Schema for `verification.threedeye`
 
 Required:
 
 - `webhook_secret_key` (String, Sensitive)
+
+
+<a id="nestedatt--verification--tokenio"></a>
+### Nested Schema for `verification.tokenio`
+
+Required:
+
+- `public_key` (String, Sensitive)
 
 
 <a id="nestedatt--verification--trello"></a>

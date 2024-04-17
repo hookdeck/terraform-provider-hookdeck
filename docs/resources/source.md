@@ -36,10 +36,10 @@ resource "hookdeck_source" "example" {
 - `allowed_http_methods` (List of String) List of allowed HTTP methods. Defaults to PUT, POST, PATCH, DELETE.
 - `custom_response` (Attributes) Custom response object (see [below for nested schema](#nestedatt--custom_response))
 - `description` (String) Description for the source
+- `disabled_at` (String) Date the source was disabled
 
 ### Read-Only
 
-- `archived_at` (String) Date the source was archived
 - `created_at` (String) Date the source was created
 - `id` (String) ID of the source
 - `team_id` (String) ID of the workspace
