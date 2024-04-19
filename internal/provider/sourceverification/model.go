@@ -12,6 +12,7 @@ type sourceVerification struct {
 	APIKey    *apiKeySourceVerification    `tfsdk:"api_key"`
 	BasicAuth *basicAuthSourceVerification `tfsdk:"basic_auth"`
 	HMAC      *hmacSourceVerification      `tfsdk:"hmac"`
+	JSON      types.String                 `tfsdk:"json"`
 	// providers
 	Adyen          *adyenSourceVerification          `tfsdk:"adyen"`
 	Akeneo         *akeneoSourceVerification         `tfsdk:"akeneo"`

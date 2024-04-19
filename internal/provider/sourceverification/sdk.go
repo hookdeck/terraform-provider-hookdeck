@@ -21,6 +21,8 @@ func (m *sourceVerificationResourceModel) ToUpdatePayload() *hookdeck.SourceUpda
 		verification = m.Verification.BasicAuth.toPayload()
 	} else if m.Verification.HMAC != nil {
 		verification = m.Verification.HMAC.toPayload()
+	} else if !m.Verification.JSON.IsUnknown() && !m.Verification.JSON.IsNull() {
+		verification = jsonToPayload(m.Verification.JSON.ValueString())
 
 		// providers
 	} else if m.Verification.Adyen != nil {

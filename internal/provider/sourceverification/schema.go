@@ -29,6 +29,7 @@ func (r *sourceVerificationResource) Schema(_ context.Context, _ resource.Schema
 					"api_key":    apiKeyConfigSchema(),
 					"basic_auth": basicAuthConfigSchema(),
 					"hmac":       hmacConfigSchema(),
+					"json":       jsonConfigSchema(),
 					// providers
 					"adyen":           adyenConfigSchema(),
 					"akeneo":          akeneoConfigSchema(),
