@@ -43,6 +43,7 @@ resource "hookdeck_destination" "example" {
 - `auth_method` (Attributes) Config for the destination's auth method (see [below for nested schema](#nestedatt--auth_method))
 - `cli_path` (String) Path for the CLI destination
 - `description` (String) Description for the destination
+- `disabled_at` (String) Date the destination was disabled
 - `http_method` (String) must be one of ["GET", "POST", "PUT", "PATCH", "DELETE"]
 HTTP method used on requests sent to the destination, overrides the method used on requests sent to the source.
 - `path_forwarding_disabled` (Boolean)
@@ -51,7 +52,6 @@ HTTP method used on requests sent to the destination, overrides the method used 
 
 ### Read-Only
 
-- `archived_at` (String) Date the destination was archived
 - `created_at` (String) Date the destination was created
 - `id` (String) ID of the destination
 - `team_id` (String) ID of the workspace

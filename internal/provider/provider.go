@@ -49,7 +49,7 @@ func (p *hookdeckProvider) Schema(ctx context.Context, req provider.SchemaReques
 		Attributes: map[string]schema.Attribute{
 			"api_base": schema.StringAttribute{
 				Optional:            true,
-				MarkdownDescription: fmt.Sprintf("Hookdeck API Base URL. Alternatively, can be configured using the `%s` environment variable. (default: %s)", apiBaseEnvVarKey, defaultHookdeckAPIBase),
+				MarkdownDescription: fmt.Sprintf("Hookdeck API Base URL. Alternatively, can be configured using the `%s` environment variable.", apiBaseEnvVarKey),
 			},
 			"api_key": schema.StringAttribute{
 				Optional:            true,
@@ -113,10 +113,6 @@ func (p *hookdeckProvider) Configure(ctx context.Context, req provider.Configure
 	// If any of the expected configurations are missing, return
 	// errors with provider-specific guidance.
 
-	if apiBase == "" {
-		apiBase = defaultHookdeckAPIBase
-	}
-
 	if apiKey == "" {
 		resp.Diagnostics.AddAttributeError(
 			path.Root("api_key"),
@@ -178,6 +174,4 @@ func New(version string) func() provider.Provider {
 const (
 	apiBaseEnvVarKey = "HOOKDECK_API_BASE"
 	apiKeyEnvVarKey  = "HOOKDECK_API_KEY"
-
-	defaultHookdeckAPIBase = "https://api.hookdeck.com"
 )

@@ -6,7 +6,7 @@ import (
 	hookdeck "github.com/hookdeck/hookdeck-go-sdk"
 )
 
-func svixConfigSchema() schema.SingleNestedAttribute {
+func syncteraConfigSchema() schema.SingleNestedAttribute {
 	return schema.SingleNestedAttribute{
 		Optional: true,
 		Attributes: map[string]schema.Attribute{
@@ -18,13 +18,14 @@ func svixConfigSchema() schema.SingleNestedAttribute {
 	}
 }
 
-type svixSourceVerification struct {
+type syncteraSourceVerification struct {
 	WebhookSecretKey types.String `tfsdk:"webhook_secret_key"`
 }
 
-func (m *svixSourceVerification) toPayload() *hookdeck.VerificationConfig {
-	return hookdeck.NewVerificationConfigFromSvix(&hookdeck.VerificationSvix{
-		Configs: &hookdeck.VerificationSvixConfigs{
+func (m *syncteraSourceVerification) toPayload() *hookdeck.VerificationConfig {
+	return hookdeck.NewVerificationConfigFromVerificationSynctera(&hookdeck.VerificationSynctera{
+		Type: hookdeck.VerificationSyncteraTypeSynctera,
+		Configs: &hookdeck.VerificationSyncteraConfigs{
 			WebhookSecretKey: m.WebhookSecretKey.ValueString(),
 		},
 	})

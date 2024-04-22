@@ -22,14 +22,15 @@ func pipedriveConfigSchema() schema.SingleNestedAttribute {
 }
 
 type pipedriveSourceVerification struct {
-	Name     types.String `tfsdk:"name"`
+	Username types.String `tfsdk:"username"`
 	Password types.String `tfsdk:"password"`
 }
 
 func (m *pipedriveSourceVerification) toPayload() *hookdeck.VerificationConfig {
-	return hookdeck.NewVerificationConfigFromPipedrive(&hookdeck.VerificationPipedrive{
+	return hookdeck.NewVerificationConfigFromVerificationPipedrive(&hookdeck.VerificationPipedrive{
+		Type: hookdeck.VerificationPipedriveTypePipedrive,
 		Configs: &hookdeck.VerificationPipedriveConfigs{
-			Name:     m.Name.ValueString(),
+			Username: m.Username.ValueString(),
 			Password: m.Password.ValueString(),
 		},
 	})

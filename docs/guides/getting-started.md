@@ -91,8 +91,8 @@ Terraform will perform the following actions:
           + "PATCH",
           + "DELETE",
         ]
-      + archived_at          = (known after apply)
       + created_at           = (known after apply)
+      + disabled_at          = (known after apply)
       + id                   = (known after apply)
       + name                 = "my_source"
       + team_id              = (known after apply)

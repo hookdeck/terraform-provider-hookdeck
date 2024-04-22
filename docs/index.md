@@ -46,5 +46,5 @@ resource "hookdeck_connection" "connection" {
 
 ### Optional
 
-- `api_base` (String) Hookdeck API Base URL. Alternatively, can be configured using the `HOOKDECK_API_BASE` environment variable. (default: https://api.hookdeck.com)
+- `api_base` (String) Hookdeck API Base URL. Alternatively, can be configured using the `HOOKDECK_API_BASE` environment variable.
 - `api_key` (String, Sensitive) Hookdeck API Key. Alternatively, can be configured using the `HOOKDECK_API_KEY` environment variable.

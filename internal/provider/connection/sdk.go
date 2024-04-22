@@ -9,13 +9,13 @@ import (
 )
 
 func (m *connectionResourceModel) Refresh(connection *hookdeck.Connection) {
-	if connection.ArchivedAt != nil {
-		m.ArchivedAt = types.StringValue(connection.ArchivedAt.Format(time.RFC3339))
-	} else {
-		m.ArchivedAt = types.StringNull()
-	}
 	m.CreatedAt = types.StringValue(connection.CreatedAt.Format(time.RFC3339))
 	m.DestinationID = types.StringValue(connection.Destination.Id)
+	if connection.DisabledAt != nil {
+		m.DisabledAt = types.StringValue(connection.DisabledAt.Format(time.RFC3339))
+	} else {
+		m.DisabledAt = types.StringNull()
+	}
 	m.ID = types.StringValue(connection.Id)
 	if connection.Name != nil {
 		m.Name = types.StringValue(*connection.Name)

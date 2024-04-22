@@ -22,14 +22,15 @@ func basicAuthConfigSchema() schema.SingleNestedAttribute {
 }
 
 type basicAuthSourceVerification struct {
-	Name     types.String `tfsdk:"name"`
+	Username types.String `tfsdk:"username"`
 	Password types.String `tfsdk:"password"`
 }
 
 func (m *basicAuthSourceVerification) toPayload() *hookdeck.VerificationConfig {
-	return hookdeck.NewVerificationConfigFromBasicAuth(&hookdeck.VerificationBasicAuth{
+	return hookdeck.NewVerificationConfigFromVerificationBasicAuth(&hookdeck.VerificationBasicAuth{
+		Type: hookdeck.VerificationBasicAuthTypeBasicAuth,
 		Configs: &hookdeck.VerificationBasicAuthConfigs{
-			Name:     m.Name.ValueString(),
+			Username: m.Username.ValueString(),
 			Password: m.Password.ValueString(),
 		},
 	})

@@ -39,13 +39,6 @@ func (r *sourceResource) Schema(_ context.Context, _ resource.SchemaRequest, res
 				Default:     listdefault.StaticValue(defaultAllowedHttpMethods),
 				Description: "List of allowed HTTP methods. Defaults to PUT, POST, PATCH, DELETE.",
 			},
-			"archived_at": schema.StringAttribute{
-				Computed: true,
-				Validators: []validator.String{
-					validators.IsRFC3339(),
-				},
-				Description: "Date the source was archived",
-			},
 			"created_at": schema.StringAttribute{
 				Computed: true,
 				Validators: []validator.String{
@@ -87,6 +80,14 @@ func (r *sourceResource) Schema(_ context.Context, _ resource.SchemaRequest, res
 					stringplanmodifier.UseStateForUnknown(),
 				},
 				Description: "Description for the source",
+			},
+			"disabled_at": schema.StringAttribute{
+				Computed: true,
+				Optional: true,
+				Validators: []validator.String{
+					validators.IsRFC3339(),
+				},
+				Description: "Date the source was disabled",
 			},
 			"id": schema.StringAttribute{
 				Computed: true,

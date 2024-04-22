@@ -3,10 +3,10 @@ package connection
 import "github.com/hashicorp/terraform-plugin-framework/types"
 
 type connectionResourceModel struct {
-	ArchivedAt    types.String `tfsdk:"archived_at"`
 	CreatedAt     types.String `tfsdk:"created_at"`
 	Description   types.String `tfsdk:"description"`
 	DestinationID types.String `tfsdk:"destination_id"`
+	DisabledAt    types.String `tfsdk:"disabled_at"`
 	ID            types.String `tfsdk:"id"`
 	Name          types.String `tfsdk:"name"`
 	PausedAt      types.String `tfsdk:"paused_at"`

@@ -23,7 +23,8 @@ type courierSourceVerification struct {
 }
 
 func (m *courierSourceVerification) toPayload() *hookdeck.VerificationConfig {
-	return hookdeck.NewVerificationConfigFromCourier(&hookdeck.VerificationCourier{
+	return hookdeck.NewVerificationConfigFromVerificationCourier(&hookdeck.VerificationCourier{
+		Type: hookdeck.VerificationCourierTypeCourier,
 		Configs: &hookdeck.VerificationCourierConfigs{
 			WebhookSecretKey: m.WebhookSecretKey.ValueString(),
 		},

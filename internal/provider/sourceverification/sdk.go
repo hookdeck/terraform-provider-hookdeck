@@ -4,7 +4,7 @@ import (
 	hookdeck "github.com/hookdeck/hookdeck-go-sdk"
 )
 
-func (m *sourceVerificationResourceModel) Refresh(verification *hookdeck.VerificationConfig) {
+func (m *sourceVerificationResourceModel) Refresh(verification *hookdeck.SourceVerification) {
 }
 
 func (m *sourceVerificationResourceModel) ToCreatePayload() *hookdeck.SourceUpdateRequest {
@@ -21,6 +21,8 @@ func (m *sourceVerificationResourceModel) ToUpdatePayload() *hookdeck.SourceUpda
 		verification = m.Verification.BasicAuth.toPayload()
 	} else if m.Verification.HMAC != nil {
 		verification = m.Verification.HMAC.toPayload()
+	} else if !m.Verification.JSON.IsUnknown() && !m.Verification.JSON.IsNull() {
+		verification = jsonToPayload(m.Verification.JSON.ValueString())
 
 		// providers
 	} else if m.Verification.Adyen != nil {
@@ -35,16 +37,26 @@ func (m *sourceVerificationResourceModel) ToUpdatePayload() *hookdeck.SourceUpda
 		verification = m.Verification.Commercelayer.toPayload()
 	} else if m.Verification.Courier != nil {
 		verification = m.Verification.Courier.toPayload()
+	} else if m.Verification.Ebay != nil {
+		verification = m.Verification.Ebay.toPayload()
+	} else if m.Verification.Enode != nil {
+		verification = m.Verification.Enode.toPayload()
 	} else if m.Verification.Favro != nil {
 		verification = m.Verification.Favro.toPayload()
+	} else if m.Verification.FrontApp != nil {
+		verification = m.Verification.FrontApp.toPayload()
 	} else if m.Verification.GitHub != nil {
 		verification = m.Verification.GitHub.toPayload()
 	} else if m.Verification.GitLab != nil {
 		verification = m.Verification.GitLab.toPayload()
+	} else if m.Verification.Linear != nil {
+		verification = m.Verification.Linear.toPayload()
 	} else if m.Verification.Mailgun != nil {
 		verification = m.Verification.Mailgun.toPayload()
 	} else if m.Verification.Nmi != nil {
 		verification = m.Verification.Nmi.toPayload()
+	} else if m.Verification.Orb != nil {
+		verification = m.Verification.Orb.toPayload()
 	} else if m.Verification.Oura != nil {
 		verification = m.Verification.Oura.toPayload()
 	} else if m.Verification.Persona != nil {
@@ -55,6 +67,8 @@ func (m *sourceVerificationResourceModel) ToUpdatePayload() *hookdeck.SourceUpda
 		verification = m.Verification.Postmark.toPayload()
 	} else if m.Verification.PropertyFinder != nil {
 		verification = m.Verification.PropertyFinder.toPayload()
+	} else if m.Verification.Pylon != nil {
+		verification = m.Verification.Pylon.toPayload()
 	} else if m.Verification.Recharge != nil {
 		verification = m.Verification.Recharge.toPayload()
 	} else if m.Verification.Repay != nil {
@@ -65,6 +79,8 @@ func (m *sourceVerificationResourceModel) ToUpdatePayload() *hookdeck.SourceUpda
 		verification = m.Verification.SendGrid.toPayload()
 	} else if m.Verification.Shopify != nil {
 		verification = m.Verification.Shopify.toPayload()
+	} else if m.Verification.Shopline != nil {
+		verification = m.Verification.Shopline.toPayload()
 	} else if m.Verification.Solidgate != nil {
 		verification = m.Verification.Solidgate.toPayload()
 	} else if m.Verification.Square != nil {
@@ -75,8 +91,12 @@ func (m *sourceVerificationResourceModel) ToUpdatePayload() *hookdeck.SourceUpda
 		verification = m.Verification.Svix.toPayload()
 	} else if m.Verification.Synctera != nil {
 		verification = m.Verification.Synctera.toPayload()
+	} else if m.Verification.Telnyx != nil {
+		verification = m.Verification.Telnyx.toPayload()
 	} else if m.Verification.ThreeDEye != nil {
 		verification = m.Verification.ThreeDEye.toPayload()
+	} else if m.Verification.TokenIo != nil {
+		verification = m.Verification.TokenIo.toPayload()
 	} else if m.Verification.Trello != nil {
 		verification = m.Verification.Trello.toPayload()
 	} else if m.Verification.Twitch != nil {

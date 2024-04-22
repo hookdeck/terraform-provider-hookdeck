@@ -6,7 +6,7 @@ import (
 	hookdeck "github.com/hookdeck/hookdeck-go-sdk"
 )
 
-func mailgunConfigSchema() schema.SingleNestedAttribute {
+func shoplineConfigSchema() schema.SingleNestedAttribute {
 	return schema.SingleNestedAttribute{
 		Optional: true,
 		Attributes: map[string]schema.Attribute{
@@ -18,14 +18,14 @@ func mailgunConfigSchema() schema.SingleNestedAttribute {
 	}
 }
 
-type mailgunSourceVerification struct {
+type shoplineSourceVerification struct {
 	WebhookSecretKey types.String `tfsdk:"webhook_secret_key"`
 }
 
-func (m *mailgunSourceVerification) toPayload() *hookdeck.VerificationConfig {
-	return hookdeck.NewVerificationConfigFromVerificationMailgun(&hookdeck.VerificationMailgun{
-		Type: hookdeck.VerificationMailgunTypeMailgun,
-		Configs: &hookdeck.VerificationMailgunConfigs{
+func (m *shoplineSourceVerification) toPayload() *hookdeck.VerificationConfig {
+	return hookdeck.NewVerificationConfigFromVerificationShopline(&hookdeck.VerificationShopline{
+		Type: hookdeck.VerificationShoplineTypeShopline,
+		Configs: &hookdeck.VerificationShoplineConfigs{
 			WebhookSecretKey: m.WebhookSecretKey.ValueString(),
 		},
 	})

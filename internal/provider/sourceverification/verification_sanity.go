@@ -23,7 +23,8 @@ type sanitySourceVerification struct {
 }
 
 func (m *sanitySourceVerification) toPayload() *hookdeck.VerificationConfig {
-	return hookdeck.NewVerificationConfigFromSanity(&hookdeck.VerificationSanity{
+	return hookdeck.NewVerificationConfigFromVerificationSanity(&hookdeck.VerificationSanity{
+		Type: hookdeck.VerificationSanityTypeSanity,
 		Configs: &hookdeck.VerificationSanityConfigs{
 			WebhookSecretKey: m.WebhookSecretKey.ValueString(),
 		},

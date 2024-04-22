@@ -12,11 +12,6 @@ func (m *sourceResourceModel) Refresh(source *hookdeck.Source) {
 	for _, v := range *source.AllowedHttpMethods {
 		m.AllowedHTTPMethods = append(m.AllowedHTTPMethods, types.StringValue(string(v)))
 	}
-	if source.ArchivedAt != nil {
-		m.ArchivedAt = types.StringValue(source.ArchivedAt.Format(time.RFC3339))
-	} else {
-		m.ArchivedAt = types.StringNull()
-	}
 	m.CreatedAt = types.StringValue(source.CreatedAt.Format(time.RFC3339))
 	if m.CustomResponse == nil {
 		m.CustomResponse = &sourceCustomResponse{}
@@ -27,6 +22,11 @@ func (m *sourceResourceModel) Refresh(source *hookdeck.Source) {
 		m.CustomResponse = &sourceCustomResponse{}
 		m.CustomResponse.Body = types.StringValue(source.CustomResponse.Body)
 		m.CustomResponse.ContentType = types.StringValue(string(source.CustomResponse.ContentType))
+	}
+	if source.DisabledAt != nil {
+		m.DisabledAt = types.StringValue(source.DisabledAt.Format(time.RFC3339))
+	} else {
+		m.DisabledAt = types.StringNull()
 	}
 	m.ID = types.StringValue(source.Id)
 	m.Name = types.StringValue(source.Name)

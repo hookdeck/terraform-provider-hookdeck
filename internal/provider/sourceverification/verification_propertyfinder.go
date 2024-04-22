@@ -23,7 +23,8 @@ type propertyFinderSourceVerification struct {
 }
 
 func (m *propertyFinderSourceVerification) toPayload() *hookdeck.VerificationConfig {
-	return hookdeck.NewVerificationConfigFromPropertyFinder(&hookdeck.VerificationPropertyFinder{
+	return hookdeck.NewVerificationConfigFromVerificationPropertyFinder(&hookdeck.VerificationPropertyFinder{
+		Type: "PROPERTY-FINDER",
 		Configs: &hookdeck.VerificationPropertyFinderConfigs{
 			WebhookSecretKey: m.WebhookSecretKey.ValueString(),
 		},

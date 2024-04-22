@@ -23,7 +23,8 @@ type sendgridSourceVerification struct {
 }
 
 func (m *sendgridSourceVerification) toPayload() *hookdeck.VerificationConfig {
-	return hookdeck.NewVerificationConfigFromSendgrid(&hookdeck.VerificationSendGrid{
+	return hookdeck.NewVerificationConfigFromVerificationSendGrid(&hookdeck.VerificationSendGrid{
+		Type: hookdeck.VerificationSendGridTypeSendgrid,
 		Configs: &hookdeck.VerificationSendGridConfigs{
 			WebhookSecretKey: m.WebhookSecretKey.ValueString(),
 		},
