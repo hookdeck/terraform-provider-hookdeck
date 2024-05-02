@@ -25,7 +25,7 @@ type webhookRegistrationResource struct {
 
 // Metadata returns the resource type name.
 func (r *webhookRegistrationResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
-	resp.TypeName = "webhook_registration"
+	resp.TypeName = req.ProviderTypeName + "_webhook_registration"
 }
 
 // Configure adds the provider configured client to the resource.
