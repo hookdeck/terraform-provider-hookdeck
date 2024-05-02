@@ -2,9 +2,8 @@ package transformation
 
 import (
 	"context"
+	"crypto/rand"
 	"fmt"
-	"math/rand"
-	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
@@ -137,11 +136,12 @@ func (r *transformationResource) Delete(ctx context.Context, req resource.Delete
 	// for now, we'll update the transformation to a random ID in this template `deleted-${transformation_name}-${random}`
 	// so users can still create a new transformation with the old name
 	length := 10 // length of random key
-	rand.Seed(time.Now().UnixNano())
-	b := make([]byte, length+2)
-	rand.Read(b)
-	randomizedName := "deleted-" + data.Name.ValueString() + "-" + fmt.Sprintf("%x", b)[2:length+2]
-	_, err := r.client.Transformation.Update(context.Background(), data.ID.ValueString(), &hookdeck.TransformationUpdateRequest{
+	randomizedString, err := generateRandomBytes(length)
+	if err != nil {
+		resp.Diagnostics.AddError("Error deleting source", err.Error())
+	}
+	randomizedName := "deleted-" + data.Name.ValueString() + "-" + fmt.Sprintf("%x", randomizedString)[2:length+2]
+	_, err = r.client.Transformation.Update(context.Background(), data.ID.ValueString(), &hookdeck.TransformationUpdateRequest{
 		Name: hookdeck.OptionalOrNull(&randomizedName),
 	})
 	if err != nil {
@@ -152,4 +152,13 @@ func (r *transformationResource) Delete(ctx context.Context, req resource.Delete
 func (r *transformationResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	// Retrieve import ID and save to id attribute
 	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
+}
+
+func generateRandomBytes(length int) ([]byte, error) {
+	str := make([]byte, length)
+	_, err := rand.Read(str)
+	if err != nil {
+		return nil, err
+	}
+	return str, nil
 }

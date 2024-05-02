@@ -1,6 +1,4 @@
-resource "webhook_registration" "webhook_stripe" {
-  provider = hookdeck
-
+resource "hookdeck_webhook_registration" "webhook_stripe" {
   register = {
     request = {
       method = "POST"
