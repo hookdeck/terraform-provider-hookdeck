@@ -82,10 +82,8 @@ github.com/hashicorp/terraform-svchost v0.1.1 h1:EZZimZ1GxdqFRinZ1tpJwVxxt49xc/S
 github.com/hashicorp/terraform-svchost v0.1.1/go.mod h1:mNsjQfZyf/Jhz35v6/0LWcv26+X7JPS+buii2c9/ctc=
 github.com/hashicorp/yamux v0.1.1 h1:yrQxtgseBDrq9Y652vSRDvsKCJKOUD+GzTS4Y0Y8pvE=
 github.com/hashicorp/yamux v0.1.1/go.mod h1:CtWFDAQgb7dxtzFs4tWbplKIe2jSi3+5vKbgIO0SLnQ=
-github.com/hookdeck/hookdeck-go-sdk v0.0.36 h1:ux0RKjTIUYV+83lQ1N2zA3mtU35OfD+WMna6H5RKceQ=
-github.com/hookdeck/hookdeck-go-sdk v0.0.36/go.mod h1:kfFn3/WEGcxuPkaaf8lAq9L+3nYg45GwGy4utH/Tnmg=
-github.com/hookdeck/hookdeck-go-sdk v0.0.37 h1:Y+QnwsWuJ6KMkpY2qJZDeGzcKc4GkzBrRaEnIb8zimc=
-github.com/hookdeck/hookdeck-go-sdk v0.0.37/go.mod h1:kfFn3/WEGcxuPkaaf8lAq9L+3nYg45GwGy4utH/Tnmg=
+github.com/hookdeck/hookdeck-go-sdk v0.0.38 h1:lIrvEkK+I6VTjOM6FzQ+SKAZceKIOZgWaLnV2k8RLzY=
+github.com/hookdeck/hookdeck-go-sdk v0.0.38/go.mod h1:kfFn3/WEGcxuPkaaf8lAq9L+3nYg45GwGy4utH/Tnmg=
 github.com/huandu/xstrings v1.3.1/go.mod h1:y5/lhBue+AyNmUVz9RLU9xbLR0o4KIIExikq4ovT0aE=
 github.com/huandu/xstrings v1.3.2 h1:L18LIDzqlW6xN2rEkpdV8+oL/IXWJ1APd+vsdYy4Wdw=
 github.com/huandu/xstrings v1.3.2/go.mod h1:y5/lhBue+AyNmUVz9RLU9xbLR0o4KIIExikq4ovT0aE=
