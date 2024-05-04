@@ -9,7 +9,7 @@ import (
 
 var _ validator.Object = exactlyOneChild{}
 
-// exactlyOneChild validates if the provided object has exactly one child attribute
+// exactlyOneChild validates if the provided object has exactly one child attribute.
 type exactlyOneChild struct {
 }
 

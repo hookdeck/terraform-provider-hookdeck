@@ -9,7 +9,7 @@ import (
 
 var _ validator.Object = atLeastOneChild{}
 
-// atLeastOneChild validates if the provided object has at least one child attribute
+// atLeastOneChild validates if the provided object has at least one child attribute.
 type atLeastOneChild struct {
 }
 
