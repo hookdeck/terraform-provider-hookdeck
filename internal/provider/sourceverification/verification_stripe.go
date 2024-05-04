@@ -6,26 +6,45 @@ import (
 	hookdeck "github.com/hookdeck/hookdeck-go-sdk"
 )
 
-func stripeConfigSchema() schema.SingleNestedAttribute {
+type stripeSourceVerification struct {
+	WebhookSecretKey types.String `tfsdk:"webhook_secret_key"`
+}
+
+type stripeSourceVerificationProvider struct {
+}
+
+func (p *stripeSourceVerificationProvider) getSchemaName() string {
+	return "stripe"
+}
+
+func (p *stripeSourceVerificationProvider) getSchemaValue() schema.SingleNestedAttribute {
 	return schema.SingleNestedAttribute{
 		Optional: true,
 		Attributes: map[string]schema.Attribute{
-			"webhook_secret_key": schema.StringAttribute{
+			"api_key": schema.StringAttribute{
 				Required:  true,
 				Sensitive: true,
+			},
+			"header_key": schema.StringAttribute{
+				Required: true,
 			},
 		},
 	}
 }
 
-type stripeSourceVerification struct {
-	WebhookSecretKey types.String `tfsdk:"webhook_secret_key"`
-}
+func (p *stripeSourceVerificationProvider) toPayload(sourceVerification *sourceVerification) *hookdeck.VerificationConfig {
+	if sourceVerification.Stripe == nil {
+		return nil
+	}
 
-func (m *stripeSourceVerification) toPayload() *hookdeck.VerificationConfig {
-	return hookdeck.NewVerificationConfigFromStripe(&hookdeck.VerificationStripe{
+	return hookdeck.NewVerificationConfigFromVerificationStripe(&hookdeck.VerificationStripe{
+		Type: hookdeck.VerificationStripeTypeStripe,
 		Configs: &hookdeck.VerificationStripeConfigs{
-			WebhookSecretKey: m.WebhookSecretKey.ValueString(),
+			WebhookSecretKey: sourceVerification.Stripe.WebhookSecretKey.ValueString(),
 		},
 	})
+}
+
+func init() {
+	providers = append(providers, &stripeSourceVerificationProvider{})
 }

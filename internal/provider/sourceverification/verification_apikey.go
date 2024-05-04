@@ -6,7 +6,19 @@ import (
 	hookdeck "github.com/hookdeck/hookdeck-go-sdk"
 )
 
-func apiKeyConfigSchema() schema.SingleNestedAttribute {
+type apiKeySourceVerification struct {
+	APIKey    types.String `tfsdk:"api_key"`
+	HeaderKey types.String `tfsdk:"header_key"`
+}
+
+type apiKeySourceVerificationProvider struct {
+}
+
+func (p *apiKeySourceVerificationProvider) getSchemaName() string {
+	return "api_key"
+}
+
+func (p *apiKeySourceVerificationProvider) getSchemaValue() schema.SingleNestedAttribute {
 	return schema.SingleNestedAttribute{
 		Optional: true,
 		Attributes: map[string]schema.Attribute{
@@ -21,16 +33,20 @@ func apiKeyConfigSchema() schema.SingleNestedAttribute {
 	}
 }
 
-type apiKeySourceVerification struct {
-	APIKey    types.String `tfsdk:"api_key"`
-	HeaderKey types.String `tfsdk:"header_key"`
-}
+func (p *apiKeySourceVerificationProvider) toPayload(sourceVerification *sourceVerification) *hookdeck.VerificationConfig {
+	if sourceVerification.APIKey == nil {
+		return nil
+	}
 
-func (m *apiKeySourceVerification) toPayload() *hookdeck.VerificationConfig {
-	return hookdeck.NewVerificationConfigFromApiKey(&hookdeck.VerificationApiKey{
+	return hookdeck.NewVerificationConfigFromVerificationApiKey(&hookdeck.VerificationApiKey{
+		Type: hookdeck.VerificationApiKeyTypeApiKey,
 		Configs: &hookdeck.VerificationApiKeyConfigs{
-			ApiKey:    m.APIKey.ValueString(),
-			HeaderKey: m.HeaderKey.ValueString(),
+			ApiKey:    sourceVerification.APIKey.APIKey.ValueString(),
+			HeaderKey: sourceVerification.APIKey.HeaderKey.ValueString(),
 		},
 	})
+}
+
+func init() {
+	providers = append(providers, &apiKeySourceVerificationProvider{})
 }
