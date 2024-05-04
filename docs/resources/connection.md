@@ -27,9 +27,17 @@ resource "hookdeck_connection" "connection_example" {
     {
       filter_rule = {
         body = {
+          # you can use a file for the filter JSON
           json = file("${path.module}/filter_body.json")
         }
+        headers = {
+          # or use Terraform's `jsonencode` to inline the JSON
+          json = jsonencode({
+            authorization = "my_super_secret_key"
+          })
+        }
         path = {
+          # or match with a `string`, `number`, or `boolean` value
           string = "/api/webhook"
         }
       }
