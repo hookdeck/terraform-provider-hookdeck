@@ -31,6 +31,8 @@ func (m *sourceVerificationResourceModel) ToUpdatePayload() *hookdeck.SourceUpda
 		verification = m.Verification.Akeneo.toPayload()
 	} else if m.Verification.AWSSNS != nil {
 		verification = m.Verification.AWSSNS.toPayload()
+	} else if m.Verification.Bondsmith != nil {
+		verification = m.Verification.Bondsmith.toPayload()
 	} else if m.Verification.Cloudsignal != nil {
 		verification = m.Verification.Cloudsignal.toPayload()
 	} else if m.Verification.Commercelayer != nil {
@@ -43,6 +45,8 @@ func (m *sourceVerificationResourceModel) ToUpdatePayload() *hookdeck.SourceUpda
 		verification = m.Verification.Enode.toPayload()
 	} else if m.Verification.Favro != nil {
 		verification = m.Verification.Favro.toPayload()
+	} else if m.Verification.Fiserv != nil {
+		verification = m.Verification.Fiserv.toPayload()
 	} else if m.Verification.FrontApp != nil {
 		verification = m.Verification.FrontApp.toPayload()
 	} else if m.Verification.GitHub != nil {

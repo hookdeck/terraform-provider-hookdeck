@@ -17,12 +17,14 @@ type sourceVerification struct {
 	Adyen          *adyenSourceVerification          `tfsdk:"adyen"`
 	Akeneo         *akeneoSourceVerification         `tfsdk:"akeneo"`
 	AWSSNS         *awsSNSSourceVerification         `tfsdk:"aws_sns"`
+	Bondsmith      *bondsmithSourceVerification      `tfsdk:"bondsmith"`
 	Cloudsignal    *cloudsignalSourceVerification    `tfsdk:"cloudsignal"`
 	Commercelayer  *commercelayerSourceVerification  `tfsdk:"commercelayer"`
 	Courier        *courierSourceVerification        `tfsdk:"courier"`
 	Ebay           *ebaySourceVerification           `tfsdk:"ebay"`
 	Enode          *enodeSourceVerification          `tfsdk:"enode"`
 	Favro          *favroSourceVerification          `tfsdk:"favro"`
+	Fiserv         *fiservSourceVerification         `tfsdk:"fiserv"`
 	FrontApp       *frontAppSourceVerification       `tfsdk:"frontapp"`
 	GitHub         *githubSourceVerification         `tfsdk:"github"`
 	GitLab         *gitlabSourceVerification         `tfsdk:"gitlab"`
