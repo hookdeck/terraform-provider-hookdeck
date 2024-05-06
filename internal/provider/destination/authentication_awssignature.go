@@ -19,7 +19,7 @@ func (*awsSignatureAuthenticationMethod) name() string {
 	return "aws_signature"
 }
 
-func (*awsSignatureAuthenticationMethod) schema() schema.SingleNestedAttribute {
+func (*awsSignatureAuthenticationMethod) schema() schema.Attribute {
 	return schema.SingleNestedAttribute{
 		Optional: true,
 		Attributes: map[string]schema.Attribute{
@@ -38,15 +38,19 @@ func (*awsSignatureAuthenticationMethod) schema() schema.SingleNestedAttribute {
 	}
 }
 
-func (awsSignatureAuthenticationMethod) attrTypes() map[string]attr.Type {
+func awsSignatureAuthenticationMethodAttrTypesMap() map[string]attr.Type {
 	return map[string]attr.Type{
 		"access_key_id":     types.StringType,
 		"secret_access_key": types.StringType,
 	}
 }
 
+func (awsSignatureAuthenticationMethod) attrTypes() attr.Type {
+	return types.ObjectType{AttrTypes: awsSignatureAuthenticationMethodAttrTypesMap()}
+}
+
 func (awsSignatureAuthenticationMethod) defaultValue() attr.Value {
-	return types.ObjectNull(awsSignatureAuthenticationMethod{}.attrTypes())
+	return types.ObjectNull(awsSignatureAuthenticationMethodAttrTypesMap())
 }
 
 func (awsSignatureAuthenticationMethod) refresh(m *destinationResourceModel, destination *hookdeck.Destination) {

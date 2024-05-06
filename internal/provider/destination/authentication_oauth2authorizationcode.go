@@ -22,7 +22,7 @@ func (*oauth2AuthorizationCodeAuthenticationMethod) name() string {
 	return "oauth2_authorization_code"
 }
 
-func (*oauth2AuthorizationCodeAuthenticationMethod) schema() schema.SingleNestedAttribute {
+func (*oauth2AuthorizationCodeAuthenticationMethod) schema() schema.Attribute {
 	return schema.SingleNestedAttribute{
 		Optional: true,
 		Attributes: map[string]schema.Attribute{
@@ -53,7 +53,7 @@ func (*oauth2AuthorizationCodeAuthenticationMethod) schema() schema.SingleNested
 	}
 }
 
-func (oauth2AuthorizationCodeAuthenticationMethod) attrTypes() map[string]attr.Type {
+func oauth2AuthorizationCodeAuthenticationMethodAttrTypesMap() map[string]attr.Type {
 	return map[string]attr.Type{
 		"client_id":     types.StringType,
 		"client_secret": types.StringType,
@@ -63,8 +63,12 @@ func (oauth2AuthorizationCodeAuthenticationMethod) attrTypes() map[string]attr.T
 	}
 }
 
+func (oauth2AuthorizationCodeAuthenticationMethod) attrTypes() attr.Type {
+	return types.ObjectType{AttrTypes: oauth2AuthorizationCodeAuthenticationMethodAttrTypesMap()}
+}
+
 func (oauth2AuthorizationCodeAuthenticationMethod) defaultValue() attr.Value {
-	return types.ObjectNull(oauth2AuthorizationCodeAuthenticationMethod{}.attrTypes())
+	return types.ObjectNull(oauth2AuthorizationCodeAuthenticationMethodAttrTypesMap())
 }
 
 func (oauth2AuthorizationCodeAuthenticationMethod) refresh(m *destinationResourceModel, destination *hookdeck.Destination) {

@@ -19,7 +19,7 @@ func (*customSignatureAuthenticationMethod) name() string {
 	return "custom_signature"
 }
 
-func (*customSignatureAuthenticationMethod) schema() schema.SingleNestedAttribute {
+func (*customSignatureAuthenticationMethod) schema() schema.Attribute {
 	return schema.SingleNestedAttribute{
 		Optional: true,
 		Attributes: map[string]schema.Attribute{
@@ -38,15 +38,19 @@ func (*customSignatureAuthenticationMethod) schema() schema.SingleNestedAttribut
 	}
 }
 
-func (customSignatureAuthenticationMethod) attrTypes() map[string]attr.Type {
+func customSignatureAuthenticationMethodAttrTypesMap() map[string]attr.Type {
 	return map[string]attr.Type{
 		"key":            types.StringType,
 		"signing_secret": types.StringType,
 	}
 }
 
+func (customSignatureAuthenticationMethod) attrTypes() attr.Type {
+	return types.ObjectType{AttrTypes: customSignatureAuthenticationMethodAttrTypesMap()}
+}
+
 func (customSignatureAuthenticationMethod) defaultValue() attr.Value {
-	return types.ObjectNull(customSignatureAuthenticationMethod{}.attrTypes())
+	return types.ObjectNull(customSignatureAuthenticationMethodAttrTypesMap())
 }
 
 func (customSignatureAuthenticationMethod) refresh(m *destinationResourceModel, destination *hookdeck.Destination) {

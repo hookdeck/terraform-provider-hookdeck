@@ -19,7 +19,7 @@ func (*basicAuthAuthenticationMethod) name() string {
 	return "basic_auth"
 }
 
-func (*basicAuthAuthenticationMethod) schema() schema.SingleNestedAttribute {
+func (*basicAuthAuthenticationMethod) schema() schema.Attribute {
 	return schema.SingleNestedAttribute{
 		Optional: true,
 		Attributes: map[string]schema.Attribute{
@@ -37,15 +37,19 @@ func (*basicAuthAuthenticationMethod) schema() schema.SingleNestedAttribute {
 	}
 }
 
-func (basicAuthAuthenticationMethod) attrTypes() map[string]attr.Type {
+func basicAuthAuthenticationMethodAttrTypesMap() map[string]attr.Type {
 	return map[string]attr.Type{
 		"password": types.StringType,
 		"username": types.StringType,
 	}
 }
 
+func (basicAuthAuthenticationMethod) attrTypes() attr.Type {
+	return types.ObjectType{AttrTypes: basicAuthAuthenticationMethodAttrTypesMap()}
+}
+
 func (basicAuthAuthenticationMethod) defaultValue() attr.Value {
-	return types.ObjectNull(basicAuthAuthenticationMethod{}.attrTypes())
+	return types.ObjectNull(basicAuthAuthenticationMethodAttrTypesMap())
 }
 
 func (basicAuthAuthenticationMethod) refresh(m *destinationResourceModel, destination *hookdeck.Destination) {

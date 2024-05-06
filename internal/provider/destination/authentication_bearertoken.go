@@ -18,7 +18,7 @@ func (*bearerTokenAuthenticationMethod) name() string {
 	return "bearer_token"
 }
 
-func (*bearerTokenAuthenticationMethod) schema() schema.SingleNestedAttribute {
+func (*bearerTokenAuthenticationMethod) schema() schema.Attribute {
 	return schema.SingleNestedAttribute{
 		Optional: true,
 		Attributes: map[string]schema.Attribute{
@@ -32,14 +32,18 @@ func (*bearerTokenAuthenticationMethod) schema() schema.SingleNestedAttribute {
 	}
 }
 
-func (bearerTokenAuthenticationMethod) attrTypes() map[string]attr.Type {
+func bearerTokenAuthenticationMethodAttrTypesMap() map[string]attr.Type {
 	return map[string]attr.Type{
 		"token": types.StringType,
 	}
 }
 
+func (bearerTokenAuthenticationMethod) attrTypes() attr.Type {
+	return types.ObjectType{AttrTypes: bearerTokenAuthenticationMethodAttrTypesMap()}
+}
+
 func (bearerTokenAuthenticationMethod) defaultValue() attr.Value {
-	return types.ObjectNull(bearerTokenAuthenticationMethod{}.attrTypes())
+	return types.ObjectNull(bearerTokenAuthenticationMethodAttrTypesMap())
 }
 
 func (bearerTokenAuthenticationMethod) refresh(m *destinationResourceModel, destination *hookdeck.Destination) {

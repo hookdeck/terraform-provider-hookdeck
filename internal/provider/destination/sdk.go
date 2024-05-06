@@ -167,7 +167,7 @@ func (m *destinationResourceModel) refreshAuthMethod(destination *hookdeck.Desti
 
 	// If users are utilizing a custom JSON payload, the provider should not touch the Terraform state
 	// or it will cause conflicts between state & Terraform code.
-	if m.AuthMethod != nil && m.AuthMethod.JSON != nil {
+	if m.AuthMethod != nil && !m.AuthMethod.JSON.IsNull() || !m.AuthMethod.JSON.IsUnknown() {
 		return
 	}
 

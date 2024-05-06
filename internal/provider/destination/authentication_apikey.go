@@ -23,7 +23,7 @@ func (*apiKeyAuthenticationMethod) name() string {
 	return "api_key"
 }
 
-func (*apiKeyAuthenticationMethod) schema() schema.SingleNestedAttribute {
+func (*apiKeyAuthenticationMethod) schema() schema.Attribute {
 	return schema.SingleNestedAttribute{
 		Optional: true,
 		Attributes: map[string]schema.Attribute{
@@ -49,7 +49,7 @@ func (*apiKeyAuthenticationMethod) schema() schema.SingleNestedAttribute {
 	}
 }
 
-func (apiKeyAuthenticationMethod) attrTypes() map[string]attr.Type {
+func apiKeyAuthenticationMethodAttrTypesMap() map[string]attr.Type {
 	return map[string]attr.Type{
 		"api_key": types.StringType,
 		"key":     types.StringType,
@@ -57,8 +57,12 @@ func (apiKeyAuthenticationMethod) attrTypes() map[string]attr.Type {
 	}
 }
 
+func (apiKeyAuthenticationMethod) attrTypes() attr.Type {
+	return types.ObjectType{AttrTypes: apiKeyAuthenticationMethodAttrTypesMap()}
+}
+
 func (apiKeyAuthenticationMethod) defaultValue() attr.Value {
-	return types.ObjectNull(apiKeyAuthenticationMethod{}.attrTypes())
+	return types.ObjectNull(apiKeyAuthenticationMethodAttrTypesMap())
 }
 
 func (apiKeyAuthenticationMethod) refresh(m *destinationResourceModel, destination *hookdeck.Destination) {

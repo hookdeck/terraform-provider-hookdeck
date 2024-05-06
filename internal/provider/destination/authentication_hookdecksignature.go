@@ -17,7 +17,7 @@ func (*hookdeckSignatureAuthenticationMethod) name() string {
 	return "hookdeck_signature"
 }
 
-func (*hookdeckSignatureAuthenticationMethod) schema() schema.SingleNestedAttribute {
+func (*hookdeckSignatureAuthenticationMethod) schema() schema.Attribute {
 	return schema.SingleNestedAttribute{
 		Optional:    true,
 		Attributes:  map[string]schema.Attribute{},
@@ -25,12 +25,16 @@ func (*hookdeckSignatureAuthenticationMethod) schema() schema.SingleNestedAttrib
 	}
 }
 
-func (hookdeckSignatureAuthenticationMethod) attrTypes() map[string]attr.Type {
+func hookdeckSignatureAuthenticationMethodAttrTypesMap() map[string]attr.Type {
 	return map[string]attr.Type{}
 }
 
+func (hookdeckSignatureAuthenticationMethod) attrTypes() attr.Type {
+	return types.ObjectType{AttrTypes: hookdeckSignatureAuthenticationMethodAttrTypesMap()}
+}
+
 func (hookdeckSignatureAuthenticationMethod) defaultValue() attr.Value {
-	value, _ := types.ObjectValue(hookdeckSignatureAuthenticationMethod{}.attrTypes(), map[string]attr.Value{})
+	value, _ := types.ObjectValue(hookdeckSignatureAuthenticationMethodAttrTypesMap(), map[string]attr.Value{})
 	return value
 }
 
