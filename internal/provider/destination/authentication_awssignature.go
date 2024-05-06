@@ -25,6 +25,7 @@ func (*awsSignatureAuthenticationMethod) schema() schema.SingleNestedAttribute {
 		Attributes: map[string]schema.Attribute{
 			"access_key_id": schema.StringAttribute{
 				Required:    true,
+				Sensitive:   true,
 				Description: `AWS access key id`,
 			},
 			"secret_access_key": schema.StringAttribute{
