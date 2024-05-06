@@ -24,11 +24,3 @@ type rateLimit struct {
 	Limit  types.Int64  `tfsdk:"limit"`
 	Period types.String `tfsdk:"period"`
 }
-
-type destinationAuthMethodConfig struct {
-	APIKey            *apiKeyAuthenticationMethodModel            `tfsdk:"api_key"`
-	BasicAuth         *basicAuthAuthenticationMethodModel         `tfsdk:"basic_auth"`
-	BearerToken       *bearerTokenAuthenticationMethodModel       `tfsdk:"bearer_token"`
-	CustomSignature   *customSignatureAuthenticationMethodModel   `tfsdk:"custom_signature"`
-	HookdeckSignature *hookdeckSignatureAuthenticationMethodModel `tfsdk:"hookdeck_signature"`
-}

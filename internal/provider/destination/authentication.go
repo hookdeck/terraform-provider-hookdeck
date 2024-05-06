@@ -7,6 +7,15 @@ import (
 	hookdeck "github.com/hookdeck/hookdeck-go-sdk"
 )
 
+type destinationAuthMethodConfig struct {
+	APIKey            *apiKeyAuthenticationMethodModel            `tfsdk:"api_key"`
+	BasicAuth         *basicAuthAuthenticationMethodModel         `tfsdk:"basic_auth"`
+	BearerToken       *bearerTokenAuthenticationMethodModel       `tfsdk:"bearer_token"`
+	CustomSignature   *customSignatureAuthenticationMethodModel   `tfsdk:"custom_signature"`
+	HookdeckSignature *hookdeckSignatureAuthenticationMethodModel `tfsdk:"hookdeck_signature"`
+	JSON              *jsonAuthenticationMethodModel              `tfsdk:"json"`
+}
+
 type authenticationMethod interface {
 	name() string
 	schema() schema.SingleNestedAttribute
