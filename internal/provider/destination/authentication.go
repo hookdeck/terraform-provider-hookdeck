@@ -8,12 +8,15 @@ import (
 )
 
 type destinationAuthMethodConfig struct {
-	APIKey            *apiKeyAuthenticationMethodModel            `tfsdk:"api_key"`
-	BasicAuth         *basicAuthAuthenticationMethodModel         `tfsdk:"basic_auth"`
-	BearerToken       *bearerTokenAuthenticationMethodModel       `tfsdk:"bearer_token"`
-	CustomSignature   *customSignatureAuthenticationMethodModel   `tfsdk:"custom_signature"`
-	HookdeckSignature *hookdeckSignatureAuthenticationMethodModel `tfsdk:"hookdeck_signature"`
-	JSON              *jsonAuthenticationMethodModel              `tfsdk:"json"`
+	APIKey                  *apiKeyAuthenticationMethodModel                  `tfsdk:"api_key"`
+	AWSSignature            *awsSignatureAuthenticationMethodModel            `tfsdk:"aws_signature"`
+	BasicAuth               *basicAuthAuthenticationMethodModel               `tfsdk:"basic_auth"`
+	BearerToken             *bearerTokenAuthenticationMethodModel             `tfsdk:"bearer_token"`
+	CustomSignature         *customSignatureAuthenticationMethodModel         `tfsdk:"custom_signature"`
+	HookdeckSignature       *hookdeckSignatureAuthenticationMethodModel       `tfsdk:"hookdeck_signature"`
+	JSON                    *jsonAuthenticationMethodModel                    `tfsdk:"json"`
+	OAuth2AuthorizationCode *oauth2AuthorizationCodeAuthenticationMethodModel `tfsdk:"oauth2_authorization_code"`
+	OAuth2ClientCredentials *oauth2ClientCredentialsAuthenticationMethodModel `tfsdk:"oauth2_client_credentials"`
 }
 
 type authenticationMethod interface {
