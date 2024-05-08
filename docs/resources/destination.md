@@ -154,6 +154,8 @@ Required:
 
 Optional:
 
+- `authentication_type` (String) must be one of [basic, bearer]
+Basic (default) or Bearer Authentication
 - `scope` (String) Scope to access
 
 
