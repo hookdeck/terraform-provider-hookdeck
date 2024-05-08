@@ -90,6 +90,8 @@ github.com/hookdeck/hookdeck-go-sdk v0.0.38 h1:lIrvEkK+I6VTjOM6FzQ+SKAZceKIOZgWa
 github.com/hookdeck/hookdeck-go-sdk v0.0.38/go.mod h1:kfFn3/WEGcxuPkaaf8lAq9L+3nYg45GwGy4utH/Tnmg=
 github.com/hookdeck/hookdeck-go-sdk v0.1.0 h1:jhqIfd4NYBT99eQghbeUh/RabOZJ0aLtG0cU6wgNwxI=
 github.com/hookdeck/hookdeck-go-sdk v0.1.0/go.mod h1:kfFn3/WEGcxuPkaaf8lAq9L+3nYg45GwGy4utH/Tnmg=
+github.com/hookdeck/hookdeck-go-sdk v0.2.0 h1:IDY5dNiL4vKqyBAPXKa5CpKzl3kmHfObHnDGjJMvQUM=
+github.com/hookdeck/hookdeck-go-sdk v0.2.0/go.mod h1:kfFn3/WEGcxuPkaaf8lAq9L+3nYg45GwGy4utH/Tnmg=
 github.com/huandu/xstrings v1.3.3 h1:/Gcsuc1x8JVbJ9/rlye4xZnVAbEkGauT8lbebqcQws4=
 github.com/huandu/xstrings v1.3.3/go.mod h1:y5/lhBue+AyNmUVz9RLU9xbLR0o4KIIExikq4ovT0aE=
 github.com/imdario/mergo v0.3.11/go.mod h1:jmQim1M+e3UYxmgPu/WyfjB3N3VflVyUjjjwH0dnCYA=
