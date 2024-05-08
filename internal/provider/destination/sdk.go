@@ -150,50 +150,14 @@ func (m *destinationResourceModel) getAuthMethod() *hookdeck.DestinationAuthMeth
 		return nil
 	}
 
-	if m.AuthMethod.APIKey != nil {
-		to, _ := hookdeck.NewDestinationAuthMethodApiKeyConfigToFromString(m.AuthMethod.APIKey.To.ValueString())
-		return hookdeck.NewDestinationAuthMethodConfigFromApiKey(&hookdeck.AuthApiKey{
-			Config: &hookdeck.DestinationAuthMethodApiKeyConfig{
-				Key:    m.AuthMethod.APIKey.Key.ValueString(),
-				ApiKey: m.AuthMethod.APIKey.APIKey.ValueString(),
-				To:     &to,
-			},
-		})
+	var destinationAuthMethodConfig *hookdeck.DestinationAuthMethodConfig
+	for _, method := range authenticationMethods {
+		if destinationAuthMethodConfig == nil {
+			destinationAuthMethodConfig = method.toPayload(m.AuthMethod)
+		}
 	}
 
-	if m.AuthMethod.BasicAuth != nil {
-		return hookdeck.NewDestinationAuthMethodConfigFromBasicAuth(&hookdeck.AuthBasicAuth{
-			Config: &hookdeck.DestinationAuthMethodBasicAuthConfig{
-				Password: m.AuthMethod.BasicAuth.Password.ValueString(),
-				Username: m.AuthMethod.BasicAuth.Username.ValueString(),
-			},
-		})
-	}
-
-	if m.AuthMethod.BearerToken != nil {
-		return hookdeck.NewDestinationAuthMethodConfigFromBearerToken(&hookdeck.AuthBearerToken{
-			Config: &hookdeck.DestinationAuthMethodBearerTokenConfig{
-				Token: m.AuthMethod.BearerToken.Token.ValueString(),
-			},
-		})
-	}
-
-	if m.AuthMethod.CustomSignature != nil {
-		return hookdeck.NewDestinationAuthMethodConfigFromCustomSignature(&hookdeck.AuthCustomSignature{
-			Config: &hookdeck.DestinationAuthMethodCustomSignatureConfig{
-				Key:           m.AuthMethod.CustomSignature.Key.ValueString(),
-				SigningSecret: m.AuthMethod.CustomSignature.SigningSecret.ValueStringPointer(),
-			},
-		})
-	}
-
-	if m.AuthMethod.HookdeckSignature != nil {
-		return hookdeck.NewDestinationAuthMethodConfigFromHookdeckSignature(&hookdeck.AuthHookdeckSignature{
-			Config: &hookdeck.DestinationAuthMethodSignatureConfig{},
-		})
-	}
-
-	return nil
+	return destinationAuthMethodConfig
 }
 
 func (m *destinationResourceModel) refreshAuthMethod(destination *hookdeck.Destination) {
@@ -201,33 +165,15 @@ func (m *destinationResourceModel) refreshAuthMethod(destination *hookdeck.Desti
 		return
 	}
 
+	// If users are utilizing a custom JSON payload, the provider should not touch the Terraform state
+	// or it will cause conflicts between state & Terraform code.
+	if m.AuthMethod != nil && !m.AuthMethod.JSON.IsNull() && !m.AuthMethod.JSON.IsUnknown() {
+		return
+	}
+
 	m.AuthMethod = &destinationAuthMethodConfig{}
 
-	if destination.AuthMethod.ApiKey != nil {
-		m.AuthMethod.APIKey = &apiKey{}
-		m.AuthMethod.APIKey.APIKey = types.StringValue(destination.AuthMethod.ApiKey.Config.ApiKey)
-		m.AuthMethod.APIKey.Key = types.StringValue(destination.AuthMethod.ApiKey.Config.Key)
-		m.AuthMethod.APIKey.To = types.StringValue(string(*destination.AuthMethod.ApiKey.Config.To.Ptr()))
-	}
-
-	if destination.AuthMethod.BasicAuth != nil {
-		m.AuthMethod.BasicAuth = &basicAuth{}
-		m.AuthMethod.BasicAuth.Password = types.StringValue(destination.AuthMethod.BasicAuth.Config.Password)
-		m.AuthMethod.BasicAuth.Username = types.StringValue(destination.AuthMethod.BasicAuth.Config.Username)
-	}
-
-	if destination.AuthMethod.BearerToken != nil {
-		m.AuthMethod.BearerToken = &bearerToken{}
-		m.AuthMethod.BearerToken.Token = types.StringValue(destination.AuthMethod.BearerToken.Config.Token)
-	}
-
-	if destination.AuthMethod.CustomSignature != nil {
-		m.AuthMethod.CustomSignature = &customSignature{}
-		m.AuthMethod.CustomSignature.Key = types.StringValue(destination.AuthMethod.CustomSignature.Config.Key)
-		m.AuthMethod.CustomSignature.SigningSecret = types.StringValue(*destination.AuthMethod.CustomSignature.Config.SigningSecret)
-	}
-
-	if destination.AuthMethod.HookdeckSignature != nil {
-		m.AuthMethod.HookdeckSignature = &hookdeckSignature{}
+	for _, method := range authenticationMethods {
+		method.refresh(m, destination)
 	}
 }
