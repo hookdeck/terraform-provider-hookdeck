@@ -21,7 +21,7 @@ func (validator atLeastOneChild) ValidateObject(ctx context.Context, req validat
 	defined := make(map[string]bool)
 	count := 0
 	for key, attr := range req.ConfigValue.Attributes() {
-		if attr.IsUnknown() || attr.IsNull() {
+		if attr.IsNull() {
 			continue
 		}
 		defined[key] = true
