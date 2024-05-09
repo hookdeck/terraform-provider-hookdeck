@@ -1,6 +1,6 @@
-HOOKDECK_API_KEY="<YOUR_HOOKDECK_API_KEY>"
+HOOKDECK_API_KEY = "<YOUR_HOOKDECK_API_KEY>"
 
-HEADER_FILTER_VALUES=[
+HEADER_FILTER_VALUES = [
   "account.created.v1",
   "transaction.cancelled.v1",
   "transaction.pending.v1",

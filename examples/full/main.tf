@@ -9,7 +9,7 @@ variable "HEADER_FILTER_VALUES" {
 terraform {
   required_providers {
     hookdeck = {
-      source = "hookdeck/hookdeck"
+      source  = "hookdeck/hookdeck"
       version = "~> 0.3.1"
     }
   }
@@ -38,8 +38,8 @@ resource "hookdeck_connection" "my_connection" {
           json = jsonencode({
             x-event-type = { "$or" : var.HEADER_FILTER_VALUES }
           })
-        } 
-      } 
+        }
+      }
     }
   ]
 }
