@@ -9,7 +9,7 @@ variable "HEADER_FILTER_VALUES" {
 terraform {
   required_providers {
     hookdeck = {
-      source  = "hookdeck/hookdeck"
+      source = "hookdeck/hookdeck"
     }
   }
 }
