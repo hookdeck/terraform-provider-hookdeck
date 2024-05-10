@@ -10,7 +10,7 @@ func basicAuthConfigSchema() schema.SingleNestedAttribute {
 	return schema.SingleNestedAttribute{
 		Optional: true,
 		Attributes: map[string]schema.Attribute{
-			"name": schema.StringAttribute{
+			"username": schema.StringAttribute{
 				Required: true,
 			},
 			"password": schema.StringAttribute{
