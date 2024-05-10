@@ -9,8 +9,7 @@ variable "HEADER_FILTER_VALUES" {
 terraform {
   required_providers {
     hookdeck = {
-      source  = "hookdeck/hookdeck"
-      version = "~> 0.3.1"
+      source = "hookdeck/hookdeck"
     }
   }
 }
@@ -21,6 +20,16 @@ provider "hookdeck" {
 
 resource "hookdeck_source" "my_source" {
   name = "my_source"
+}
+
+resource "hookdeck_source_verification" "my_authenticated_source" {
+  source_id = hookdeck_source.my_source.id
+  verification = {
+    basic_auth = {
+      username = "example-username"
+      password = "example-password"
+    }
+  }
 }
 
 resource "hookdeck_destination" "my_destination" {

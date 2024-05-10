@@ -122,8 +122,8 @@ Required:
 
 Required:
 
-- `name` (String)
 - `password` (String, Sensitive)
+- `username` (String)
 
 
 <a id="nestedatt--verification--bondsmith"></a>

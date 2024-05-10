@@ -36,3 +36,5 @@ website/vendor
 *.winfile eol=crlf
 
 /examples/dev
+
+*.lock.hcl
