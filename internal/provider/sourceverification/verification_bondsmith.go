@@ -23,8 +23,7 @@ type bondsmithSourceVerification struct {
 }
 
 func (m *bondsmithSourceVerification) toPayload() *hookdeck.VerificationConfig {
-	return hookdeck.NewVerificationConfigFromVerificationBondsmith(&hookdeck.VerificationBondsmith{
-		Type: hookdeck.VerificationBondsmithTypeBondsmith,
+	return hookdeck.NewVerificationConfigFromBondsmith(&hookdeck.VerificationBondsmith{
 		Configs: &hookdeck.VerificationBondsmithConfigs{
 			WebhookSecretKey: m.WebhookSecretKey.ValueString(),
 		},

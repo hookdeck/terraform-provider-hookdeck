@@ -43,8 +43,7 @@ type ebaySourceVerification struct {
 }
 
 func (m *ebaySourceVerification) toPayload() *hookdeck.VerificationConfig {
-	return hookdeck.NewVerificationConfigFromVerificationEbay(&hookdeck.VerificationEbay{
-		Type: hookdeck.VerificationEbayTypeEbay,
+	return hookdeck.NewVerificationConfigFromEbay(&hookdeck.VerificationEbay{
 		Configs: &hookdeck.VerificationEbayConfigs{
 			ClientId:          m.ClientId.ValueString(),
 			ClientSecret:      m.ClientSecret.ValueString(),

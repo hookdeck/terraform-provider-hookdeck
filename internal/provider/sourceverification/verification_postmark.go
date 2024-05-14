@@ -24,8 +24,7 @@ type postmarkSourceVerification struct {
 }
 
 func (m *postmarkSourceVerification) toPayload() *hookdeck.VerificationConfig {
-	return hookdeck.NewVerificationConfigFromVerificationPostmark(&hookdeck.VerificationPostmark{
-		Type: hookdeck.VerificationPostmarkTypePostmark,
+	return hookdeck.NewVerificationConfigFromPostmark(&hookdeck.VerificationPostmark{
 		Configs: &hookdeck.VerificationPostmarkConfigs{
 			Username: m.Username.ValueString(),
 			Password: m.Password.ValueString(),

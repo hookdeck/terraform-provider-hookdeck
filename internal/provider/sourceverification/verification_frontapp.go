@@ -23,8 +23,7 @@ type frontAppSourceVerification struct {
 }
 
 func (m *frontAppSourceVerification) toPayload() *hookdeck.VerificationConfig {
-	return hookdeck.NewVerificationConfigFromVerificationFrontApp(&hookdeck.VerificationFrontApp{
-		Type: hookdeck.VerificationFrontAppTypeFrontapp,
+	return hookdeck.NewVerificationConfigFromFrontapp(&hookdeck.VerificationFrontApp{
 		Configs: &hookdeck.VerificationFrontAppConfigs{
 			WebhookSecretKey: m.WebhookSecretKey.ValueString(),
 		},

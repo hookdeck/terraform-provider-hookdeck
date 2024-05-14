@@ -23,8 +23,7 @@ type enodeSourceVerification struct {
 }
 
 func (m *enodeSourceVerification) toPayload() *hookdeck.VerificationConfig {
-	return hookdeck.NewVerificationConfigFromVerificationEnode(&hookdeck.VerificationEnode{
-		Type: hookdeck.VerificationEnodeTypeEnode,
+	return hookdeck.NewVerificationConfigFromEnode(&hookdeck.VerificationEnode{
 		Configs: &hookdeck.VerificationEnodeConfigs{
 			WebhookSecretKey: m.WebhookSecretKey.ValueString(),
 		},
