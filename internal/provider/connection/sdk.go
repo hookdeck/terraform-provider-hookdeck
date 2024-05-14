@@ -58,7 +58,7 @@ func (m *connectionResourceModel) getRules() *[]*hookdeck.Rule {
 			delayRule := hookdeck.DelayRule{
 				Delay: int(ruleItem.DelayRule.Delay.ValueInt64()),
 			}
-			rules = append(rules, hookdeck.NewRuleFromDelayRule(&delayRule))
+			rules = append(rules, hookdeck.NewRuleFromDelay(&delayRule))
 		}
 		if ruleItem.FilterRule != nil {
 			filterRule := hookdeck.FilterRule{
@@ -67,7 +67,7 @@ func (m *connectionResourceModel) getRules() *[]*hookdeck.Rule {
 				Path:    transformFilterRuleProperty(ruleItem.FilterRule.Path),
 				Query:   transformFilterRuleProperty(ruleItem.FilterRule.Query),
 			}
-			rules = append(rules, hookdeck.NewRuleFromFilterRule(&filterRule))
+			rules = append(rules, hookdeck.NewRuleFromFilter(&filterRule))
 		}
 		if ruleItem.RetryRule != nil {
 			count := new(int)
@@ -87,13 +87,13 @@ func (m *connectionResourceModel) getRules() *[]*hookdeck.Rule {
 				Interval: interval,
 				Count:    count,
 			}
-			rules = append(rules, hookdeck.NewRuleFromRetryRule(&retryRule))
+			rules = append(rules, hookdeck.NewRuleFromRetry(&retryRule))
 		}
 		if ruleItem.TransformRule != nil {
-			transformRule := hookdeck.NewTransformRuleFromTransformReference(&hookdeck.TransformReference{
-				TransformationId: ruleItem.TransformRule.TransformationID.ValueString(),
-			})
-			rules = append(rules, hookdeck.NewRuleFromTransformRule(transformRule))
+			transformRule := hookdeck.TransformRule{
+				TransformationId: ruleItem.TransformRule.TransformationID.ValueStringPointer(),
+			}
+			rules = append(rules, hookdeck.NewRuleFromTransform(&transformRule))
 		}
 	}
 
