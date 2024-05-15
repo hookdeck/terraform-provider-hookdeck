@@ -27,8 +27,7 @@ type apiKeySourceVerification struct {
 }
 
 func (m *apiKeySourceVerification) toPayload() *hookdeck.VerificationConfig {
-	return hookdeck.NewVerificationConfigFromVerificationApiKey(&hookdeck.VerificationApiKey{
-		Type: hookdeck.VerificationApiKeyTypeApiKey,
+	return hookdeck.NewVerificationConfigFromApiKey(&hookdeck.VerificationApiKey{
 		Configs: &hookdeck.VerificationApiKeyConfigs{
 			ApiKey:    m.APIKey.ValueString(),
 			HeaderKey: m.HeaderKey.ValueString(),

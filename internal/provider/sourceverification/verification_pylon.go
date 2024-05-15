@@ -23,8 +23,7 @@ type pylonSourceVerification struct {
 }
 
 func (m *pylonSourceVerification) toPayload() *hookdeck.VerificationConfig {
-	return hookdeck.NewVerificationConfigFromVerificationPylon(&hookdeck.VerificationPylon{
-		Type: hookdeck.VerificationPylonTypePylon,
+	return hookdeck.NewVerificationConfigFromPylon(&hookdeck.VerificationPylon{
 		Configs: &hookdeck.VerificationPylonConfigs{
 			WebhookSecretKey: m.WebhookSecretKey.ValueString(),
 		},

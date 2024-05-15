@@ -23,8 +23,7 @@ type telnyxSourceVerification struct {
 }
 
 func (m *telnyxSourceVerification) toPayload() *hookdeck.VerificationConfig {
-	return hookdeck.NewVerificationConfigFromVerificationTelnyx(&hookdeck.VerificationTelnyx{
-		Type: hookdeck.VerificationTelnyxTypeTelnyx,
+	return hookdeck.NewVerificationConfigFromTelnyx(&hookdeck.VerificationTelnyx{
 		Configs: &hookdeck.VerificationTelnyxConfigs{
 			PublicKey: m.PublicKey.ValueString(),
 		},

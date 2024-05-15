@@ -23,8 +23,7 @@ type orbSourceVerification struct {
 }
 
 func (m *orbSourceVerification) toPayload() *hookdeck.VerificationConfig {
-	return hookdeck.NewVerificationConfigFromVerificationOrb(&hookdeck.VerificationOrb{
-		Type: hookdeck.VerificationOrbTypeOrb,
+	return hookdeck.NewVerificationConfigFromOrb(&hookdeck.VerificationOrb{
 		Configs: &hookdeck.VerificationOrbConfigs{
 			WebhookSecretKey: m.WebhookSecretKey.ValueString(),
 		},

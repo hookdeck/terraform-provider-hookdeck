@@ -23,8 +23,7 @@ type shoplineSourceVerification struct {
 }
 
 func (m *shoplineSourceVerification) toPayload() *hookdeck.VerificationConfig {
-	return hookdeck.NewVerificationConfigFromVerificationShopline(&hookdeck.VerificationShopline{
-		Type: hookdeck.VerificationShoplineTypeShopline,
+	return hookdeck.NewVerificationConfigFromShopline(&hookdeck.VerificationShopline{
 		Configs: &hookdeck.VerificationShoplineConfigs{
 			WebhookSecretKey: m.WebhookSecretKey.ValueString(),
 		},

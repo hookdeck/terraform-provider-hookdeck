@@ -23,8 +23,7 @@ type mailgunSourceVerification struct {
 }
 
 func (m *mailgunSourceVerification) toPayload() *hookdeck.VerificationConfig {
-	return hookdeck.NewVerificationConfigFromVerificationMailgun(&hookdeck.VerificationMailgun{
-		Type: hookdeck.VerificationMailgunTypeMailgun,
+	return hookdeck.NewVerificationConfigFromMailgun(&hookdeck.VerificationMailgun{
 		Configs: &hookdeck.VerificationMailgunConfigs{
 			WebhookSecretKey: m.WebhookSecretKey.ValueString(),
 		},

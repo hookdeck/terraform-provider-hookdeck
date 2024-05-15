@@ -23,8 +23,7 @@ type fiservSourceVerification struct {
 }
 
 func (m *fiservSourceVerification) toPayload() *hookdeck.VerificationConfig {
-	return hookdeck.NewVerificationConfigFromVerificationFiserv(&hookdeck.VerificationFiserv{
-		Type: hookdeck.VerificationFiservTypeFiserv,
+	return hookdeck.NewVerificationConfigFromFiserv(&hookdeck.VerificationFiserv{
 		Configs: &hookdeck.VerificationFiservConfigs{
 			WebhookSecretKey: m.WebhookSecretKey.ValueString(),
 		},

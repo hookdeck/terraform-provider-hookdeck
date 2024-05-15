@@ -9,7 +9,7 @@ require (
 	github.com/hashicorp/terraform-plugin-framework v1.8.0
 	github.com/hashicorp/terraform-plugin-framework-validators v0.12.0
 	github.com/hashicorp/terraform-plugin-log v0.9.0
-	github.com/hookdeck/hookdeck-go-sdk v0.2.0
+	github.com/hookdeck/hookdeck-go-sdk v0.3.0
 )
 
 require (

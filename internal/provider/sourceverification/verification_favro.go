@@ -23,8 +23,7 @@ type favroSourceVerification struct {
 }
 
 func (m *favroSourceVerification) toPayload() *hookdeck.VerificationConfig {
-	return hookdeck.NewVerificationConfigFromVerificationFavro(&hookdeck.VerificationFavro{
-		Type: hookdeck.VerificationFavroTypeFavro,
+	return hookdeck.NewVerificationConfigFromFavro(&hookdeck.VerificationFavro{
 		Configs: &hookdeck.VerificationFavroConfigs{
 			WebhookSecretKey: m.WebhookSecretKey.ValueString(),
 		},

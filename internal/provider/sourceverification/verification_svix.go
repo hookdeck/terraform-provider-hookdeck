@@ -23,8 +23,7 @@ type svixSourceVerification struct {
 }
 
 func (m *svixSourceVerification) toPayload() *hookdeck.VerificationConfig {
-	return hookdeck.NewVerificationConfigFromVerificationSvix(&hookdeck.VerificationSvix{
-		Type: hookdeck.VerificationSvixTypeSvix,
+	return hookdeck.NewVerificationConfigFromSvix(&hookdeck.VerificationSvix{
 		Configs: &hookdeck.VerificationSvixConfigs{
 			WebhookSecretKey: m.WebhookSecretKey.ValueString(),
 		},

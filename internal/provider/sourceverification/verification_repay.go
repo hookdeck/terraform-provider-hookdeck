@@ -23,8 +23,7 @@ type repaySourceVerification struct {
 }
 
 func (m *repaySourceVerification) toPayload() *hookdeck.VerificationConfig {
-	return hookdeck.NewVerificationConfigFromVerificationRepay(&hookdeck.VerificationRepay{
-		Type: hookdeck.VerificationRepayTypeRepay,
+	return hookdeck.NewVerificationConfigFromRepay(&hookdeck.VerificationRepay{
 		Configs: &hookdeck.VerificationRepayConfigs{
 			WebhookSecretKey: m.WebhookSecretKey.ValueString(),
 		},
