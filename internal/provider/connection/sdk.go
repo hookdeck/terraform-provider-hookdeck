@@ -31,7 +31,9 @@ func (m *connectionResourceModel) Refresh(connection *hookdeck.Connection) {
 	m.SourceID = types.StringValue(connection.Source.Id)
 	m.TeamID = types.StringValue(connection.TeamId)
 	m.UpdatedAt = types.StringValue(connection.UpdatedAt.Format(time.RFC3339))
-	m.Rules = refreshRules(connection)
+	if len(connection.Rules) > 0 {
+		m.Rules = refreshRules(connection)
+	}
 }
 
 func (m *connectionResourceModel) ToCreatePayload() *hookdeck.ConnectionCreateRequest {
