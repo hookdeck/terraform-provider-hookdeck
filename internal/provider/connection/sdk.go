@@ -2,6 +2,7 @@ package connection
 
 import (
 	"encoding/json"
+	"math/big"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -30,6 +31,9 @@ func (m *connectionResourceModel) Refresh(connection *hookdeck.Connection) {
 	m.SourceID = types.StringValue(connection.Source.Id)
 	m.TeamID = types.StringValue(connection.TeamId)
 	m.UpdatedAt = types.StringValue(connection.UpdatedAt.Format(time.RFC3339))
+	if len(connection.Rules) > 0 {
+		m.Rules = refreshRules(connection)
+	}
 }
 
 func (m *connectionResourceModel) ToCreatePayload() *hookdeck.ConnectionCreateRequest {
@@ -124,4 +128,80 @@ func transformFilterRuleProperty(property *filterRuleProperty) *hookdeck.FilterR
 		return hookdeck.NewFilterRulePropertyFromStringOptional(property.String.ValueStringPointer())
 	}
 	return nil
+}
+
+func refreshRules(connection *hookdeck.Connection) []rule {
+	var rules []rule = []rule{}
+
+	for _, ruleItem := range connection.Rules {
+		if ruleItem.Delay != nil {
+			delayRule := delayRule{
+				Delay: types.Int64Value(int64(ruleItem.Delay.Delay)),
+			}
+			rules = append(rules, rule{DelayRule: &delayRule})
+		}
+		if ruleItem.Filter != nil {
+			filterRule := filterRule{}
+			if ruleItem.Filter.Body != nil {
+				filterRule.Body = refreshFilterRuleProperty(ruleItem.Filter.Body)
+			}
+			if ruleItem.Filter.Headers != nil {
+				filterRule.Headers = refreshFilterRuleProperty(ruleItem.Filter.Headers)
+			}
+			if ruleItem.Filter.Path != nil {
+				filterRule.Path = refreshFilterRuleProperty(ruleItem.Filter.Path)
+			}
+			if ruleItem.Filter.Query != nil {
+				filterRule.Query = refreshFilterRuleProperty(ruleItem.Filter.Query)
+			}
+			rules = append(rules, rule{FilterRule: &filterRule})
+		}
+		if ruleItem.Retry != nil {
+			retryRule := retryRule{}
+			if ruleItem.Retry.Count != nil {
+				retryRule.Count = types.Int64Value(int64(*ruleItem.Retry.Count))
+			}
+			if ruleItem.Retry.Interval != nil {
+				retryRule.Interval = types.Int64Value(int64(*ruleItem.Retry.Interval))
+			}
+			retryRule.Strategy = types.StringValue((string)(ruleItem.Retry.Strategy))
+			rules = append(rules, rule{RetryRule: &retryRule})
+		}
+		if ruleItem.Transform != nil {
+			transformRule := transformRule{
+				// in this case (refresh), the ID should always exist
+				// so we don't have to worry the ruleItem.Transform.TransformationId is nil
+				TransformationID: types.StringValue(*ruleItem.Transform.TransformationId),
+			}
+			rules = append(rules, rule{TransformRule: &transformRule})
+		}
+	}
+
+	return rules
+}
+
+func refreshFilterRuleProperty(property *hookdeck.FilterRuleProperty) *filterRuleProperty {
+	if property == nil {
+		return nil
+	}
+
+	var filterRuleProperty = filterRuleProperty{}
+
+	if property.BooleanOptional != nil {
+		filterRuleProperty.Boolean = types.BoolValue(*property.BooleanOptional)
+	}
+	if property.DoubleOptional != nil {
+		number := new(big.Float)
+		number.SetFloat64(*property.DoubleOptional)
+		filterRuleProperty.Number = types.NumberValue(number)
+	}
+	if property.StringOptional != nil {
+		filterRuleProperty.String = types.StringValue(*property.StringOptional)
+	}
+	if property.StringUnknownMapOptional != nil {
+		marshalledJSON, _ := json.Marshal(property.StringUnknownMapOptional)
+		filterRuleProperty.JSON = types.StringValue(string(marshalledJSON))
+	}
+
+	return &filterRuleProperty
 }
