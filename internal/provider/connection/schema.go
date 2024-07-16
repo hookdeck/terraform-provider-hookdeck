@@ -93,7 +93,7 @@ func (r *connectionResource) Schema(_ context.Context, _ resource.SchemaRequest,
 				},
 				Description: "Date the connection was paused",
 			},
-			"rules": schema.ListNestedAttribute{
+			"rules": schema.SetNestedAttribute{
 				Optional: true,
 				NestedObject: schema.NestedAttributeObject{
 					Attributes: map[string]schema.Attribute{
