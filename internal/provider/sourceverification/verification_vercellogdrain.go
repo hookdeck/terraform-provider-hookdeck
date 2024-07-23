@@ -11,7 +11,7 @@ func vercelLogDrainsConfigSchema() schema.SingleNestedAttribute {
 		Optional: true,
 		Attributes: map[string]schema.Attribute{
 			"webhook_secret_key": schema.StringAttribute{
-				Required:  true,
+				Optional:  true,
 				Sensitive: true,
 			},
 			"vercel_log_drains_secret": schema.StringAttribute{
