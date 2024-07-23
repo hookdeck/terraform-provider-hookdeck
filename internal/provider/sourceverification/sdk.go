@@ -39,6 +39,8 @@ func (m *sourceVerificationResourceModel) ToUpdatePayload() *hookdeck.SourceUpda
 		verification = m.Verification.Commercelayer.toPayload()
 	} else if m.Verification.Courier != nil {
 		verification = m.Verification.Courier.toPayload()
+	} else if m.Verification.Discord != nil {
+		verification = m.Verification.Discord.toPayload()
 	} else if m.Verification.Ebay != nil {
 		verification = m.Verification.Ebay.toPayload()
 	} else if m.Verification.Enode != nil {
@@ -73,6 +75,8 @@ func (m *sourceVerificationResourceModel) ToUpdatePayload() *hookdeck.SourceUpda
 		verification = m.Verification.PropertyFinder.toPayload()
 	} else if m.Verification.Pylon != nil {
 		verification = m.Verification.Pylon.toPayload()
+	} else if m.Verification.Razorpay != nil {
+		verification = m.Verification.Razorpay.toPayload()
 	} else if m.Verification.Recharge != nil {
 		verification = m.Verification.Recharge.toPayload()
 	} else if m.Verification.Repay != nil {
@@ -85,6 +89,8 @@ func (m *sourceVerificationResourceModel) ToUpdatePayload() *hookdeck.SourceUpda
 		verification = m.Verification.Shopify.toPayload()
 	} else if m.Verification.Shopline != nil {
 		verification = m.Verification.Shopline.toPayload()
+	} else if m.Verification.Slack != nil {
+		verification = m.Verification.Slack.toPayload()
 	} else if m.Verification.Solidgate != nil {
 		verification = m.Verification.Solidgate.toPayload()
 	} else if m.Verification.Square != nil {
@@ -95,6 +101,8 @@ func (m *sourceVerificationResourceModel) ToUpdatePayload() *hookdeck.SourceUpda
 		verification = m.Verification.Svix.toPayload()
 	} else if m.Verification.Synctera != nil {
 		verification = m.Verification.Synctera.toPayload()
+	} else if m.Verification.Tebex != nil {
+		verification = m.Verification.Tebex.toPayload()
 	} else if m.Verification.Telnyx != nil {
 		verification = m.Verification.Telnyx.toPayload()
 	} else if m.Verification.ThreeDEye != nil {
@@ -111,6 +119,10 @@ func (m *sourceVerificationResourceModel) ToUpdatePayload() *hookdeck.SourceUpda
 		verification = m.Verification.Typeform.toPayload()
 	} else if m.Verification.Wix != nil {
 		verification = m.Verification.Wix.toPayload()
+	} else if m.Verification.Vercel != nil {
+		verification = m.Verification.Vercel.toPayload()
+	} else if m.Verification.VercelLogDrains != nil {
+		verification = m.Verification.VercelLogDrains.toPayload()
 	} else if m.Verification.WooCommerce != nil {
 		verification = m.Verification.WooCommerce.toPayload()
 	} else if m.Verification.WorkOS != nil {
