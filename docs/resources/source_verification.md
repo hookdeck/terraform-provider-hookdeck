@@ -45,6 +45,7 @@ Optional:
 - `cloudsignal` (Attributes) (see [below for nested schema](#nestedatt--verification--cloudsignal))
 - `commercelayer` (Attributes) (see [below for nested schema](#nestedatt--verification--commercelayer))
 - `courier` (Attributes) (see [below for nested schema](#nestedatt--verification--courier))
+- `discord` (Attributes) (see [below for nested schema](#nestedatt--verification--discord))
 - `ebay` (Attributes) (see [below for nested schema](#nestedatt--verification--ebay))
 - `enode` (Attributes) (see [below for nested schema](#nestedatt--verification--enode))
 - `favro` (Attributes) (see [below for nested schema](#nestedatt--verification--favro))
@@ -64,17 +65,20 @@ Optional:
 - `postmark` (Attributes) (see [below for nested schema](#nestedatt--verification--postmark))
 - `property_finder` (Attributes) (see [below for nested schema](#nestedatt--verification--property_finder))
 - `pylon` (Attributes) (see [below for nested schema](#nestedatt--verification--pylon))
+- `razorpay` (Attributes) (see [below for nested schema](#nestedatt--verification--razorpay))
 - `recharge` (Attributes) (see [below for nested schema](#nestedatt--verification--recharge))
 - `repay` (Attributes) (see [below for nested schema](#nestedatt--verification--repay))
 - `sanity` (Attributes) (see [below for nested schema](#nestedatt--verification--sanity))
 - `sendgrid` (Attributes) (see [below for nested schema](#nestedatt--verification--sendgrid))
 - `shopify` (Attributes) (see [below for nested schema](#nestedatt--verification--shopify))
 - `shopline` (Attributes) (see [below for nested schema](#nestedatt--verification--shopline))
+- `slack` (Attributes) (see [below for nested schema](#nestedatt--verification--slack))
 - `solidgate` (Attributes) (see [below for nested schema](#nestedatt--verification--solidgate))
 - `square` (Attributes) (see [below for nested schema](#nestedatt--verification--square))
 - `stripe` (Attributes) (see [below for nested schema](#nestedatt--verification--stripe))
 - `svix` (Attributes) (see [below for nested schema](#nestedatt--verification--svix))
 - `synctera` (Attributes) (see [below for nested schema](#nestedatt--verification--synctera))
+- `tebex` (Attributes) (see [below for nested schema](#nestedatt--verification--tebex))
 - `telnyx` (Attributes) (see [below for nested schema](#nestedatt--verification--telnyx))
 - `threedeye` (Attributes) (see [below for nested schema](#nestedatt--verification--threedeye))
 - `tokenio` (Attributes) (see [below for nested schema](#nestedatt--verification--tokenio))
@@ -82,6 +86,8 @@ Optional:
 - `twitch` (Attributes) (see [below for nested schema](#nestedatt--verification--twitch))
 - `twitter` (Attributes) (see [below for nested schema](#nestedatt--verification--twitter))
 - `typeform` (Attributes) (see [below for nested schema](#nestedatt--verification--typeform))
+- `vercel` (Attributes) (see [below for nested schema](#nestedatt--verification--vercel))
+- `vercel_log_drains` (Attributes) (see [below for nested schema](#nestedatt--verification--vercel_log_drains))
 - `wix` (Attributes) (see [below for nested schema](#nestedatt--verification--wix))
 - `woocommerce` (Attributes) (see [below for nested schema](#nestedatt--verification--woocommerce))
 - `workos` (Attributes) (see [below for nested schema](#nestedatt--verification--workos))
@@ -156,6 +162,14 @@ Required:
 Required:
 
 - `webhook_secret_key` (String, Sensitive)
+
+
+<a id="nestedatt--verification--discord"></a>
+### Nested Schema for `verification.discord`
+
+Required:
+
+- `public_key` (String, Sensitive)
 
 
 <a id="nestedatt--verification--ebay"></a>
@@ -310,6 +324,14 @@ Required:
 - `webhook_secret_key` (String, Sensitive)
 
 
+<a id="nestedatt--verification--razorpay"></a>
+### Nested Schema for `verification.razorpay`
+
+Required:
+
+- `webhook_secret_key` (String, Sensitive)
+
+
 <a id="nestedatt--verification--recharge"></a>
 ### Nested Schema for `verification.recharge`
 
@@ -361,6 +383,14 @@ Required:
 - `webhook_secret_key` (String, Sensitive)
 
 
+<a id="nestedatt--verification--slack"></a>
+### Nested Schema for `verification.slack`
+
+Required:
+
+- `webhook_secret_key` (String, Sensitive)
+
+
 <a id="nestedatt--verification--solidgate"></a>
 ### Nested Schema for `verification.solidgate`
 
@@ -395,6 +425,14 @@ Required:
 
 <a id="nestedatt--verification--synctera"></a>
 ### Nested Schema for `verification.synctera`
+
+Required:
+
+- `webhook_secret_key` (String, Sensitive)
+
+
+<a id="nestedatt--verification--tebex"></a>
+### Nested Schema for `verification.tebex`
 
 Required:
 
@@ -453,6 +491,26 @@ Required:
 ### Nested Schema for `verification.typeform`
 
 Required:
+
+- `webhook_secret_key` (String, Sensitive)
+
+
+<a id="nestedatt--verification--vercel"></a>
+### Nested Schema for `verification.vercel`
+
+Required:
+
+- `webhook_secret_key` (String, Sensitive)
+
+
+<a id="nestedatt--verification--vercel_log_drains"></a>
+### Nested Schema for `verification.vercel_log_drains`
+
+Required:
+
+- `vercel_log_drains_secret` (String, Sensitive)
+
+Optional:
 
 - `webhook_secret_key` (String, Sensitive)
 
