@@ -23,8 +23,7 @@ type linearSourceVerification struct {
 }
 
 func (m *linearSourceVerification) toPayload() *hookdeck.VerificationConfig {
-	return hookdeck.NewVerificationConfigFromVerificationLinear(&hookdeck.VerificationLinear{
-		Type: hookdeck.VerificationLinearTypeLinear,
+	return hookdeck.NewVerificationConfigFromLinear(&hookdeck.VerificationLinear{
 		Configs: &hookdeck.VerificationLinearConfigs{
 			WebhookSecretKey: m.WebhookSecretKey.ValueString(),
 		},

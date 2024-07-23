@@ -31,6 +31,9 @@ func (r *connectionResource) Schema(_ context.Context, _ resource.SchemaRequest,
 				Optional: true,
 			},
 		},
+		Validators: []validator.Object{
+			validators.ExactlyOneChild(),
+		},
 	}
 
 	resp.Schema = schema.Schema{
@@ -90,7 +93,7 @@ func (r *connectionResource) Schema(_ context.Context, _ resource.SchemaRequest,
 				},
 				Description: "Date the connection was paused",
 			},
-			"rules": schema.ListNestedAttribute{
+			"rules": schema.SetNestedAttribute{
 				Optional: true,
 				NestedObject: schema.NestedAttributeObject{
 					Attributes: map[string]schema.Attribute{
@@ -110,6 +113,9 @@ func (r *connectionResource) Schema(_ context.Context, _ resource.SchemaRequest,
 								"headers": filterRulePropertySchema,
 								"path":    filterRulePropertySchema,
 								"query":   filterRulePropertySchema,
+							},
+							Validators: []validator.Object{
+								validators.AtLeastOneChild(),
 							},
 						},
 						"retry_rule": schema.SingleNestedAttribute{

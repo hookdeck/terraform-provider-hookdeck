@@ -39,8 +39,7 @@ type rechargeSourceVerification struct {
 func (m *rechargeSourceVerification) toPayload() *hookdeck.VerificationConfig {
 	algorithm, _ := hookdeck.NewHmacAlgorithmsFromString(m.Algorithm.ValueString())
 	encoding, _ := hookdeck.NewVerificationRechargeConfigsEncodingFromString(m.Encoding.ValueString())
-	return hookdeck.NewVerificationConfigFromVerificationRecharge(&hookdeck.VerificationRecharge{
-		Type: hookdeck.VerificationRechargeTypeRecharge,
+	return hookdeck.NewVerificationConfigFromRecharge(&hookdeck.VerificationRecharge{
 		Configs: &hookdeck.VerificationRechargeConfigs{
 			Algorithm:        algorithm,
 			Encoding:         encoding,

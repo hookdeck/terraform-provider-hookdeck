@@ -63,10 +63,14 @@ HTTP method used on requests sent to the destination, overrides the method used 
 Optional:
 
 - `api_key` (Attributes) API Key (see [below for nested schema](#nestedatt--auth_method--api_key))
+- `aws_signature` (Attributes) AWS Signature (see [below for nested schema](#nestedatt--auth_method--aws_signature))
 - `basic_auth` (Attributes) Basic Auth (see [below for nested schema](#nestedatt--auth_method--basic_auth))
 - `bearer_token` (Attributes) Bearer Token (see [below for nested schema](#nestedatt--auth_method--bearer_token))
 - `custom_signature` (Attributes) Custom Signature (see [below for nested schema](#nestedatt--auth_method--custom_signature))
 - `hookdeck_signature` (Attributes) Hookdeck Signature (see [below for nested schema](#nestedatt--auth_method--hookdeck_signature))
+- `json` (String, Sensitive) Stringified JSON value for destination payload, used when Terraform provider hasn't supported the destination method on Hookdeck yet
+- `oauth2_authorization_code` (Attributes) OAuth2 Client Credentials (see [below for nested schema](#nestedatt--auth_method--oauth2_authorization_code))
+- `oauth2_client_credentials` (Attributes) OAuth2 Client Credentials (see [below for nested schema](#nestedatt--auth_method--oauth2_client_credentials))
 
 <a id="nestedatt--auth_method--api_key"></a>
 ### Nested Schema for `auth_method.api_key`
@@ -80,6 +84,15 @@ Optional:
 
 - `to` (String) must be one of ["header", "query"]
 Whether the API key should be sent as a header or a query parameter
+
+
+<a id="nestedatt--auth_method--aws_signature"></a>
+### Nested Schema for `auth_method.aws_signature`
+
+Required:
+
+- `access_key_id` (String, Sensitive) AWS access key id
+- `secret_access_key` (String, Sensitive) AWS secret access key
 
 
 <a id="nestedatt--auth_method--basic_auth"></a>
@@ -113,6 +126,37 @@ Optional:
 
 <a id="nestedatt--auth_method--hookdeck_signature"></a>
 ### Nested Schema for `auth_method.hookdeck_signature`
+
+
+<a id="nestedatt--auth_method--oauth2_authorization_code"></a>
+### Nested Schema for `auth_method.oauth2_authorization_code`
+
+Required:
+
+- `auth_server` (String) URL of the auth server
+- `client_id` (String) Client id in the auth server
+- `client_secret` (String, Sensitive) Client secret in the auth server
+- `refresh_token` (String, Sensitive) Refresh token already returned by the auth server
+
+Optional:
+
+- `scope` (String) Scope to access
+
+
+<a id="nestedatt--auth_method--oauth2_client_credentials"></a>
+### Nested Schema for `auth_method.oauth2_client_credentials`
+
+Required:
+
+- `auth_server` (String) URL of the auth server
+- `client_id` (String) Client id in the auth server
+- `client_secret` (String, Sensitive) Client secret in the auth server
+
+Optional:
+
+- `authentication_type` (String) must be one of [basic, bearer]
+Basic (default) or Bearer Authentication
+- `scope` (String) Scope to access
 
 
 

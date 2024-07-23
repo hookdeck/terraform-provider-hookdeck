@@ -23,8 +23,7 @@ type gitlabSourceVerification struct {
 }
 
 func (m *gitlabSourceVerification) toPayload() *hookdeck.VerificationConfig {
-	return hookdeck.NewVerificationConfigFromVerificationGitLab(&hookdeck.VerificationGitLab{
-		Type: hookdeck.VerificationGitLabTypeGitlab,
+	return hookdeck.NewVerificationConfigFromGitlab(&hookdeck.VerificationGitLab{
 		Configs: &hookdeck.VerificationGitLabConfigs{
 			ApiKey: m.APIKey.ValueString(),
 		},

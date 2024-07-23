@@ -9,7 +9,7 @@ import (
 
 var _ validator.Object = exactlyOneChild{}
 
-// exactlyOneChild validates if the provided value is of type string and can be parsed as JSON.
+// exactlyOneChild validates if the provided object has exactly one child attribute.
 type exactlyOneChild struct {
 }
 
@@ -21,7 +21,7 @@ func (validator exactlyOneChild) ValidateObject(ctx context.Context, req validat
 	defined := make(map[string]bool)
 	count := 0
 	for key, attr := range req.ConfigValue.Attributes() {
-		if attr.IsUnknown() || attr.IsNull() {
+		if attr.IsNull() {
 			continue
 		}
 		defined[key] = true

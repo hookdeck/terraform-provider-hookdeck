@@ -38,8 +38,7 @@ func (p *apiKeySourceVerificationProvider) toPayload(sourceVerification *sourceV
 		return nil
 	}
 
-	return hookdeck.NewVerificationConfigFromVerificationApiKey(&hookdeck.VerificationApiKey{
-		Type: hookdeck.VerificationApiKeyTypeApiKey,
+	return hookdeck.NewVerificationConfigFromApiKey(&hookdeck.VerificationApiKey{
 		Configs: &hookdeck.VerificationApiKeyConfigs{
 			ApiKey:    sourceVerification.APIKey.APIKey.ValueString(),
 			HeaderKey: sourceVerification.APIKey.HeaderKey.ValueString(),

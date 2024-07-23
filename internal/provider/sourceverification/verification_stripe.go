@@ -37,8 +37,7 @@ func (p *stripeSourceVerificationProvider) toPayload(sourceVerification *sourceV
 		return nil
 	}
 
-	return hookdeck.NewVerificationConfigFromVerificationStripe(&hookdeck.VerificationStripe{
-		Type: hookdeck.VerificationStripeTypeStripe,
+	return hookdeck.NewVerificationConfigFromStripe(&hookdeck.VerificationStripe{
 		Configs: &hookdeck.VerificationStripeConfigs{
 			WebhookSecretKey: sourceVerification.Stripe.WebhookSecretKey.ValueString(),
 		},

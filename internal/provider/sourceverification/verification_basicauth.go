@@ -10,12 +10,12 @@ func basicAuthConfigSchema() schema.SingleNestedAttribute {
 	return schema.SingleNestedAttribute{
 		Optional: true,
 		Attributes: map[string]schema.Attribute{
-			"name": schema.StringAttribute{
-				Required: true,
-			},
 			"password": schema.StringAttribute{
 				Required:  true,
 				Sensitive: true,
+			},
+			"username": schema.StringAttribute{
+				Required: true,
 			},
 		},
 	}
@@ -27,8 +27,7 @@ type basicAuthSourceVerification struct {
 }
 
 func (m *basicAuthSourceVerification) toPayload() *hookdeck.VerificationConfig {
-	return hookdeck.NewVerificationConfigFromVerificationBasicAuth(&hookdeck.VerificationBasicAuth{
-		Type: hookdeck.VerificationBasicAuthTypeBasicAuth,
+	return hookdeck.NewVerificationConfigFromBasicAuth(&hookdeck.VerificationBasicAuth{
 		Configs: &hookdeck.VerificationBasicAuthConfigs{
 			Username: m.Username.ValueString(),
 			Password: m.Password.ValueString(),

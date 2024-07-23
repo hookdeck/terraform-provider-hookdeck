@@ -23,8 +23,7 @@ type personaSourceVerification struct {
 }
 
 func (m *personaSourceVerification) toPayload() *hookdeck.VerificationConfig {
-	return hookdeck.NewVerificationConfigFromVerificationPersona(&hookdeck.VerificationPersona{
-		Type: hookdeck.VerificationPersonaTypePersona,
+	return hookdeck.NewVerificationConfigFromPersona(&hookdeck.VerificationPersona{
 		Configs: &hookdeck.VerificationPersonaConfigs{
 			WebhookSecretKey: m.WebhookSecretKey.ValueString(),
 		},

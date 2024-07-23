@@ -23,8 +23,7 @@ type tokenIoSourceVerification struct {
 }
 
 func (m *tokenIoSourceVerification) toPayload() *hookdeck.VerificationConfig {
-	return hookdeck.NewVerificationConfigFromVerificationTokenIo(&hookdeck.VerificationTokenIo{
-		Type: hookdeck.VerificationTokenIoTypeTokenio,
+	return hookdeck.NewVerificationConfigFromTokenio(&hookdeck.VerificationTokenIo{
 		Configs: &hookdeck.VerificationTokenIoConfigs{
 			PublicKey: m.PublicKey.ValueString(),
 		},

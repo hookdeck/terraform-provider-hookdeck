@@ -41,17 +41,19 @@ Optional:
 - `api_key` (Attributes) (see [below for nested schema](#nestedatt--verification--api_key))
 - `aws_sns` (Attributes) (see [below for nested schema](#nestedatt--verification--aws_sns))
 - `basic_auth` (Attributes) (see [below for nested schema](#nestedatt--verification--basic_auth))
+- `bondsmith` (Attributes) (see [below for nested schema](#nestedatt--verification--bondsmith))
 - `cloudsignal` (Attributes) (see [below for nested schema](#nestedatt--verification--cloudsignal))
 - `commercelayer` (Attributes) (see [below for nested schema](#nestedatt--verification--commercelayer))
 - `courier` (Attributes) (see [below for nested schema](#nestedatt--verification--courier))
 - `ebay` (Attributes) (see [below for nested schema](#nestedatt--verification--ebay))
 - `enode` (Attributes) (see [below for nested schema](#nestedatt--verification--enode))
 - `favro` (Attributes) (see [below for nested schema](#nestedatt--verification--favro))
+- `fiserv` (Attributes) (see [below for nested schema](#nestedatt--verification--fiserv))
 - `frontapp` (Attributes) (see [below for nested schema](#nestedatt--verification--frontapp))
 - `github` (Attributes) (see [below for nested schema](#nestedatt--verification--github))
 - `gitlab` (Attributes) (see [below for nested schema](#nestedatt--verification--gitlab))
 - `hmac` (Attributes) (see [below for nested schema](#nestedatt--verification--hmac))
-- `json` (String)
+- `json` (String, Sensitive)
 - `linear` (Attributes) (see [below for nested schema](#nestedatt--verification--linear))
 - `mailgun` (Attributes) (see [below for nested schema](#nestedatt--verification--mailgun))
 - `nmi` (Attributes) (see [below for nested schema](#nestedatt--verification--nmi))
@@ -120,8 +122,16 @@ Required:
 
 Required:
 
-- `name` (String)
 - `password` (String, Sensitive)
+- `username` (String)
+
+
+<a id="nestedatt--verification--bondsmith"></a>
+### Nested Schema for `verification.bondsmith`
+
+Required:
+
+- `webhook_secret_key` (String, Sensitive)
 
 
 <a id="nestedatt--verification--cloudsignal"></a>
@@ -170,6 +180,14 @@ Required:
 
 <a id="nestedatt--verification--favro"></a>
 ### Nested Schema for `verification.favro`
+
+Required:
+
+- `webhook_secret_key` (String, Sensitive)
+
+
+<a id="nestedatt--verification--fiserv"></a>
+### Nested Schema for `verification.fiserv`
 
 Required:
 

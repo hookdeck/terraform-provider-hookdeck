@@ -10,7 +10,8 @@ import (
 
 func jsonConfigSchema() schema.StringAttribute {
 	return schema.StringAttribute{
-		Optional: true,
+		Optional:  true,
+		Sensitive: true,
 	}
 }
 
