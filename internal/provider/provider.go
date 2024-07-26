@@ -11,6 +11,7 @@ import (
 	"terraform-provider-hookdeck/internal/provider/sourceverification"
 	"terraform-provider-hookdeck/internal/provider/transformation"
 	"terraform-provider-hookdeck/internal/provider/webhookregistration"
+	"terraform-provider-hookdeck/internal/sdkclient"
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/path"
@@ -19,7 +20,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
-	hookdeckClient "github.com/hookdeck/hookdeck-go-sdk/client"
 )
 
 // Ensure the implementation satisfies various provider interfaces.
@@ -135,10 +135,7 @@ func (p *hookdeckProvider) Configure(ctx context.Context, req provider.Configure
 	tflog.Debug(ctx, apiBase+" "+apiKey)
 
 	// Create a new Hookdeck client using the configuration values
-	client := hookdeckClient.NewClient(
-		hookdeckClient.WithBaseURL(apiBase),
-		hookdeckClient.WithAuthToken(apiKey),
-	)
+	client := sdkclient.InitHookdeckSDKClient(apiBase, apiKey, p.version)
 
 	// Make the Hookdeck client available during DataSource and Resource
 	// type Configure methods.
