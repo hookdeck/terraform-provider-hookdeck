@@ -18,109 +18,113 @@ import (
 )
 
 func (r *sourceResource) Schema(_ context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
-	defaultAllowedHttpMethods, _ := types.ListValueFrom(context.Background(), types.StringType, []string{"POST", "PUT", "PATCH", "DELETE"})
-
 	resp.Schema = schema.Schema{
 		Description: "Source Resource",
-		Attributes: map[string]schema.Attribute{
-			"allowed_http_methods": schema.ListAttribute{
-				Computed:    true,
-				Optional:    true,
-				ElementType: types.StringType,
-				Validators: []validator.List{
-					listvalidator.ValueStringsAre(stringvalidator.OneOf(
-						"GET",
-						"POST",
-						"PUT",
-						"PATCH",
-						"DELETE",
-					)),
-				},
-				Default:     listdefault.StaticValue(defaultAllowedHttpMethods),
-				Description: "List of allowed HTTP methods. Defaults to PUT, POST, PATCH, DELETE.",
+		Attributes:  schemaAttributes(),
+	}
+}
+
+func schemaAttributes() map[string]schema.Attribute {
+	defaultAllowedHttpMethods, _ := types.ListValueFrom(context.Background(), types.StringType, []string{"POST", "PUT", "PATCH", "DELETE"})
+
+	return map[string]schema.Attribute{
+		"allowed_http_methods": schema.ListAttribute{
+			Computed:    true,
+			Optional:    true,
+			ElementType: types.StringType,
+			Validators: []validator.List{
+				listvalidator.ValueStringsAre(stringvalidator.OneOf(
+					"GET",
+					"POST",
+					"PUT",
+					"PATCH",
+					"DELETE",
+				)),
 			},
-			"created_at": schema.StringAttribute{
-				Computed: true,
-				Validators: []validator.String{
-					validators.IsRFC3339(),
-				},
-				PlanModifiers: []planmodifier.String{
-					stringplanmodifier.UseStateForUnknown(),
-				},
-				Description: "Date the source was created",
+			Default:     listdefault.StaticValue(defaultAllowedHttpMethods),
+			Description: "List of allowed HTTP methods. Defaults to PUT, POST, PATCH, DELETE.",
+		},
+		"created_at": schema.StringAttribute{
+			Computed: true,
+			Validators: []validator.String{
+				validators.IsRFC3339(),
 			},
-			"custom_response": schema.SingleNestedAttribute{
-				Optional: true,
-				PlanModifiers: []planmodifier.Object{
-					objectplanmodifier.UseStateForUnknown(),
+			PlanModifiers: []planmodifier.String{
+				stringplanmodifier.UseStateForUnknown(),
+			},
+			Description: "Date the source was created",
+		},
+		"custom_response": schema.SingleNestedAttribute{
+			Optional: true,
+			PlanModifiers: []planmodifier.Object{
+				objectplanmodifier.UseStateForUnknown(),
+			},
+			Attributes: map[string]schema.Attribute{
+				"body": schema.StringAttribute{
+					Required:    true,
+					Description: "Body of the custom response",
 				},
-				Attributes: map[string]schema.Attribute{
-					"body": schema.StringAttribute{
-						Required:    true,
-						Description: "Body of the custom response",
+				"content_type": schema.StringAttribute{
+					Required: true,
+					Validators: []validator.String{
+						stringvalidator.OneOf(
+							"json",
+							"text",
+							"xml",
+						),
 					},
-					"content_type": schema.StringAttribute{
-						Required: true,
-						Validators: []validator.String{
-							stringvalidator.OneOf(
-								"json",
-								"text",
-								"xml",
-							),
-						},
-						MarkdownDescription: "must be one of [json, text, xml]" + "\n" +
-							"Content type of the custom response",
-					},
+					MarkdownDescription: "must be one of [json, text, xml]" + "\n" +
+						"Content type of the custom response",
 				},
-				Description: "Custom response object",
 			},
-			"description": schema.StringAttribute{
-				Optional: true,
-				PlanModifiers: []planmodifier.String{
-					stringplanmodifier.UseStateForUnknown(),
-				},
-				Description: "Description for the source",
+			Description: "Custom response object",
+		},
+		"description": schema.StringAttribute{
+			Optional: true,
+			PlanModifiers: []planmodifier.String{
+				stringplanmodifier.UseStateForUnknown(),
 			},
-			"disabled_at": schema.StringAttribute{
-				Computed: true,
-				Optional: true,
-				Validators: []validator.String{
-					validators.IsRFC3339(),
-				},
-				Description: "Date the source was disabled",
+			Description: "Description for the source",
+		},
+		"disabled_at": schema.StringAttribute{
+			Computed: true,
+			Optional: true,
+			Validators: []validator.String{
+				validators.IsRFC3339(),
 			},
-			"id": schema.StringAttribute{
-				Computed: true,
-				PlanModifiers: []planmodifier.String{
-					stringplanmodifier.UseStateForUnknown(),
-				},
-				Description: "ID of the source",
+			Description: "Date the source was disabled",
+		},
+		"id": schema.StringAttribute{
+			Computed: true,
+			PlanModifiers: []planmodifier.String{
+				stringplanmodifier.UseStateForUnknown(),
 			},
-			"name": schema.StringAttribute{
-				Required:    true,
-				Description: "A unique, human-friendly name for the source",
+			Description: "ID of the source",
+		},
+		"name": schema.StringAttribute{
+			Required:    true,
+			Description: "A unique, human-friendly name for the source",
+		},
+		"team_id": schema.StringAttribute{
+			Computed: true,
+			PlanModifiers: []planmodifier.String{
+				stringplanmodifier.UseStateForUnknown(),
 			},
-			"team_id": schema.StringAttribute{
-				Computed: true,
-				PlanModifiers: []planmodifier.String{
-					stringplanmodifier.UseStateForUnknown(),
-				},
-				Description: "ID of the workspace",
+			Description: "ID of the workspace",
+		},
+		"updated_at": schema.StringAttribute{
+			Computed: true,
+			Validators: []validator.String{
+				validators.IsRFC3339(),
 			},
-			"updated_at": schema.StringAttribute{
-				Computed: true,
-				Validators: []validator.String{
-					validators.IsRFC3339(),
-				},
-				Description: "Date the source was last updated",
+			Description: "Date the source was last updated",
+		},
+		"url": schema.StringAttribute{
+			Computed: true,
+			PlanModifiers: []planmodifier.String{
+				stringplanmodifier.UseStateForUnknown(),
 			},
-			"url": schema.StringAttribute{
-				Computed: true,
-				PlanModifiers: []planmodifier.String{
-					stringplanmodifier.UseStateForUnknown(),
-				},
-				Description: "A unique URL that must be supplied to your webhook's provider",
-			},
+			Description: "A unique URL that must be supplied to your webhook's provider",
 		},
 	}
 }
