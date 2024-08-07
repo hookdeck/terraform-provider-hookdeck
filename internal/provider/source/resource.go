@@ -6,6 +6,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	hookdeck "github.com/hookdeck/hookdeck-go-sdk"
 	hookdeckClient "github.com/hookdeck/hookdeck-go-sdk/client"
 )
@@ -30,6 +31,14 @@ type sourceResource struct {
 // Metadata returns the resource type name.
 func (r *sourceResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
 	resp.TypeName = req.ProviderTypeName + "_source"
+}
+
+// Schema returns the resource schema.
+func (r *sourceResource) Schema(_ context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
+	resp.Schema = schema.Schema{
+		Description: "Source Resource",
+		Attributes:  schemaAttributes(),
+	}
 }
 
 // Configure adds the provider configured client to the resource.

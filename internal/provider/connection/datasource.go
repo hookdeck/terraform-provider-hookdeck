@@ -31,6 +31,14 @@ func (r *connectionDataSource) Metadata(_ context.Context, req datasource.Metada
 	resp.TypeName = req.ProviderTypeName + "_connection"
 }
 
+// Schema returns the data source schema.
+func (r *connectionDataSource) Schema(_ context.Context, _ datasource.SchemaRequest, resp *datasource.SchemaResponse) {
+	resp.Schema = schema.Schema{
+		Description: "Connection Data Source",
+		Attributes:  schemaHelpers.DataSourceSchemaFromResourceSchema(schemaAttributes(), "id"),
+	}
+}
+
 // Configure adds the provider configured client to the datasource.
 func (r *connectionDataSource) Configure(_ context.Context, req datasource.ConfigureRequest, resp *datasource.ConfigureResponse) {
 	if req.ProviderData == nil {
@@ -70,11 +78,4 @@ func (r *connectionDataSource) Read(ctx context.Context, req datasource.ReadRequ
 	// Save refreshed data into Terraform state
 	data.Refresh(connection)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
-}
-
-func (r *connectionDataSource) Schema(_ context.Context, _ datasource.SchemaRequest, resp *datasource.SchemaResponse) {
-	resp.Schema = schema.Schema{
-		Description: "Connection Data Source",
-		Attributes:  schemaHelpers.DataSourceSchemaFromResourceSchema(schemaAttributes(), "id"),
-	}
 }
