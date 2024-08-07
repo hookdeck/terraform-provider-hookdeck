@@ -3,12 +3,12 @@
 page_title: "hookdeck_webhook_registration Resource - terraform-provider-hookdeck"
 subcategory: ""
 description: |-
-  Webhook Resource
+  Webhook Registration Resource
 ---
 
 # hookdeck_webhook_registration (Resource)
 
-Webhook Resource
+Webhook Registration Resource
 
 ## Example Usage
 
