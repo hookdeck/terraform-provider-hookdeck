@@ -14,6 +14,13 @@ import (
 )
 
 func (r *connectionResource) Schema(_ context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
+	resp.Schema = schema.Schema{
+		MarkdownDescription: "Connection Resource",
+		Attributes:          schemaAttributes(),
+	}
+}
+
+func schemaAttributes() map[string]schema.Attribute {
 	filterRulePropertySchema := schema.SingleNestedAttribute{
 		Optional: true,
 		Attributes: map[string]schema.Attribute{
@@ -36,148 +43,144 @@ func (r *connectionResource) Schema(_ context.Context, _ resource.SchemaRequest,
 		},
 	}
 
-	resp.Schema = schema.Schema{
-		MarkdownDescription: "Connection Resource",
-
-		Attributes: map[string]schema.Attribute{
-			"created_at": schema.StringAttribute{
-				Computed: true,
-				Validators: []validator.String{
-					validators.IsRFC3339(),
-				},
-				PlanModifiers: []planmodifier.String{
-					stringplanmodifier.UseStateForUnknown(),
-				},
-				Description: "Date the connection was created",
+	return map[string]schema.Attribute{
+		"created_at": schema.StringAttribute{
+			Computed: true,
+			Validators: []validator.String{
+				validators.IsRFC3339(),
 			},
-			"description": schema.StringAttribute{
-				Optional: true,
-				PlanModifiers: []planmodifier.String{
-					stringplanmodifier.UseStateForUnknown(),
-				},
-				Description: "Description for the connection",
+			PlanModifiers: []planmodifier.String{
+				stringplanmodifier.UseStateForUnknown(),
 			},
-			"destination_id": schema.StringAttribute{
-				Required: true,
-				PlanModifiers: []planmodifier.String{
-					stringplanmodifier.RequiresReplace(),
-				},
-				Description: "ID of a destination to bind to the connection",
+			Description: "Date the connection was created",
+		},
+		"description": schema.StringAttribute{
+			Optional: true,
+			PlanModifiers: []planmodifier.String{
+				stringplanmodifier.UseStateForUnknown(),
 			},
-			"disabled_at": schema.StringAttribute{
-				Computed: true,
-				Optional: true,
-				Validators: []validator.String{
-					validators.IsRFC3339(),
-				},
-				Description: "Date the connection was disabled",
+			Description: "Description for the connection",
+		},
+		"destination_id": schema.StringAttribute{
+			Required: true,
+			PlanModifiers: []planmodifier.String{
+				stringplanmodifier.RequiresReplace(),
 			},
-			"id": schema.StringAttribute{
-				Computed:    true,
-				Description: `ID of the connection`,
-				PlanModifiers: []planmodifier.String{
-					stringplanmodifier.UseStateForUnknown(),
-				},
+			Description: "ID of a destination to bind to the connection",
+		},
+		"disabled_at": schema.StringAttribute{
+			Computed: true,
+			Optional: true,
+			Validators: []validator.String{
+				validators.IsRFC3339(),
 			},
-			"name": schema.StringAttribute{
-				Optional: true,
-				PlanModifiers: []planmodifier.String{
-					stringplanmodifier.UseStateForUnknown(),
-				},
-				Description: `A unique, human-friendly name for the connection`,
+			Description: "Date the connection was disabled",
+		},
+		"id": schema.StringAttribute{
+			Computed:    true,
+			Description: `ID of the connection`,
+			PlanModifiers: []planmodifier.String{
+				stringplanmodifier.UseStateForUnknown(),
 			},
-			"paused_at": schema.StringAttribute{
-				Computed: true,
-				Validators: []validator.String{
-					validators.IsRFC3339(),
-				},
-				Description: "Date the connection was paused",
+		},
+		"name": schema.StringAttribute{
+			Optional: true,
+			PlanModifiers: []planmodifier.String{
+				stringplanmodifier.UseStateForUnknown(),
 			},
-			"rules": schema.SetNestedAttribute{
-				Optional: true,
-				NestedObject: schema.NestedAttributeObject{
-					Attributes: map[string]schema.Attribute{
-						"delay_rule": schema.SingleNestedAttribute{
-							Optional: true,
-							Attributes: map[string]schema.Attribute{
-								"delay": schema.Int64Attribute{
-									Required:    true,
-									Description: `Delay to introduce in MS`,
-								},
-							},
-						},
-						"filter_rule": schema.SingleNestedAttribute{
-							Optional: true,
-							Attributes: map[string]schema.Attribute{
-								"body":    filterRulePropertySchema,
-								"headers": filterRulePropertySchema,
-								"path":    filterRulePropertySchema,
-								"query":   filterRulePropertySchema,
-							},
-							Validators: []validator.Object{
-								validators.AtLeastOneChild(),
-							},
-						},
-						"retry_rule": schema.SingleNestedAttribute{
-							Optional: true,
-							Attributes: map[string]schema.Attribute{
-								"count": schema.Int64Attribute{
-									Optional:    true,
-									Description: `Maximum number of retries to attempt`,
-								},
-								"interval": schema.Int64Attribute{
-									Optional:    true,
-									Description: `Time in MS between each retry`,
-								},
-								"strategy": schema.StringAttribute{
-									Required: true,
-									Validators: []validator.String{
-										stringvalidator.OneOf(
-											"linear",
-											"exponential",
-										),
-									},
-									MarkdownDescription: `must be one of ["linear", "exponential"]` + "\n" +
-										`Algorithm to use when calculating delay between retries`,
-								},
-							},
-						},
-						"transform_rule": schema.SingleNestedAttribute{
-							Optional: true,
-							Attributes: map[string]schema.Attribute{
-								"transformation_id": schema.StringAttribute{
-									Required:    true,
-									Description: `ID of the attached transformation object.`,
-								},
+			Description: `A unique, human-friendly name for the connection`,
+		},
+		"paused_at": schema.StringAttribute{
+			Computed: true,
+			Validators: []validator.String{
+				validators.IsRFC3339(),
+			},
+			Description: "Date the connection was paused",
+		},
+		"rules": schema.SetNestedAttribute{
+			Optional: true,
+			NestedObject: schema.NestedAttributeObject{
+				Attributes: map[string]schema.Attribute{
+					"delay_rule": schema.SingleNestedAttribute{
+						Optional: true,
+						Attributes: map[string]schema.Attribute{
+							"delay": schema.Int64Attribute{
+								Required:    true,
+								Description: `Delay to introduce in MS`,
 							},
 						},
 					},
-					Validators: []validator.Object{
-						validators.ExactlyOneChild(),
+					"filter_rule": schema.SingleNestedAttribute{
+						Optional: true,
+						Attributes: map[string]schema.Attribute{
+							"body":    filterRulePropertySchema,
+							"headers": filterRulePropertySchema,
+							"path":    filterRulePropertySchema,
+							"query":   filterRulePropertySchema,
+						},
+						Validators: []validator.Object{
+							validators.AtLeastOneChild(),
+						},
+					},
+					"retry_rule": schema.SingleNestedAttribute{
+						Optional: true,
+						Attributes: map[string]schema.Attribute{
+							"count": schema.Int64Attribute{
+								Optional:    true,
+								Description: `Maximum number of retries to attempt`,
+							},
+							"interval": schema.Int64Attribute{
+								Optional:    true,
+								Description: `Time in MS between each retry`,
+							},
+							"strategy": schema.StringAttribute{
+								Required: true,
+								Validators: []validator.String{
+									stringvalidator.OneOf(
+										"linear",
+										"exponential",
+									),
+								},
+								MarkdownDescription: `must be one of ["linear", "exponential"]` + "\n" +
+									`Algorithm to use when calculating delay between retries`,
+							},
+						},
+					},
+					"transform_rule": schema.SingleNestedAttribute{
+						Optional: true,
+						Attributes: map[string]schema.Attribute{
+							"transformation_id": schema.StringAttribute{
+								Required:    true,
+								Description: `ID of the attached transformation object.`,
+							},
+						},
 					},
 				},
-			},
-			"source_id": schema.StringAttribute{
-				Required: true,
-				PlanModifiers: []planmodifier.String{
-					stringplanmodifier.RequiresReplace(),
+				Validators: []validator.Object{
+					validators.ExactlyOneChild(),
 				},
-				Description: `ID of a source to bind to the connection`,
 			},
-			"team_id": schema.StringAttribute{
-				Computed: true,
-				PlanModifiers: []planmodifier.String{
-					stringplanmodifier.UseStateForUnknown(),
-				},
-				Description: `ID of the workspace`,
+		},
+		"source_id": schema.StringAttribute{
+			Required: true,
+			PlanModifiers: []planmodifier.String{
+				stringplanmodifier.RequiresReplace(),
 			},
-			"updated_at": schema.StringAttribute{
-				Computed: true,
-				Validators: []validator.String{
-					validators.IsRFC3339(),
-				},
-				Description: `Date the connection was last updated`,
+			Description: `ID of a source to bind to the connection`,
+		},
+		"team_id": schema.StringAttribute{
+			Computed: true,
+			PlanModifiers: []planmodifier.String{
+				stringplanmodifier.UseStateForUnknown(),
 			},
+			Description: `ID of the workspace`,
+		},
+		"updated_at": schema.StringAttribute{
+			Computed: true,
+			Validators: []validator.String{
+				validators.IsRFC3339(),
+			},
+			Description: `Date the connection was last updated`,
 		},
 	}
 }

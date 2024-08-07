@@ -45,8 +45,30 @@ func DataSourceSchemaFromResourceSchema(resourceSchema map[string]resource_schem
 				Required:            required,
 				Computed:            computed,
 			}
+		case resource_schema.NumberAttribute:
+			datasourceSchema[name] = datasource_schema.NumberAttribute{
+				Validators:          srcAttrTyped.Validators,
+				Description:         srcAttrTyped.Description,
+				MarkdownDescription: srcAttrTyped.MarkdownDescription,
+				CustomType:          srcAttrTyped.CustomType,
+				Sensitive:           srcAttrTyped.Sensitive,
+				Optional:            optional,
+				Required:            required,
+				Computed:            computed,
+			}
 		case resource_schema.Int64Attribute:
 			datasourceSchema[name] = datasource_schema.Int64Attribute{
+				Validators:          srcAttrTyped.Validators,
+				Description:         srcAttrTyped.Description,
+				MarkdownDescription: srcAttrTyped.MarkdownDescription,
+				CustomType:          srcAttrTyped.CustomType,
+				Sensitive:           srcAttrTyped.Sensitive,
+				Optional:            optional,
+				Required:            required,
+				Computed:            computed,
+			}
+		case resource_schema.Int32Attribute:
+			datasourceSchema[name] = datasource_schema.Int32Attribute{
 				Validators:          srcAttrTyped.Validators,
 				Description:         srcAttrTyped.Description,
 				MarkdownDescription: srcAttrTyped.MarkdownDescription,
@@ -88,6 +110,22 @@ func DataSourceSchemaFromResourceSchema(resourceSchema map[string]resource_schem
 				CustomType:          srcAttrTyped.CustomType,
 				Sensitive:           srcAttrTyped.Sensitive,
 				ElementType:         srcAttrTyped.ElementType,
+				Optional:            optional,
+				Required:            required,
+				Computed:            computed,
+			}
+		case resource_schema.SetNestedAttribute:
+			datasourceSchema[name] = datasource_schema.SetNestedAttribute{
+				NestedObject: datasource_schema.NestedAttributeObject{
+					Attributes: DataSourceSchemaFromResourceSchema(srcAttrTyped.NestedObject.Attributes, ""),
+					CustomType: srcAttrTyped.NestedObject.CustomType,
+					Validators: srcAttrTyped.NestedObject.Validators,
+				},
+				Validators:          srcAttrTyped.Validators,
+				Description:         srcAttrTyped.Description,
+				MarkdownDescription: srcAttrTyped.MarkdownDescription,
+				CustomType:          srcAttrTyped.CustomType,
+				Sensitive:           srcAttrTyped.Sensitive,
 				Optional:            optional,
 				Required:            required,
 				Computed:            computed,

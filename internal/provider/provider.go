@@ -158,6 +158,8 @@ func (p *hookdeckProvider) Resources(ctx context.Context) []func() resource.Reso
 
 func (p *hookdeckProvider) DataSources(_ context.Context) []func() datasource.DataSource {
 	return []func() datasource.DataSource{
+		connection.NewConnectionDataSource,
+		destination.NewDestinationDataSource,
 		source.NewSourceDataSource,
 	}
 }
