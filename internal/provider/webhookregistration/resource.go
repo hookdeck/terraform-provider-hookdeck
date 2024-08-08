@@ -5,6 +5,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 )
 
 // Ensure the implementation satisfies the expected interfaces.
@@ -26,6 +27,14 @@ type webhookRegistrationResource struct {
 // Metadata returns the resource type name.
 func (r *webhookRegistrationResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
 	resp.TypeName = req.ProviderTypeName + "_webhook_registration"
+}
+
+// Schema returns the resource schema.
+func (r *webhookRegistrationResource) Schema(_ context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
+	resp.Schema = schema.Schema{
+		Description: "Webhook Registration Resource",
+		Attributes:  schemaAttributes(),
+	}
 }
 
 // Configure adds the provider configured client to the resource.

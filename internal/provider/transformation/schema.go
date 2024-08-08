@@ -1,64 +1,59 @@
 package transformation
 
 import (
-	"context"
 	"terraform-provider-hookdeck/internal/validators"
 
-	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 )
 
-func (r *transformationResource) Schema(_ context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
-	resp.Schema = schema.Schema{
-		Description: "Transformation Resource",
-		Attributes: map[string]schema.Attribute{
-			"code": schema.StringAttribute{
-				Required:    true,
-				Description: "JavaScript code to be executed",
+func schemaAttributes() map[string]schema.Attribute {
+	return map[string]schema.Attribute{
+		"code": schema.StringAttribute{
+			Required:    true,
+			Description: "JavaScript code to be executed",
+		},
+		"created_at": schema.StringAttribute{
+			Computed: true,
+			Validators: []validator.String{
+				validators.IsRFC3339(),
 			},
-			"created_at": schema.StringAttribute{
-				Computed: true,
-				Validators: []validator.String{
-					validators.IsRFC3339(),
-				},
-				PlanModifiers: []planmodifier.String{
-					stringplanmodifier.UseStateForUnknown(),
-				},
-				Description: "Date the transformation was created",
+			PlanModifiers: []planmodifier.String{
+				stringplanmodifier.UseStateForUnknown(),
 			},
-			"env": schema.StringAttribute{
-				Optional:    true,
-				Sensitive:   true,
-				Description: "Key-value environment variables to be passed to the transformation",
+			Description: "Date the transformation was created",
+		},
+		"env": schema.StringAttribute{
+			Optional:    true,
+			Sensitive:   true,
+			Description: "Key-value environment variables to be passed to the transformation",
+		},
+		"id": schema.StringAttribute{
+			Computed: true,
+			PlanModifiers: []planmodifier.String{
+				stringplanmodifier.UseStateForUnknown(),
 			},
-			"id": schema.StringAttribute{
-				Computed: true,
-				PlanModifiers: []planmodifier.String{
-					stringplanmodifier.UseStateForUnknown(),
-				},
-				Description: "ID of the transformation",
+			Description: "ID of the transformation",
+		},
+		"name": schema.StringAttribute{
+			Required:    true,
+			Description: "A unique, human-friendly name for the transformation",
+		},
+		"team_id": schema.StringAttribute{
+			Computed: true,
+			PlanModifiers: []planmodifier.String{
+				stringplanmodifier.UseStateForUnknown(),
 			},
-			"name": schema.StringAttribute{
-				Required:    true,
-				Description: "A unique, human-friendly name for the transformation",
+			Description: "ID of the workspace",
+		},
+		"updated_at": schema.StringAttribute{
+			Computed: true,
+			Validators: []validator.String{
+				validators.IsRFC3339(),
 			},
-			"team_id": schema.StringAttribute{
-				Computed: true,
-				PlanModifiers: []planmodifier.String{
-					stringplanmodifier.UseStateForUnknown(),
-				},
-				Description: "ID of the workspace",
-			},
-			"updated_at": schema.StringAttribute{
-				Computed: true,
-				Validators: []validator.String{
-					validators.IsRFC3339(),
-				},
-				Description: "Date the transformation was last updated",
-			},
+			Description: "Date the transformation was last updated",
 		},
 	}
 }
