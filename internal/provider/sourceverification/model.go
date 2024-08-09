@@ -9,6 +9,6 @@ type sourceVerificationResourceModel struct {
 
 type sourceVerification struct {
 	// generic
-	APIKey *apiKeySourceVerification `tfsdk:"api_key"`
+	ApiKey *apiKeySourceVerification `tfsdk:"api_key"`
 	Stripe *stripeSourceVerification `tfsdk:"stripe"`
 }

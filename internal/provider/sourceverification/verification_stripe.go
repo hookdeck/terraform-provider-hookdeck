@@ -21,12 +21,9 @@ func (p *stripeSourceVerificationProvider) getSchemaValue() schema.SingleNestedA
 	return schema.SingleNestedAttribute{
 		Optional: true,
 		Attributes: map[string]schema.Attribute{
-			"api_key": schema.StringAttribute{
+			"webhook_secret_key": schema.StringAttribute{
 				Required:  true,
 				Sensitive: true,
-			},
-			"header_key": schema.StringAttribute{
-				Required: true,
 			},
 		},
 	}
@@ -37,8 +34,7 @@ func (p *stripeSourceVerificationProvider) toPayload(sourceVerification *sourceV
 		return nil
 	}
 
-	return hookdeck.NewVerificationConfigFromVerificationStripe(&hookdeck.VerificationStripe{
-		Type: hookdeck.VerificationStripeTypeStripe,
+	return hookdeck.NewVerificationConfigFromStripe(&hookdeck.VerificationStripe{
 		Configs: &hookdeck.VerificationStripeConfigs{
 			WebhookSecretKey: sourceVerification.Stripe.WebhookSecretKey.ValueString(),
 		},

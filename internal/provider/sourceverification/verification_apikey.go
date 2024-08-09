@@ -7,8 +7,8 @@ import (
 )
 
 type apiKeySourceVerification struct {
-	APIKey    types.String `tfsdk:"api_key"`
 	HeaderKey types.String `tfsdk:"header_key"`
+	ApiKey    types.String `tfsdk:"api_key"`
 }
 
 type apiKeySourceVerificationProvider struct {
@@ -22,27 +22,27 @@ func (p *apiKeySourceVerificationProvider) getSchemaValue() schema.SingleNestedA
 	return schema.SingleNestedAttribute{
 		Optional: true,
 		Attributes: map[string]schema.Attribute{
-			"api_key": schema.StringAttribute{
+			"header_key": schema.StringAttribute{
 				Required:  true,
 				Sensitive: true,
 			},
-			"header_key": schema.StringAttribute{
-				Required: true,
+			"api_key": schema.StringAttribute{
+				Required:  true,
+				Sensitive: true,
 			},
 		},
 	}
 }
 
 func (p *apiKeySourceVerificationProvider) toPayload(sourceVerification *sourceVerification) *hookdeck.VerificationConfig {
-	if sourceVerification.APIKey == nil {
+	if sourceVerification.ApiKey == nil {
 		return nil
 	}
 
-	return hookdeck.NewVerificationConfigFromVerificationApiKey(&hookdeck.VerificationApiKey{
-		Type: hookdeck.VerificationApiKeyTypeApiKey,
+	return hookdeck.NewVerificationConfigFromApiKey(&hookdeck.VerificationApiKey{
 		Configs: &hookdeck.VerificationApiKeyConfigs{
-			ApiKey:    sourceVerification.APIKey.APIKey.ValueString(),
-			HeaderKey: sourceVerification.APIKey.HeaderKey.ValueString(),
+			HeaderKey: sourceVerification.ApiKey.HeaderKey.ValueString(),
+			ApiKey:    sourceVerification.ApiKey.ApiKey.ValueString(),
 		},
 	})
 }
