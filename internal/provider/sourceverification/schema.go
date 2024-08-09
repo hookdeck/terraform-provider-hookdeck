@@ -1,6 +1,7 @@
 package sourceverification
 
 import (
+	"terraform-provider-hookdeck/internal/provider/sourceverification/generated"
 	"terraform-provider-hookdeck/internal/validators"
 
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
@@ -20,7 +21,7 @@ func schemaAttributes() map[string]schema.Attribute {
 		},
 		"verification": schema.SingleNestedAttribute{
 			Required:   true,
-			Attributes: getSourceVerificationSchemaAttributes(),
+			Attributes: generated.GetSourceVerificationSchemaAttributes(),
 			Validators: []validator.Object{
 				validators.ExactlyOneChild(),
 			},

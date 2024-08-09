@@ -1,4 +1,4 @@
-package sourceverification
+package generated
 
 import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
@@ -34,7 +34,7 @@ func (p *apiKeySourceVerificationProvider) getSchemaValue() schema.SingleNestedA
 	}
 }
 
-func (p *apiKeySourceVerificationProvider) toPayload(sourceVerification *sourceVerification) *hookdeck.VerificationConfig {
+func (p *apiKeySourceVerificationProvider) ToPayload(sourceVerification *SourceVerification) *hookdeck.VerificationConfig {
 	if sourceVerification.ApiKey == nil {
 		return nil
 	}
@@ -48,5 +48,5 @@ func (p *apiKeySourceVerificationProvider) toPayload(sourceVerification *sourceV
 }
 
 func init() {
-	providers = append(providers, &apiKeySourceVerificationProvider{})
+	Providers = append(Providers, &apiKeySourceVerificationProvider{})
 }

@@ -1,6 +1,8 @@
 package sourceverification
 
 import (
+	"terraform-provider-hookdeck/internal/provider/sourceverification/generated"
+
 	hookdeck "github.com/hookdeck/hookdeck-go-sdk"
 )
 
@@ -14,9 +16,9 @@ func (m *sourceVerificationResourceModel) ToCreatePayload() *hookdeck.SourceUpda
 func (m *sourceVerificationResourceModel) ToUpdatePayload() *hookdeck.SourceUpdateRequest {
 	var verification *hookdeck.VerificationConfig
 
-	for _, provider := range providers {
+	for _, provider := range generated.Providers {
 		if verification == nil {
-			verification = provider.toPayload(m.Verification)
+			verification = provider.ToPayload(m.Verification)
 		}
 	}
 

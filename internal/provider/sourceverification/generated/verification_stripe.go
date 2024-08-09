@@ -1,4 +1,4 @@
-package sourceverification
+package generated
 
 import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
@@ -29,7 +29,7 @@ func (p *stripeSourceVerificationProvider) getSchemaValue() schema.SingleNestedA
 	}
 }
 
-func (p *stripeSourceVerificationProvider) toPayload(sourceVerification *sourceVerification) *hookdeck.VerificationConfig {
+func (p *stripeSourceVerificationProvider) ToPayload(sourceVerification *SourceVerification) *hookdeck.VerificationConfig {
 	if sourceVerification.Stripe == nil {
 		return nil
 	}
@@ -42,5 +42,5 @@ func (p *stripeSourceVerificationProvider) toPayload(sourceVerification *sourceV
 }
 
 func init() {
-	providers = append(providers, &stripeSourceVerificationProvider{})
+	Providers = append(Providers, &stripeSourceVerificationProvider{})
 }
