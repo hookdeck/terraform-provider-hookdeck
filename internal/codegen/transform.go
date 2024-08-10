@@ -23,7 +23,7 @@ func toConfigCase(input string) string {
 	return result.String()
 }
 
-// splitWords splits a string into words based on uppercase letters or spaces
+// splitWords splits a string into words based on uppercase letters or spaces.
 func splitWords(s string) []string {
 	var words []string
 	var currentWord strings.Builder

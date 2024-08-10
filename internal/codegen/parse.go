@@ -1,6 +1,7 @@
 package codegen
 
 import (
+	"errors"
 	"sort"
 	"strings"
 
@@ -34,13 +35,26 @@ type Verification struct {
 }
 
 func parseVerification(doc *openapi3.T, refName string) (*Verification, error) {
+	// Get verification data
 	verificationSchemaAny, err := doc.Components.Schemas.JSONLookup(refName)
 	if err != nil {
 		return nil, err
 	}
-	verificationSchema := verificationSchemaAny.(*openapi3.Schema)
-	verificationName := strings.ReplaceAll(verificationSchema.Properties["type"].Value.Enum[0].(string), "-", "_")
+	verificationSchema, ok := verificationSchemaAny.(*openapi3.Schema)
+	if !ok {
+		return nil, errors.New("type assertion failed")
+	}
+	verificationName, ok := verificationSchema.Properties["type"].Value.Enum[0].(string)
+	if !ok {
+		return nil, errors.New("type assertion failed")
+	}
+	verificationName = strings.ReplaceAll(verificationName, "-", "_")
+	docsType, ok := verificationSchema.Extensions["x-docs-type"].(string)
+	if !ok {
+		return nil, errors.New("type assertion failed")
+	}
 
+	// Get verification config data
 	verificationConfigSchemaRef := verificationSchema.Properties["configs"].Ref
 	verificationConfigSchemaRefName := getSchemaNameFromRef(verificationConfigSchemaRef)
 
@@ -48,7 +62,12 @@ func parseVerification(doc *openapi3.T, refName string) (*Verification, error) {
 	if err != nil {
 		return nil, err
 	}
-	verificationConfigSchema := verificationConfigSchemaAny.(*openapi3.Schema)
+	verificationConfigSchema, ok := verificationConfigSchemaAny.(*openapi3.Schema)
+	if !ok {
+		return nil, errors.New("type assertion failed")
+	}
+
+	// Constructing Verification struct
 
 	properties := []VerificationProperty{}
 
@@ -96,7 +115,7 @@ func parseVerification(doc *openapi3.T, refName string) (*Verification, error) {
 		NameSnake:  verificationName,
 		NameCamel:  strcase.ToLowerCamel(verificationName),
 		NamePascal: strcase.ToCamel(verificationName),
-		NameConfig: toConfigCase(verificationSchema.Extensions["x-docs-type"].(string)),
+		NameConfig: toConfigCase(docsType),
 		Properties: properties,
 	}
 

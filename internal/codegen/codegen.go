@@ -1,6 +1,7 @@
 package codegen
 
 import (
+	"errors"
 	"fmt"
 	"net/url"
 	"sort"
@@ -31,7 +32,10 @@ func RunCodeGen() error {
 	if err != nil {
 		return err
 	}
-	verificationList := verificationListAny.(*openapi3.Schema)
+	verificationList, ok := verificationListAny.(*openapi3.Schema)
+	if !ok {
+		return errors.New("type assertion failed")
+	}
 
 	// Construct verification data
 	verifications := []Verification{}
@@ -53,8 +57,12 @@ func RunCodeGen() error {
 	})
 
 	// Generate code using template
-	generateModel(verifications)
-	generateVerifications(verifications)
+	if err := generateModel(verifications); err != nil {
+		return err
+	}
+	if err := generateVerifications(verifications); err != nil {
+		return err
+	}
 
 	return nil
 }
