@@ -10,18 +10,18 @@ import (
 	hookdeck "github.com/hookdeck/hookdeck-go-sdk"
 )
 
-type githubSourceVerification struct {
+type repaySourceVerification struct {
 	WebhookSecretKey types.String `tfsdk:"webhook_secret_key"`
 }
 
-type githubSourceVerificationProvider struct {
+type repaySourceVerificationProvider struct {
 }
 
-func (p *githubSourceVerificationProvider) getSchemaName() string {
-	return "github"
+func (p *repaySourceVerificationProvider) getSchemaName() string {
+	return "repay"
 }
 
-func (p *githubSourceVerificationProvider) getSchemaValue() schema.SingleNestedAttribute {
+func (p *repaySourceVerificationProvider) getSchemaValue() schema.SingleNestedAttribute {
 	return schema.SingleNestedAttribute{
 		Optional: true,
 		Attributes: map[string]schema.Attribute{
@@ -34,17 +34,17 @@ func (p *githubSourceVerificationProvider) getSchemaValue() schema.SingleNestedA
 	}
 }
 
-func (p *githubSourceVerificationProvider) ToPayload(sourceVerification *SourceVerification) *hookdeck.VerificationConfig {
-	if sourceVerification.Github == nil {
+func (p *repaySourceVerificationProvider) ToPayload(sourceVerification *SourceVerification) *hookdeck.VerificationConfig {
+	if sourceVerification.Repay == nil {
 		return nil
 	}
-	return hookdeck.NewVerificationConfigFromGithub(&hookdeck.VerificationGitHub{
-		Configs: &hookdeck.VerificationGitHubConfigs{
-			WebhookSecretKey: sourceVerification.Github.WebhookSecretKey.ValueString(),
+	return hookdeck.NewVerificationConfigFromRepay(&hookdeck.VerificationRepay{
+		Configs: &hookdeck.VerificationRepayConfigs{
+			WebhookSecretKey: sourceVerification.Repay.WebhookSecretKey.ValueString(),
 		},
 	})
 }
 
 func init() {
-	Providers = append(Providers, &githubSourceVerificationProvider{})
+	Providers = append(Providers, &repaySourceVerificationProvider{})
 }

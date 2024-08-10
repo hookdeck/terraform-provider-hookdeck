@@ -10,18 +10,18 @@ import (
 	hookdeck "github.com/hookdeck/hookdeck-go-sdk"
 )
 
-type githubSourceVerification struct {
+type shopifySourceVerification struct {
 	WebhookSecretKey types.String `tfsdk:"webhook_secret_key"`
 }
 
-type githubSourceVerificationProvider struct {
+type shopifySourceVerificationProvider struct {
 }
 
-func (p *githubSourceVerificationProvider) getSchemaName() string {
-	return "github"
+func (p *shopifySourceVerificationProvider) getSchemaName() string {
+	return "shopify"
 }
 
-func (p *githubSourceVerificationProvider) getSchemaValue() schema.SingleNestedAttribute {
+func (p *shopifySourceVerificationProvider) getSchemaValue() schema.SingleNestedAttribute {
 	return schema.SingleNestedAttribute{
 		Optional: true,
 		Attributes: map[string]schema.Attribute{
@@ -34,17 +34,17 @@ func (p *githubSourceVerificationProvider) getSchemaValue() schema.SingleNestedA
 	}
 }
 
-func (p *githubSourceVerificationProvider) ToPayload(sourceVerification *SourceVerification) *hookdeck.VerificationConfig {
-	if sourceVerification.Github == nil {
+func (p *shopifySourceVerificationProvider) ToPayload(sourceVerification *SourceVerification) *hookdeck.VerificationConfig {
+	if sourceVerification.Shopify == nil {
 		return nil
 	}
-	return hookdeck.NewVerificationConfigFromGithub(&hookdeck.VerificationGitHub{
-		Configs: &hookdeck.VerificationGitHubConfigs{
-			WebhookSecretKey: sourceVerification.Github.WebhookSecretKey.ValueString(),
+	return hookdeck.NewVerificationConfigFromShopify(&hookdeck.VerificationShopify{
+		Configs: &hookdeck.VerificationShopifyConfigs{
+			WebhookSecretKey: sourceVerification.Shopify.WebhookSecretKey.ValueString(),
 		},
 	})
 }
 
 func init() {
-	Providers = append(Providers, &githubSourceVerificationProvider{})
+	Providers = append(Providers, &shopifySourceVerificationProvider{})
 }

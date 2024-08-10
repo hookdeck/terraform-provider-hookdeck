@@ -10,18 +10,18 @@ import (
 	hookdeck "github.com/hookdeck/hookdeck-go-sdk"
 )
 
-type githubSourceVerification struct {
+type akeneoSourceVerification struct {
 	WebhookSecretKey types.String `tfsdk:"webhook_secret_key"`
 }
 
-type githubSourceVerificationProvider struct {
+type akeneoSourceVerificationProvider struct {
 }
 
-func (p *githubSourceVerificationProvider) getSchemaName() string {
-	return "github"
+func (p *akeneoSourceVerificationProvider) getSchemaName() string {
+	return "akeneo"
 }
 
-func (p *githubSourceVerificationProvider) getSchemaValue() schema.SingleNestedAttribute {
+func (p *akeneoSourceVerificationProvider) getSchemaValue() schema.SingleNestedAttribute {
 	return schema.SingleNestedAttribute{
 		Optional: true,
 		Attributes: map[string]schema.Attribute{
@@ -34,17 +34,17 @@ func (p *githubSourceVerificationProvider) getSchemaValue() schema.SingleNestedA
 	}
 }
 
-func (p *githubSourceVerificationProvider) ToPayload(sourceVerification *SourceVerification) *hookdeck.VerificationConfig {
-	if sourceVerification.Github == nil {
+func (p *akeneoSourceVerificationProvider) ToPayload(sourceVerification *SourceVerification) *hookdeck.VerificationConfig {
+	if sourceVerification.Akeneo == nil {
 		return nil
 	}
-	return hookdeck.NewVerificationConfigFromGithub(&hookdeck.VerificationGitHub{
-		Configs: &hookdeck.VerificationGitHubConfigs{
-			WebhookSecretKey: sourceVerification.Github.WebhookSecretKey.ValueString(),
+	return hookdeck.NewVerificationConfigFromAkeneo(&hookdeck.VerificationAkeneo{
+		Configs: &hookdeck.VerificationAkeneoConfigs{
+			WebhookSecretKey: sourceVerification.Akeneo.WebhookSecretKey.ValueString(),
 		},
 	})
 }
 
 func init() {
-	Providers = append(Providers, &githubSourceVerificationProvider{})
+	Providers = append(Providers, &akeneoSourceVerificationProvider{})
 }

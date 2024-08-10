@@ -10,18 +10,18 @@ import (
 	hookdeck "github.com/hookdeck/hookdeck-go-sdk"
 )
 
-type githubSourceVerification struct {
+type ouraSourceVerification struct {
 	WebhookSecretKey types.String `tfsdk:"webhook_secret_key"`
 }
 
-type githubSourceVerificationProvider struct {
+type ouraSourceVerificationProvider struct {
 }
 
-func (p *githubSourceVerificationProvider) getSchemaName() string {
-	return "github"
+func (p *ouraSourceVerificationProvider) getSchemaName() string {
+	return "oura"
 }
 
-func (p *githubSourceVerificationProvider) getSchemaValue() schema.SingleNestedAttribute {
+func (p *ouraSourceVerificationProvider) getSchemaValue() schema.SingleNestedAttribute {
 	return schema.SingleNestedAttribute{
 		Optional: true,
 		Attributes: map[string]schema.Attribute{
@@ -34,17 +34,17 @@ func (p *githubSourceVerificationProvider) getSchemaValue() schema.SingleNestedA
 	}
 }
 
-func (p *githubSourceVerificationProvider) ToPayload(sourceVerification *SourceVerification) *hookdeck.VerificationConfig {
-	if sourceVerification.Github == nil {
+func (p *ouraSourceVerificationProvider) ToPayload(sourceVerification *SourceVerification) *hookdeck.VerificationConfig {
+	if sourceVerification.Oura == nil {
 		return nil
 	}
-	return hookdeck.NewVerificationConfigFromGithub(&hookdeck.VerificationGitHub{
-		Configs: &hookdeck.VerificationGitHubConfigs{
-			WebhookSecretKey: sourceVerification.Github.WebhookSecretKey.ValueString(),
+	return hookdeck.NewVerificationConfigFromOura(&hookdeck.VerificationOura{
+		Configs: &hookdeck.VerificationOuraConfigs{
+			WebhookSecretKey: sourceVerification.Oura.WebhookSecretKey.ValueString(),
 		},
 	})
 }
 
 func init() {
-	Providers = append(Providers, &githubSourceVerificationProvider{})
+	Providers = append(Providers, &ouraSourceVerificationProvider{})
 }

@@ -10,18 +10,18 @@ import (
 	hookdeck "github.com/hookdeck/hookdeck-go-sdk"
 )
 
-type githubSourceVerification struct {
+type wixSourceVerification struct {
 	WebhookSecretKey types.String `tfsdk:"webhook_secret_key"`
 }
 
-type githubSourceVerificationProvider struct {
+type wixSourceVerificationProvider struct {
 }
 
-func (p *githubSourceVerificationProvider) getSchemaName() string {
-	return "github"
+func (p *wixSourceVerificationProvider) getSchemaName() string {
+	return "wix"
 }
 
-func (p *githubSourceVerificationProvider) getSchemaValue() schema.SingleNestedAttribute {
+func (p *wixSourceVerificationProvider) getSchemaValue() schema.SingleNestedAttribute {
 	return schema.SingleNestedAttribute{
 		Optional: true,
 		Attributes: map[string]schema.Attribute{
@@ -34,17 +34,17 @@ func (p *githubSourceVerificationProvider) getSchemaValue() schema.SingleNestedA
 	}
 }
 
-func (p *githubSourceVerificationProvider) ToPayload(sourceVerification *SourceVerification) *hookdeck.VerificationConfig {
-	if sourceVerification.Github == nil {
+func (p *wixSourceVerificationProvider) ToPayload(sourceVerification *SourceVerification) *hookdeck.VerificationConfig {
+	if sourceVerification.Wix == nil {
 		return nil
 	}
-	return hookdeck.NewVerificationConfigFromGithub(&hookdeck.VerificationGitHub{
-		Configs: &hookdeck.VerificationGitHubConfigs{
-			WebhookSecretKey: sourceVerification.Github.WebhookSecretKey.ValueString(),
+	return hookdeck.NewVerificationConfigFromWix(&hookdeck.VerificationWix{
+		Configs: &hookdeck.VerificationWixConfigs{
+			WebhookSecretKey: sourceVerification.Wix.WebhookSecretKey.ValueString(),
 		},
 	})
 }
 
 func init() {
-	Providers = append(Providers, &githubSourceVerificationProvider{})
+	Providers = append(Providers, &wixSourceVerificationProvider{})
 }
