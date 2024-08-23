@@ -55,6 +55,7 @@ Optional:
 - `gitlab` (Attributes) (see [below for nested schema](#nestedatt--verification--gitlab))
 - `hmac` (Attributes) (see [below for nested schema](#nestedatt--verification--hmac))
 - `hubspot` (Attributes) (see [below for nested schema](#nestedatt--verification--hubspot))
+- `json` (String, Sensitive)
 - `linear` (Attributes) (see [below for nested schema](#nestedatt--verification--linear))
 - `mailchimp` (Attributes) (see [below for nested schema](#nestedatt--verification--mailchimp))
 - `mailgun` (Attributes) (see [below for nested schema](#nestedatt--verification--mailgun))

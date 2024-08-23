@@ -6,10 +6,14 @@ package generated
 
 import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/types"
 	hookdeck "github.com/hookdeck/hookdeck-go-sdk"
 )
 
 type SourceVerification struct {
+	JSON types.String `tfsdk:"json"`
+
+	// Providers
 	Adyen           *adyenSourceVerification           `tfsdk:"adyen"`
 	Akeneo          *akeneoSourceVerification          `tfsdk:"akeneo"`
 	ApiKey          *apiKeySourceVerification          `tfsdk:"api_key"`
@@ -82,6 +86,11 @@ var Providers []sourceVerificationProvider
 
 func GetSourceVerificationSchemaAttributes() map[string]schema.Attribute {
 	attributes := map[string]schema.Attribute{}
+
+	attributes["json"] = schema.StringAttribute{
+		Optional:  true,
+		Sensitive: true,
+	}
 
 	for _, provider := range Providers {
 		attributes[provider.getSchemaName()] = provider.getSchemaValue()
