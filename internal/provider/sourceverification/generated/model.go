@@ -30,10 +30,12 @@ type SourceVerification struct {
 	Hmac            *hmacSourceVerification            `tfsdk:"hmac"`
 	Hubspot         *hubspotSourceVerification         `tfsdk:"hubspot"`
 	Linear          *linearSourceVerification          `tfsdk:"linear"`
+	Mailchimp       *mailchimpSourceVerification       `tfsdk:"mailchimp"`
 	Mailgun         *mailgunSourceVerification         `tfsdk:"mailgun"`
 	Nmi             *nmiSourceVerification             `tfsdk:"nmi"`
 	Orb             *orbSourceVerification             `tfsdk:"orb"`
 	Oura            *ouraSourceVerification            `tfsdk:"oura"`
+	Paddle          *paddleSourceVerification          `tfsdk:"paddle"`
 	Persona         *personaSourceVerification         `tfsdk:"persona"`
 	Pipedrive       *pipedriveSourceVerification       `tfsdk:"pipedrive"`
 	Postmark        *postmarkSourceVerification        `tfsdk:"postmark"`

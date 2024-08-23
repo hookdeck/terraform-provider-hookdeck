@@ -56,10 +56,12 @@ Optional:
 - `hmac` (Attributes) (see [below for nested schema](#nestedatt--verification--hmac))
 - `hubspot` (Attributes) (see [below for nested schema](#nestedatt--verification--hubspot))
 - `linear` (Attributes) (see [below for nested schema](#nestedatt--verification--linear))
+- `mailchimp` (Attributes) (see [below for nested schema](#nestedatt--verification--mailchimp))
 - `mailgun` (Attributes) (see [below for nested schema](#nestedatt--verification--mailgun))
 - `nmi` (Attributes) (see [below for nested schema](#nestedatt--verification--nmi))
 - `orb` (Attributes) (see [below for nested schema](#nestedatt--verification--orb))
 - `oura` (Attributes) (see [below for nested schema](#nestedatt--verification--oura))
+- `paddle` (Attributes) (see [below for nested schema](#nestedatt--verification--paddle))
 - `persona` (Attributes) (see [below for nested schema](#nestedatt--verification--persona))
 - `pipedrive` (Attributes) (see [below for nested schema](#nestedatt--verification--pipedrive))
 - `postmark` (Attributes) (see [below for nested schema](#nestedatt--verification--postmark))
@@ -260,6 +262,14 @@ Required:
 - `webhook_secret_key` (String, Sensitive)
 
 
+<a id="nestedatt--verification--mailchimp"></a>
+### Nested Schema for `verification.mailchimp`
+
+Required:
+
+- `webhook_secret_key` (String, Sensitive)
+
+
 <a id="nestedatt--verification--mailgun"></a>
 ### Nested Schema for `verification.mailgun`
 
@@ -286,6 +296,14 @@ Required:
 
 <a id="nestedatt--verification--oura"></a>
 ### Nested Schema for `verification.oura`
+
+Required:
+
+- `webhook_secret_key` (String, Sensitive)
+
+
+<a id="nestedatt--verification--paddle"></a>
+### Nested Schema for `verification.paddle`
 
 Required:
 

@@ -10,7 +10,7 @@ require (
 	github.com/hashicorp/terraform-plugin-framework v1.11.0
 	github.com/hashicorp/terraform-plugin-framework-validators v0.13.0
 	github.com/hashicorp/terraform-plugin-log v0.9.0
-	github.com/hookdeck/hookdeck-go-sdk v0.4.1
+	github.com/hookdeck/hookdeck-go-sdk v0.5.0
 	github.com/iancoleman/strcase v0.3.0
 	golang.org/x/exp v0.0.0-20240808152545-0cdaa3abc0fa
 	golang.org/x/sys v0.24.0

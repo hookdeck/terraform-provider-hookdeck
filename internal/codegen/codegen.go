@@ -40,11 +40,6 @@ func RunCodeGen() error {
 	// Construct verification data
 	verifications := []Verification{}
 	for _, schemaRef := range verificationList.OneOf {
-		// SDK not supported yet
-		if schemaRef.Ref == "#/components/schemas/VerificationMailchimp" || schemaRef.Ref == "#/components/schemas/VerificationPaddle" {
-			continue
-		}
-
 		verification, err := parseVerification(doc, getSchemaNameFromRef(schemaRef.Ref))
 		if err != nil {
 			return err
