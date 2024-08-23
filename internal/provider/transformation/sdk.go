@@ -11,7 +11,7 @@ import (
 func (m *transformationResourceModel) Refresh(transformation *hookdeck.Transformation) {
 	m.Code = types.StringValue(transformation.Code)
 	m.CreatedAt = types.StringValue(transformation.CreatedAt.Format(time.RFC3339))
-	if transformation.Env != nil && len(transformation.Env) > 0 {
+	if len(transformation.Env) > 0 {
 		envBytes, err := json.Marshal(transformation.Env)
 		if err == nil {
 			m.ENV = types.StringValue(string(envBytes))
