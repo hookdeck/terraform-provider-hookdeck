@@ -5,12 +5,13 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"runtime"
 	"strings"
 	"text/template"
 )
 
 func generateVerifications(verifications []Verification) error {
-	tmpl, err := template.ParseFiles("internal/codegen/templates/verification.go.tmpl")
+	tmpl, err := template.ParseFiles(getRelativePath("templates/verification.go.tmpl"))
 	if err != nil {
 		return err
 	}
@@ -34,7 +35,7 @@ func generateVerifications(verifications []Verification) error {
 func generateModel(verifications []Verification) error {
 	fmt.Println("generating \"model.go\" file")
 
-	tmpl, err := template.ParseFiles("internal/codegen/templates/model.go.tmpl")
+	tmpl, err := template.ParseFiles(getRelativePath("templates/model.go.tmpl"))
 	if err != nil {
 		return err
 	}
@@ -53,7 +54,7 @@ func generateModel(verifications []Verification) error {
 
 func writeFile(fileName string, content string) {
 	// Define the directory and file name
-	dir := "internal/provider/sourceverification/generated"
+	dir := getRelativePath("../provider/sourceverification/generated")
 
 	// Create the "generated" directory if it doesn't exist
 	err := os.MkdirAll(dir, os.ModePerm)
@@ -78,4 +79,11 @@ func writeFile(fileName string, content string) {
 		fmt.Printf("Failed to write to file: %v\n", err)
 		return
 	}
+}
+
+// getRelativePath returns the absolute path relative to the current file
+func getRelativePath(relativePath string) string {
+	_, filename, _, _ := runtime.Caller(1)
+	dir := filepath.Dir(filename)
+	return filepath.Join(dir, relativePath)
 }

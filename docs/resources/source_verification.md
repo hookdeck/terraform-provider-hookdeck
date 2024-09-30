@@ -366,9 +366,6 @@ Required:
 
 Required:
 
-- `algorithm` (String, Sensitive)
-- `encoding` (String, Sensitive)
-- `header_key` (String, Sensitive)
 - `webhook_secret_key` (String, Sensitive)
 
 
