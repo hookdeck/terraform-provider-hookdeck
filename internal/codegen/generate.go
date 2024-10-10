@@ -81,7 +81,7 @@ func writeFile(fileName string, content string) {
 	}
 }
 
-// getRelativePath returns the absolute path relative to the current file
+// getRelativePath returns the absolute path relative to the current file.
 func getRelativePath(relativePath string) string {
 	_, filename, _, _ := runtime.Caller(1)
 	dir := filepath.Dir(filename)

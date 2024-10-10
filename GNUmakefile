@@ -13,3 +13,7 @@ generate-codegen:
 
 generate-tfdocs:
 	go generate ./cmd/tfdocs/...
+
+enable-git-hooks:
+	git config --local include.path ../.gitconfig
+	$(warning REMEMBER, YOU MUST HAVE REVIEWED THE CUSTOM HOOKS!)
