@@ -13,7 +13,14 @@ import (
 	"terraform-provider-hookdeck/internal/provider"
 )
 
-// Run "go generate" to format example terraform files and generate the docs for the registry/website
+// Run "go generate" to
+// 1. generate Hookdeck source verification codes
+// 2. format example terraform files
+// 3. generate the docs for the registry/website
+
+// Generate Hookdeck source verification providers
+//go:generate go run cmd/codegen/main.go
+//go:generate gofmt -w internal/provider/sourceverification/generated
 
 // If you do not have terraform installed, you can remove the formatting command, but its suggested to
 // ensure the documentation is formatted properly.
