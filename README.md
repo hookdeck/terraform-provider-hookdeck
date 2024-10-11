@@ -52,4 +52,4 @@ resource "hookdeck_connection" "my_connection" {
 
 ## Dependencies
 
-This provider uses [Hookdeck API](https://hookdeck.com/api-ref) and [Hookdeck Go SDK](https://github.com/hookdeck/hookdeck-go-sdk) under the hood.
+This provider uses [Hookdeck API](https://hookdeck.com/docs/api) and [Hookdeck Go SDK](https://github.com/hookdeck/hookdeck-go-sdk) under the hood.
