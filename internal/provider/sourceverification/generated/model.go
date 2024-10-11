@@ -40,6 +40,7 @@ type SourceVerification struct {
 	Orb             *orbSourceVerification             `tfsdk:"orb"`
 	Oura            *ouraSourceVerification            `tfsdk:"oura"`
 	Paddle          *paddleSourceVerification          `tfsdk:"paddle"`
+	Paypal          *paypalSourceVerification          `tfsdk:"paypal"`
 	Persona         *personaSourceVerification         `tfsdk:"persona"`
 	Pipedrive       *pipedriveSourceVerification       `tfsdk:"pipedrive"`
 	Postmark        *postmarkSourceVerification        `tfsdk:"postmark"`
