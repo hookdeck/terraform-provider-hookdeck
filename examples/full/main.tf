@@ -18,12 +18,16 @@ provider "hookdeck" {
   api_key = var.HOOKDECK_API_KEY
 }
 
-resource "hookdeck_source" "my_source" {
+resource "hookdeck_source" "first_source" {
+  name = "first_source"
+}
+
+resource "hookdeck_source" "second_source" {
   name = "my_source"
 }
 
-resource "hookdeck_source_verification" "my_authenticated_source" {
-  source_id = hookdeck_source.my_source.id
+resource "hookdeck_source_verification" "named_basic_auth_verification" {
+  source_id = hookdeck_source.first_source.id
   verification = {
     basic_auth = {
       username = "example-username"
@@ -32,14 +36,38 @@ resource "hookdeck_source_verification" "my_authenticated_source" {
   }
 }
 
-resource "hookdeck_destination" "my_destination" {
-  name = "my_destination"
+resource "hookdeck_source_verification" "json_basic_auth_verification" {
+  source_id = hookdeck_source.second_source.id
+  verification = {
+    json = jsonencode({
+      type = "basic_auth"
+      configs = {
+        username = "some-username"
+        password = "blah-blah-blah"
+      }
+    })
+  }
+}
+
+resource "hookdeck_destination" "first_destination" {
+  name = "first_destination"
   url  = "https://mock.hookdeck.com"
 }
 
-resource "hookdeck_connection" "my_connection" {
-  source_id      = hookdeck_source.my_source.id
-  destination_id = hookdeck_destination.my_destination.id
+resource "hookdeck_destination" "second_destination" {
+  name = "second_destination"
+  url  = "https://mock.hookdeck.com"
+  auth_method = {
+    basic_auth = {
+      username = "some-username"
+      password = "blah-blah-blah"
+    }
+  }
+}
+
+resource "hookdeck_connection" "first_connection" {
+  source_id      = hookdeck_source.first_source.id
+  destination_id = hookdeck_destination.first_destination.id
   rules = [
     {
       filter_rule = {
@@ -51,4 +79,33 @@ resource "hookdeck_connection" "my_connection" {
       }
     }
   ]
+}
+
+resource "hookdeck_connection" "second_connection" {
+  source_id      = hookdeck_source.second_source.id
+  destination_id = hookdeck_destination.first_destination.id
+}
+
+data "hookdeck_source" "manually_created_source" {
+  id = "src_112rkwa855tb0z"
+}
+
+data "hookdeck_destination" "manually_created_destination" {
+  id = "des_tsrZIbyk0JBB"
+}
+
+data "hookdeck_connection" "manually_created_connection" {
+  id = "web_xDRnu9yq9GMl"
+}
+
+resource "hookdeck_connection" "first_connection_using_data_sources" {
+  name           = "first_connection_using_data_sources"
+  source_id      = data.hookdeck_source.manually_created_source.id
+  destination_id = data.hookdeck_destination.manually_created_destination.id
+}
+
+resource "hookdeck_connection" "second_connection_using_data_sources" {
+  name           = "second_connection_using_data_sources"
+  source_id      = data.hookdeck_connection.manually_created_connection.source_id
+  destination_id = data.hookdeck_connection.manually_created_connection.destination_id
 }
