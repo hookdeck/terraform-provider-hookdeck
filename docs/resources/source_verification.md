@@ -54,12 +54,16 @@ Optional:
 - `github` (Attributes) (see [below for nested schema](#nestedatt--verification--github))
 - `gitlab` (Attributes) (see [below for nested schema](#nestedatt--verification--gitlab))
 - `hmac` (Attributes) (see [below for nested schema](#nestedatt--verification--hmac))
+- `hubspot` (Attributes) (see [below for nested schema](#nestedatt--verification--hubspot))
 - `json` (String, Sensitive)
 - `linear` (Attributes) (see [below for nested schema](#nestedatt--verification--linear))
+- `mailchimp` (Attributes) (see [below for nested schema](#nestedatt--verification--mailchimp))
 - `mailgun` (Attributes) (see [below for nested schema](#nestedatt--verification--mailgun))
 - `nmi` (Attributes) (see [below for nested schema](#nestedatt--verification--nmi))
 - `orb` (Attributes) (see [below for nested schema](#nestedatt--verification--orb))
 - `oura` (Attributes) (see [below for nested schema](#nestedatt--verification--oura))
+- `paddle` (Attributes) (see [below for nested schema](#nestedatt--verification--paddle))
+- `paypal` (Attributes) (see [below for nested schema](#nestedatt--verification--paypal))
 - `persona` (Attributes) (see [below for nested schema](#nestedatt--verification--persona))
 - `pipedrive` (Attributes) (see [below for nested schema](#nestedatt--verification--pipedrive))
 - `postmark` (Attributes) (see [below for nested schema](#nestedatt--verification--postmark))
@@ -80,9 +84,10 @@ Optional:
 - `synctera` (Attributes) (see [below for nested schema](#nestedatt--verification--synctera))
 - `tebex` (Attributes) (see [below for nested schema](#nestedatt--verification--tebex))
 - `telnyx` (Attributes) (see [below for nested schema](#nestedatt--verification--telnyx))
-- `threedeye` (Attributes) (see [below for nested schema](#nestedatt--verification--threedeye))
+- `three_d_eye` (Attributes) (see [below for nested schema](#nestedatt--verification--three_d_eye))
 - `tokenio` (Attributes) (see [below for nested schema](#nestedatt--verification--tokenio))
 - `trello` (Attributes) (see [below for nested schema](#nestedatt--verification--trello))
+- `twilio` (Attributes) (see [below for nested schema](#nestedatt--verification--twilio))
 - `twitch` (Attributes) (see [below for nested schema](#nestedatt--verification--twitch))
 - `twitter` (Attributes) (see [below for nested schema](#nestedatt--verification--twitter))
 - `typeform` (Attributes) (see [below for nested schema](#nestedatt--verification--typeform))
@@ -116,7 +121,7 @@ Required:
 Required:
 
 - `api_key` (String, Sensitive)
-- `header_key` (String)
+- `header_key` (String, Sensitive)
 
 
 <a id="nestedatt--verification--aws_sns"></a>
@@ -129,7 +134,7 @@ Required:
 Required:
 
 - `password` (String, Sensitive)
-- `username` (String)
+- `username` (String, Sensitive)
 
 
 <a id="nestedatt--verification--bondsmith"></a>
@@ -237,14 +242,30 @@ Required:
 
 Required:
 
-- `algorithm` (String)
-- `encoding` (String)
-- `header_key` (String)
+- `algorithm` (String, Sensitive)
+- `encoding` (String, Sensitive)
+- `header_key` (String, Sensitive)
+- `webhook_secret_key` (String, Sensitive)
+
+
+<a id="nestedatt--verification--hubspot"></a>
+### Nested Schema for `verification.hubspot`
+
+Required:
+
 - `webhook_secret_key` (String, Sensitive)
 
 
 <a id="nestedatt--verification--linear"></a>
 ### Nested Schema for `verification.linear`
+
+Required:
+
+- `webhook_secret_key` (String, Sensitive)
+
+
+<a id="nestedatt--verification--mailchimp"></a>
+### Nested Schema for `verification.mailchimp`
 
 Required:
 
@@ -283,6 +304,22 @@ Required:
 - `webhook_secret_key` (String, Sensitive)
 
 
+<a id="nestedatt--verification--paddle"></a>
+### Nested Schema for `verification.paddle`
+
+Required:
+
+- `webhook_secret_key` (String, Sensitive)
+
+
+<a id="nestedatt--verification--paypal"></a>
+### Nested Schema for `verification.paypal`
+
+Required:
+
+- `webhook_id` (String, Sensitive)
+
+
 <a id="nestedatt--verification--persona"></a>
 ### Nested Schema for `verification.persona`
 
@@ -296,8 +333,8 @@ Required:
 
 Required:
 
-- `name` (String)
 - `password` (String, Sensitive)
+- `username` (String, Sensitive)
 
 
 <a id="nestedatt--verification--postmark"></a>
@@ -305,7 +342,8 @@ Required:
 
 Required:
 
-- `webhook_secret_key` (String, Sensitive)
+- `password` (String, Sensitive)
+- `username` (String, Sensitive)
 
 
 <a id="nestedatt--verification--property_finder"></a>
@@ -444,8 +482,8 @@ Required:
 - `public_key` (String, Sensitive)
 
 
-<a id="nestedatt--verification--threedeye"></a>
-### Nested Schema for `verification.threedeye`
+<a id="nestedatt--verification--three_d_eye"></a>
+### Nested Schema for `verification.three_d_eye`
 
 Required:
 
@@ -462,6 +500,14 @@ Required:
 
 <a id="nestedatt--verification--trello"></a>
 ### Nested Schema for `verification.trello`
+
+Required:
+
+- `webhook_secret_key` (String, Sensitive)
+
+
+<a id="nestedatt--verification--twilio"></a>
+### Nested Schema for `verification.twilio`
 
 Required:
 
