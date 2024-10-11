@@ -11,9 +11,6 @@ import (
 )
 
 type rechargeSourceVerification struct {
-	Algorithm        types.String `tfsdk:"algorithm"`
-	Encoding         types.String `tfsdk:"encoding"`
-	HeaderKey        types.String `tfsdk:"header_key"`
 	WebhookSecretKey types.String `tfsdk:"webhook_secret_key"`
 }
 
@@ -28,21 +25,6 @@ func (p *rechargeSourceVerificationProvider) getSchemaValue() schema.SingleNeste
 	return schema.SingleNestedAttribute{
 		Optional: true,
 		Attributes: map[string]schema.Attribute{
-			"algorithm": schema.StringAttribute{
-				Required:  true,
-				Optional:  false,
-				Sensitive: true,
-			},
-			"encoding": schema.StringAttribute{
-				Required:  true,
-				Optional:  false,
-				Sensitive: true,
-			},
-			"header_key": schema.StringAttribute{
-				Required:  true,
-				Optional:  false,
-				Sensitive: true,
-			},
 			"webhook_secret_key": schema.StringAttribute{
 				Required:  true,
 				Optional:  false,
@@ -56,13 +38,8 @@ func (p *rechargeSourceVerificationProvider) ToPayload(sourceVerification *Sourc
 	if sourceVerification.Recharge == nil {
 		return nil
 	}
-	algorithm, _ := hookdeck.NewHmacAlgorithmsFromString(sourceVerification.Recharge.Algorithm.ValueString())
-	encoding, _ := hookdeck.NewVerificationRechargeConfigsEncodingFromString(sourceVerification.Recharge.Encoding.ValueString())
 	return hookdeck.NewVerificationConfigFromRecharge(&hookdeck.VerificationRecharge{
 		Configs: &hookdeck.VerificationRechargeConfigs{
-			Algorithm:        algorithm,
-			Encoding:         encoding,
-			HeaderKey:        sourceVerification.Recharge.HeaderKey.ValueString(),
 			WebhookSecretKey: sourceVerification.Recharge.WebhookSecretKey.ValueString(),
 		},
 	})

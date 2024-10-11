@@ -10,3 +10,8 @@ func main() {
 		log.Panicln(err)
 	}
 }
+
+// Run "go generate" to generate Hookdeck source verification codes
+
+//go:generate go run .
+//go:generate gofmt -w ../../internal/provider/sourceverification/generated

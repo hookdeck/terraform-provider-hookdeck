@@ -63,6 +63,7 @@ Optional:
 - `orb` (Attributes) (see [below for nested schema](#nestedatt--verification--orb))
 - `oura` (Attributes) (see [below for nested schema](#nestedatt--verification--oura))
 - `paddle` (Attributes) (see [below for nested schema](#nestedatt--verification--paddle))
+- `paypal` (Attributes) (see [below for nested schema](#nestedatt--verification--paypal))
 - `persona` (Attributes) (see [below for nested schema](#nestedatt--verification--persona))
 - `pipedrive` (Attributes) (see [below for nested schema](#nestedatt--verification--pipedrive))
 - `postmark` (Attributes) (see [below for nested schema](#nestedatt--verification--postmark))
@@ -311,6 +312,14 @@ Required:
 - `webhook_secret_key` (String, Sensitive)
 
 
+<a id="nestedatt--verification--paypal"></a>
+### Nested Schema for `verification.paypal`
+
+Required:
+
+- `webhook_id` (String, Sensitive)
+
+
 <a id="nestedatt--verification--persona"></a>
 ### Nested Schema for `verification.persona`
 
@@ -366,9 +375,6 @@ Required:
 
 Required:
 
-- `algorithm` (String, Sensitive)
-- `encoding` (String, Sensitive)
-- `header_key` (String, Sensitive)
 - `webhook_secret_key` (String, Sensitive)
 
 
