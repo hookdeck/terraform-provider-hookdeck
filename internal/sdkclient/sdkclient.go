@@ -3,15 +3,16 @@ package sdkclient
 import (
 	"net/http"
 
-	hookdeckClient "github.com/hookdeck/hookdeck-go-sdk/client"
+	"github.com/hookdeck/hookdeck-go-sdk/client"
+	"github.com/hookdeck/hookdeck-go-sdk/option"
 )
 
-func InitHookdeckSDKClient(apiBase string, apiKey string, providerVersion string) *hookdeckClient.Client {
+func InitHookdeckSDKClient(apiBase string, apiKey string, providerVersion string) *client.Client {
 	header := http.Header{}
 	initUserAgentHeader(header, providerVersion)
-	return hookdeckClient.NewClient(
-		hookdeckClient.WithBaseURL(apiBase),
-		hookdeckClient.WithAuthToken(apiKey),
-		hookdeckClient.WithHTTPHeader(header),
+	return client.NewClient(
+		option.WithBaseURL(apiBase),
+		option.WithToken(apiKey),
+		option.WithHTTPHeader(header),
 	)
 }
