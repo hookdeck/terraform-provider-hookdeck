@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"strconv"
 
 	"terraform-provider-hookdeck/internal/provider/connection"
 	"terraform-provider-hookdeck/internal/provider/destination"
@@ -35,8 +36,9 @@ type hookdeckProvider struct {
 
 // hookdeckProviderModel describes the provider data model.
 type hookdeckProviderModel struct {
-	APIBase types.String `tfsdk:"api_base"`
-	APIKey  types.String `tfsdk:"api_key"`
+	APIBase        types.String `tfsdk:"api_base"`
+	APIKey         types.String `tfsdk:"api_key"`
+	SDKMaxAttempts types.Int32  `tfsdk:"sdk_max_attempts"`
 }
 
 func (p *hookdeckProvider) Metadata(ctx context.Context, req provider.MetadataRequest, resp *provider.MetadataResponse) {
@@ -55,6 +57,10 @@ func (p *hookdeckProvider) Schema(ctx context.Context, req provider.SchemaReques
 				Optional:            true,
 				Sensitive:           true,
 				MarkdownDescription: fmt.Sprintf("Hookdeck API Key. Alternatively, can be configured using the `%s` environment variable.", apiKeyEnvVarKey),
+			},
+			"sdk_max_attempts": schema.Int32Attribute{
+				Optional:            true,
+				MarkdownDescription: fmt.Sprintf("The maximum number of attempts to make when sending a request to the Hookdeck API. Alternatively, can be configured using the `%s` environment variable.", sdkMaxAttemptsEnvVarKey),
 			},
 		},
 	}
@@ -92,6 +98,15 @@ func (p *hookdeckProvider) Configure(ctx context.Context, req provider.Configure
 		)
 	}
 
+	if config.SDKMaxAttempts.IsUnknown() {
+		resp.Diagnostics.AddAttributeError(
+			path.Root("sdk_max_attempts"),
+			"Unknown Hookdeck SDK Max Attempts",
+			"The provider cannot create the Hookdeck API client as there is an unknown configuration value for the SDK max attempts option. "+
+				fmt.Sprintf("Either target apply the source of the value first, set the value statically in the configuration, or use the %s environment variable.", sdkMaxAttemptsEnvVarKey),
+		)
+	}
+
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -101,6 +116,19 @@ func (p *hookdeckProvider) Configure(ctx context.Context, req provider.Configure
 
 	apiBase := os.Getenv(apiBaseEnvVarKey)
 	apiKey := os.Getenv(apiKeyEnvVarKey)
+	sdkMaxAttempts := defaultSDKMaxAttempts
+	sdkMaxAttemptsStr := os.Getenv(sdkMaxAttemptsEnvVarKey)
+	if sdkMaxAttemptsStr != "" {
+		var err error
+		sdkMaxAttempts, err = strconv.Atoi(sdkMaxAttemptsStr)
+		if err != nil {
+			resp.Diagnostics.AddAttributeError(
+				path.Root("sdk_max_attempts"),
+				"Invalid Hookdeck SDK Max Attempts",
+				"The provider cannot create the Hookdeck API client as there is an invalid configuration value for the SDK max attempts option. ",
+			)
+		}
+	}
 
 	if !config.APIBase.IsNull() {
 		apiBase = config.APIBase.ValueString()
@@ -108,6 +136,10 @@ func (p *hookdeckProvider) Configure(ctx context.Context, req provider.Configure
 
 	if !config.APIKey.IsNull() {
 		apiKey = config.APIKey.ValueString()
+	}
+
+	if !config.SDKMaxAttempts.IsNull() {
+		sdkMaxAttempts = int(config.SDKMaxAttempts.ValueInt32())
 	}
 
 	// If any of the expected configurations are missing, return
@@ -130,12 +162,13 @@ func (p *hookdeckProvider) Configure(ctx context.Context, req provider.Configure
 	ctx = tflog.SetField(ctx, "hookdeck_api_base", apiBase)
 	ctx = tflog.SetField(ctx, "hookdeck_api_key", apiKey)
 	ctx = tflog.MaskFieldValuesWithFieldKeys(ctx, "hookdeck_api_key")
+	ctx = tflog.SetField(ctx, "sdk_max_attempts", sdkMaxAttempts)
 
 	tflog.Debug(ctx, "Creating Hookdeck client")
-	tflog.Debug(ctx, apiBase+" "+apiKey)
+	tflog.Debug(ctx, apiBase+" "+apiKey+" "+strconv.Itoa(sdkMaxAttempts))
 
 	// Create a new Hookdeck client using the configuration values
-	client := sdkclient.InitHookdeckSDKClient(apiBase, apiKey, p.version)
+	client := sdkclient.InitHookdeckSDKClient(apiBase, apiKey, sdkMaxAttempts, p.version)
 
 	// Make the Hookdeck client available during DataSource and Resource
 	// type Configure methods.
@@ -173,6 +206,11 @@ func New(version string) func() provider.Provider {
 }
 
 const (
-	apiBaseEnvVarKey = "HOOKDECK_API_BASE"
-	apiKeyEnvVarKey  = "HOOKDECK_API_KEY"
+	apiBaseEnvVarKey        = "HOOKDECK_API_BASE"
+	apiKeyEnvVarKey         = "HOOKDECK_API_KEY"
+	sdkMaxAttemptsEnvVarKey = "HOOKDECK_SDK_MAX_ATTEMPTS"
+)
+
+const (
+	defaultSDKMaxAttempts = 1
 )
