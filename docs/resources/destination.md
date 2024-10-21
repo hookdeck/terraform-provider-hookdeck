@@ -94,6 +94,11 @@ Required:
 - `access_key_id` (String, Sensitive) AWS access key id
 - `secret_access_key` (String, Sensitive) AWS secret access key
 
+Optional:
+
+- `region` (String) AWS region
+- `service` (String) AWS service
+
 
 <a id="nestedatt--auth_method--basic_auth"></a>
 ### Nested Schema for `auth_method.basic_auth`

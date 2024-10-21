@@ -73,7 +73,9 @@ Whether the API key should be sent as a header or a query parameter
 Read-Only:
 
 - `access_key_id` (String, Sensitive) AWS access key id
+- `region` (String) AWS region
 - `secret_access_key` (String, Sensitive) AWS secret access key
+- `service` (String) AWS service
 
 
 <a id="nestedatt--auth_method--basic_auth"></a>
