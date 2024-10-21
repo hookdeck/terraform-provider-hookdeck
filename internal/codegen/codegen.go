@@ -10,7 +10,7 @@ import (
 	"github.com/getkin/kin-openapi/openapi3"
 )
 
-const hookdeckOpenAPISchemaURI = "https://api.hookdeck.com/latest/openapi"
+const hookdeckOpenAPISchemaURI = "https://raw.githubusercontent.com/hookdeck/hookdeck-api-schema/refs/heads/main/openapi.json"
 
 func RunCodeGen() error {
 	fmt.Println("generating Hookdeck source verifications")
