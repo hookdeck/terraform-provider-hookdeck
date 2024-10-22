@@ -9,7 +9,8 @@ variable "HEADER_FILTER_VALUES" {
 terraform {
   required_providers {
     hookdeck = {
-      source = "hookdeck/hookdeck"
+      source  = "hookdeck/hookdeck"
+      version = "0.5.0-beta.1"
     }
   }
 }
@@ -61,6 +62,19 @@ resource "hookdeck_destination" "second_destination" {
     basic_auth = {
       username = "some-username"
       password = "blah-blah-blah"
+    }
+  }
+}
+
+resource "hookdeck_destination" "aws_destination" {
+  name = "aws_destination"
+  url  = "https://mock.hookdeck.com"
+  auth_method = {
+    aws_signature = {
+      access_key_id     = "some-access"
+      secret_access_key = "some-secret"
+      region            = "us-west-2"
+      service           = "lambda"
     }
   }
 }

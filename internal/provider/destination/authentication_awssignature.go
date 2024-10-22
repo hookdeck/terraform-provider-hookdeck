@@ -10,6 +10,8 @@ import (
 type awsSignatureAuthenticationMethodModel struct {
 	AccessKeyID     types.String `tfsdk:"access_key_id"`
 	SecretAccessKey types.String `tfsdk:"secret_access_key"`
+	Region          types.String `tfsdk:"region"`
+	Service         types.String `tfsdk:"service"`
 }
 
 type awsSignatureAuthenticationMethod struct {
@@ -33,6 +35,16 @@ func (*awsSignatureAuthenticationMethod) schema() schema.Attribute {
 				Sensitive:   true,
 				Description: `AWS secret access key`,
 			},
+			"region": schema.StringAttribute{
+				Optional:    true,
+				Sensitive:   false,
+				Description: `AWS region`,
+			},
+			"service": schema.StringAttribute{
+				Optional:    true,
+				Sensitive:   false,
+				Description: `AWS service`,
+			},
 		},
 		Description: `AWS Signature`,
 	}
@@ -42,6 +54,8 @@ func awsSignatureAuthenticationMethodAttrTypesMap() map[string]attr.Type {
 	return map[string]attr.Type{
 		"access_key_id":     types.StringType,
 		"secret_access_key": types.StringType,
+		"region":            types.StringType,
+		"service":           types.StringType,
 	}
 }
 
@@ -61,6 +75,12 @@ func (awsSignatureAuthenticationMethod) refresh(m *destinationResourceModel, des
 	m.AuthMethod.AWSSignature = &awsSignatureAuthenticationMethodModel{}
 	m.AuthMethod.AWSSignature.AccessKeyID = types.StringValue(destination.AuthMethod.AwsSignature.Config.AccessKeyId)
 	m.AuthMethod.AWSSignature.SecretAccessKey = types.StringValue(destination.AuthMethod.AwsSignature.Config.SecretAccessKey)
+	if destination.AuthMethod.AwsSignature.Config.Region != nil {
+		m.AuthMethod.AWSSignature.Region = types.StringValue(*destination.AuthMethod.AwsSignature.Config.Region)
+	}
+	if destination.AuthMethod.AwsSignature.Config.Service != nil {
+		m.AuthMethod.AWSSignature.Service = types.StringValue(*destination.AuthMethod.AwsSignature.Config.Service)
+	}
 }
 
 func (awsSignatureAuthenticationMethod) toPayload(method *destinationAuthMethodConfig) *hookdeck.DestinationAuthMethodConfig {
@@ -72,6 +92,8 @@ func (awsSignatureAuthenticationMethod) toPayload(method *destinationAuthMethodC
 		Config: &hookdeck.DestinationAuthMethodAwsSignatureConfig{
 			AccessKeyId:     method.AWSSignature.AccessKeyID.ValueString(),
 			SecretAccessKey: method.AWSSignature.SecretAccessKey.ValueString(),
+			Region:          method.AWSSignature.Region.ValueStringPointer(),
+			Service:         method.AWSSignature.Service.ValueStringPointer(),
 		},
 	})
 }
