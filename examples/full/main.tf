@@ -64,6 +64,10 @@ resource "hookdeck_destination" "second_destination" {
       password = "blah-blah-blah"
     }
   }
+  rate_limit = {
+    period = "concurrent"
+    limit  = 10
+  }
 }
 
 resource "hookdeck_destination" "aws_destination" {

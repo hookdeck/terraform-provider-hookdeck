@@ -38,3 +38,6 @@ website/vendor
 /examples/dev
 
 *.lock.hcl
+
+# Ignore the terraform provider locally built binary
+terraform-provider-hookdeck

@@ -107,6 +107,8 @@ github.com/hashicorp/yamux v0.1.1 h1:yrQxtgseBDrq9Y652vSRDvsKCJKOUD+GzTS4Y0Y8pvE
 github.com/hashicorp/yamux v0.1.1/go.mod h1:CtWFDAQgb7dxtzFs4tWbplKIe2jSi3+5vKbgIO0SLnQ=
 github.com/hookdeck/hookdeck-go-sdk v0.6.0 h1:OEtw5cRV7ShDMfus8BjYKqi9wGHQ8/y4R5qEyUINZQQ=
 github.com/hookdeck/hookdeck-go-sdk v0.6.0/go.mod h1:fewtdP5f8hnU+x35l2s8F3SSiE94cGz+Q3bR4sI8zlk=
+github.com/hookdeck/hookdeck-go-sdk v0.7.0 h1:s+4gVXcoTwTcukdn6Fc2BydewmkK2QXyIZvAUQsIoVs=
+github.com/hookdeck/hookdeck-go-sdk v0.7.0/go.mod h1:fewtdP5f8hnU+x35l2s8F3SSiE94cGz+Q3bR4sI8zlk=
 github.com/huandu/xstrings v1.3.3 h1:/Gcsuc1x8JVbJ9/rlye4xZnVAbEkGauT8lbebqcQws4=
 github.com/huandu/xstrings v1.3.3/go.mod h1:y5/lhBue+AyNmUVz9RLU9xbLR0o4KIIExikq4ovT0aE=
 github.com/iancoleman/strcase v0.3.0 h1:nTXanmYxhfFAMjZL34Ov6gkzEsSJZ5DbhxWjvSASxEI=
