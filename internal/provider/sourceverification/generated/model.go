@@ -20,6 +20,7 @@ type SourceVerification struct {
 	AwsSns          *awsSnsSourceVerification          `tfsdk:"aws_sns"`
 	BasicAuth       *basicAuthSourceVerification       `tfsdk:"basic_auth"`
 	Bondsmith       *bondsmithSourceVerification       `tfsdk:"bondsmith"`
+	Bridge          *bridgeSourceVerification          `tfsdk:"bridge"`
 	Cloudsignal     *cloudsignalSourceVerification     `tfsdk:"cloudsignal"`
 	Commercelayer   *commercelayerSourceVerification   `tfsdk:"commercelayer"`
 	Courier         *courierSourceVerification         `tfsdk:"courier"`
@@ -44,6 +45,7 @@ type SourceVerification struct {
 	Persona         *personaSourceVerification         `tfsdk:"persona"`
 	Pipedrive       *pipedriveSourceVerification       `tfsdk:"pipedrive"`
 	Postmark        *postmarkSourceVerification        `tfsdk:"postmark"`
+	Praxis          *praxisSourceVerification          `tfsdk:"praxis"`
 	PropertyFinder  *propertyFinderSourceVerification  `tfsdk:"property_finder"`
 	Pylon           *pylonSourceVerification           `tfsdk:"pylon"`
 	Razorpay        *razorpaySourceVerification        `tfsdk:"razorpay"`
@@ -63,6 +65,7 @@ type SourceVerification struct {
 	Telnyx          *telnyxSourceVerification          `tfsdk:"telnyx"`
 	ThreeDEye       *threeDEyeSourceVerification       `tfsdk:"three_d_eye"`
 	Tokenio         *tokenioSourceVerification         `tfsdk:"tokenio"`
+	Treezor         *treezorSourceVerification         `tfsdk:"treezor"`
 	Trello          *trelloSourceVerification          `tfsdk:"trello"`
 	Twilio          *twilioSourceVerification          `tfsdk:"twilio"`
 	Twitch          *twitchSourceVerification          `tfsdk:"twitch"`

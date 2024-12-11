@@ -42,6 +42,7 @@ Optional:
 - `aws_sns` (Attributes) (see [below for nested schema](#nestedatt--verification--aws_sns))
 - `basic_auth` (Attributes) (see [below for nested schema](#nestedatt--verification--basic_auth))
 - `bondsmith` (Attributes) (see [below for nested schema](#nestedatt--verification--bondsmith))
+- `bridge` (Attributes) (see [below for nested schema](#nestedatt--verification--bridge))
 - `cloudsignal` (Attributes) (see [below for nested schema](#nestedatt--verification--cloudsignal))
 - `commercelayer` (Attributes) (see [below for nested schema](#nestedatt--verification--commercelayer))
 - `courier` (Attributes) (see [below for nested schema](#nestedatt--verification--courier))
@@ -67,6 +68,7 @@ Optional:
 - `persona` (Attributes) (see [below for nested schema](#nestedatt--verification--persona))
 - `pipedrive` (Attributes) (see [below for nested schema](#nestedatt--verification--pipedrive))
 - `postmark` (Attributes) (see [below for nested schema](#nestedatt--verification--postmark))
+- `praxis` (Attributes) (see [below for nested schema](#nestedatt--verification--praxis))
 - `property_finder` (Attributes) (see [below for nested schema](#nestedatt--verification--property_finder))
 - `pylon` (Attributes) (see [below for nested schema](#nestedatt--verification--pylon))
 - `razorpay` (Attributes) (see [below for nested schema](#nestedatt--verification--razorpay))
@@ -86,6 +88,7 @@ Optional:
 - `telnyx` (Attributes) (see [below for nested schema](#nestedatt--verification--telnyx))
 - `three_d_eye` (Attributes) (see [below for nested schema](#nestedatt--verification--three_d_eye))
 - `tokenio` (Attributes) (see [below for nested schema](#nestedatt--verification--tokenio))
+- `treezor` (Attributes) (see [below for nested schema](#nestedatt--verification--treezor))
 - `trello` (Attributes) (see [below for nested schema](#nestedatt--verification--trello))
 - `twilio` (Attributes) (see [below for nested schema](#nestedatt--verification--twilio))
 - `twitch` (Attributes) (see [below for nested schema](#nestedatt--verification--twitch))
@@ -143,6 +146,14 @@ Required:
 Required:
 
 - `webhook_secret_key` (String, Sensitive)
+
+
+<a id="nestedatt--verification--bridge"></a>
+### Nested Schema for `verification.bridge`
+
+Required:
+
+- `public_key` (String, Sensitive)
 
 
 <a id="nestedatt--verification--cloudsignal"></a>
@@ -346,6 +357,14 @@ Required:
 - `username` (String, Sensitive)
 
 
+<a id="nestedatt--verification--praxis"></a>
+### Nested Schema for `verification.praxis`
+
+Required:
+
+- `webhook_secret_key` (String, Sensitive)
+
+
 <a id="nestedatt--verification--property_finder"></a>
 ### Nested Schema for `verification.property_finder`
 
@@ -496,6 +515,14 @@ Required:
 Required:
 
 - `public_key` (String, Sensitive)
+
+
+<a id="nestedatt--verification--treezor"></a>
+### Nested Schema for `verification.treezor`
+
+Required:
+
+- `webhook_secret_key` (String, Sensitive)
 
 
 <a id="nestedatt--verification--trello"></a>
