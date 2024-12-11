@@ -1,4 +1,4 @@
-HOOKDECK_API_KEY = "3p3ea88e3k7k268l1dwshet8uhpppqfqh1ku791yiajmr6l02g"
+HOOKDECK_API_KEY = "<YOUR_HOOKDECK_API_KEY>"
 
 HEADER_FILTER_VALUES = [
   "account.created.v1",
