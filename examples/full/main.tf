@@ -66,7 +66,7 @@ resource "hookdeck_destination" "second_destination" {
   }
   rate_limit = {
     period = "concurrent"
-    limit = 10
+    limit  = 10
   }
 }
 
