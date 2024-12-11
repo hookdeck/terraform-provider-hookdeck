@@ -171,7 +171,7 @@ Basic (default) or Bearer Authentication
 Required:
 
 - `limit` (Number) Limit event attempts to receive per period. Max value is workspace plan's max attempts thoughput.
-- `period` (String) must be one of ["second", "minute", "hour"]
+- `period` (String) must be one of ["second", "minute", "hour", "concurrent"]
 Period to rate limit attempts
 
 ## Import

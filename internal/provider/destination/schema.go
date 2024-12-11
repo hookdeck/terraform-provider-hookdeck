@@ -110,12 +110,13 @@ func schemaAttributes() map[string]schema.Attribute {
 							"second",
 							"minute",
 							"hour",
+							"concurrent",
 						),
 					},
 					PlanModifiers: []planmodifier.String{
 						stringplanmodifier.UseStateForUnknown(),
 					},
-					MarkdownDescription: `must be one of ["second", "minute", "hour"]` + "\n" +
+					MarkdownDescription: `must be one of ["second", "minute", "hour", "concurrent"]` + "\n" +
 						`Period to rate limit attempts`,
 				},
 			},
