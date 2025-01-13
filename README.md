@@ -56,6 +56,26 @@ This provider uses [Hookdeck API](https://hookdeck.com/docs/api) and [Hookdeck G
 
 ## Development
 
+### Background
+
+The Hookdeck Terraform Provider is written in Go.
+
+It is formed of a combination of manually created and maintained code and auto-generated code.
+
+The underlying Hookdeck API interactions use the [Hookdeck Go SDK](https://github.com/hookdeck/hookdeck-go-sdk).
+
+Code generation was [introduced in October 2024](https://github.com/hookdeck/terraform-provider-hookdeck/pull/100) and creates Source Verification Provider code from the Hookdeck OpenAPI specification (https://raw.githubusercontent.com/hookdeck/hookdeck-api-schema/refs/heads/main/openapi.json).
+
+The Hookdeck Go SDK is generated using the Hookdeck Open API spec. Therefore, Hookdeck Terraform Provider code generation must be based on the same OpenAPI spec version used to generate the Go SDK.
+
+### Release
+
+Released are managed via [GitHub Releases](https://github.com/hookdeck/terraform-provider-hookdeck/releases).
+
+To release, create a new release with a name representing the SemVer version. Also, create a tag with the same version. A GitHub action is triggered via the new Tag creation and uses [GoReleaser](https://goreleaser.com) to create a new set of release assets for the Hookdeck Terraform Provider.
+
+### Notes
+
 Enable pre-commit Git hooks to ensure any code changes are reflected in the documentation:
 
 ```sh
