@@ -2,6 +2,7 @@ package codegen
 
 import (
 	"errors"
+	"log"
 	"sort"
 	"strings"
 
@@ -35,6 +36,7 @@ type Verification struct {
 }
 
 func parseVerification(doc *openapi3.T, refName string) (*Verification, error) {
+	log.Println("here", refName)
 	// Get verification data
 	verificationSchemaAny, err := doc.Components.Schemas.JSONLookup(refName)
 	if err != nil {
@@ -44,9 +46,13 @@ func parseVerification(doc *openapi3.T, refName string) (*Verification, error) {
 	if !ok {
 		return nil, errors.New("type assertion failed")
 	}
-	verificationName, ok := verificationSchema.Properties["type"].Value.Enum[0].(string)
-	if !ok {
-		return nil, errors.New("type assertion failed")
+	// verificationName, ok := verificationSchema.Properties["type"].Value.Enum[0].(string)
+	verificationName := ""
+	if verificationSchema.Properties["type"] != nil {
+		verificationName, ok = verificationSchema.Properties["type"].Value.Enum[0].(string)
+		if !ok {
+			return nil, errors.New("type assertion failed")
+		}
 	}
 	verificationName = strings.ReplaceAll(verificationName, "-", "_")
 	docsType, ok := verificationSchema.Extensions["x-docs-type"].(string)
@@ -54,25 +60,35 @@ func parseVerification(doc *openapi3.T, refName string) (*Verification, error) {
 		return nil, errors.New("type assertion failed")
 	}
 
-	// Get verification config data
-	verificationConfigSchemaRef := verificationSchema.Properties["configs"].Ref
-	verificationConfigSchemaRefName := getSchemaNameFromRef(verificationConfigSchemaRef)
+	log.Println("name", verificationName, "docsType", docsType)
+	verificationName = docsType
 
-	verificationConfigSchemaAny, err := doc.Components.Schemas.JSONLookup(verificationConfigSchemaRefName)
-	if err != nil {
-		return nil, err
-	}
-	verificationConfigSchema, ok := verificationConfigSchemaAny.(*openapi3.Schema)
-	if !ok {
-		return nil, errors.New("type assertion failed")
-	}
+	// Get verification config data
+	// verificationConfigSchemaRef := verificationSchema.Properties["configs"].Ref
+	// verificationConfigSchemaRefName := getSchemaNameFromRef(verificationConfigSchemaRef)
+
+	// verificationConfigSchemaAny, err := doc.Components.Schemas.JSONLookup(verificationConfigSchemaRefName)
+	// if err != nil {
+	// 	return nil, err
+	// }
+	// verificationConfigSchema, ok := verificationConfigSchemaAny.(*openapi3.Schema)
+	// if !ok {
+	// 	return nil, errors.New("type assertion failed")
+	// }
+
+	// log.Println("here", verificationName, verificationConfigSchema)
 
 	// Constructing Verification struct
 
+	verificationConfigSchemaRefName := "TODO"
+	verificationConfigSchema := verificationSchema.Properties["auth"].Value
+
 	properties := []VerificationProperty{}
 
+	// for _, key := range getProperties(verificationName, verificationConfigSchema) {
 	for _, key := range getProperties(verificationName, verificationConfigSchema) {
 		property := verificationConfigSchema.Properties[key]
+		log.Println("key", key, property)
 		required := slices.Contains(verificationConfigSchema.Required, key)
 		pointerString := ""
 		if !required {
@@ -112,7 +128,7 @@ func parseVerification(doc *openapi3.T, refName string) (*Verification, error) {
 	verification := &Verification{
 		Ref:        refName,
 		ConfigRef:  verificationConfigSchemaRefName,
-		NameSnake:  verificationName,
+		NameSnake:  strcase.ToSnake(verificationName),
 		NameCamel:  strcase.ToLowerCamel(verificationName),
 		NamePascal: strcase.ToCamel(verificationName),
 		NameConfig: toConfigCase(docsType),

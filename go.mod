@@ -14,7 +14,9 @@ require (
 	github.com/iancoleman/strcase v0.3.0
 	golang.org/x/exp v0.0.0-20240808152545-0cdaa3abc0fa
 	golang.org/x/sys v0.29.0
-)
+) 
+
+replace github.com/hookdeck/hookdeck-go-sdk => ./internal/hookdeck-go-sdk
 
 require (
 	github.com/BurntSushi/toml v1.2.1 // indirect
