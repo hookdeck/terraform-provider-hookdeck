@@ -3,6 +3,7 @@ package codegen
 import (
 	"errors"
 	"fmt"
+	"log"
 	"net/url"
 	"sort"
 	"strings"
@@ -10,7 +11,7 @@ import (
 	"github.com/getkin/kin-openapi/openapi3"
 )
 
-const hookdeckOpenAPISchemaURI = "https://raw.githubusercontent.com/hookdeck/hookdeck-api-schema/refs/heads/main/openapi.json"
+const hookdeckOpenAPISchemaURI = "https://api-staging.hookdeck.com/2025-01-01-next/openapi"
 
 func RunCodeGen() error {
 	fmt.Println("generating Hookdeck source verifications")
@@ -28,7 +29,7 @@ func RunCodeGen() error {
 	}
 
 	// Get list of source verification providers
-	verificationListAny, err := doc.Components.Schemas.JSONLookup("VerificationConfig")
+	verificationListAny, err := doc.Components.Schemas.JSONLookup("SourceTypeConfig")
 	if err != nil {
 		return err
 	}
@@ -45,6 +46,7 @@ func RunCodeGen() error {
 			return err
 		}
 		verifications = append(verifications, *verification)
+		log.Println(verification)
 	}
 
 	sort.Slice(verifications, func(i, j int) bool {
