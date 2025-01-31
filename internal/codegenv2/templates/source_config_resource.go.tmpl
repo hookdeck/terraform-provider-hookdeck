@@ -19,7 +19,7 @@ type {{.NameCamel}}SourceConfigResource struct {
 }
 
 func (r *{{.NameCamel}}SourceConfigResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
-	resp.TypeName = req.ProviderTypeName + "_{{.NameSnake}}_source_config"
+	resp.TypeName = req.ProviderTypeName + "_source_config_{{.NameSnake}}"
 }
 
 func (r *{{.NameCamel}}SourceConfigResource) Schema(_ context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
