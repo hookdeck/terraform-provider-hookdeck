@@ -14,7 +14,6 @@ func generateSources(sourceTypes []SourceType) error {
 	// Load all templates
 	tmpl, err := template.ParseFiles(
 		getRelativePath("templates/source.go.tmpl"),
-		getRelativePath("templates/source_resource.go.tmpl"),
 		getRelativePath("templates/source_config_resource.go.tmpl"),
 		getRelativePath("templates/resource.go.tmpl"),
 	)
