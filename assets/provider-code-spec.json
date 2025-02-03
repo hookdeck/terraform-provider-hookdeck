@@ -13,7 +13,22 @@
 							"computed_optional_required": "optional",
 							"element_type": {
 								"string": {}
-							}
+							},
+							"validators": [
+								{
+									"custom": {
+										"imports": [
+											{
+												"path": "github.com/hashicorp/terraform-plugin-framework-validators/listvalidator"
+											},
+											{
+												"path": "github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
+											}
+										],
+										"schema_definition": "listvalidator.ValueStringsAre(\n\tstringvalidator.OneOf(\n\t\t\"GET\",\n\t\t\"POST\",\n\t\t\"PUT\",\n\t\t\"PATCH\",\n\t\t\"DELETE\",\n\t),\n)"
+									}
+								}
+							]
 						}
 					},
 					{

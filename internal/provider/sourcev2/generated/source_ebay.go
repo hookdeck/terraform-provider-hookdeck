@@ -8,6 +8,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
+	"github.com/hashicorp/terraform-plugin-framework/types"
 
 	hookdeck "github.com/hookdeck/hookdeck-go-sdk"
 	hookdeckClient "github.com/hookdeck/hookdeck-go-sdk/client"
@@ -139,7 +140,7 @@ func (r *ebaySourceConfigResource) readSourceConfig(ctx context.Context, data *r
 		return diags
 	}
 
-	return refreshData(data, source)
+	return refreshData(ctx, data, source)
 }
 
 func (r *ebaySourceConfigResource) updateSourceConfig(ctx context.Context, data *resource_source_config_ebay.SourceConfigEbayModel) diag.Diagnostics {
@@ -164,7 +165,7 @@ func (r *ebaySourceConfigResource) updateSourceConfig(ctx context.Context, data 
 		return diags
 	}
 
-	return refreshData(data, source)
+	return refreshData(ctx, data, source)
 }
 
 func (r *ebaySourceConfigResource) deleteSourceConfig(ctx context.Context, data *resource_source_config_ebay.SourceConfigEbayModel) diag.Diagnostics {
@@ -180,11 +181,67 @@ func (r *ebaySourceConfigResource) deleteSourceConfig(ctx context.Context, data 
 }
 
 func dataToUpdatePayload(data *resource_source_config_ebay.SourceConfigEbayModel) (*hookdeck.SourceUpdateRequest, diag.Diagnostics) {
-	// TODO
-	return &hookdeck.SourceUpdateRequest{}, nil
+	config := &hookdeck.SourceTypeConfigEbay{}
+
+	if !data.Auth.IsUnknown() || !data.Auth.IsNull() {
+		environment, err := hookdeck.NewSourceTypeConfigEbayAuthEnvironmentFromString(data.Auth.Environment.ValueString())
+		if err != nil {
+			var diags diag.Diagnostics
+			diags.AddError("Error converting environment to SourceTypeConfigEbayAuthEnvironment", err.Error())
+			return nil, diags
+		}
+		config.Auth = &hookdeck.SourceTypeConfigEbayAuth{
+			ClientId:          data.Auth.ClientId.ValueString(),
+			ClientSecret:      data.Auth.ClientSecret.ValueString(),
+			DevId:             data.Auth.DevId.ValueString(),
+			Environment:       environment,
+			VerificationToken: data.Auth.VerificationToken.ValueString(),
+		}
+	}
+
+	if !data.AllowedHttpMethods.IsUnknown() || !data.AllowedHttpMethods.IsNull() {
+		for _, method := range data.AllowedHttpMethods.Elements() {
+			method, err := hookdeck.NewSourceTypeConfigEbayAllowedHttpMethodsItemFromString(method.String())
+			if err != nil {
+				var diags diag.Diagnostics
+				diags.AddError("Error converting allowed http method to SourceTypeConfigEbayAllowedHttpMethodsItem", err.Error())
+				return nil, diags
+			}
+			config.AllowedHttpMethods = append(config.AllowedHttpMethods, method)
+		}
+	}
+
+	return &hookdeck.SourceUpdateRequest{
+		Config: hookdeck.Optional(hookdeck.SourceTypeConfig{
+			SourceTypeConfigEbay: config,
+		}),
+	}, nil
 }
 
-func refreshData(data *resource_source_config_ebay.SourceConfigEbayModel, source *hookdeck.Source) diag.Diagnostics {
-	// TODO
+func refreshData(ctx context.Context, data *resource_source_config_ebay.SourceConfigEbayModel, source *hookdeck.Source) diag.Diagnostics {
+	var diags diag.Diagnostics
+
+	if source.AllowedHttpMethods != nil {
+		data.AllowedHttpMethods, diags = types.ListValueFrom(ctx, types.StringType, source.AllowedHttpMethods)
+		if diags.HasError() {
+			return diags
+		}
+	}
+
+	if source.Verification != nil {
+		sourceData, err := toSourceJSON(source)
+		if err != nil {
+			diags.AddError("Error converting source to JSON", err.Error())
+			return diags
+		}
+		authConfig := getAuthConfig(sourceData)
+		data.Auth = resource_source_config_ebay.AuthValue{}
+		data.Auth.ClientSecret = types.StringValue(authConfig["client_secret"].(string))
+		data.Auth.VerificationToken = types.StringValue(authConfig["verification_token"].(string))
+		data.Auth.Environment = types.StringValue(authConfig["environment"].(string))
+		data.Auth.DevId = types.StringValue(authConfig["dev_id"].(string))
+		data.Auth.ClientId = types.StringValue(authConfig["client_id"].(string))
+	}
+
 	return nil
 }

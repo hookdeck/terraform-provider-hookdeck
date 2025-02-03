@@ -2,6 +2,7 @@ package tfgen
 
 import (
 	"fmt"
+	"log"
 	"strings"
 
 	"github.com/getkin/kin-openapi/openapi3"
@@ -63,11 +64,32 @@ func parseSourceConfigAttributes(doc *openapi3.T, sourceTypeName string) []resou
 	}
 
 	for fieldName, field := range sourceSchema.Properties {
+		log.Println("fieldName", fieldName)
 		attr := parseSchemaField(fieldName, field, sourceSchema.Required)
 		attributes = append(attributes, attr)
 	}
 
 	return attributes
+}
+
+func getElementType(field *openapi3.SchemaRef) schema.ElementType {
+	elementType := schema.ElementType{}
+	if field.Value == nil {
+		return elementType
+	}
+
+	switch {
+	case field.Value.Type.Is("string"):
+		elementType.String = &schema.StringType{}
+	case field.Value.Type.Is("number"):
+		elementType.Number = &schema.NumberType{}
+	case field.Value.Type.Is("integer"):
+		elementType.Int64 = &schema.Int64Type{}
+	case field.Value.Type.Is("boolean"):
+		elementType.Bool = &schema.BoolType{}
+	}
+
+	return elementType
 }
 
 func parseSchemaField(fieldName string, field *openapi3.SchemaRef, required []string) resource.Attribute {
@@ -122,14 +144,67 @@ func parseSchemaField(fieldName string, field *openapi3.SchemaRef, required []st
 			attr.String = stringAttr
 		case field.Value.Type.Is("array"):
 			if items := field.Value.Items; items != nil {
-				attr.List = &resource.ListAttribute{
-					ComputedOptionalRequired: schema.Optional,
-					ElementType: schema.ElementType{
-						String: &schema.StringType{},
-					},
-				}
-				if isRequired {
-					attr.List.ComputedOptionalRequired = schema.Required
+				if items.Value.Type.Is("object") {
+					nestedAttrs := []resource.Attribute{}
+					for propName, prop := range items.Value.Properties {
+						nestedAttr := parseSchemaField(propName, prop, items.Value.Required)
+						nestedAttrs = append(nestedAttrs, nestedAttr)
+					}
+					attr.ListNested = &resource.ListNestedAttribute{
+						NestedObject: resource.NestedAttributeObject{
+							Attributes: nestedAttrs,
+						},
+						ComputedOptionalRequired: schema.Optional,
+					}
+					if isRequired {
+						attr.ListNested.ComputedOptionalRequired = schema.Required
+					}
+				} else {
+					listAttr := &resource.ListAttribute{
+						ComputedOptionalRequired: schema.Optional,
+						ElementType:              getElementType(items),
+					}
+
+					// Add enum validation for string arrays
+					if items.Value.Type.Is("string") && len(items.Value.Enum) > 0 {
+						enumVals := make([]string, 0, len(items.Value.Enum))
+						for _, enum := range items.Value.Enum {
+							if str, ok := enum.(string); ok {
+								enumVals = append(enumVals, str)
+							}
+						}
+						if len(enumVals) > 0 {
+							var enumDef strings.Builder
+							enumDef.WriteString("listvalidator.ValueStringsAre(\n")
+							enumDef.WriteString("\tstringvalidator.OneOf(\n")
+							for _, val := range enumVals {
+								enumDef.WriteString(fmt.Sprintf("\t\t%q,\n", val))
+							}
+							enumDef.WriteString("\t),\n")
+							enumDef.WriteString(")")
+
+							listAttr.Validators = []schema.ListValidator{
+								{
+									Custom: &schema.CustomValidator{
+										Imports: []code.Import{
+											{
+												Path: "github.com/hashicorp/terraform-plugin-framework-validators/listvalidator",
+											},
+											{
+												Path: "github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator",
+											},
+										},
+										SchemaDefinition: enumDef.String(),
+									},
+								},
+							}
+						}
+					}
+
+					if isRequired {
+						listAttr.ComputedOptionalRequired = schema.Required
+					}
+					attr.List = listAttr
 				}
 			}
 		case field.Value.Type.Is("object"):

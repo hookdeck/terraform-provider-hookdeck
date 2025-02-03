@@ -5,6 +5,7 @@ package resource_source_config_ebay
 import (
 	"context"
 	"fmt"
+	"github.com/hashicorp/terraform-plugin-framework-validators/listvalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
@@ -23,6 +24,17 @@ func SourceConfigEbayResourceSchema(ctx context.Context) schema.Schema {
 			"allowed_http_methods": schema.ListAttribute{
 				ElementType: types.StringType,
 				Optional:    true,
+				Validators: []validator.List{
+					listvalidator.ValueStringsAre(
+						stringvalidator.OneOf(
+							"GET",
+							"POST",
+							"PUT",
+							"PATCH",
+							"DELETE",
+						),
+					),
+				},
 			},
 			"auth": schema.SingleNestedAttribute{
 				Attributes: map[string]schema.Attribute{
