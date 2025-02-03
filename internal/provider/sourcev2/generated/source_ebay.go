@@ -38,7 +38,7 @@ type ebaySourceConfigResource struct {
 }
 
 func (r *ebaySourceConfigResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
-	resp.TypeName = req.ProviderTypeName + "_ebay_source_config"
+	resp.TypeName = req.ProviderTypeName + "_source_config_ebay"
 }
 
 func (r *ebaySourceConfigResource) Schema(ctx context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
@@ -183,7 +183,7 @@ func (r *ebaySourceConfigResource) deleteSourceConfig(ctx context.Context, data 
 func dataToUpdatePayload(data *resource_source_config_ebay.SourceConfigEbayModel) (*hookdeck.SourceUpdateRequest, diag.Diagnostics) {
 	config := &hookdeck.SourceTypeConfigEbay{}
 
-	if !data.Auth.IsUnknown() || !data.Auth.IsNull() {
+	if !data.Auth.IsUnknown() && !data.Auth.IsNull() {
 		environment, err := hookdeck.NewSourceTypeConfigEbayAuthEnvironmentFromString(data.Auth.Environment.ValueString())
 		if err != nil {
 			var diags diag.Diagnostics
@@ -199,9 +199,9 @@ func dataToUpdatePayload(data *resource_source_config_ebay.SourceConfigEbayModel
 		}
 	}
 
-	if !data.AllowedHttpMethods.IsUnknown() || !data.AllowedHttpMethods.IsNull() {
+	if !data.AllowedHttpMethods.IsUnknown() && !data.AllowedHttpMethods.IsNull() {
 		for _, method := range data.AllowedHttpMethods.Elements() {
-			method, err := hookdeck.NewSourceTypeConfigEbayAllowedHttpMethodsItemFromString(method.String())
+			method, err := hookdeck.NewSourceTypeConfigEbayAllowedHttpMethodsItemFromString(method.(types.String).ValueString())
 			if err != nil {
 				var diags diag.Diagnostics
 				diags.AddError("Error converting allowed http method to SourceTypeConfigEbayAllowedHttpMethodsItem", err.Error())
@@ -211,7 +211,15 @@ func dataToUpdatePayload(data *resource_source_config_ebay.SourceConfigEbayModel
 		}
 	}
 
+	sourceType, err := hookdeck.NewSourceUpdateRequestTypeFromString("EBAY")
+	if err != nil {
+		var diags diag.Diagnostics
+		diags.AddError("Error converting source type to SourceUpdateRequestType", err.Error())
+		return nil, diags
+	}
+
 	return &hookdeck.SourceUpdateRequest{
+		Type: hookdeck.Optional(sourceType),
 		Config: hookdeck.Optional(hookdeck.SourceTypeConfig{
 			SourceTypeConfigEbay: config,
 		}),
@@ -235,7 +243,6 @@ func refreshData(ctx context.Context, data *resource_source_config_ebay.SourceCo
 			return diags
 		}
 		authConfig := getAuthConfig(sourceData)
-		data.Auth = resource_source_config_ebay.AuthValue{}
 		data.Auth.ClientSecret = types.StringValue(authConfig["client_secret"].(string))
 		data.Auth.VerificationToken = types.StringValue(authConfig["verification_token"].(string))
 		data.Auth.Environment = types.StringValue(authConfig["environment"].(string))
