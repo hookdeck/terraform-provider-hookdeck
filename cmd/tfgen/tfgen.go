@@ -1,0 +1,15 @@
+package main
+
+import (
+	"fmt"
+	"os"
+	"terraform-provider-hookdeck/internal/tfgen"
+)
+
+func main() {
+	fmt.Println("Generating TF Provider Code Specification")
+	if err := tfgen.Generate(); err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
+}

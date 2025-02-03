@@ -1,0 +1,21 @@
+{
+	"provider": {
+		"name": "hookdeck"
+	},
+	"resources": [
+		{
+			"name": "source",
+			"schema": {
+				"attributes": [
+					{
+						"name": "id",
+						"string": {
+							"computed_optional_required": "computed"
+						}
+					}
+				]
+			}
+		}
+	],
+	"version": "0.1"
+}

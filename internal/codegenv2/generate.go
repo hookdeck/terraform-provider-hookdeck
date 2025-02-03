@@ -11,33 +11,77 @@ import (
 )
 
 func generateSources(sourceTypes []SourceType) error {
-	// Load all templates
-	tmpl, err := template.ParseFiles(
-		getRelativePath("templates/source.go.tmpl"),
-		getRelativePath("templates/source_config_resource.go.tmpl"),
-		getRelativePath("templates/resource.go.tmpl"),
-	)
-	if err != nil {
-		return fmt.Errorf("failed to parse templates: %w", err)
+	// Load templates
+	tmpl := template.New("").Funcs(template.FuncMap{
+		"eq": func(a, b interface{}) bool {
+			fmt.Printf("eq: comparing %v with %v\n", a, b)
+			return a == b
+		},
+		"getFieldType": func(f FieldType) string {
+			t := f.getFieldType()
+			fmt.Printf("getFieldType: got %s\n", t)
+			return t
+		},
+		"asStringField": func(f FieldType) StringField {
+			fmt.Printf("asStringField: type=%T\n", f)
+			if sf, ok := f.(StringField); ok {
+				return sf
+			}
+			return StringField{}
+		},
+		"asArrayField": func(f FieldType) ArrayField {
+			fmt.Printf("asArrayField: type=%T\n", f)
+			if af, ok := f.(ArrayField); ok {
+				return af
+			}
+			return ArrayField{}
+		},
+		"asObjectField": func(f FieldType) ObjectField {
+			fmt.Printf("asObjectField: type=%T\n", f)
+			if of, ok := f.(ObjectField); ok {
+				return of
+			}
+			return ObjectField{}
+		},
+	})
+
+	// Debug: Print source types
+	for _, sourceType := range sourceTypes {
+		fmt.Printf("Source type %s fields:\n", sourceType.NamePascal)
+		for _, field := range sourceType.Fields {
+			fmt.Printf("  - %s: Type=%T\n", field.NamePascal, field.Type)
+		}
 	}
 
-	// Generate resource.go
-	var buf bytes.Buffer
-	err = tmpl.ExecuteTemplate(&buf, "resource.go.tmpl", nil)
+	// Parse helpers first
+	helpersContent, err := os.ReadFile(getRelativePath("templates/helpers.go.tmpl"))
 	if err != nil {
-		return fmt.Errorf("failed to execute resource template: %w", err)
+		return fmt.Errorf("failed to read helpers template: %w", err)
 	}
-	writeFile("resource.go", buf.String())
+	_, err = tmpl.Parse(string(helpersContent))
+	if err != nil {
+		return fmt.Errorf("failed to parse helpers template: %w", err)
+	}
+
+	// Parse main template
+	content, err := os.ReadFile(getRelativePath("templates/source_config_resource.go.tmpl"))
+	if err != nil {
+		return fmt.Errorf("failed to read template: %w", err)
+	}
+	_, err = tmpl.New("source_config_resource.go.tmpl").Parse(string(content))
+	if err != nil {
+		return fmt.Errorf("failed to parse template: %w", err)
+	}
 
 	// Generate source files
+	var buf bytes.Buffer
 	for _, sourceType := range sourceTypes {
 		fmt.Printf("generating source \"%s\"\n", sourceType.NameSnake)
 
 		buf.Reset()
-		err = tmpl.ExecuteTemplate(&buf, "source.go.tmpl", sourceType)
+		err = tmpl.ExecuteTemplate(&buf, "source_config_resource.go.tmpl", sourceType)
 		if err != nil {
-			fmt.Printf("Failed to execute template: %v\n", err)
-			return err
+			return fmt.Errorf("failed to execute template for %s: %w", sourceType.NameSnake, err)
 		}
 		writeFile("source_"+strings.ReplaceAll(sourceType.NameSnake, "_", "")+".go", buf.String())
 	}

@@ -30,6 +30,7 @@ func RunCodeGen() error {
 
 	// TODO: remove
 	// sourceTypeNames = []string{"SourceTypeConfigShopify"}
+	sourceTypeNames = []string{"SourceTypeConfigEbay"}
 
 	// Construct source type data
 	sourceTypes := []SourceType{}
@@ -41,7 +42,10 @@ func RunCodeGen() error {
 			continue
 		}
 		sourceTypes = append(sourceTypes, *sourceType)
-		log.Println(sourceType)
+		log.Printf("Source type %s has %d fields:", sourceType.NamePascal, len(sourceType.Fields))
+		for _, field := range sourceType.Fields {
+			log.Printf("  - %s (%T)", field.NamePascal, field.Type)
+		}
 	}
 
 	sort.Slice(sourceTypes, func(i, j int) bool {

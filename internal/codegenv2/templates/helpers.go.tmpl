@@ -1,0 +1,485 @@
+{{define "field_schema"}}
+{{$type := getFieldType .Type}}
+{{if eq $type "StringField"}}
+	{{$stringField := asStringField .Type}}
+	schema.StringAttribute{
+	Required: {{.Required}},
+	Optional: {{not .Required}},
+	Description: "{{.NamePascal}}",
+	{{if $stringField.IsEnum -}}
+	Validators: []validator.String{
+		stringvalidator.OneOf(
+			{{- range $stringField.EnumValues -}}
+			"{{.}}",
+			{{- end}}
+		),
+	},
+	{{- end}}
+	},
+{{else if eq $type "ArrayField"}}
+	{{$arrayField := asArrayField .Type}}
+	{{$itemType := getFieldType $arrayField.ItemType}}
+	{{$hasEnums := and (eq $itemType "StringField") (asStringField $arrayField.ItemType).IsEnum -}}
+schema.ListAttribute{
+	Required: {{.Required}},
+	Optional: {{not .Required}},
+	Description: "{{.NamePascal}}",
+	ElementType: {{if eq $itemType "StringField"}}types.StringType{{else}}/* handle other types */{{end}},
+		{{if $hasEnums}}
+	Validators: []validator.List{
+		listvalidator.ValueStringsAre(
+			stringvalidator.OneOf(
+				{{- range (asStringField $arrayField.ItemType).EnumValues}}
+				"{{.}}",
+				{{- end}}
+			),
+		),
+		},{{end}}
+	},
+{{else if eq $type "ObjectField"}}
+	{{$objectField := asObjectField .Type}}
+schema.SingleNestedAttribute{
+	Required: {{.Required}},
+	Optional: {{not .Required}},
+	Description: "{{.NamePascal}}",
+	Attributes: map[string]schema.Attribute{
+		{{- range $objectField.Properties}}
+		"{{.NameSnake}}": {{template "field_schema" .}}
+		{{- end}}
+	},
+	},
+{{else}}
+schema.StringAttribute{
+	Required: {{.Required}},
+	Optional: {{not .Required}},
+	Description: "UNKNOWN TYPE {{$type}}",
+	},
+{{end}}
+{{end}}
+
+{{define "source_config_model"}}
+type sourceConfig{{.NameConfig}}Model struct {
+	SourceID types.String `tfsdk:"source_id"`
+	{{range .Fields}}
+	{{$type := getFieldType .Type}}
+	{{if eq $type "ArrayField"}}
+	{{.NamePascal}} types.List `tfsdk:"{{.NameSnake}}"`
+	{{else if eq $type "ObjectField"}}
+	{{.NamePascal}} *sourceConfig{{$.NameConfig}}{{.NamePascal}}Model `tfsdk:"{{.NameSnake}}"`
+	{{else}}
+	{{.NamePascal}} types.String `tfsdk:"{{.NameSnake}}"`
+	{{end}}
+	{{end}}
+}
+
+{{range .Fields}}
+{{$type := getFieldType .Type}}
+{{if eq $type "ObjectField"}}
+{{$objectField := asObjectField .Type}}
+type sourceConfig{{$.NameConfig}}{{.NamePascal}}Model struct {
+	{{range $objectField.Properties}}
+	{{$type := getFieldType .Type}}
+	{{if eq $type "ArrayField"}}
+	{{.NamePascal}} types.List `tfsdk:"{{.NameSnake}}"`
+	{{else if eq $type "ObjectField"}}
+	{{.NamePascal}} *sourceConfig{{$.NameConfig}}{{.NamePascal}}Model `tfsdk:"{{.NameSnake}}"`
+	{{else}}
+	{{.NamePascal}} types.String `tfsdk:"{{.NameSnake}}"`
+	{{end}}
+	{{end}}
+}
+{{end}}
+{{end}}
+{{end}}
+
+{{define "refresh_fields"}}
+{{range .Fields}}
+{{$type := getFieldType .Type}}
+if v, ok := authConfig["{{.NameSnake}}"]; ok && v != nil {
+	{{if eq $type "ArrayField"}}
+	if arr, ok := v.([]interface{}); ok {
+		strs := make([]string, len(arr))
+		for i, item := range arr {
+			strs[i] = fmt.Sprint(item)
+		}
+		m.{{.NamePascal}} = strs
+	}
+	{{else if eq $type "ObjectField"}}
+	if obj, ok := v.(map[string]interface{}); ok {
+		m.{{.NamePascal}} = obj
+	}
+	{{else}}
+	m.{{.NamePascal}} = types.StringValue(v.(string))
+	{{end}}
+} else {
+	{{if eq $type "ArrayField"}}
+	m.{{.NamePascal}} = nil
+	{{else if eq $type "ObjectField"}}
+	m.{{.NamePascal}} = nil
+	{{else}}
+	m.{{.NamePascal}} = types.StringNull()
+	{{end}}
+}
+{{end}}
+{{end}}
+
+{{define "update_fields_vars"}}
+{{range .Fields}}
+{{$type := getFieldType .Type}}
+{{if eq $type "StringField"}}
+{{$stringField := asStringField .Type}}
+{{if $stringField.IsEnum}}
+{{.NameCamel}}, err := {{$stringField.EnumNameString}}(m.{{.NamePascal}}.ValueString())
+if err != nil {
+	return nil
+}
+{{end}}
+{{else if eq $type "ObjectField"}}
+{{$objectField := asObjectField .Type}}
+{{range $objectField.Properties}}
+{{$type := getFieldType .Type}}
+{{if eq $type "StringField"}}
+{{$stringField := asStringField .Type}}
+{{if $stringField.IsEnum}}
+{{.NameCamel}}, err := {{$stringField.EnumNameString}}(m.{{$.NamePascal}}.{{.NamePascal}}.ValueString())
+if err != nil {
+	return nil
+}
+{{end}}
+{{end}}
+{{end}}
+{{end}}
+{{end}}
+{{end}}
+
+{{define "update_fields_assignments"}}
+{{- range .Fields -}}
+{{$type := getFieldType .Type}}
+{{if eq $type "StringField"}}
+{{$stringField := asStringField .Type}}
+{{if $stringField.IsEnum}}
+{{.NamePascal}}: {{.NameCamel}},
+{{else}}
+{{.NamePascal}}: m.{{.NamePascal}}.ValueString(),
+{{end}}
+{{else if eq $type "ArrayField"}}
+{{.NamePascal}}: m.{{.NamePascal}},
+{{else if eq $type "ObjectField"}}
+{{$objectField := asObjectField .Type}}
+{{.NamePascal}}: &hookdeck.SourceTypeConfig{{$.NameConfig}}{{.NamePascal}}{
+	{{range $objectField.Properties}}
+	{{$type := getFieldType .Type}}
+	{{if eq $type "StringField"}}
+	{{$stringField := asStringField .Type}}
+	{{if $stringField.IsEnum}}
+	{{.NamePascal}}: {{.NameCamel}},
+	{{else}}
+	{{.NamePascal}}: m.{{$.NamePascal}}.{{.NamePascal}}.ValueString(),
+	{{end}}
+	{{end}}
+	{{end}}
+},
+{{end}}
+{{- end -}}
+{{end}}
+
+{{define "field_getters"}}
+{{range .Fields}}
+{{$field := .}}
+{{$type := getFieldType .Type}}
+{{if eq $type "ArrayField"}}
+{{$arrayField := asArrayField .Type}}
+{{$itemType := getFieldType $arrayField.ItemType}}
+{{if and (eq $itemType "StringField") (asStringField $arrayField.ItemType).IsEnum}}
+func (m *sourceConfig{{$.NameConfig}}Model) get{{.NamePascal}}() ([]hookdeck.SourceTypeConfig{{$.NameConfig}}{{.NamePascal}}Item, error) {
+    items := []hookdeck.SourceTypeConfig{{$.NameConfig}}{{.NamePascal}}Item{}
+    for _, element := range m.{{.NamePascal}}.Elements() {
+        item, err := hookdeck.NewSourceTypeConfig{{$.NameConfig}}{{.NamePascal}}ItemFromString(element.(types.String).ValueString())
+        if err != nil {
+            return nil, err
+        }
+        items = append(items, item)
+    }
+    return items, nil
+}
+{{else}}
+func (m *sourceConfig{{$.NameConfig}}Model) get{{.NamePascal}}() {
+	// TODO
+}
+{{end}}
+{{else}}
+func (m *sourceConfig{{$.NameConfig}}Model) get{{.NamePascal}}() (*hookdeck.SourceTypeConfig{{$.NameConfig}}{{.NamePascal}}, error) {
+    {{if eq $type "StringField"}}
+    {{$stringField := asStringField .Type}}
+    {{if $stringField.IsEnum}}
+    {{.NameCamel}}, err := hookdeck.NewSourceTypeConfig{{$.NameConfig}}{{.NamePascal}}FromString(m.{{.NamePascal}}.ValueString())
+    if err != nil {
+        return nil, err
+    }
+    return &hookdeck.SourceTypeConfig{{$.NameConfig}}{{.NamePascal}}{
+        Value: {{.NameCamel}},
+    }, nil
+    {{else}}
+    return &hookdeck.SourceTypeConfig{{$.NameConfig}}{{.NamePascal}}{
+        Value: m.{{.NamePascal}}.ValueString(),
+    }, nil
+    {{end}}
+    {{else if eq $type "ObjectField"}}
+    {{$objectField := asObjectField .Type}}
+    {{range $objectField.Properties}}
+    {{$type := getFieldType .Type}}
+    {{if eq $type "StringField"}}
+    {{$stringField := asStringField .Type}}
+    {{if $stringField.IsEnum}}
+    {{.NameCamel}}, err := hookdeck.NewSourceTypeConfig{{$.NameConfig}}{{$field.NamePascal}}{{.NamePascal}}FromString(m.{{$field.NamePascal}}.{{.NamePascal}}.ValueString())
+    if err != nil {
+        return nil, err
+    }
+    {{end}}
+    {{end}}
+    {{end}}
+    return &hookdeck.SourceTypeConfig{{$.NameConfig}}{{.NamePascal}}{
+        {{range $objectField.Properties}}
+        {{$type := getFieldType .Type}}
+        {{if eq $type "StringField"}}
+        {{$stringField := asStringField .Type}}
+        {{if $stringField.IsEnum}}
+        {{.NamePascal}}: {{.NameCamel}},
+        {{else}}
+        {{.NamePascal}}: m.{{$field.NamePascal}}.{{.NamePascal}}.ValueString(),
+        {{end}}
+        {{end}}
+        {{end}}
+    }, nil
+    {{end}}
+}
+{{end}}
+{{end}}
+{{end}}
+
+{{/*
+ToUpdatePayload
+ */}}
+{{define "sdk_update_payload"}}
+func (m *sourceConfig{{.NameConfig}}Model) ToUpdatePayload() *hookdeck.SourceUpdateRequest {
+	sourceType, err := hookdeck.NewSourceUpdateRequestTypeFromString("{{.TypeEnum}}")
+	if err != nil {
+		return nil
+	}
+
+	{{range .Fields}}
+	{{.NameCamel}}, err := m.get{{.NamePascal}}()
+	if err != nil {
+		return nil
+	}
+	{{end}}
+
+	config := &hookdeck.SourceTypeConfig{
+		SourceTypeConfig{{.NameConfig}}: &hookdeck.SourceTypeConfig{{.NameConfig}}{
+			{{range .Fields}}
+			{{.NamePascal}}: {{.NameCamel}},
+			{{end}}
+		},
+	}
+	return &hookdeck.SourceUpdateRequest{
+		Type:   hookdeck.Optional(sourceType),
+		Config: hookdeck.OptionalOrNull(config),
+	}
+}
+{{end}}
+
+
+{{/*
+Resource
+ */}}
+{{define "resource"}}
+var (
+	_ resource.Resource                = &sourceConfig{{.NameConfig}}Resource{}
+	_ resource.ResourceWithConfigure   = &sourceConfig{{.NameConfig}}Resource{}
+	_ resource.ResourceWithImportState = &sourceConfig{{.NameConfig}}Resource{}
+)
+
+func init() {
+	newResources = append(newResources, NewSourceConfig{{.NameConfig}}Resource)
+}
+
+func NewSourceConfig{{.NameConfig}}Resource() resource.Resource {
+	return &sourceConfig{{.NameConfig}}Resource{}
+}
+
+type sourceConfig{{.NameConfig}}Resource struct {
+	client hookdeckClient.Client
+}
+
+func (r *sourceConfig{{.NameConfig}}Resource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
+	resp.TypeName = req.ProviderTypeName + "_source_config_{{.NameSnake}}"
+}
+
+func (r *sourceConfig{{.NameConfig}}Resource) Configure(_ context.Context, req resource.ConfigureRequest, resp *resource.ConfigureResponse) {
+	if req.ProviderData == nil {
+		return
+	}
+
+	client, ok := req.ProviderData.(*hookdeckClient.Client)
+	if !ok {
+		resp.Diagnostics.AddError(
+			"Unexpected Resource Configure Type",
+			fmt.Sprintf("Expected *hookdeckClient.Client, got: %T. Please report this issue to the provider developers.", req.ProviderData),
+		)
+		return
+	}
+
+	r.client = *client
+}
+
+func (r *sourceConfig{{.NameConfig}}Resource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
+	var data sourceConfig{{.NameConfig}}Model
+	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	_, err := r.client.Source.Update(context.Background(), data.SourceID.ValueString(), data.ToUpdatePayload())
+	if err != nil {
+		resp.Diagnostics.AddError("Error creating source config", err.Error())
+		return
+	}
+
+	source, err := r.client.Source.Retrieve(context.Background(), data.SourceID.ValueString(), &hookdeck.SourceRetrieveRequest{
+		Include: hookdeck.String("verification.configs"),
+	})
+	if err != nil {
+		resp.Diagnostics.AddError("Error reading source config", err.Error())
+		return
+	}
+
+	data.Refresh(source)
+	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
+}
+
+func (r *sourceConfig{{.NameConfig}}Resource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
+	var data sourceConfig{{.NameConfig}}Model
+	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	source, err := r.client.Source.Retrieve(context.Background(), data.SourceID.ValueString(), &hookdeck.SourceRetrieveRequest{
+		Include: hookdeck.String("verification.configs"),
+	})
+	if err != nil {
+		resp.Diagnostics.AddError("Error reading source config", err.Error())
+		return
+	}
+
+	data.Refresh(source)
+	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
+}
+
+func (r *sourceConfig{{.NameConfig}}Resource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
+	var data sourceConfig{{.NameConfig}}Model
+	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	_, err := r.client.Source.Update(context.Background(), data.SourceID.ValueString(), data.ToUpdatePayload())
+	if err != nil {
+		resp.Diagnostics.AddError("Error updating source config", err.Error())
+		return
+	}
+
+	source, err := r.client.Source.Retrieve(context.Background(), data.SourceID.ValueString(), &hookdeck.SourceRetrieveRequest{
+		Include: hookdeck.String("verification.configs"),
+	})
+	if err != nil {
+		resp.Diagnostics.AddError("Error reading source config", err.Error())
+		return
+	}
+
+	data.Refresh(source)
+	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
+}
+
+func (r *sourceConfig{{.NameConfig}}Resource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
+	var data sourceConfig{{.NameConfig}}Model
+	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	_, err := r.client.Source.Update(context.Background(), data.SourceID.ValueString(), data.ToDeletePayload())
+	if err != nil {
+		resp.Diagnostics.AddError("Error deleting source config", err.Error())
+		return
+	}
+}
+
+func (r *sourceConfig{{.NameConfig}}Resource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
+	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
+}
+{{end}}
+
+
+
+
+
+
+
+
+
+{{define "sdk_refresh"}}
+func (m *sourceConfig{{.NameConfig}}Model) Refresh(source *hookdeck.Source) {
+    m.SourceID = types.StringValue(source.Id)
+    data, err := toSourceJSON(source)
+    if err != nil {
+        return
+    }
+
+    // Handle non-auth fields first
+    {{range .Fields}}
+    {{if ne .NamePascal "Auth"}}
+    {{$type := getFieldType .Type}}
+    if v, ok := data["{{.NameSnake}}"]; ok && v != nil {
+        {{if eq $type "ArrayField"}}
+        if arr, ok := v.([]interface{}); ok {
+            values := make([]attr.Value, len(arr))
+            for i, item := range arr {
+                values[i] = types.StringValue(fmt.Sprint(item))
+            }
+            m.{{.NamePascal}}, _ = types.ListValue(types.StringType, values)
+        }
+        {{else if eq $type "ObjectField"}}
+        if obj, ok := v.(map[string]interface{}); ok {
+            m.{{.NamePascal}} = obj
+        }
+        {{else}}
+        m.{{.NamePascal}} = types.StringValue(v.(string))
+        {{end}}
+    } else {
+        {{if eq $type "ArrayField"}}
+        m.{{.NamePascal}} = types.ListNull(types.StringType)
+        {{else if eq $type "ObjectField"}}
+        m.{{.NamePascal}} = nil
+        {{else}}
+        m.{{.NamePascal}} = types.StringNull()
+        {{end}}
+    }
+    {{end}}
+    {{end}}
+
+    // Handle auth only if verification matches
+    if source.Verification != nil && source.Verification.Type == "{{.TypeEnum}}" {
+        authConfig := getAuthConfig(data)
+				m.Auth = &sourceConfig{{.NamePascal}}AuthModel{}
+        {{range .Fields}}
+        {{if eq .NamePascal "Auth"}}
+        {{$objectField := asObjectField .Type}}
+        {{range $objectField.Properties}}
+        m.Auth.{{.NamePascal}} = types.StringValue(authConfig["{{.NameSnake}}"].(string))
+        {{end}}
+        {{end}}
+        {{end}}
+    }
+}
+{{end}}

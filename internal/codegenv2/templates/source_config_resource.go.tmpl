@@ -1,28 +1,28 @@
-{{define "source_config_resource"}}
-// Source Config Resource
-var (
-	_ resource.Resource                = &{{.NameCamel}}SourceConfigResource{}
-	_ resource.ResourceWithConfigure   = &{{.NameCamel}}SourceConfigResource{}
-	_ resource.ResourceWithImportState = &{{.NameCamel}}SourceConfigResource{}
+package generated
+
+import (
+	"context"
+	"fmt"
+
+	"github.com/hashicorp/terraform-plugin-framework/path"
+	"github.com/hashicorp/terraform-plugin-framework/resource"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	{{if .HasEnums -}}
+	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
+	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
+	"github.com/hashicorp/terraform-plugin-framework-validators/listvalidator"
+	{{- end}}
+	"github.com/hashicorp/terraform-plugin-framework/attr"
+	"github.com/hashicorp/terraform-plugin-framework/types"
+	
+	hookdeck "github.com/hookdeck/hookdeck-go-sdk"
+	hookdeckClient "github.com/hookdeck/hookdeck-go-sdk/client"
 )
 
-func init() {
-	newResources = append(newResources, New{{.NamePascal}}SourceConfigResource)
-}
+{{template "resource" .}}
 
-func New{{.NamePascal}}SourceConfigResource() resource.Resource {
-	return &{{.NameCamel}}SourceConfigResource{}
-}
 
-type {{.NameCamel}}SourceConfigResource struct {
-	client hookdeckClient.Client
-}
-
-func (r *{{.NameCamel}}SourceConfigResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
-	resp.TypeName = req.ProviderTypeName + "_source_config_{{.NameSnake}}"
-}
-
-func (r *{{.NameCamel}}SourceConfigResource) Schema(_ context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
+func (r *sourceConfig{{.NameConfig}}Resource) Schema(_ context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
 		Description: "{{.NamePascal}} Source Config Resource",
 		Attributes: map[string]schema.Attribute{
@@ -30,275 +30,24 @@ func (r *{{.NameCamel}}SourceConfigResource) Schema(_ context.Context, _ resourc
 				Required:    true,
 				Description: "ID of the source",
 			},
-			{{if .Auth}}
-			"auth": schema.SingleNestedAttribute{
-				Required: true,
-				Attributes: map[string]schema.Attribute{
-					{{- range .Auth}}
-					"{{.NameSnake}}": schema.StringAttribute{
-						Required:    {{.Required}},
-						Optional:    {{not .Required}},
-						Description: "{{.NamePascal}} for {{$.NamePascal}}",
-						{{if .IsEnum}}
-						Validators: []validator.String{
-							stringvalidator.OneOf(
-								{{- range .EnumValues}}
-								"{{.}}",
-								{{- end}}
-							),
-						},
-						{{end}}
-					},
-					{{- end}}
-				},
-			},
+			{{range .Fields}}
+			"{{.NameSnake}}": {{template "field_schema" .}}
 			{{end}}
 		},
 	}
 }
 
-func (r *{{.NameCamel}}SourceConfigResource) Configure(_ context.Context, req resource.ConfigureRequest, resp *resource.ConfigureResponse) {
-	if req.ProviderData == nil {
-		return
-	}
 
-	client, ok := req.ProviderData.(*hookdeckClient.Client)
-	if !ok {
-		resp.Diagnostics.AddError(
-			"Unexpected Resource Configure Type",
-			fmt.Sprintf("Expected *hookdeckClient.Client, got: %T. Please report this issue to the provider developers.", req.ProviderData),
-		)
-		return
-	}
+{{template "source_config_model" .}}
 
-	r.client = *client
-}
+{{template "sdk_refresh" .}}
 
-func (r *{{.NameCamel}}SourceConfigResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
-	var data {{.NameCamel}}SourceConfigResourceModel
-	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
+{{template "sdk_update_payload" .}}
 
-	_, err := r.client.Source.Update(context.Background(), data.SourceID.ValueString(), data.ToUpdatePayload())
-	if err != nil {
-		resp.Diagnostics.AddError("Error creating source config", err.Error())
-		return
-	}
-
-	source, err := r.client.Source.Retrieve(context.Background(), data.SourceID.ValueString(), &hookdeck.SourceRetrieveRequest{
-		Include: hookdeck.String("verification.configs"),
-	})
-	if err != nil {
-		resp.Diagnostics.AddError("Error reading source config", err.Error())
-		return
-	}
-
-	data.Refresh(source)
-	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
-}
-
-func (r *{{.NameCamel}}SourceConfigResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
-	var data {{.NameCamel}}SourceConfigResourceModel
-	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
-
-	source, err := r.client.Source.Retrieve(context.Background(), data.SourceID.ValueString(), &hookdeck.SourceRetrieveRequest{
-		Include: hookdeck.String("verification.configs"),
-	})
-	if err != nil {
-		resp.Diagnostics.AddError("Error reading source config", err.Error())
-		return
-	}
-
-	data.Refresh(source)
-	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
-}
-
-func (r *{{.NameCamel}}SourceConfigResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
-	var data {{.NameCamel}}SourceConfigResourceModel
-	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
-
-	_, err := r.client.Source.Update(context.Background(), data.SourceID.ValueString(), data.ToUpdatePayload())
-	if err != nil {
-		resp.Diagnostics.AddError("Error updating source config", err.Error())
-		return
-	}
-
-	source, err := r.client.Source.Retrieve(context.Background(), data.SourceID.ValueString(), &hookdeck.SourceRetrieveRequest{
-		Include: hookdeck.String("verification.configs"),
-	})
-	if err != nil {
-		resp.Diagnostics.AddError("Error reading source config", err.Error())
-		return
-	}
-
-	data.Refresh(source)
-	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
-}
-
-func (r *{{.NameCamel}}SourceConfigResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
-	var data {{.NameCamel}}SourceConfigResourceModel
-	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
-
-	_, err := r.client.Source.Update(context.Background(), data.SourceID.ValueString(), data.ToDeletePayload())
-	if err != nil {
-		resp.Diagnostics.AddError("Error deleting source config", err.Error())
-		return
-	}
-}
-
-func (r *{{.NameCamel}}SourceConfigResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
-	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
-}
-
-type {{.NameCamel}}SourceConfigResourceModel struct {
-	SourceID types.String           `tfsdk:"source_id"`
-	{{if .Auth}}
-	Auth     {{.NameCamel}}SourceAuthModel `tfsdk:"auth"`
-	{{end}}
-}
-
-{{if .Auth}}
-type {{.NameCamel}}SourceAuthModel struct {
-	{{- range .Auth}}
-	{{.NamePascal}} types.String `tfsdk:"{{.NameSnake}}"`
-	{{- end}}
-}
-{{end}}
-
-func (m *{{.NameCamel}}SourceConfigResourceModel) Refresh(source *hookdeck.Source) {
-	m.SourceID = types.StringValue(source.Id)
-	{{if .Auth}}
-	if source.Verification != nil {
-		if source.Verification.Type == "{{.TypeEnum}}" {
-			data, err := toSourceJSON(source)
-			if err != nil {
-				// TODO: handle error
-				return
-			}
-			authConfig := getAuthConfig(data)
-			{{- range .Auth}}
-			{{if .Required}}
-			m.Auth.{{.NamePascal}} = types.StringValue(authConfig["{{.NameSnake}}"].(string))
-			{{else}}
-			if v, ok := authConfig["{{.NameSnake}}"]; ok && v != nil {
-				m.Auth.{{.NamePascal}} = types.StringValue(v.(string))
-			} else {
-				m.Auth.{{.NamePascal}} = types.StringNull()
-			}
-			{{end}}
-			{{- end}}
-		}
-	}
-	{{end}}
-}
-
-func (m *{{.NameCamel}}SourceConfigResourceModel) ToCreatePayload() *hookdeck.SourceUpdateRequest {
-	sourceType, err := hookdeck.NewSourceUpdateRequestTypeFromString("{{.TypeEnum}}")
-	if err != nil {
-		return nil
-	}
-
-	{{if .Auth}}
-	{{- range .Auth}}
-	{{- if .IsEnum}}
-	{{.NameCamel}}, err := {{.EnumNameString}}(m.Auth.{{.NamePascal}}.ValueString())
-	if err != nil {
-		// TODO: handle error
-		return nil
-	}
-	{{- end}}
-	{{- end}}
-	{{- end}}
-
-	config := &hookdeck.SourceTypeConfig{
-		SourceTypeConfig{{.NameConfig}}: &hookdeck.SourceTypeConfig{{.NameConfig}}{
-			{{if .Auth}}
-			Auth: &hookdeck.SourceTypeConfig{{.NameConfig}}Auth{
-				{{- range .Auth}}
-				{{if .Required}}
-				{{if .IsEnum}}
-				{{.NamePascal}}: {{.NameCamel}},
-				{{else}}
-				{{.NamePascal}}: m.Auth.{{.NamePascal}}.ValueString(),
-				{{end}}
-				{{else}}
-				{{if .IsEnum}}
-				{{.NamePascal}}: {{.NameCamel}},
-				{{else}}
-				{{.NamePascal}}: m.Auth.{{.NamePascal}}.ValueStringPointer(),
-				{{end}}
-				{{end}}
-				{{- end}}
-			},
-			{{end}}
-		},
-	}
-	return &hookdeck.SourceUpdateRequest{
-		Type:   hookdeck.Optional(sourceType),
-		Config: hookdeck.OptionalOrNull(config),
-	}
-}
-
-func (m *{{.NameCamel}}SourceConfigResourceModel) ToUpdatePayload() *hookdeck.SourceUpdateRequest {
-	sourceType, err := hookdeck.NewSourceUpdateRequestTypeFromString("{{.TypeEnum}}")
-	if err != nil {
-		return nil
-	}
-	{{if .Auth}}
-	{{- range .Auth}}
-	{{- if .IsEnum}}
-	{{.NameCamel}}, err := {{.EnumNameString}}(m.Auth.{{.NamePascal}}.ValueString())
-	if err != nil {
-		// TODO: handle error
-		return nil
-	}
-	{{- end}}
-	{{- end}}
-	{{- end}}
-
-	config := &hookdeck.SourceTypeConfig{
-		SourceTypeConfig{{.NameConfig}}: &hookdeck.SourceTypeConfig{{.NameConfig}}{
-			{{if .Auth}}
-			Auth: &hookdeck.SourceTypeConfig{{.NameConfig}}Auth{
-				{{- range .Auth}}
-				{{if .Required}}
-				{{if .IsEnum}}
-				{{.NamePascal}}: {{.NameCamel}},
-				{{else}}
-				{{.NamePascal}}: m.Auth.{{.NamePascal}}.ValueString(),
-				{{end}}
-				{{else}}
-				{{if .IsEnum}}
-				{{.NamePascal}}: {{.NameCamel}},
-				{{else}}
-				{{.NamePascal}}: m.Auth.{{.NamePascal}}.ValueStringPointer(),
-				{{end}}
-				{{end}}
-				{{- end}}
-			},
-			{{end}}
-		},
-	}
-	return &hookdeck.SourceUpdateRequest{
-		Type:   hookdeck.Optional(sourceType),
-		Config: hookdeck.OptionalOrNull(config),
-	}
-}
-
-func (m *{{.NameCamel}}SourceConfigResourceModel) ToDeletePayload() *hookdeck.SourceUpdateRequest {
+func (m *sourceConfig{{.NameConfig}}Model) ToDeletePayload() *hookdeck.SourceUpdateRequest {
 	return &hookdeck.SourceUpdateRequest{
 		Verification: hookdeck.Null[hookdeck.VerificationConfig](),
 	}
 }
-{{end}} 
+
+{{template "field_getters" .}}
