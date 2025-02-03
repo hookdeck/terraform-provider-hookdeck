@@ -4,13 +4,72 @@
 	},
 	"resources": [
 		{
-			"name": "source",
+			"name": "source_config_ebay",
 			"schema": {
 				"attributes": [
 					{
-						"name": "id",
+						"name": "allowed_http_methods",
+						"list": {
+							"computed_optional_required": "optional",
+							"element_type": {
+								"string": {}
+							}
+						}
+					},
+					{
+						"name": "auth",
+						"single_nested": {
+							"computed_optional_required": "optional",
+							"attributes": [
+								{
+									"name": "client_id",
+									"string": {
+										"computed_optional_required": "required"
+									}
+								},
+								{
+									"name": "client_secret",
+									"string": {
+										"computed_optional_required": "required"
+									}
+								},
+								{
+									"name": "verification_token",
+									"string": {
+										"computed_optional_required": "required"
+									}
+								},
+								{
+									"name": "environment",
+									"string": {
+										"computed_optional_required": "required",
+										"validators": [
+											{
+												"custom": {
+													"imports": [
+														{
+															"path": "github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
+														}
+													],
+													"schema_definition": "stringvalidator.OneOf(\n\"PRODUCTION\",\n\"SANDBOX\",\n)"
+												}
+											}
+										]
+									}
+								},
+								{
+									"name": "dev_id",
+									"string": {
+										"computed_optional_required": "required"
+									}
+								}
+							]
+						}
+					},
+					{
+						"name": "source_id",
 						"string": {
-							"computed_optional_required": "computed"
+							"computed_optional_required": "required"
 						}
 					}
 				]
