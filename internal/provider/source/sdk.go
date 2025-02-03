@@ -1,16 +1,23 @@
 package source
 
 import (
+	"context"
 	"time"
 
+	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	hookdeck "github.com/hookdeck/hookdeck-go-sdk"
 )
 
 func (m *sourceResourceModel) Refresh(source *hookdeck.Source) {
-	m.AllowedHTTPMethods = nil
+	allowedHTTPMethods := []string{}
 	for _, v := range *source.AllowedHttpMethods {
-		m.AllowedHTTPMethods = append(m.AllowedHTTPMethods, types.StringValue(string(v)))
+		allowedHTTPMethods = append(allowedHTTPMethods, string(v))
+	}
+	var diags diag.Diagnostics
+	m.AllowedHTTPMethods, diags = types.ListValueFrom(context.Background(), types.StringType, allowedHTTPMethods)
+	if diags.HasError() {
+		panic(diags)
 	}
 	m.CreatedAt = types.StringValue(source.CreatedAt.Format(time.RFC3339))
 	if m.CustomResponse == nil {
@@ -36,46 +43,15 @@ func (m *sourceResourceModel) Refresh(source *hookdeck.Source) {
 }
 
 func (m *sourceResourceModel) ToCreatePayload() *hookdeck.SourceCreateRequest {
-	var allowedHTTPMethods []hookdeck.SourceAllowedHttpMethodItem = nil
-	for _, allowedHTTPMethodsItem := range m.AllowedHTTPMethods {
-		allowedHTTPMethods = append(allowedHTTPMethods, hookdeck.SourceAllowedHttpMethodItem(allowedHTTPMethodsItem.ValueString()))
-	}
-	var customResponse *hookdeck.SourceCustomResponse
-	if m.CustomResponse != nil {
-		body := m.CustomResponse.Body.ValueString()
-		contentType := hookdeck.SourceCustomResponseContentType(m.CustomResponse.ContentType.ValueString())
-		customResponse = &hookdeck.SourceCustomResponse{
-			Body:        body,
-			ContentType: contentType,
-		}
-	}
 	return &hookdeck.SourceCreateRequest{
-		AllowedHttpMethods: hookdeck.OptionalOrNull(&allowedHTTPMethods),
-		CustomResponse:     hookdeck.OptionalOrNull(customResponse),
-		Description:        hookdeck.OptionalOrNull(m.Description.ValueStringPointer()),
-		Name:               m.Name.ValueString(),
+		Description: hookdeck.OptionalOrNull(m.Description.ValueStringPointer()),
+		Name:        m.Name.ValueString(),
 	}
 }
 
 func (m *sourceResourceModel) ToUpdatePayload() *hookdeck.SourceUpdateRequest {
-	var allowedHTTPMethods []hookdeck.SourceAllowedHttpMethodItem = nil
-	for _, allowedHTTPMethodsItem := range m.AllowedHTTPMethods {
-		allowedHTTPMethods = append(allowedHTTPMethods, hookdeck.SourceAllowedHttpMethodItem(allowedHTTPMethodsItem.ValueString()))
-	}
-	var customResponse *hookdeck.SourceCustomResponse = nil
-	if m.CustomResponse != nil {
-		body := m.CustomResponse.Body.ValueString()
-		contentType := hookdeck.SourceCustomResponseContentType(m.CustomResponse.ContentType.ValueString())
-		customResponse = &hookdeck.SourceCustomResponse{
-			Body:        body,
-			ContentType: contentType,
-		}
-	}
-
 	return &hookdeck.SourceUpdateRequest{
-		AllowedHttpMethods: hookdeck.OptionalOrNull(&allowedHTTPMethods),
-		CustomResponse:     hookdeck.OptionalOrNull(customResponse),
-		Description:        hookdeck.OptionalOrNull(m.Description.ValueStringPointer()),
-		Name:               hookdeck.OptionalOrNull(m.Name.ValueStringPointer()),
+		Description: hookdeck.OptionalOrNull(m.Description.ValueStringPointer()),
+		Name:        hookdeck.OptionalOrNull(m.Name.ValueStringPointer()),
 	}
 }

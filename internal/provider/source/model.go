@@ -3,7 +3,7 @@ package source
 import "github.com/hashicorp/terraform-plugin-framework/types"
 
 type sourceResourceModel struct {
-	AllowedHTTPMethods []types.String        `tfsdk:"allowed_http_methods"`
+	AllowedHTTPMethods types.List            `tfsdk:"allowed_http_methods"`
 	CreatedAt          types.String          `tfsdk:"created_at"`
 	CustomResponse     *sourceCustomResponse `tfsdk:"custom_response"`
 	Description        types.String          `tfsdk:"description"`

@@ -1,14 +1,11 @@
 package source
 
 import (
-	"context"
-
 	"terraform-provider-hookdeck/internal/validators"
 
 	"github.com/hashicorp/terraform-plugin-framework-validators/listvalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/listdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/objectplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
@@ -17,12 +14,9 @@ import (
 )
 
 func schemaAttributes() map[string]schema.Attribute {
-	defaultAllowedHttpMethods, _ := types.ListValueFrom(context.Background(), types.StringType, []string{"POST", "PUT", "PATCH", "DELETE"})
-
 	return map[string]schema.Attribute{
 		"allowed_http_methods": schema.ListAttribute{
 			Computed:    true,
-			Optional:    true,
 			ElementType: types.StringType,
 			Validators: []validator.List{
 				listvalidator.ValueStringsAre(stringvalidator.OneOf(
@@ -33,7 +27,6 @@ func schemaAttributes() map[string]schema.Attribute {
 					"DELETE",
 				)),
 			},
-			Default:     listdefault.StaticValue(defaultAllowedHttpMethods),
 			Description: "List of allowed HTTP methods. Defaults to PUT, POST, PATCH, DELETE.",
 		},
 		"created_at": schema.StringAttribute{
