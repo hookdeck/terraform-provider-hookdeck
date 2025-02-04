@@ -40,7 +40,7 @@ func (c *Client) List(
 	baseURL := internal.ResolveBaseURL(
 		options.BaseURL,
 		c.baseURL,
-		"https://api.hookdeck.com/2025-01-01-next",
+		"https://api.hookdeck.com/2025-01-01",
 	)
 	endpointURL := baseURL + "/bulk/events/retry"
 	queryParams, err := internal.QueryValues(request)
@@ -96,7 +96,7 @@ func (c *Client) Create(
 	baseURL := internal.ResolveBaseURL(
 		options.BaseURL,
 		c.baseURL,
-		"https://api.hookdeck.com/2025-01-01-next",
+		"https://api.hookdeck.com/2025-01-01",
 	)
 	endpointURL := baseURL + "/bulk/events/retry"
 	headers := internal.MergeHeaders(
@@ -146,7 +146,7 @@ func (c *Client) Plan(
 	baseURL := internal.ResolveBaseURL(
 		options.BaseURL,
 		c.baseURL,
-		"https://api.hookdeck.com/2025-01-01-next",
+		"https://api.hookdeck.com/2025-01-01",
 	)
 	endpointURL := baseURL + "/bulk/events/retry/plan"
 	headers := internal.MergeHeaders(
@@ -195,7 +195,7 @@ func (c *Client) Retrieve(
 	baseURL := internal.ResolveBaseURL(
 		options.BaseURL,
 		c.baseURL,
-		"https://api.hookdeck.com/2025-01-01-next",
+		"https://api.hookdeck.com/2025-01-01",
 	)
 	endpointURL := internal.EncodeURL(
 		baseURL+"/bulk/events/retry/%v",
@@ -242,7 +242,7 @@ func (c *Client) Cancel(
 	baseURL := internal.ResolveBaseURL(
 		options.BaseURL,
 		c.baseURL,
-		"https://api.hookdeck.com/2025-01-01-next",
+		"https://api.hookdeck.com/2025-01-01",
 	)
 	endpointURL := internal.EncodeURL(
 		baseURL+"/bulk/events/retry/%v/cancel",

@@ -1118,14 +1118,11 @@ func (c ConnectionCreateRequestDestinationType) Ptr() *ConnectionCreateRequestDe
 type ConnectionCreateRequestSource struct {
 	// A unique name for the source
 	Name string `json:"name" url:"name"`
-	// Description for the source
-	Description        *string                  `json:"description,omitempty" url:"description,omitempty"`
-	AllowedHttpMethods *SourceAllowedHttpMethod `json:"allowed_http_methods,omitempty" url:"allowed_http_methods,omitempty"`
-	CustomResponse     *SourceCustomResponse    `json:"custom_response,omitempty" url:"custom_response,omitempty"`
-	Verification       *VerificationConfig      `json:"verification,omitempty" url:"verification,omitempty"`
 	// Type of the source
-	Type   *ConnectionCreateRequestSourceType `json:"type,omitempty" url:"type,omitempty"`
-	Config *SourceTypeConfig                  `json:"config,omitempty" url:"config,omitempty"`
+	Type *ConnectionCreateRequestSourceType `json:"type,omitempty" url:"type,omitempty"`
+	// Description for the source
+	Description *string           `json:"description,omitempty" url:"description,omitempty"`
+	Config      *SourceTypeConfig `json:"config,omitempty" url:"config,omitempty"`
 
 	extraProperties map[string]interface{}
 	rawJSON         json.RawMessage
@@ -1138,39 +1135,18 @@ func (c *ConnectionCreateRequestSource) GetName() string {
 	return c.Name
 }
 
-func (c *ConnectionCreateRequestSource) GetDescription() *string {
-	if c == nil {
-		return nil
-	}
-	return c.Description
-}
-
-func (c *ConnectionCreateRequestSource) GetAllowedHttpMethods() *SourceAllowedHttpMethod {
-	if c == nil {
-		return nil
-	}
-	return c.AllowedHttpMethods
-}
-
-func (c *ConnectionCreateRequestSource) GetCustomResponse() *SourceCustomResponse {
-	if c == nil {
-		return nil
-	}
-	return c.CustomResponse
-}
-
-func (c *ConnectionCreateRequestSource) GetVerification() *VerificationConfig {
-	if c == nil {
-		return nil
-	}
-	return c.Verification
-}
-
 func (c *ConnectionCreateRequestSource) GetType() *ConnectionCreateRequestSourceType {
 	if c == nil {
 		return nil
 	}
 	return c.Type
+}
+
+func (c *ConnectionCreateRequestSource) GetDescription() *string {
+	if c == nil {
+		return nil
+	}
+	return c.Description
 }
 
 func (c *ConnectionCreateRequestSource) GetConfig() *SourceTypeConfig {
@@ -1218,6 +1194,7 @@ type ConnectionCreateRequestSourceType string
 const (
 	ConnectionCreateRequestSourceTypeWebhook         ConnectionCreateRequestSourceType = "WEBHOOK"
 	ConnectionCreateRequestSourceTypeHttp            ConnectionCreateRequestSourceType = "HTTP"
+	ConnectionCreateRequestSourceTypeManaged         ConnectionCreateRequestSourceType = "MANAGED"
 	ConnectionCreateRequestSourceTypeSanity          ConnectionCreateRequestSourceType = "SANITY"
 	ConnectionCreateRequestSourceTypeBridge          ConnectionCreateRequestSourceType = "BRIDGE"
 	ConnectionCreateRequestSourceTypeCloudsignal     ConnectionCreateRequestSourceType = "CLOUDSIGNAL"
@@ -1287,6 +1264,7 @@ const (
 	ConnectionCreateRequestSourceTypeAirwallex       ConnectionCreateRequestSourceType = "AIRWALLEX"
 	ConnectionCreateRequestSourceTypeZendesk         ConnectionCreateRequestSourceType = "ZENDESK"
 	ConnectionCreateRequestSourceTypeUpollo          ConnectionCreateRequestSourceType = "UPOLLO"
+	ConnectionCreateRequestSourceTypeLinkedin        ConnectionCreateRequestSourceType = "LINKEDIN"
 )
 
 func NewConnectionCreateRequestSourceTypeFromString(s string) (ConnectionCreateRequestSourceType, error) {
@@ -1295,6 +1273,8 @@ func NewConnectionCreateRequestSourceTypeFromString(s string) (ConnectionCreateR
 		return ConnectionCreateRequestSourceTypeWebhook, nil
 	case "HTTP":
 		return ConnectionCreateRequestSourceTypeHttp, nil
+	case "MANAGED":
+		return ConnectionCreateRequestSourceTypeManaged, nil
 	case "SANITY":
 		return ConnectionCreateRequestSourceTypeSanity, nil
 	case "BRIDGE":
@@ -1433,6 +1413,8 @@ func NewConnectionCreateRequestSourceTypeFromString(s string) (ConnectionCreateR
 		return ConnectionCreateRequestSourceTypeZendesk, nil
 	case "UPOLLO":
 		return ConnectionCreateRequestSourceTypeUpollo, nil
+	case "LINKEDIN":
+		return ConnectionCreateRequestSourceTypeLinkedin, nil
 	}
 	var t ConnectionCreateRequestSourceType
 	return "", fmt.Errorf("%s is not a valid %T", s, t)
@@ -1738,14 +1720,11 @@ func (c ConnectionUpsertRequestDestinationType) Ptr() *ConnectionUpsertRequestDe
 type ConnectionUpsertRequestSource struct {
 	// A unique name for the source
 	Name string `json:"name" url:"name"`
-	// Description for the source
-	Description        *string                  `json:"description,omitempty" url:"description,omitempty"`
-	AllowedHttpMethods *SourceAllowedHttpMethod `json:"allowed_http_methods,omitempty" url:"allowed_http_methods,omitempty"`
-	CustomResponse     *SourceCustomResponse    `json:"custom_response,omitempty" url:"custom_response,omitempty"`
-	Verification       *VerificationConfig      `json:"verification,omitempty" url:"verification,omitempty"`
 	// Type of the source
-	Type   *ConnectionUpsertRequestSourceType `json:"type,omitempty" url:"type,omitempty"`
-	Config *SourceTypeConfig                  `json:"config,omitempty" url:"config,omitempty"`
+	Type *ConnectionUpsertRequestSourceType `json:"type,omitempty" url:"type,omitempty"`
+	// Description for the source
+	Description *string           `json:"description,omitempty" url:"description,omitempty"`
+	Config      *SourceTypeConfig `json:"config,omitempty" url:"config,omitempty"`
 
 	extraProperties map[string]interface{}
 	rawJSON         json.RawMessage
@@ -1758,39 +1737,18 @@ func (c *ConnectionUpsertRequestSource) GetName() string {
 	return c.Name
 }
 
-func (c *ConnectionUpsertRequestSource) GetDescription() *string {
-	if c == nil {
-		return nil
-	}
-	return c.Description
-}
-
-func (c *ConnectionUpsertRequestSource) GetAllowedHttpMethods() *SourceAllowedHttpMethod {
-	if c == nil {
-		return nil
-	}
-	return c.AllowedHttpMethods
-}
-
-func (c *ConnectionUpsertRequestSource) GetCustomResponse() *SourceCustomResponse {
-	if c == nil {
-		return nil
-	}
-	return c.CustomResponse
-}
-
-func (c *ConnectionUpsertRequestSource) GetVerification() *VerificationConfig {
-	if c == nil {
-		return nil
-	}
-	return c.Verification
-}
-
 func (c *ConnectionUpsertRequestSource) GetType() *ConnectionUpsertRequestSourceType {
 	if c == nil {
 		return nil
 	}
 	return c.Type
+}
+
+func (c *ConnectionUpsertRequestSource) GetDescription() *string {
+	if c == nil {
+		return nil
+	}
+	return c.Description
 }
 
 func (c *ConnectionUpsertRequestSource) GetConfig() *SourceTypeConfig {
@@ -1838,6 +1796,7 @@ type ConnectionUpsertRequestSourceType string
 const (
 	ConnectionUpsertRequestSourceTypeWebhook         ConnectionUpsertRequestSourceType = "WEBHOOK"
 	ConnectionUpsertRequestSourceTypeHttp            ConnectionUpsertRequestSourceType = "HTTP"
+	ConnectionUpsertRequestSourceTypeManaged         ConnectionUpsertRequestSourceType = "MANAGED"
 	ConnectionUpsertRequestSourceTypeSanity          ConnectionUpsertRequestSourceType = "SANITY"
 	ConnectionUpsertRequestSourceTypeBridge          ConnectionUpsertRequestSourceType = "BRIDGE"
 	ConnectionUpsertRequestSourceTypeCloudsignal     ConnectionUpsertRequestSourceType = "CLOUDSIGNAL"
@@ -1907,6 +1866,7 @@ const (
 	ConnectionUpsertRequestSourceTypeAirwallex       ConnectionUpsertRequestSourceType = "AIRWALLEX"
 	ConnectionUpsertRequestSourceTypeZendesk         ConnectionUpsertRequestSourceType = "ZENDESK"
 	ConnectionUpsertRequestSourceTypeUpollo          ConnectionUpsertRequestSourceType = "UPOLLO"
+	ConnectionUpsertRequestSourceTypeLinkedin        ConnectionUpsertRequestSourceType = "LINKEDIN"
 )
 
 func NewConnectionUpsertRequestSourceTypeFromString(s string) (ConnectionUpsertRequestSourceType, error) {
@@ -1915,6 +1875,8 @@ func NewConnectionUpsertRequestSourceTypeFromString(s string) (ConnectionUpsertR
 		return ConnectionUpsertRequestSourceTypeWebhook, nil
 	case "HTTP":
 		return ConnectionUpsertRequestSourceTypeHttp, nil
+	case "MANAGED":
+		return ConnectionUpsertRequestSourceTypeManaged, nil
 	case "SANITY":
 		return ConnectionUpsertRequestSourceTypeSanity, nil
 	case "BRIDGE":
@@ -2053,6 +2015,8 @@ func NewConnectionUpsertRequestSourceTypeFromString(s string) (ConnectionUpsertR
 		return ConnectionUpsertRequestSourceTypeZendesk, nil
 	case "UPOLLO":
 		return ConnectionUpsertRequestSourceTypeUpollo, nil
+	case "LINKEDIN":
+		return ConnectionUpsertRequestSourceTypeLinkedin, nil
 	}
 	var t ConnectionUpsertRequestSourceType
 	return "", fmt.Errorf("%s is not a valid %T", s, t)

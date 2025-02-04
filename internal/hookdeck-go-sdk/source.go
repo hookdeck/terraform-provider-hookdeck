@@ -13,14 +13,11 @@ import (
 type SourceCreateRequest struct {
 	// A unique name for the source
 	Name string `json:"name" url:"-"`
-	// Description for the source
-	Description        *core.Optional[string]                  `json:"description,omitempty" url:"-"`
-	AllowedHttpMethods *core.Optional[SourceAllowedHttpMethod] `json:"allowed_http_methods,omitempty" url:"-"`
-	CustomResponse     *core.Optional[SourceCustomResponse]    `json:"custom_response,omitempty" url:"-"`
-	Verification       *core.Optional[VerificationConfig]      `json:"verification,omitempty" url:"-"`
 	// Type of the source
-	Type   *core.Optional[SourceCreateRequestType] `json:"type,omitempty" url:"-"`
-	Config *core.Optional[SourceTypeConfig]        `json:"config,omitempty" url:"-"`
+	Type *core.Optional[SourceCreateRequestType] `json:"type,omitempty" url:"-"`
+	// Description for the source
+	Description *core.Optional[string]           `json:"description,omitempty" url:"-"`
+	Config      *core.Optional[SourceTypeConfig] `json:"config,omitempty" url:"-"`
 }
 
 type SourceListRequest struct {
@@ -107,6 +104,7 @@ type SourceCreateRequestType string
 const (
 	SourceCreateRequestTypeWebhook         SourceCreateRequestType = "WEBHOOK"
 	SourceCreateRequestTypeHttp            SourceCreateRequestType = "HTTP"
+	SourceCreateRequestTypeManaged         SourceCreateRequestType = "MANAGED"
 	SourceCreateRequestTypeSanity          SourceCreateRequestType = "SANITY"
 	SourceCreateRequestTypeBridge          SourceCreateRequestType = "BRIDGE"
 	SourceCreateRequestTypeCloudsignal     SourceCreateRequestType = "CLOUDSIGNAL"
@@ -176,6 +174,7 @@ const (
 	SourceCreateRequestTypeAirwallex       SourceCreateRequestType = "AIRWALLEX"
 	SourceCreateRequestTypeZendesk         SourceCreateRequestType = "ZENDESK"
 	SourceCreateRequestTypeUpollo          SourceCreateRequestType = "UPOLLO"
+	SourceCreateRequestTypeLinkedin        SourceCreateRequestType = "LINKEDIN"
 )
 
 func NewSourceCreateRequestTypeFromString(s string) (SourceCreateRequestType, error) {
@@ -184,6 +183,8 @@ func NewSourceCreateRequestTypeFromString(s string) (SourceCreateRequestType, er
 		return SourceCreateRequestTypeWebhook, nil
 	case "HTTP":
 		return SourceCreateRequestTypeHttp, nil
+	case "MANAGED":
+		return SourceCreateRequestTypeManaged, nil
 	case "SANITY":
 		return SourceCreateRequestTypeSanity, nil
 	case "BRIDGE":
@@ -322,6 +323,8 @@ func NewSourceCreateRequestTypeFromString(s string) (SourceCreateRequestType, er
 		return SourceCreateRequestTypeZendesk, nil
 	case "UPOLLO":
 		return SourceCreateRequestTypeUpollo, nil
+	case "LINKEDIN":
+		return SourceCreateRequestTypeLinkedin, nil
 	}
 	var t SourceCreateRequestType
 	return "", fmt.Errorf("%s is not a valid %T", s, t)
@@ -425,6 +428,7 @@ type SourceUpdateRequestType string
 const (
 	SourceUpdateRequestTypeWebhook         SourceUpdateRequestType = "WEBHOOK"
 	SourceUpdateRequestTypeHttp            SourceUpdateRequestType = "HTTP"
+	SourceUpdateRequestTypeManaged         SourceUpdateRequestType = "MANAGED"
 	SourceUpdateRequestTypeSanity          SourceUpdateRequestType = "SANITY"
 	SourceUpdateRequestTypeBridge          SourceUpdateRequestType = "BRIDGE"
 	SourceUpdateRequestTypeCloudsignal     SourceUpdateRequestType = "CLOUDSIGNAL"
@@ -494,6 +498,7 @@ const (
 	SourceUpdateRequestTypeAirwallex       SourceUpdateRequestType = "AIRWALLEX"
 	SourceUpdateRequestTypeZendesk         SourceUpdateRequestType = "ZENDESK"
 	SourceUpdateRequestTypeUpollo          SourceUpdateRequestType = "UPOLLO"
+	SourceUpdateRequestTypeLinkedin        SourceUpdateRequestType = "LINKEDIN"
 )
 
 func NewSourceUpdateRequestTypeFromString(s string) (SourceUpdateRequestType, error) {
@@ -502,6 +507,8 @@ func NewSourceUpdateRequestTypeFromString(s string) (SourceUpdateRequestType, er
 		return SourceUpdateRequestTypeWebhook, nil
 	case "HTTP":
 		return SourceUpdateRequestTypeHttp, nil
+	case "MANAGED":
+		return SourceUpdateRequestTypeManaged, nil
 	case "SANITY":
 		return SourceUpdateRequestTypeSanity, nil
 	case "BRIDGE":
@@ -640,6 +647,8 @@ func NewSourceUpdateRequestTypeFromString(s string) (SourceUpdateRequestType, er
 		return SourceUpdateRequestTypeZendesk, nil
 	case "UPOLLO":
 		return SourceUpdateRequestTypeUpollo, nil
+	case "LINKEDIN":
+		return SourceUpdateRequestTypeLinkedin, nil
 	}
 	var t SourceUpdateRequestType
 	return "", fmt.Errorf("%s is not a valid %T", s, t)
@@ -655,6 +664,7 @@ type SourceUpsertRequestType string
 const (
 	SourceUpsertRequestTypeWebhook         SourceUpsertRequestType = "WEBHOOK"
 	SourceUpsertRequestTypeHttp            SourceUpsertRequestType = "HTTP"
+	SourceUpsertRequestTypeManaged         SourceUpsertRequestType = "MANAGED"
 	SourceUpsertRequestTypeSanity          SourceUpsertRequestType = "SANITY"
 	SourceUpsertRequestTypeBridge          SourceUpsertRequestType = "BRIDGE"
 	SourceUpsertRequestTypeCloudsignal     SourceUpsertRequestType = "CLOUDSIGNAL"
@@ -724,6 +734,7 @@ const (
 	SourceUpsertRequestTypeAirwallex       SourceUpsertRequestType = "AIRWALLEX"
 	SourceUpsertRequestTypeZendesk         SourceUpsertRequestType = "ZENDESK"
 	SourceUpsertRequestTypeUpollo          SourceUpsertRequestType = "UPOLLO"
+	SourceUpsertRequestTypeLinkedin        SourceUpsertRequestType = "LINKEDIN"
 )
 
 func NewSourceUpsertRequestTypeFromString(s string) (SourceUpsertRequestType, error) {
@@ -732,6 +743,8 @@ func NewSourceUpsertRequestTypeFromString(s string) (SourceUpsertRequestType, er
 		return SourceUpsertRequestTypeWebhook, nil
 	case "HTTP":
 		return SourceUpsertRequestTypeHttp, nil
+	case "MANAGED":
+		return SourceUpsertRequestTypeManaged, nil
 	case "SANITY":
 		return SourceUpsertRequestTypeSanity, nil
 	case "BRIDGE":
@@ -870,6 +883,8 @@ func NewSourceUpsertRequestTypeFromString(s string) (SourceUpsertRequestType, er
 		return SourceUpsertRequestTypeZendesk, nil
 	case "UPOLLO":
 		return SourceUpsertRequestTypeUpollo, nil
+	case "LINKEDIN":
+		return SourceUpsertRequestTypeLinkedin, nil
 	}
 	var t SourceUpsertRequestType
 	return "", fmt.Errorf("%s is not a valid %T", s, t)
@@ -882,25 +897,19 @@ func (s SourceUpsertRequestType) Ptr() *SourceUpsertRequestType {
 type SourceUpdateRequest struct {
 	// A unique name for the source
 	Name *core.Optional[string] `json:"name,omitempty" url:"-"`
-	// Description for the source
-	Description        *core.Optional[string]                  `json:"description,omitempty" url:"-"`
-	AllowedHttpMethods *core.Optional[SourceAllowedHttpMethod] `json:"allowed_http_methods,omitempty" url:"-"`
-	CustomResponse     *core.Optional[SourceCustomResponse]    `json:"custom_response,omitempty" url:"-"`
-	Verification       *core.Optional[VerificationConfig]      `json:"verification,omitempty" url:"-"`
 	// Type of the source
-	Type   *core.Optional[SourceUpdateRequestType] `json:"type,omitempty" url:"-"`
-	Config *core.Optional[SourceTypeConfig]        `json:"config,omitempty" url:"-"`
+	Type *core.Optional[SourceUpdateRequestType] `json:"type,omitempty" url:"-"`
+	// Description for the source
+	Description *core.Optional[string]           `json:"description,omitempty" url:"-"`
+	Config      *core.Optional[SourceTypeConfig] `json:"config,omitempty" url:"-"`
 }
 
 type SourceUpsertRequest struct {
 	// A unique name for the source
 	Name string `json:"name" url:"-"`
-	// Description for the source
-	Description        *core.Optional[string]                  `json:"description,omitempty" url:"-"`
-	AllowedHttpMethods *core.Optional[SourceAllowedHttpMethod] `json:"allowed_http_methods,omitempty" url:"-"`
-	CustomResponse     *core.Optional[SourceCustomResponse]    `json:"custom_response,omitempty" url:"-"`
-	Verification       *core.Optional[VerificationConfig]      `json:"verification,omitempty" url:"-"`
 	// Type of the source
-	Type   *core.Optional[SourceUpsertRequestType] `json:"type,omitempty" url:"-"`
-	Config *core.Optional[SourceTypeConfig]        `json:"config,omitempty" url:"-"`
+	Type *core.Optional[SourceUpsertRequestType] `json:"type,omitempty" url:"-"`
+	// Description for the source
+	Description *core.Optional[string]           `json:"description,omitempty" url:"-"`
+	Config      *core.Optional[SourceTypeConfig] `json:"config,omitempty" url:"-"`
 }

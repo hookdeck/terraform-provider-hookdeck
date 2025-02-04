@@ -40,7 +40,7 @@ func (c *Client) List(
 	baseURL := internal.ResolveBaseURL(
 		options.BaseURL,
 		c.baseURL,
-		"https://api.hookdeck.com/2025-01-01-next",
+		"https://api.hookdeck.com/2025-01-01",
 	)
 	endpointURL := baseURL + "/bookmarks"
 	queryParams, err := internal.QueryValues(request)
@@ -96,7 +96,7 @@ func (c *Client) Create(
 	baseURL := internal.ResolveBaseURL(
 		options.BaseURL,
 		c.baseURL,
-		"https://api.hookdeck.com/2025-01-01-next",
+		"https://api.hookdeck.com/2025-01-01",
 	)
 	endpointURL := baseURL + "/bookmarks"
 	headers := internal.MergeHeaders(
@@ -147,7 +147,7 @@ func (c *Client) Retrieve(
 	baseURL := internal.ResolveBaseURL(
 		options.BaseURL,
 		c.baseURL,
-		"https://api.hookdeck.com/2025-01-01-next",
+		"https://api.hookdeck.com/2025-01-01",
 	)
 	endpointURL := internal.EncodeURL(
 		baseURL+"/bookmarks/%v",
@@ -195,7 +195,7 @@ func (c *Client) Update(
 	baseURL := internal.ResolveBaseURL(
 		options.BaseURL,
 		c.baseURL,
-		"https://api.hookdeck.com/2025-01-01-next",
+		"https://api.hookdeck.com/2025-01-01",
 	)
 	endpointURL := internal.EncodeURL(
 		baseURL+"/bookmarks/%v",
@@ -254,7 +254,7 @@ func (c *Client) Delete(
 	baseURL := internal.ResolveBaseURL(
 		options.BaseURL,
 		c.baseURL,
-		"https://api.hookdeck.com/2025-01-01-next",
+		"https://api.hookdeck.com/2025-01-01",
 	)
 	endpointURL := internal.EncodeURL(
 		baseURL+"/bookmarks/%v",
@@ -301,7 +301,7 @@ func (c *Client) RetrieveBody(
 	baseURL := internal.ResolveBaseURL(
 		options.BaseURL,
 		c.baseURL,
-		"https://api.hookdeck.com/2025-01-01-next",
+		"https://api.hookdeck.com/2025-01-01",
 	)
 	endpointURL := internal.EncodeURL(
 		baseURL+"/bookmarks/%v/raw_body",
@@ -349,7 +349,7 @@ func (c *Client) Trigger(
 	baseURL := internal.ResolveBaseURL(
 		options.BaseURL,
 		c.baseURL,
-		"https://api.hookdeck.com/2025-01-01-next",
+		"https://api.hookdeck.com/2025-01-01",
 	)
 	endpointURL := internal.EncodeURL(
 		baseURL+"/bookmarks/%v/trigger",

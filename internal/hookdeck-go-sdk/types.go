@@ -1280,8 +1280,6 @@ type Destination struct {
 	UpdatedAt time.Time `json:"updated_at" url:"updated_at"`
 	// Date the destination was created
 	CreatedAt time.Time `json:"created_at" url:"created_at"`
-	// Type of the destination
-	Type *string `json:"type,omitempty" url:"type,omitempty"`
 
 	extraProperties map[string]interface{}
 	rawJSON         json.RawMessage
@@ -1383,13 +1381,6 @@ func (d *Destination) GetCreatedAt() time.Time {
 		return time.Time{}
 	}
 	return d.CreatedAt
-}
-
-func (d *Destination) GetType() *string {
-	if d == nil {
-		return nil
-	}
-	return d.Type
 }
 
 func (d *Destination) GetExtraProperties() map[string]interface{} {
@@ -2239,46 +2230,11 @@ func (d *DestinationAuthMethodSignatureConfig) String() string {
 
 // Configuration object for the destination type
 type DestinationConfig struct {
-	DestinationTypeConfigCustomSha256HmacSignature *DestinationTypeConfigCustomSha256HmacSignature
-	DestinationTypeConfigBasicAuth                 *DestinationTypeConfigBasicAuth
-	DestinationTypeConfigApiKey                    *DestinationTypeConfigApiKey
-	DestinationTypeConfigBearerToken               *DestinationTypeConfigBearerToken
-	DestinationTypeConfigOAuth2ClientCredentials   *DestinationTypeConfigOAuth2ClientCredentials
-	DestinationTypeConfigOAuth2AuthorizationCode   *DestinationTypeConfigOAuth2AuthorizationCode
-	DestinationTypeConfigAwsSignature              *DestinationTypeConfigAwsSignature
-	DestinationTypeConfigHttp                      *DestinationTypeConfigHttp
-	DestinationTypeConfigCli                       *DestinationTypeConfigCli
-	DestinationTypeConfigMockApi                   *DestinationTypeConfigMockApi
+	DestinationTypeConfigHttp    *DestinationTypeConfigHttp
+	DestinationTypeConfigCli     *DestinationTypeConfigCli
+	DestinationTypeConfigMockApi *DestinationTypeConfigMockApi
 
 	typ string
-}
-
-func NewDestinationConfigFromDestinationTypeConfigCustomSha256HmacSignature(value *DestinationTypeConfigCustomSha256HmacSignature) *DestinationConfig {
-	return &DestinationConfig{typ: "DestinationTypeConfigCustomSha256HmacSignature", DestinationTypeConfigCustomSha256HmacSignature: value}
-}
-
-func NewDestinationConfigFromDestinationTypeConfigBasicAuth(value *DestinationTypeConfigBasicAuth) *DestinationConfig {
-	return &DestinationConfig{typ: "DestinationTypeConfigBasicAuth", DestinationTypeConfigBasicAuth: value}
-}
-
-func NewDestinationConfigFromDestinationTypeConfigApiKey(value *DestinationTypeConfigApiKey) *DestinationConfig {
-	return &DestinationConfig{typ: "DestinationTypeConfigApiKey", DestinationTypeConfigApiKey: value}
-}
-
-func NewDestinationConfigFromDestinationTypeConfigBearerToken(value *DestinationTypeConfigBearerToken) *DestinationConfig {
-	return &DestinationConfig{typ: "DestinationTypeConfigBearerToken", DestinationTypeConfigBearerToken: value}
-}
-
-func NewDestinationConfigFromDestinationTypeConfigOAuth2ClientCredentials(value *DestinationTypeConfigOAuth2ClientCredentials) *DestinationConfig {
-	return &DestinationConfig{typ: "DestinationTypeConfigOAuth2ClientCredentials", DestinationTypeConfigOAuth2ClientCredentials: value}
-}
-
-func NewDestinationConfigFromDestinationTypeConfigOAuth2AuthorizationCode(value *DestinationTypeConfigOAuth2AuthorizationCode) *DestinationConfig {
-	return &DestinationConfig{typ: "DestinationTypeConfigOAuth2AuthorizationCode", DestinationTypeConfigOAuth2AuthorizationCode: value}
-}
-
-func NewDestinationConfigFromDestinationTypeConfigAwsSignature(value *DestinationTypeConfigAwsSignature) *DestinationConfig {
-	return &DestinationConfig{typ: "DestinationTypeConfigAwsSignature", DestinationTypeConfigAwsSignature: value}
 }
 
 func NewDestinationConfigFromDestinationTypeConfigHttp(value *DestinationTypeConfigHttp) *DestinationConfig {
@@ -2291,55 +2247,6 @@ func NewDestinationConfigFromDestinationTypeConfigCli(value *DestinationTypeConf
 
 func NewDestinationConfigFromDestinationTypeConfigMockApi(value *DestinationTypeConfigMockApi) *DestinationConfig {
 	return &DestinationConfig{typ: "DestinationTypeConfigMockApi", DestinationTypeConfigMockApi: value}
-}
-
-func (d *DestinationConfig) GetDestinationTypeConfigCustomSha256HmacSignature() *DestinationTypeConfigCustomSha256HmacSignature {
-	if d == nil {
-		return nil
-	}
-	return d.DestinationTypeConfigCustomSha256HmacSignature
-}
-
-func (d *DestinationConfig) GetDestinationTypeConfigBasicAuth() *DestinationTypeConfigBasicAuth {
-	if d == nil {
-		return nil
-	}
-	return d.DestinationTypeConfigBasicAuth
-}
-
-func (d *DestinationConfig) GetDestinationTypeConfigApiKey() *DestinationTypeConfigApiKey {
-	if d == nil {
-		return nil
-	}
-	return d.DestinationTypeConfigApiKey
-}
-
-func (d *DestinationConfig) GetDestinationTypeConfigBearerToken() *DestinationTypeConfigBearerToken {
-	if d == nil {
-		return nil
-	}
-	return d.DestinationTypeConfigBearerToken
-}
-
-func (d *DestinationConfig) GetDestinationTypeConfigOAuth2ClientCredentials() *DestinationTypeConfigOAuth2ClientCredentials {
-	if d == nil {
-		return nil
-	}
-	return d.DestinationTypeConfigOAuth2ClientCredentials
-}
-
-func (d *DestinationConfig) GetDestinationTypeConfigOAuth2AuthorizationCode() *DestinationTypeConfigOAuth2AuthorizationCode {
-	if d == nil {
-		return nil
-	}
-	return d.DestinationTypeConfigOAuth2AuthorizationCode
-}
-
-func (d *DestinationConfig) GetDestinationTypeConfigAwsSignature() *DestinationTypeConfigAwsSignature {
-	if d == nil {
-		return nil
-	}
-	return d.DestinationTypeConfigAwsSignature
 }
 
 func (d *DestinationConfig) GetDestinationTypeConfigHttp() *DestinationTypeConfigHttp {
@@ -2364,48 +2271,6 @@ func (d *DestinationConfig) GetDestinationTypeConfigMockApi() *DestinationTypeCo
 }
 
 func (d *DestinationConfig) UnmarshalJSON(data []byte) error {
-	valueDestinationTypeConfigCustomSha256HmacSignature := new(DestinationTypeConfigCustomSha256HmacSignature)
-	if err := json.Unmarshal(data, &valueDestinationTypeConfigCustomSha256HmacSignature); err == nil {
-		d.typ = "DestinationTypeConfigCustomSha256HmacSignature"
-		d.DestinationTypeConfigCustomSha256HmacSignature = valueDestinationTypeConfigCustomSha256HmacSignature
-		return nil
-	}
-	valueDestinationTypeConfigBasicAuth := new(DestinationTypeConfigBasicAuth)
-	if err := json.Unmarshal(data, &valueDestinationTypeConfigBasicAuth); err == nil {
-		d.typ = "DestinationTypeConfigBasicAuth"
-		d.DestinationTypeConfigBasicAuth = valueDestinationTypeConfigBasicAuth
-		return nil
-	}
-	valueDestinationTypeConfigApiKey := new(DestinationTypeConfigApiKey)
-	if err := json.Unmarshal(data, &valueDestinationTypeConfigApiKey); err == nil {
-		d.typ = "DestinationTypeConfigApiKey"
-		d.DestinationTypeConfigApiKey = valueDestinationTypeConfigApiKey
-		return nil
-	}
-	valueDestinationTypeConfigBearerToken := new(DestinationTypeConfigBearerToken)
-	if err := json.Unmarshal(data, &valueDestinationTypeConfigBearerToken); err == nil {
-		d.typ = "DestinationTypeConfigBearerToken"
-		d.DestinationTypeConfigBearerToken = valueDestinationTypeConfigBearerToken
-		return nil
-	}
-	valueDestinationTypeConfigOAuth2ClientCredentials := new(DestinationTypeConfigOAuth2ClientCredentials)
-	if err := json.Unmarshal(data, &valueDestinationTypeConfigOAuth2ClientCredentials); err == nil {
-		d.typ = "DestinationTypeConfigOAuth2ClientCredentials"
-		d.DestinationTypeConfigOAuth2ClientCredentials = valueDestinationTypeConfigOAuth2ClientCredentials
-		return nil
-	}
-	valueDestinationTypeConfigOAuth2AuthorizationCode := new(DestinationTypeConfigOAuth2AuthorizationCode)
-	if err := json.Unmarshal(data, &valueDestinationTypeConfigOAuth2AuthorizationCode); err == nil {
-		d.typ = "DestinationTypeConfigOAuth2AuthorizationCode"
-		d.DestinationTypeConfigOAuth2AuthorizationCode = valueDestinationTypeConfigOAuth2AuthorizationCode
-		return nil
-	}
-	valueDestinationTypeConfigAwsSignature := new(DestinationTypeConfigAwsSignature)
-	if err := json.Unmarshal(data, &valueDestinationTypeConfigAwsSignature); err == nil {
-		d.typ = "DestinationTypeConfigAwsSignature"
-		d.DestinationTypeConfigAwsSignature = valueDestinationTypeConfigAwsSignature
-		return nil
-	}
 	valueDestinationTypeConfigHttp := new(DestinationTypeConfigHttp)
 	if err := json.Unmarshal(data, &valueDestinationTypeConfigHttp); err == nil {
 		d.typ = "DestinationTypeConfigHttp"
@@ -2428,27 +2293,6 @@ func (d *DestinationConfig) UnmarshalJSON(data []byte) error {
 }
 
 func (d DestinationConfig) MarshalJSON() ([]byte, error) {
-	if d.typ == "DestinationTypeConfigCustomSha256HmacSignature" || d.DestinationTypeConfigCustomSha256HmacSignature != nil {
-		return json.Marshal(d.DestinationTypeConfigCustomSha256HmacSignature)
-	}
-	if d.typ == "DestinationTypeConfigBasicAuth" || d.DestinationTypeConfigBasicAuth != nil {
-		return json.Marshal(d.DestinationTypeConfigBasicAuth)
-	}
-	if d.typ == "DestinationTypeConfigApiKey" || d.DestinationTypeConfigApiKey != nil {
-		return json.Marshal(d.DestinationTypeConfigApiKey)
-	}
-	if d.typ == "DestinationTypeConfigBearerToken" || d.DestinationTypeConfigBearerToken != nil {
-		return json.Marshal(d.DestinationTypeConfigBearerToken)
-	}
-	if d.typ == "DestinationTypeConfigOAuth2ClientCredentials" || d.DestinationTypeConfigOAuth2ClientCredentials != nil {
-		return json.Marshal(d.DestinationTypeConfigOAuth2ClientCredentials)
-	}
-	if d.typ == "DestinationTypeConfigOAuth2AuthorizationCode" || d.DestinationTypeConfigOAuth2AuthorizationCode != nil {
-		return json.Marshal(d.DestinationTypeConfigOAuth2AuthorizationCode)
-	}
-	if d.typ == "DestinationTypeConfigAwsSignature" || d.DestinationTypeConfigAwsSignature != nil {
-		return json.Marshal(d.DestinationTypeConfigAwsSignature)
-	}
 	if d.typ == "DestinationTypeConfigHttp" || d.DestinationTypeConfigHttp != nil {
 		return json.Marshal(d.DestinationTypeConfigHttp)
 	}
@@ -2462,40 +2306,12 @@ func (d DestinationConfig) MarshalJSON() ([]byte, error) {
 }
 
 type DestinationConfigVisitor interface {
-	VisitDestinationTypeConfigCustomSha256HmacSignature(*DestinationTypeConfigCustomSha256HmacSignature) error
-	VisitDestinationTypeConfigBasicAuth(*DestinationTypeConfigBasicAuth) error
-	VisitDestinationTypeConfigApiKey(*DestinationTypeConfigApiKey) error
-	VisitDestinationTypeConfigBearerToken(*DestinationTypeConfigBearerToken) error
-	VisitDestinationTypeConfigOAuth2ClientCredentials(*DestinationTypeConfigOAuth2ClientCredentials) error
-	VisitDestinationTypeConfigOAuth2AuthorizationCode(*DestinationTypeConfigOAuth2AuthorizationCode) error
-	VisitDestinationTypeConfigAwsSignature(*DestinationTypeConfigAwsSignature) error
 	VisitDestinationTypeConfigHttp(*DestinationTypeConfigHttp) error
 	VisitDestinationTypeConfigCli(*DestinationTypeConfigCli) error
 	VisitDestinationTypeConfigMockApi(*DestinationTypeConfigMockApi) error
 }
 
 func (d *DestinationConfig) Accept(visitor DestinationConfigVisitor) error {
-	if d.typ == "DestinationTypeConfigCustomSha256HmacSignature" || d.DestinationTypeConfigCustomSha256HmacSignature != nil {
-		return visitor.VisitDestinationTypeConfigCustomSha256HmacSignature(d.DestinationTypeConfigCustomSha256HmacSignature)
-	}
-	if d.typ == "DestinationTypeConfigBasicAuth" || d.DestinationTypeConfigBasicAuth != nil {
-		return visitor.VisitDestinationTypeConfigBasicAuth(d.DestinationTypeConfigBasicAuth)
-	}
-	if d.typ == "DestinationTypeConfigApiKey" || d.DestinationTypeConfigApiKey != nil {
-		return visitor.VisitDestinationTypeConfigApiKey(d.DestinationTypeConfigApiKey)
-	}
-	if d.typ == "DestinationTypeConfigBearerToken" || d.DestinationTypeConfigBearerToken != nil {
-		return visitor.VisitDestinationTypeConfigBearerToken(d.DestinationTypeConfigBearerToken)
-	}
-	if d.typ == "DestinationTypeConfigOAuth2ClientCredentials" || d.DestinationTypeConfigOAuth2ClientCredentials != nil {
-		return visitor.VisitDestinationTypeConfigOAuth2ClientCredentials(d.DestinationTypeConfigOAuth2ClientCredentials)
-	}
-	if d.typ == "DestinationTypeConfigOAuth2AuthorizationCode" || d.DestinationTypeConfigOAuth2AuthorizationCode != nil {
-		return visitor.VisitDestinationTypeConfigOAuth2AuthorizationCode(d.DestinationTypeConfigOAuth2AuthorizationCode)
-	}
-	if d.typ == "DestinationTypeConfigAwsSignature" || d.DestinationTypeConfigAwsSignature != nil {
-		return visitor.VisitDestinationTypeConfigAwsSignature(d.DestinationTypeConfigAwsSignature)
-	}
 	if d.typ == "DestinationTypeConfigHttp" || d.DestinationTypeConfigHttp != nil {
 		return visitor.VisitDestinationTypeConfigHttp(d.DestinationTypeConfigHttp)
 	}
@@ -2569,853 +2385,11 @@ func (d DestinationRateLimitPeriod) Ptr() *DestinationRateLimitPeriod {
 	return &d
 }
 
-// The type config for API Key. Requires type to be `API_KEY`.
-type DestinationTypeConfigApiKey struct {
-	Type                   *string                                     `json:"type,omitempty" url:"type,omitempty"`
-	Url                    *string                                     `json:"url,omitempty" url:"url,omitempty"`
-	RateLimit              *float64                                    `json:"rate_limit,omitempty" url:"rate_limit,omitempty"`
-	RateLimitPeriod        *DestinationTypeConfigApiKeyRateLimitPeriod `json:"rate_limit_period,omitempty" url:"rate_limit_period,omitempty"`
-	PathForwardingDisabled *bool                                       `json:"path_forwarding_disabled,omitempty" url:"path_forwarding_disabled,omitempty"`
-	HttpMethod             *DestinationTypeConfigApiKeyHttpMethod      `json:"http_method,omitempty" url:"http_method,omitempty"`
-	Auth                   *DestinationTypeConfigApiKeyAuth            `json:"auth,omitempty" url:"auth,omitempty"`
-
-	extraProperties map[string]interface{}
-	rawJSON         json.RawMessage
-}
-
-func (d *DestinationTypeConfigApiKey) GetUrl() *string {
-	if d == nil {
-		return nil
-	}
-	return d.Url
-}
-
-func (d *DestinationTypeConfigApiKey) GetRateLimit() *float64 {
-	if d == nil {
-		return nil
-	}
-	return d.RateLimit
-}
-
-func (d *DestinationTypeConfigApiKey) GetRateLimitPeriod() *DestinationTypeConfigApiKeyRateLimitPeriod {
-	if d == nil {
-		return nil
-	}
-	return d.RateLimitPeriod
-}
-
-func (d *DestinationTypeConfigApiKey) GetPathForwardingDisabled() *bool {
-	if d == nil {
-		return nil
-	}
-	return d.PathForwardingDisabled
-}
-
-func (d *DestinationTypeConfigApiKey) GetHttpMethod() *DestinationTypeConfigApiKeyHttpMethod {
-	if d == nil {
-		return nil
-	}
-	return d.HttpMethod
-}
-
-func (d *DestinationTypeConfigApiKey) GetAuth() *DestinationTypeConfigApiKeyAuth {
-	if d == nil {
-		return nil
-	}
-	return d.Auth
-}
-
-func (d *DestinationTypeConfigApiKey) GetExtraProperties() map[string]interface{} {
-	return d.extraProperties
-}
-
-func (d *DestinationTypeConfigApiKey) UnmarshalJSON(data []byte) error {
-	type unmarshaler DestinationTypeConfigApiKey
-	var value unmarshaler
-	if err := json.Unmarshal(data, &value); err != nil {
-		return err
-	}
-	*d = DestinationTypeConfigApiKey(value)
-	extraProperties, err := internal.ExtractExtraProperties(data, *d)
-	if err != nil {
-		return err
-	}
-	d.extraProperties = extraProperties
-	d.rawJSON = json.RawMessage(data)
-	return nil
-}
-
-func (d *DestinationTypeConfigApiKey) String() string {
-	if len(d.rawJSON) > 0 {
-		if value, err := internal.StringifyJSON(d.rawJSON); err == nil {
-			return value
-		}
-	}
-	if value, err := internal.StringifyJSON(d); err == nil {
-		return value
-	}
-	return fmt.Sprintf("%#v", d)
-}
-
-type DestinationTypeConfigApiKeyAuth struct {
-	Key    string                            `json:"key" url:"key"`
-	ApiKey string                            `json:"api_key" url:"api_key"`
-	To     DestinationTypeConfigApiKeyAuthTo `json:"to" url:"to"`
-
-	extraProperties map[string]interface{}
-	rawJSON         json.RawMessage
-}
-
-func (d *DestinationTypeConfigApiKeyAuth) GetKey() string {
-	if d == nil {
-		return ""
-	}
-	return d.Key
-}
-
-func (d *DestinationTypeConfigApiKeyAuth) GetApiKey() string {
-	if d == nil {
-		return ""
-	}
-	return d.ApiKey
-}
-
-func (d *DestinationTypeConfigApiKeyAuth) GetTo() DestinationTypeConfigApiKeyAuthTo {
-	if d == nil {
-		return ""
-	}
-	return d.To
-}
-
-func (d *DestinationTypeConfigApiKeyAuth) GetExtraProperties() map[string]interface{} {
-	return d.extraProperties
-}
-
-func (d *DestinationTypeConfigApiKeyAuth) UnmarshalJSON(data []byte) error {
-	type unmarshaler DestinationTypeConfigApiKeyAuth
-	var value unmarshaler
-	if err := json.Unmarshal(data, &value); err != nil {
-		return err
-	}
-	*d = DestinationTypeConfigApiKeyAuth(value)
-	extraProperties, err := internal.ExtractExtraProperties(data, *d)
-	if err != nil {
-		return err
-	}
-	d.extraProperties = extraProperties
-	d.rawJSON = json.RawMessage(data)
-	return nil
-}
-
-func (d *DestinationTypeConfigApiKeyAuth) String() string {
-	if len(d.rawJSON) > 0 {
-		if value, err := internal.StringifyJSON(d.rawJSON); err == nil {
-			return value
-		}
-	}
-	if value, err := internal.StringifyJSON(d); err == nil {
-		return value
-	}
-	return fmt.Sprintf("%#v", d)
-}
-
-type DestinationTypeConfigApiKeyAuthTo string
-
-const (
-	DestinationTypeConfigApiKeyAuthToHeader DestinationTypeConfigApiKeyAuthTo = "header"
-	DestinationTypeConfigApiKeyAuthToQuery  DestinationTypeConfigApiKeyAuthTo = "query"
-)
-
-func NewDestinationTypeConfigApiKeyAuthToFromString(s string) (DestinationTypeConfigApiKeyAuthTo, error) {
-	switch s {
-	case "header":
-		return DestinationTypeConfigApiKeyAuthToHeader, nil
-	case "query":
-		return DestinationTypeConfigApiKeyAuthToQuery, nil
-	}
-	var t DestinationTypeConfigApiKeyAuthTo
-	return "", fmt.Errorf("%s is not a valid %T", s, t)
-}
-
-func (d DestinationTypeConfigApiKeyAuthTo) Ptr() *DestinationTypeConfigApiKeyAuthTo {
-	return &d
-}
-
-type DestinationTypeConfigApiKeyHttpMethod string
-
-const (
-	DestinationTypeConfigApiKeyHttpMethodGet    DestinationTypeConfigApiKeyHttpMethod = "GET"
-	DestinationTypeConfigApiKeyHttpMethodPost   DestinationTypeConfigApiKeyHttpMethod = "POST"
-	DestinationTypeConfigApiKeyHttpMethodPut    DestinationTypeConfigApiKeyHttpMethod = "PUT"
-	DestinationTypeConfigApiKeyHttpMethodPatch  DestinationTypeConfigApiKeyHttpMethod = "PATCH"
-	DestinationTypeConfigApiKeyHttpMethodDelete DestinationTypeConfigApiKeyHttpMethod = "DELETE"
-)
-
-func NewDestinationTypeConfigApiKeyHttpMethodFromString(s string) (DestinationTypeConfigApiKeyHttpMethod, error) {
-	switch s {
-	case "GET":
-		return DestinationTypeConfigApiKeyHttpMethodGet, nil
-	case "POST":
-		return DestinationTypeConfigApiKeyHttpMethodPost, nil
-	case "PUT":
-		return DestinationTypeConfigApiKeyHttpMethodPut, nil
-	case "PATCH":
-		return DestinationTypeConfigApiKeyHttpMethodPatch, nil
-	case "DELETE":
-		return DestinationTypeConfigApiKeyHttpMethodDelete, nil
-	}
-	var t DestinationTypeConfigApiKeyHttpMethod
-	return "", fmt.Errorf("%s is not a valid %T", s, t)
-}
-
-func (d DestinationTypeConfigApiKeyHttpMethod) Ptr() *DestinationTypeConfigApiKeyHttpMethod {
-	return &d
-}
-
-type DestinationTypeConfigApiKeyRateLimitPeriod string
-
-const (
-	DestinationTypeConfigApiKeyRateLimitPeriodSecond     DestinationTypeConfigApiKeyRateLimitPeriod = "second"
-	DestinationTypeConfigApiKeyRateLimitPeriodMinute     DestinationTypeConfigApiKeyRateLimitPeriod = "minute"
-	DestinationTypeConfigApiKeyRateLimitPeriodHour       DestinationTypeConfigApiKeyRateLimitPeriod = "hour"
-	DestinationTypeConfigApiKeyRateLimitPeriodConcurrent DestinationTypeConfigApiKeyRateLimitPeriod = "concurrent"
-)
-
-func NewDestinationTypeConfigApiKeyRateLimitPeriodFromString(s string) (DestinationTypeConfigApiKeyRateLimitPeriod, error) {
-	switch s {
-	case "second":
-		return DestinationTypeConfigApiKeyRateLimitPeriodSecond, nil
-	case "minute":
-		return DestinationTypeConfigApiKeyRateLimitPeriodMinute, nil
-	case "hour":
-		return DestinationTypeConfigApiKeyRateLimitPeriodHour, nil
-	case "concurrent":
-		return DestinationTypeConfigApiKeyRateLimitPeriodConcurrent, nil
-	}
-	var t DestinationTypeConfigApiKeyRateLimitPeriod
-	return "", fmt.Errorf("%s is not a valid %T", s, t)
-}
-
-func (d DestinationTypeConfigApiKeyRateLimitPeriod) Ptr() *DestinationTypeConfigApiKeyRateLimitPeriod {
-	return &d
-}
-
-// The type config for AWS Signature. Requires type to be `AWS_SIGNATURE`.
-type DestinationTypeConfigAwsSignature struct {
-	Type                   *string                                           `json:"type,omitempty" url:"type,omitempty"`
-	Url                    *string                                           `json:"url,omitempty" url:"url,omitempty"`
-	RateLimit              *float64                                          `json:"rate_limit,omitempty" url:"rate_limit,omitempty"`
-	RateLimitPeriod        *DestinationTypeConfigAwsSignatureRateLimitPeriod `json:"rate_limit_period,omitempty" url:"rate_limit_period,omitempty"`
-	PathForwardingDisabled *bool                                             `json:"path_forwarding_disabled,omitempty" url:"path_forwarding_disabled,omitempty"`
-	HttpMethod             *DestinationTypeConfigAwsSignatureHttpMethod      `json:"http_method,omitempty" url:"http_method,omitempty"`
-	Auth                   *DestinationTypeConfigAwsSignatureAuth            `json:"auth,omitempty" url:"auth,omitempty"`
-
-	extraProperties map[string]interface{}
-	rawJSON         json.RawMessage
-}
-
-func (d *DestinationTypeConfigAwsSignature) GetUrl() *string {
-	if d == nil {
-		return nil
-	}
-	return d.Url
-}
-
-func (d *DestinationTypeConfigAwsSignature) GetRateLimit() *float64 {
-	if d == nil {
-		return nil
-	}
-	return d.RateLimit
-}
-
-func (d *DestinationTypeConfigAwsSignature) GetRateLimitPeriod() *DestinationTypeConfigAwsSignatureRateLimitPeriod {
-	if d == nil {
-		return nil
-	}
-	return d.RateLimitPeriod
-}
-
-func (d *DestinationTypeConfigAwsSignature) GetPathForwardingDisabled() *bool {
-	if d == nil {
-		return nil
-	}
-	return d.PathForwardingDisabled
-}
-
-func (d *DestinationTypeConfigAwsSignature) GetHttpMethod() *DestinationTypeConfigAwsSignatureHttpMethod {
-	if d == nil {
-		return nil
-	}
-	return d.HttpMethod
-}
-
-func (d *DestinationTypeConfigAwsSignature) GetAuth() *DestinationTypeConfigAwsSignatureAuth {
-	if d == nil {
-		return nil
-	}
-	return d.Auth
-}
-
-func (d *DestinationTypeConfigAwsSignature) GetExtraProperties() map[string]interface{} {
-	return d.extraProperties
-}
-
-func (d *DestinationTypeConfigAwsSignature) UnmarshalJSON(data []byte) error {
-	type unmarshaler DestinationTypeConfigAwsSignature
-	var value unmarshaler
-	if err := json.Unmarshal(data, &value); err != nil {
-		return err
-	}
-	*d = DestinationTypeConfigAwsSignature(value)
-	extraProperties, err := internal.ExtractExtraProperties(data, *d)
-	if err != nil {
-		return err
-	}
-	d.extraProperties = extraProperties
-	d.rawJSON = json.RawMessage(data)
-	return nil
-}
-
-func (d *DestinationTypeConfigAwsSignature) String() string {
-	if len(d.rawJSON) > 0 {
-		if value, err := internal.StringifyJSON(d.rawJSON); err == nil {
-			return value
-		}
-	}
-	if value, err := internal.StringifyJSON(d); err == nil {
-		return value
-	}
-	return fmt.Sprintf("%#v", d)
-}
-
-type DestinationTypeConfigAwsSignatureAuth struct {
-	AccessKeyId     string `json:"access_key_id" url:"access_key_id"`
-	SecretAccessKey string `json:"secret_access_key" url:"secret_access_key"`
-	Region          string `json:"region" url:"region"`
-	Service         string `json:"service" url:"service"`
-
-	extraProperties map[string]interface{}
-	rawJSON         json.RawMessage
-}
-
-func (d *DestinationTypeConfigAwsSignatureAuth) GetAccessKeyId() string {
-	if d == nil {
-		return ""
-	}
-	return d.AccessKeyId
-}
-
-func (d *DestinationTypeConfigAwsSignatureAuth) GetSecretAccessKey() string {
-	if d == nil {
-		return ""
-	}
-	return d.SecretAccessKey
-}
-
-func (d *DestinationTypeConfigAwsSignatureAuth) GetRegion() string {
-	if d == nil {
-		return ""
-	}
-	return d.Region
-}
-
-func (d *DestinationTypeConfigAwsSignatureAuth) GetService() string {
-	if d == nil {
-		return ""
-	}
-	return d.Service
-}
-
-func (d *DestinationTypeConfigAwsSignatureAuth) GetExtraProperties() map[string]interface{} {
-	return d.extraProperties
-}
-
-func (d *DestinationTypeConfigAwsSignatureAuth) UnmarshalJSON(data []byte) error {
-	type unmarshaler DestinationTypeConfigAwsSignatureAuth
-	var value unmarshaler
-	if err := json.Unmarshal(data, &value); err != nil {
-		return err
-	}
-	*d = DestinationTypeConfigAwsSignatureAuth(value)
-	extraProperties, err := internal.ExtractExtraProperties(data, *d)
-	if err != nil {
-		return err
-	}
-	d.extraProperties = extraProperties
-	d.rawJSON = json.RawMessage(data)
-	return nil
-}
-
-func (d *DestinationTypeConfigAwsSignatureAuth) String() string {
-	if len(d.rawJSON) > 0 {
-		if value, err := internal.StringifyJSON(d.rawJSON); err == nil {
-			return value
-		}
-	}
-	if value, err := internal.StringifyJSON(d); err == nil {
-		return value
-	}
-	return fmt.Sprintf("%#v", d)
-}
-
-type DestinationTypeConfigAwsSignatureHttpMethod string
-
-const (
-	DestinationTypeConfigAwsSignatureHttpMethodGet    DestinationTypeConfigAwsSignatureHttpMethod = "GET"
-	DestinationTypeConfigAwsSignatureHttpMethodPost   DestinationTypeConfigAwsSignatureHttpMethod = "POST"
-	DestinationTypeConfigAwsSignatureHttpMethodPut    DestinationTypeConfigAwsSignatureHttpMethod = "PUT"
-	DestinationTypeConfigAwsSignatureHttpMethodPatch  DestinationTypeConfigAwsSignatureHttpMethod = "PATCH"
-	DestinationTypeConfigAwsSignatureHttpMethodDelete DestinationTypeConfigAwsSignatureHttpMethod = "DELETE"
-)
-
-func NewDestinationTypeConfigAwsSignatureHttpMethodFromString(s string) (DestinationTypeConfigAwsSignatureHttpMethod, error) {
-	switch s {
-	case "GET":
-		return DestinationTypeConfigAwsSignatureHttpMethodGet, nil
-	case "POST":
-		return DestinationTypeConfigAwsSignatureHttpMethodPost, nil
-	case "PUT":
-		return DestinationTypeConfigAwsSignatureHttpMethodPut, nil
-	case "PATCH":
-		return DestinationTypeConfigAwsSignatureHttpMethodPatch, nil
-	case "DELETE":
-		return DestinationTypeConfigAwsSignatureHttpMethodDelete, nil
-	}
-	var t DestinationTypeConfigAwsSignatureHttpMethod
-	return "", fmt.Errorf("%s is not a valid %T", s, t)
-}
-
-func (d DestinationTypeConfigAwsSignatureHttpMethod) Ptr() *DestinationTypeConfigAwsSignatureHttpMethod {
-	return &d
-}
-
-type DestinationTypeConfigAwsSignatureRateLimitPeriod string
-
-const (
-	DestinationTypeConfigAwsSignatureRateLimitPeriodSecond     DestinationTypeConfigAwsSignatureRateLimitPeriod = "second"
-	DestinationTypeConfigAwsSignatureRateLimitPeriodMinute     DestinationTypeConfigAwsSignatureRateLimitPeriod = "minute"
-	DestinationTypeConfigAwsSignatureRateLimitPeriodHour       DestinationTypeConfigAwsSignatureRateLimitPeriod = "hour"
-	DestinationTypeConfigAwsSignatureRateLimitPeriodConcurrent DestinationTypeConfigAwsSignatureRateLimitPeriod = "concurrent"
-)
-
-func NewDestinationTypeConfigAwsSignatureRateLimitPeriodFromString(s string) (DestinationTypeConfigAwsSignatureRateLimitPeriod, error) {
-	switch s {
-	case "second":
-		return DestinationTypeConfigAwsSignatureRateLimitPeriodSecond, nil
-	case "minute":
-		return DestinationTypeConfigAwsSignatureRateLimitPeriodMinute, nil
-	case "hour":
-		return DestinationTypeConfigAwsSignatureRateLimitPeriodHour, nil
-	case "concurrent":
-		return DestinationTypeConfigAwsSignatureRateLimitPeriodConcurrent, nil
-	}
-	var t DestinationTypeConfigAwsSignatureRateLimitPeriod
-	return "", fmt.Errorf("%s is not a valid %T", s, t)
-}
-
-func (d DestinationTypeConfigAwsSignatureRateLimitPeriod) Ptr() *DestinationTypeConfigAwsSignatureRateLimitPeriod {
-	return &d
-}
-
-// The type config for Basic Auth. Requires type to be `BASIC_AUTH`.
-type DestinationTypeConfigBasicAuth struct {
-	Type                   *string                                        `json:"type,omitempty" url:"type,omitempty"`
-	Url                    *string                                        `json:"url,omitempty" url:"url,omitempty"`
-	RateLimit              *float64                                       `json:"rate_limit,omitempty" url:"rate_limit,omitempty"`
-	RateLimitPeriod        *DestinationTypeConfigBasicAuthRateLimitPeriod `json:"rate_limit_period,omitempty" url:"rate_limit_period,omitempty"`
-	PathForwardingDisabled *bool                                          `json:"path_forwarding_disabled,omitempty" url:"path_forwarding_disabled,omitempty"`
-	HttpMethod             *DestinationTypeConfigBasicAuthHttpMethod      `json:"http_method,omitempty" url:"http_method,omitempty"`
-	Auth                   *DestinationTypeConfigBasicAuthAuth            `json:"auth,omitempty" url:"auth,omitempty"`
-
-	extraProperties map[string]interface{}
-	rawJSON         json.RawMessage
-}
-
-func (d *DestinationTypeConfigBasicAuth) GetUrl() *string {
-	if d == nil {
-		return nil
-	}
-	return d.Url
-}
-
-func (d *DestinationTypeConfigBasicAuth) GetRateLimit() *float64 {
-	if d == nil {
-		return nil
-	}
-	return d.RateLimit
-}
-
-func (d *DestinationTypeConfigBasicAuth) GetRateLimitPeriod() *DestinationTypeConfigBasicAuthRateLimitPeriod {
-	if d == nil {
-		return nil
-	}
-	return d.RateLimitPeriod
-}
-
-func (d *DestinationTypeConfigBasicAuth) GetPathForwardingDisabled() *bool {
-	if d == nil {
-		return nil
-	}
-	return d.PathForwardingDisabled
-}
-
-func (d *DestinationTypeConfigBasicAuth) GetHttpMethod() *DestinationTypeConfigBasicAuthHttpMethod {
-	if d == nil {
-		return nil
-	}
-	return d.HttpMethod
-}
-
-func (d *DestinationTypeConfigBasicAuth) GetAuth() *DestinationTypeConfigBasicAuthAuth {
-	if d == nil {
-		return nil
-	}
-	return d.Auth
-}
-
-func (d *DestinationTypeConfigBasicAuth) GetExtraProperties() map[string]interface{} {
-	return d.extraProperties
-}
-
-func (d *DestinationTypeConfigBasicAuth) UnmarshalJSON(data []byte) error {
-	type unmarshaler DestinationTypeConfigBasicAuth
-	var value unmarshaler
-	if err := json.Unmarshal(data, &value); err != nil {
-		return err
-	}
-	*d = DestinationTypeConfigBasicAuth(value)
-	extraProperties, err := internal.ExtractExtraProperties(data, *d)
-	if err != nil {
-		return err
-	}
-	d.extraProperties = extraProperties
-	d.rawJSON = json.RawMessage(data)
-	return nil
-}
-
-func (d *DestinationTypeConfigBasicAuth) String() string {
-	if len(d.rawJSON) > 0 {
-		if value, err := internal.StringifyJSON(d.rawJSON); err == nil {
-			return value
-		}
-	}
-	if value, err := internal.StringifyJSON(d); err == nil {
-		return value
-	}
-	return fmt.Sprintf("%#v", d)
-}
-
-type DestinationTypeConfigBasicAuthAuth struct {
-	Username *string `json:"username,omitempty" url:"username,omitempty"`
-	Password *string `json:"password,omitempty" url:"password,omitempty"`
-
-	extraProperties map[string]interface{}
-	rawJSON         json.RawMessage
-}
-
-func (d *DestinationTypeConfigBasicAuthAuth) GetUsername() *string {
-	if d == nil {
-		return nil
-	}
-	return d.Username
-}
-
-func (d *DestinationTypeConfigBasicAuthAuth) GetPassword() *string {
-	if d == nil {
-		return nil
-	}
-	return d.Password
-}
-
-func (d *DestinationTypeConfigBasicAuthAuth) GetExtraProperties() map[string]interface{} {
-	return d.extraProperties
-}
-
-func (d *DestinationTypeConfigBasicAuthAuth) UnmarshalJSON(data []byte) error {
-	type unmarshaler DestinationTypeConfigBasicAuthAuth
-	var value unmarshaler
-	if err := json.Unmarshal(data, &value); err != nil {
-		return err
-	}
-	*d = DestinationTypeConfigBasicAuthAuth(value)
-	extraProperties, err := internal.ExtractExtraProperties(data, *d)
-	if err != nil {
-		return err
-	}
-	d.extraProperties = extraProperties
-	d.rawJSON = json.RawMessage(data)
-	return nil
-}
-
-func (d *DestinationTypeConfigBasicAuthAuth) String() string {
-	if len(d.rawJSON) > 0 {
-		if value, err := internal.StringifyJSON(d.rawJSON); err == nil {
-			return value
-		}
-	}
-	if value, err := internal.StringifyJSON(d); err == nil {
-		return value
-	}
-	return fmt.Sprintf("%#v", d)
-}
-
-type DestinationTypeConfigBasicAuthHttpMethod string
-
-const (
-	DestinationTypeConfigBasicAuthHttpMethodGet    DestinationTypeConfigBasicAuthHttpMethod = "GET"
-	DestinationTypeConfigBasicAuthHttpMethodPost   DestinationTypeConfigBasicAuthHttpMethod = "POST"
-	DestinationTypeConfigBasicAuthHttpMethodPut    DestinationTypeConfigBasicAuthHttpMethod = "PUT"
-	DestinationTypeConfigBasicAuthHttpMethodPatch  DestinationTypeConfigBasicAuthHttpMethod = "PATCH"
-	DestinationTypeConfigBasicAuthHttpMethodDelete DestinationTypeConfigBasicAuthHttpMethod = "DELETE"
-)
-
-func NewDestinationTypeConfigBasicAuthHttpMethodFromString(s string) (DestinationTypeConfigBasicAuthHttpMethod, error) {
-	switch s {
-	case "GET":
-		return DestinationTypeConfigBasicAuthHttpMethodGet, nil
-	case "POST":
-		return DestinationTypeConfigBasicAuthHttpMethodPost, nil
-	case "PUT":
-		return DestinationTypeConfigBasicAuthHttpMethodPut, nil
-	case "PATCH":
-		return DestinationTypeConfigBasicAuthHttpMethodPatch, nil
-	case "DELETE":
-		return DestinationTypeConfigBasicAuthHttpMethodDelete, nil
-	}
-	var t DestinationTypeConfigBasicAuthHttpMethod
-	return "", fmt.Errorf("%s is not a valid %T", s, t)
-}
-
-func (d DestinationTypeConfigBasicAuthHttpMethod) Ptr() *DestinationTypeConfigBasicAuthHttpMethod {
-	return &d
-}
-
-type DestinationTypeConfigBasicAuthRateLimitPeriod string
-
-const (
-	DestinationTypeConfigBasicAuthRateLimitPeriodSecond     DestinationTypeConfigBasicAuthRateLimitPeriod = "second"
-	DestinationTypeConfigBasicAuthRateLimitPeriodMinute     DestinationTypeConfigBasicAuthRateLimitPeriod = "minute"
-	DestinationTypeConfigBasicAuthRateLimitPeriodHour       DestinationTypeConfigBasicAuthRateLimitPeriod = "hour"
-	DestinationTypeConfigBasicAuthRateLimitPeriodConcurrent DestinationTypeConfigBasicAuthRateLimitPeriod = "concurrent"
-)
-
-func NewDestinationTypeConfigBasicAuthRateLimitPeriodFromString(s string) (DestinationTypeConfigBasicAuthRateLimitPeriod, error) {
-	switch s {
-	case "second":
-		return DestinationTypeConfigBasicAuthRateLimitPeriodSecond, nil
-	case "minute":
-		return DestinationTypeConfigBasicAuthRateLimitPeriodMinute, nil
-	case "hour":
-		return DestinationTypeConfigBasicAuthRateLimitPeriodHour, nil
-	case "concurrent":
-		return DestinationTypeConfigBasicAuthRateLimitPeriodConcurrent, nil
-	}
-	var t DestinationTypeConfigBasicAuthRateLimitPeriod
-	return "", fmt.Errorf("%s is not a valid %T", s, t)
-}
-
-func (d DestinationTypeConfigBasicAuthRateLimitPeriod) Ptr() *DestinationTypeConfigBasicAuthRateLimitPeriod {
-	return &d
-}
-
-// The type config for Bearer Token. Requires type to be `BEARER_TOKEN`.
-type DestinationTypeConfigBearerToken struct {
-	Type                   *string                                          `json:"type,omitempty" url:"type,omitempty"`
-	Url                    *string                                          `json:"url,omitempty" url:"url,omitempty"`
-	RateLimit              *float64                                         `json:"rate_limit,omitempty" url:"rate_limit,omitempty"`
-	RateLimitPeriod        *DestinationTypeConfigBearerTokenRateLimitPeriod `json:"rate_limit_period,omitempty" url:"rate_limit_period,omitempty"`
-	PathForwardingDisabled *bool                                            `json:"path_forwarding_disabled,omitempty" url:"path_forwarding_disabled,omitempty"`
-	HttpMethod             *DestinationTypeConfigBearerTokenHttpMethod      `json:"http_method,omitempty" url:"http_method,omitempty"`
-	Auth                   *DestinationTypeConfigBearerTokenAuth            `json:"auth,omitempty" url:"auth,omitempty"`
-
-	extraProperties map[string]interface{}
-	rawJSON         json.RawMessage
-}
-
-func (d *DestinationTypeConfigBearerToken) GetUrl() *string {
-	if d == nil {
-		return nil
-	}
-	return d.Url
-}
-
-func (d *DestinationTypeConfigBearerToken) GetRateLimit() *float64 {
-	if d == nil {
-		return nil
-	}
-	return d.RateLimit
-}
-
-func (d *DestinationTypeConfigBearerToken) GetRateLimitPeriod() *DestinationTypeConfigBearerTokenRateLimitPeriod {
-	if d == nil {
-		return nil
-	}
-	return d.RateLimitPeriod
-}
-
-func (d *DestinationTypeConfigBearerToken) GetPathForwardingDisabled() *bool {
-	if d == nil {
-		return nil
-	}
-	return d.PathForwardingDisabled
-}
-
-func (d *DestinationTypeConfigBearerToken) GetHttpMethod() *DestinationTypeConfigBearerTokenHttpMethod {
-	if d == nil {
-		return nil
-	}
-	return d.HttpMethod
-}
-
-func (d *DestinationTypeConfigBearerToken) GetAuth() *DestinationTypeConfigBearerTokenAuth {
-	if d == nil {
-		return nil
-	}
-	return d.Auth
-}
-
-func (d *DestinationTypeConfigBearerToken) GetExtraProperties() map[string]interface{} {
-	return d.extraProperties
-}
-
-func (d *DestinationTypeConfigBearerToken) UnmarshalJSON(data []byte) error {
-	type unmarshaler DestinationTypeConfigBearerToken
-	var value unmarshaler
-	if err := json.Unmarshal(data, &value); err != nil {
-		return err
-	}
-	*d = DestinationTypeConfigBearerToken(value)
-	extraProperties, err := internal.ExtractExtraProperties(data, *d)
-	if err != nil {
-		return err
-	}
-	d.extraProperties = extraProperties
-	d.rawJSON = json.RawMessage(data)
-	return nil
-}
-
-func (d *DestinationTypeConfigBearerToken) String() string {
-	if len(d.rawJSON) > 0 {
-		if value, err := internal.StringifyJSON(d.rawJSON); err == nil {
-			return value
-		}
-	}
-	if value, err := internal.StringifyJSON(d); err == nil {
-		return value
-	}
-	return fmt.Sprintf("%#v", d)
-}
-
-type DestinationTypeConfigBearerTokenAuth struct {
-	Token string `json:"token" url:"token"`
-
-	extraProperties map[string]interface{}
-	rawJSON         json.RawMessage
-}
-
-func (d *DestinationTypeConfigBearerTokenAuth) GetToken() string {
-	if d == nil {
-		return ""
-	}
-	return d.Token
-}
-
-func (d *DestinationTypeConfigBearerTokenAuth) GetExtraProperties() map[string]interface{} {
-	return d.extraProperties
-}
-
-func (d *DestinationTypeConfigBearerTokenAuth) UnmarshalJSON(data []byte) error {
-	type unmarshaler DestinationTypeConfigBearerTokenAuth
-	var value unmarshaler
-	if err := json.Unmarshal(data, &value); err != nil {
-		return err
-	}
-	*d = DestinationTypeConfigBearerTokenAuth(value)
-	extraProperties, err := internal.ExtractExtraProperties(data, *d)
-	if err != nil {
-		return err
-	}
-	d.extraProperties = extraProperties
-	d.rawJSON = json.RawMessage(data)
-	return nil
-}
-
-func (d *DestinationTypeConfigBearerTokenAuth) String() string {
-	if len(d.rawJSON) > 0 {
-		if value, err := internal.StringifyJSON(d.rawJSON); err == nil {
-			return value
-		}
-	}
-	if value, err := internal.StringifyJSON(d); err == nil {
-		return value
-	}
-	return fmt.Sprintf("%#v", d)
-}
-
-type DestinationTypeConfigBearerTokenHttpMethod string
-
-const (
-	DestinationTypeConfigBearerTokenHttpMethodGet    DestinationTypeConfigBearerTokenHttpMethod = "GET"
-	DestinationTypeConfigBearerTokenHttpMethodPost   DestinationTypeConfigBearerTokenHttpMethod = "POST"
-	DestinationTypeConfigBearerTokenHttpMethodPut    DestinationTypeConfigBearerTokenHttpMethod = "PUT"
-	DestinationTypeConfigBearerTokenHttpMethodPatch  DestinationTypeConfigBearerTokenHttpMethod = "PATCH"
-	DestinationTypeConfigBearerTokenHttpMethodDelete DestinationTypeConfigBearerTokenHttpMethod = "DELETE"
-)
-
-func NewDestinationTypeConfigBearerTokenHttpMethodFromString(s string) (DestinationTypeConfigBearerTokenHttpMethod, error) {
-	switch s {
-	case "GET":
-		return DestinationTypeConfigBearerTokenHttpMethodGet, nil
-	case "POST":
-		return DestinationTypeConfigBearerTokenHttpMethodPost, nil
-	case "PUT":
-		return DestinationTypeConfigBearerTokenHttpMethodPut, nil
-	case "PATCH":
-		return DestinationTypeConfigBearerTokenHttpMethodPatch, nil
-	case "DELETE":
-		return DestinationTypeConfigBearerTokenHttpMethodDelete, nil
-	}
-	var t DestinationTypeConfigBearerTokenHttpMethod
-	return "", fmt.Errorf("%s is not a valid %T", s, t)
-}
-
-func (d DestinationTypeConfigBearerTokenHttpMethod) Ptr() *DestinationTypeConfigBearerTokenHttpMethod {
-	return &d
-}
-
-type DestinationTypeConfigBearerTokenRateLimitPeriod string
-
-const (
-	DestinationTypeConfigBearerTokenRateLimitPeriodSecond     DestinationTypeConfigBearerTokenRateLimitPeriod = "second"
-	DestinationTypeConfigBearerTokenRateLimitPeriodMinute     DestinationTypeConfigBearerTokenRateLimitPeriod = "minute"
-	DestinationTypeConfigBearerTokenRateLimitPeriodHour       DestinationTypeConfigBearerTokenRateLimitPeriod = "hour"
-	DestinationTypeConfigBearerTokenRateLimitPeriodConcurrent DestinationTypeConfigBearerTokenRateLimitPeriod = "concurrent"
-)
-
-func NewDestinationTypeConfigBearerTokenRateLimitPeriodFromString(s string) (DestinationTypeConfigBearerTokenRateLimitPeriod, error) {
-	switch s {
-	case "second":
-		return DestinationTypeConfigBearerTokenRateLimitPeriodSecond, nil
-	case "minute":
-		return DestinationTypeConfigBearerTokenRateLimitPeriodMinute, nil
-	case "hour":
-		return DestinationTypeConfigBearerTokenRateLimitPeriodHour, nil
-	case "concurrent":
-		return DestinationTypeConfigBearerTokenRateLimitPeriodConcurrent, nil
-	}
-	var t DestinationTypeConfigBearerTokenRateLimitPeriod
-	return "", fmt.Errorf("%s is not a valid %T", s, t)
-}
-
-func (d DestinationTypeConfigBearerTokenRateLimitPeriod) Ptr() *DestinationTypeConfigBearerTokenRateLimitPeriod {
-	return &d
-}
-
 // The type config for CLI. Requires type to be `CLI`.
 type DestinationTypeConfigCli struct {
 	PathForwardingDisabled *bool                               `json:"path_forwarding_disabled,omitempty" url:"path_forwarding_disabled,omitempty"`
 	HttpMethod             *DestinationTypeConfigCliHttpMethod `json:"http_method,omitempty" url:"http_method,omitempty"`
-	Auth                   *DestinationTypeConfigCliAuth       `json:"auth,omitempty" url:"auth,omitempty"`
+	Auth                   *SourceConfigCliAuth                `json:"auth,omitempty" url:"auth,omitempty"`
 	Configs                *DestinationTypeConfigCliConfigs    `json:"configs,omitempty" url:"configs,omitempty"`
 
 	extraProperties map[string]interface{}
@@ -3436,7 +2410,7 @@ func (d *DestinationTypeConfigCli) GetHttpMethod() *DestinationTypeConfigCliHttp
 	return d.HttpMethod
 }
 
-func (d *DestinationTypeConfigCli) GetAuth() *DestinationTypeConfigCliAuth {
+func (d *DestinationTypeConfigCli) GetAuth() *SourceConfigCliAuth {
 	if d == nil {
 		return nil
 	}
@@ -3471,43 +2445,6 @@ func (d *DestinationTypeConfigCli) UnmarshalJSON(data []byte) error {
 }
 
 func (d *DestinationTypeConfigCli) String() string {
-	if len(d.rawJSON) > 0 {
-		if value, err := internal.StringifyJSON(d.rawJSON); err == nil {
-			return value
-		}
-	}
-	if value, err := internal.StringifyJSON(d); err == nil {
-		return value
-	}
-	return fmt.Sprintf("%#v", d)
-}
-
-type DestinationTypeConfigCliAuth struct {
-	extraProperties map[string]interface{}
-	rawJSON         json.RawMessage
-}
-
-func (d *DestinationTypeConfigCliAuth) GetExtraProperties() map[string]interface{} {
-	return d.extraProperties
-}
-
-func (d *DestinationTypeConfigCliAuth) UnmarshalJSON(data []byte) error {
-	type unmarshaler DestinationTypeConfigCliAuth
-	var value unmarshaler
-	if err := json.Unmarshal(data, &value); err != nil {
-		return err
-	}
-	*d = DestinationTypeConfigCliAuth(value)
-	extraProperties, err := internal.ExtractExtraProperties(data, *d)
-	if err != nil {
-		return err
-	}
-	d.extraProperties = extraProperties
-	d.rawJSON = json.RawMessage(data)
-	return nil
-}
-
-func (d *DestinationTypeConfigCliAuth) String() string {
 	if len(d.rawJSON) > 0 {
 		if value, err := internal.StringifyJSON(d.rawJSON); err == nil {
 			return value
@@ -3587,207 +2524,6 @@ func (d DestinationTypeConfigCliHttpMethod) Ptr() *DestinationTypeConfigCliHttpM
 	return &d
 }
 
-// The type config for Custom SHA-256 HMAC Signature. Requires type to be `CUSTOM_SIGNATURE`.
-type DestinationTypeConfigCustomSha256HmacSignature struct {
-	Type                   *string                                                        `json:"type,omitempty" url:"type,omitempty"`
-	Url                    *string                                                        `json:"url,omitempty" url:"url,omitempty"`
-	RateLimit              *float64                                                       `json:"rate_limit,omitempty" url:"rate_limit,omitempty"`
-	RateLimitPeriod        *DestinationTypeConfigCustomSha256HmacSignatureRateLimitPeriod `json:"rate_limit_period,omitempty" url:"rate_limit_period,omitempty"`
-	PathForwardingDisabled *bool                                                          `json:"path_forwarding_disabled,omitempty" url:"path_forwarding_disabled,omitempty"`
-	HttpMethod             *DestinationTypeConfigCustomSha256HmacSignatureHttpMethod      `json:"http_method,omitempty" url:"http_method,omitempty"`
-	Auth                   *DestinationTypeConfigCustomSha256HmacSignatureAuth            `json:"auth,omitempty" url:"auth,omitempty"`
-
-	extraProperties map[string]interface{}
-	rawJSON         json.RawMessage
-}
-
-func (d *DestinationTypeConfigCustomSha256HmacSignature) GetUrl() *string {
-	if d == nil {
-		return nil
-	}
-	return d.Url
-}
-
-func (d *DestinationTypeConfigCustomSha256HmacSignature) GetRateLimit() *float64 {
-	if d == nil {
-		return nil
-	}
-	return d.RateLimit
-}
-
-func (d *DestinationTypeConfigCustomSha256HmacSignature) GetRateLimitPeriod() *DestinationTypeConfigCustomSha256HmacSignatureRateLimitPeriod {
-	if d == nil {
-		return nil
-	}
-	return d.RateLimitPeriod
-}
-
-func (d *DestinationTypeConfigCustomSha256HmacSignature) GetPathForwardingDisabled() *bool {
-	if d == nil {
-		return nil
-	}
-	return d.PathForwardingDisabled
-}
-
-func (d *DestinationTypeConfigCustomSha256HmacSignature) GetHttpMethod() *DestinationTypeConfigCustomSha256HmacSignatureHttpMethod {
-	if d == nil {
-		return nil
-	}
-	return d.HttpMethod
-}
-
-func (d *DestinationTypeConfigCustomSha256HmacSignature) GetAuth() *DestinationTypeConfigCustomSha256HmacSignatureAuth {
-	if d == nil {
-		return nil
-	}
-	return d.Auth
-}
-
-func (d *DestinationTypeConfigCustomSha256HmacSignature) GetExtraProperties() map[string]interface{} {
-	return d.extraProperties
-}
-
-func (d *DestinationTypeConfigCustomSha256HmacSignature) UnmarshalJSON(data []byte) error {
-	type unmarshaler DestinationTypeConfigCustomSha256HmacSignature
-	var value unmarshaler
-	if err := json.Unmarshal(data, &value); err != nil {
-		return err
-	}
-	*d = DestinationTypeConfigCustomSha256HmacSignature(value)
-	extraProperties, err := internal.ExtractExtraProperties(data, *d)
-	if err != nil {
-		return err
-	}
-	d.extraProperties = extraProperties
-	d.rawJSON = json.RawMessage(data)
-	return nil
-}
-
-func (d *DestinationTypeConfigCustomSha256HmacSignature) String() string {
-	if len(d.rawJSON) > 0 {
-		if value, err := internal.StringifyJSON(d.rawJSON); err == nil {
-			return value
-		}
-	}
-	if value, err := internal.StringifyJSON(d); err == nil {
-		return value
-	}
-	return fmt.Sprintf("%#v", d)
-}
-
-type DestinationTypeConfigCustomSha256HmacSignatureAuth struct {
-	Key           string `json:"key" url:"key"`
-	SigningSecret string `json:"signing_secret" url:"signing_secret"`
-
-	extraProperties map[string]interface{}
-	rawJSON         json.RawMessage
-}
-
-func (d *DestinationTypeConfigCustomSha256HmacSignatureAuth) GetKey() string {
-	if d == nil {
-		return ""
-	}
-	return d.Key
-}
-
-func (d *DestinationTypeConfigCustomSha256HmacSignatureAuth) GetSigningSecret() string {
-	if d == nil {
-		return ""
-	}
-	return d.SigningSecret
-}
-
-func (d *DestinationTypeConfigCustomSha256HmacSignatureAuth) GetExtraProperties() map[string]interface{} {
-	return d.extraProperties
-}
-
-func (d *DestinationTypeConfigCustomSha256HmacSignatureAuth) UnmarshalJSON(data []byte) error {
-	type unmarshaler DestinationTypeConfigCustomSha256HmacSignatureAuth
-	var value unmarshaler
-	if err := json.Unmarshal(data, &value); err != nil {
-		return err
-	}
-	*d = DestinationTypeConfigCustomSha256HmacSignatureAuth(value)
-	extraProperties, err := internal.ExtractExtraProperties(data, *d)
-	if err != nil {
-		return err
-	}
-	d.extraProperties = extraProperties
-	d.rawJSON = json.RawMessage(data)
-	return nil
-}
-
-func (d *DestinationTypeConfigCustomSha256HmacSignatureAuth) String() string {
-	if len(d.rawJSON) > 0 {
-		if value, err := internal.StringifyJSON(d.rawJSON); err == nil {
-			return value
-		}
-	}
-	if value, err := internal.StringifyJSON(d); err == nil {
-		return value
-	}
-	return fmt.Sprintf("%#v", d)
-}
-
-type DestinationTypeConfigCustomSha256HmacSignatureHttpMethod string
-
-const (
-	DestinationTypeConfigCustomSha256HmacSignatureHttpMethodGet    DestinationTypeConfigCustomSha256HmacSignatureHttpMethod = "GET"
-	DestinationTypeConfigCustomSha256HmacSignatureHttpMethodPost   DestinationTypeConfigCustomSha256HmacSignatureHttpMethod = "POST"
-	DestinationTypeConfigCustomSha256HmacSignatureHttpMethodPut    DestinationTypeConfigCustomSha256HmacSignatureHttpMethod = "PUT"
-	DestinationTypeConfigCustomSha256HmacSignatureHttpMethodPatch  DestinationTypeConfigCustomSha256HmacSignatureHttpMethod = "PATCH"
-	DestinationTypeConfigCustomSha256HmacSignatureHttpMethodDelete DestinationTypeConfigCustomSha256HmacSignatureHttpMethod = "DELETE"
-)
-
-func NewDestinationTypeConfigCustomSha256HmacSignatureHttpMethodFromString(s string) (DestinationTypeConfigCustomSha256HmacSignatureHttpMethod, error) {
-	switch s {
-	case "GET":
-		return DestinationTypeConfigCustomSha256HmacSignatureHttpMethodGet, nil
-	case "POST":
-		return DestinationTypeConfigCustomSha256HmacSignatureHttpMethodPost, nil
-	case "PUT":
-		return DestinationTypeConfigCustomSha256HmacSignatureHttpMethodPut, nil
-	case "PATCH":
-		return DestinationTypeConfigCustomSha256HmacSignatureHttpMethodPatch, nil
-	case "DELETE":
-		return DestinationTypeConfigCustomSha256HmacSignatureHttpMethodDelete, nil
-	}
-	var t DestinationTypeConfigCustomSha256HmacSignatureHttpMethod
-	return "", fmt.Errorf("%s is not a valid %T", s, t)
-}
-
-func (d DestinationTypeConfigCustomSha256HmacSignatureHttpMethod) Ptr() *DestinationTypeConfigCustomSha256HmacSignatureHttpMethod {
-	return &d
-}
-
-type DestinationTypeConfigCustomSha256HmacSignatureRateLimitPeriod string
-
-const (
-	DestinationTypeConfigCustomSha256HmacSignatureRateLimitPeriodSecond     DestinationTypeConfigCustomSha256HmacSignatureRateLimitPeriod = "second"
-	DestinationTypeConfigCustomSha256HmacSignatureRateLimitPeriodMinute     DestinationTypeConfigCustomSha256HmacSignatureRateLimitPeriod = "minute"
-	DestinationTypeConfigCustomSha256HmacSignatureRateLimitPeriodHour       DestinationTypeConfigCustomSha256HmacSignatureRateLimitPeriod = "hour"
-	DestinationTypeConfigCustomSha256HmacSignatureRateLimitPeriodConcurrent DestinationTypeConfigCustomSha256HmacSignatureRateLimitPeriod = "concurrent"
-)
-
-func NewDestinationTypeConfigCustomSha256HmacSignatureRateLimitPeriodFromString(s string) (DestinationTypeConfigCustomSha256HmacSignatureRateLimitPeriod, error) {
-	switch s {
-	case "second":
-		return DestinationTypeConfigCustomSha256HmacSignatureRateLimitPeriodSecond, nil
-	case "minute":
-		return DestinationTypeConfigCustomSha256HmacSignatureRateLimitPeriodMinute, nil
-	case "hour":
-		return DestinationTypeConfigCustomSha256HmacSignatureRateLimitPeriodHour, nil
-	case "concurrent":
-		return DestinationTypeConfigCustomSha256HmacSignatureRateLimitPeriodConcurrent, nil
-	}
-	var t DestinationTypeConfigCustomSha256HmacSignatureRateLimitPeriod
-	return "", fmt.Errorf("%s is not a valid %T", s, t)
-}
-
-func (d DestinationTypeConfigCustomSha256HmacSignatureRateLimitPeriod) Ptr() *DestinationTypeConfigCustomSha256HmacSignatureRateLimitPeriod {
-	return &d
-}
-
 // The type config for HTTP. Requires type to be `HTTP`.
 type DestinationTypeConfigHttp struct {
 	Url                    *string                                   `json:"url,omitempty" url:"url,omitempty"`
@@ -3796,7 +2532,7 @@ type DestinationTypeConfigHttp struct {
 	PathForwardingDisabled *bool                                     `json:"path_forwarding_disabled,omitempty" url:"path_forwarding_disabled,omitempty"`
 	HttpMethod             *DestinationTypeConfigHttpHttpMethod      `json:"http_method,omitempty" url:"http_method,omitempty"`
 	Configs                *DestinationTypeConfigHttpConfigs         `json:"configs,omitempty" url:"configs,omitempty"`
-	Type                   *DestinationTypeConfigHttpType            `json:"type,omitempty" url:"type,omitempty"`
+	AuthType               *DestinationTypeConfigHttpAuthType        `json:"auth_type,omitempty" url:"auth_type,omitempty"`
 	Auth                   *DestinationTypeConfigHttpAuth            `json:"auth,omitempty" url:"auth,omitempty"`
 
 	extraProperties map[string]interface{}
@@ -3845,11 +2581,11 @@ func (d *DestinationTypeConfigHttp) GetConfigs() *DestinationTypeConfigHttpConfi
 	return d.Configs
 }
 
-func (d *DestinationTypeConfigHttp) GetType() *DestinationTypeConfigHttpType {
+func (d *DestinationTypeConfigHttp) GetAuthType() *DestinationTypeConfigHttpAuthType {
 	if d == nil {
 		return nil
 	}
-	return d.Type
+	return d.AuthType
 }
 
 func (d *DestinationTypeConfigHttp) GetAuth() *DestinationTypeConfigHttpAuth {
@@ -4600,6 +3336,46 @@ func (d *DestinationTypeConfigHttpAuthToken) String() string {
 	return fmt.Sprintf("%#v", d)
 }
 
+type DestinationTypeConfigHttpAuthType string
+
+const (
+	DestinationTypeConfigHttpAuthTypeHookdeckSignature       DestinationTypeConfigHttpAuthType = "HOOKDECK_SIGNATURE"
+	DestinationTypeConfigHttpAuthTypeCustomSignature         DestinationTypeConfigHttpAuthType = "CUSTOM_SIGNATURE"
+	DestinationTypeConfigHttpAuthTypeBasicAuth               DestinationTypeConfigHttpAuthType = "BASIC_AUTH"
+	DestinationTypeConfigHttpAuthTypeApiKey                  DestinationTypeConfigHttpAuthType = "API_KEY"
+	DestinationTypeConfigHttpAuthTypeBearerToken             DestinationTypeConfigHttpAuthType = "BEARER_TOKEN"
+	DestinationTypeConfigHttpAuthTypeOauth2ClientCredentials DestinationTypeConfigHttpAuthType = "OAUTH2_CLIENT_CREDENTIALS"
+	DestinationTypeConfigHttpAuthTypeOauth2AuthorizationCode DestinationTypeConfigHttpAuthType = "OAUTH2_AUTHORIZATION_CODE"
+	DestinationTypeConfigHttpAuthTypeAwsSignature            DestinationTypeConfigHttpAuthType = "AWS_SIGNATURE"
+)
+
+func NewDestinationTypeConfigHttpAuthTypeFromString(s string) (DestinationTypeConfigHttpAuthType, error) {
+	switch s {
+	case "HOOKDECK_SIGNATURE":
+		return DestinationTypeConfigHttpAuthTypeHookdeckSignature, nil
+	case "CUSTOM_SIGNATURE":
+		return DestinationTypeConfigHttpAuthTypeCustomSignature, nil
+	case "BASIC_AUTH":
+		return DestinationTypeConfigHttpAuthTypeBasicAuth, nil
+	case "API_KEY":
+		return DestinationTypeConfigHttpAuthTypeApiKey, nil
+	case "BEARER_TOKEN":
+		return DestinationTypeConfigHttpAuthTypeBearerToken, nil
+	case "OAUTH2_CLIENT_CREDENTIALS":
+		return DestinationTypeConfigHttpAuthTypeOauth2ClientCredentials, nil
+	case "OAUTH2_AUTHORIZATION_CODE":
+		return DestinationTypeConfigHttpAuthTypeOauth2AuthorizationCode, nil
+	case "AWS_SIGNATURE":
+		return DestinationTypeConfigHttpAuthTypeAwsSignature, nil
+	}
+	var t DestinationTypeConfigHttpAuthType
+	return "", fmt.Errorf("%s is not a valid %T", s, t)
+}
+
+func (d DestinationTypeConfigHttpAuthType) Ptr() *DestinationTypeConfigHttpAuthType {
+	return &d
+}
+
 type DestinationTypeConfigHttpAuthZero struct {
 	extraProperties map[string]interface{}
 	rawJSON         json.RawMessage
@@ -4733,53 +3509,13 @@ func (d DestinationTypeConfigHttpRateLimitPeriod) Ptr() *DestinationTypeConfigHt
 	return &d
 }
 
-type DestinationTypeConfigHttpType string
-
-const (
-	DestinationTypeConfigHttpTypeHookdeckSignature       DestinationTypeConfigHttpType = "HOOKDECK_SIGNATURE"
-	DestinationTypeConfigHttpTypeCustomSignature         DestinationTypeConfigHttpType = "CUSTOM_SIGNATURE"
-	DestinationTypeConfigHttpTypeBasicAuth               DestinationTypeConfigHttpType = "BASIC_AUTH"
-	DestinationTypeConfigHttpTypeApiKey                  DestinationTypeConfigHttpType = "API_KEY"
-	DestinationTypeConfigHttpTypeBearerToken             DestinationTypeConfigHttpType = "BEARER_TOKEN"
-	DestinationTypeConfigHttpTypeOauth2ClientCredentials DestinationTypeConfigHttpType = "OAUTH2_CLIENT_CREDENTIALS"
-	DestinationTypeConfigHttpTypeOauth2AuthorizationCode DestinationTypeConfigHttpType = "OAUTH2_AUTHORIZATION_CODE"
-	DestinationTypeConfigHttpTypeAwsSignature            DestinationTypeConfigHttpType = "AWS_SIGNATURE"
-)
-
-func NewDestinationTypeConfigHttpTypeFromString(s string) (DestinationTypeConfigHttpType, error) {
-	switch s {
-	case "HOOKDECK_SIGNATURE":
-		return DestinationTypeConfigHttpTypeHookdeckSignature, nil
-	case "CUSTOM_SIGNATURE":
-		return DestinationTypeConfigHttpTypeCustomSignature, nil
-	case "BASIC_AUTH":
-		return DestinationTypeConfigHttpTypeBasicAuth, nil
-	case "API_KEY":
-		return DestinationTypeConfigHttpTypeApiKey, nil
-	case "BEARER_TOKEN":
-		return DestinationTypeConfigHttpTypeBearerToken, nil
-	case "OAUTH2_CLIENT_CREDENTIALS":
-		return DestinationTypeConfigHttpTypeOauth2ClientCredentials, nil
-	case "OAUTH2_AUTHORIZATION_CODE":
-		return DestinationTypeConfigHttpTypeOauth2AuthorizationCode, nil
-	case "AWS_SIGNATURE":
-		return DestinationTypeConfigHttpTypeAwsSignature, nil
-	}
-	var t DestinationTypeConfigHttpType
-	return "", fmt.Errorf("%s is not a valid %T", s, t)
-}
-
-func (d DestinationTypeConfigHttpType) Ptr() *DestinationTypeConfigHttpType {
-	return &d
-}
-
 // The type config for Mock API. Requires type to be `MOCK_API`.
 type DestinationTypeConfigMockApi struct {
 	RateLimit              *float64                                     `json:"rate_limit,omitempty" url:"rate_limit,omitempty"`
 	RateLimitPeriod        *DestinationTypeConfigMockApiRateLimitPeriod `json:"rate_limit_period,omitempty" url:"rate_limit_period,omitempty"`
 	PathForwardingDisabled *bool                                        `json:"path_forwarding_disabled,omitempty" url:"path_forwarding_disabled,omitempty"`
 	HttpMethod             *DestinationTypeConfigMockApiHttpMethod      `json:"http_method,omitempty" url:"http_method,omitempty"`
-	Auth                   *DestinationTypeConfigMockApiAuth            `json:"auth,omitempty" url:"auth,omitempty"`
+	Auth                   *SourceConfigMockApiAuth                     `json:"auth,omitempty" url:"auth,omitempty"`
 	Configs                *DestinationTypeConfigMockApiConfigs         `json:"configs,omitempty" url:"configs,omitempty"`
 
 	extraProperties map[string]interface{}
@@ -4814,7 +3550,7 @@ func (d *DestinationTypeConfigMockApi) GetHttpMethod() *DestinationTypeConfigMoc
 	return d.HttpMethod
 }
 
-func (d *DestinationTypeConfigMockApi) GetAuth() *DestinationTypeConfigMockApiAuth {
+func (d *DestinationTypeConfigMockApi) GetAuth() *SourceConfigMockApiAuth {
 	if d == nil {
 		return nil
 	}
@@ -4849,43 +3585,6 @@ func (d *DestinationTypeConfigMockApi) UnmarshalJSON(data []byte) error {
 }
 
 func (d *DestinationTypeConfigMockApi) String() string {
-	if len(d.rawJSON) > 0 {
-		if value, err := internal.StringifyJSON(d.rawJSON); err == nil {
-			return value
-		}
-	}
-	if value, err := internal.StringifyJSON(d); err == nil {
-		return value
-	}
-	return fmt.Sprintf("%#v", d)
-}
-
-type DestinationTypeConfigMockApiAuth struct {
-	extraProperties map[string]interface{}
-	rawJSON         json.RawMessage
-}
-
-func (d *DestinationTypeConfigMockApiAuth) GetExtraProperties() map[string]interface{} {
-	return d.extraProperties
-}
-
-func (d *DestinationTypeConfigMockApiAuth) UnmarshalJSON(data []byte) error {
-	type unmarshaler DestinationTypeConfigMockApiAuth
-	var value unmarshaler
-	if err := json.Unmarshal(data, &value); err != nil {
-		return err
-	}
-	*d = DestinationTypeConfigMockApiAuth(value)
-	extraProperties, err := internal.ExtractExtraProperties(data, *d)
-	if err != nil {
-		return err
-	}
-	d.extraProperties = extraProperties
-	d.rawJSON = json.RawMessage(data)
-	return nil
-}
-
-func (d *DestinationTypeConfigMockApiAuth) String() string {
 	if len(d.rawJSON) > 0 {
 		if value, err := internal.StringifyJSON(d.rawJSON); err == nil {
 			return value
@@ -4990,481 +3689,6 @@ func NewDestinationTypeConfigMockApiRateLimitPeriodFromString(s string) (Destina
 }
 
 func (d DestinationTypeConfigMockApiRateLimitPeriod) Ptr() *DestinationTypeConfigMockApiRateLimitPeriod {
-	return &d
-}
-
-// The type config for OAuth2 (Authorization Code). Requires type to be `OAUTH2_AUTHORIZATION_CODE`.
-type DestinationTypeConfigOAuth2AuthorizationCode struct {
-	Type                   *string                                                      `json:"type,omitempty" url:"type,omitempty"`
-	Url                    *string                                                      `json:"url,omitempty" url:"url,omitempty"`
-	RateLimit              *float64                                                     `json:"rate_limit,omitempty" url:"rate_limit,omitempty"`
-	RateLimitPeriod        *DestinationTypeConfigOAuth2AuthorizationCodeRateLimitPeriod `json:"rate_limit_period,omitempty" url:"rate_limit_period,omitempty"`
-	PathForwardingDisabled *bool                                                        `json:"path_forwarding_disabled,omitempty" url:"path_forwarding_disabled,omitempty"`
-	HttpMethod             *DestinationTypeConfigOAuth2AuthorizationCodeHttpMethod      `json:"http_method,omitempty" url:"http_method,omitempty"`
-	Auth                   *DestinationTypeConfigOAuth2AuthorizationCodeAuth            `json:"auth,omitempty" url:"auth,omitempty"`
-
-	extraProperties map[string]interface{}
-	rawJSON         json.RawMessage
-}
-
-func (d *DestinationTypeConfigOAuth2AuthorizationCode) GetUrl() *string {
-	if d == nil {
-		return nil
-	}
-	return d.Url
-}
-
-func (d *DestinationTypeConfigOAuth2AuthorizationCode) GetRateLimit() *float64 {
-	if d == nil {
-		return nil
-	}
-	return d.RateLimit
-}
-
-func (d *DestinationTypeConfigOAuth2AuthorizationCode) GetRateLimitPeriod() *DestinationTypeConfigOAuth2AuthorizationCodeRateLimitPeriod {
-	if d == nil {
-		return nil
-	}
-	return d.RateLimitPeriod
-}
-
-func (d *DestinationTypeConfigOAuth2AuthorizationCode) GetPathForwardingDisabled() *bool {
-	if d == nil {
-		return nil
-	}
-	return d.PathForwardingDisabled
-}
-
-func (d *DestinationTypeConfigOAuth2AuthorizationCode) GetHttpMethod() *DestinationTypeConfigOAuth2AuthorizationCodeHttpMethod {
-	if d == nil {
-		return nil
-	}
-	return d.HttpMethod
-}
-
-func (d *DestinationTypeConfigOAuth2AuthorizationCode) GetAuth() *DestinationTypeConfigOAuth2AuthorizationCodeAuth {
-	if d == nil {
-		return nil
-	}
-	return d.Auth
-}
-
-func (d *DestinationTypeConfigOAuth2AuthorizationCode) GetExtraProperties() map[string]interface{} {
-	return d.extraProperties
-}
-
-func (d *DestinationTypeConfigOAuth2AuthorizationCode) UnmarshalJSON(data []byte) error {
-	type unmarshaler DestinationTypeConfigOAuth2AuthorizationCode
-	var value unmarshaler
-	if err := json.Unmarshal(data, &value); err != nil {
-		return err
-	}
-	*d = DestinationTypeConfigOAuth2AuthorizationCode(value)
-	extraProperties, err := internal.ExtractExtraProperties(data, *d)
-	if err != nil {
-		return err
-	}
-	d.extraProperties = extraProperties
-	d.rawJSON = json.RawMessage(data)
-	return nil
-}
-
-func (d *DestinationTypeConfigOAuth2AuthorizationCode) String() string {
-	if len(d.rawJSON) > 0 {
-		if value, err := internal.StringifyJSON(d.rawJSON); err == nil {
-			return value
-		}
-	}
-	if value, err := internal.StringifyJSON(d); err == nil {
-		return value
-	}
-	return fmt.Sprintf("%#v", d)
-}
-
-type DestinationTypeConfigOAuth2AuthorizationCodeAuth struct {
-	AuthServer   string `json:"auth_server" url:"auth_server"`
-	ClientId     string `json:"client_id" url:"client_id"`
-	ClientSecret string `json:"client_secret" url:"client_secret"`
-	RefreshToken string `json:"refresh_token" url:"refresh_token"`
-	Scope        string `json:"scope" url:"scope"`
-
-	extraProperties map[string]interface{}
-	rawJSON         json.RawMessage
-}
-
-func (d *DestinationTypeConfigOAuth2AuthorizationCodeAuth) GetAuthServer() string {
-	if d == nil {
-		return ""
-	}
-	return d.AuthServer
-}
-
-func (d *DestinationTypeConfigOAuth2AuthorizationCodeAuth) GetClientId() string {
-	if d == nil {
-		return ""
-	}
-	return d.ClientId
-}
-
-func (d *DestinationTypeConfigOAuth2AuthorizationCodeAuth) GetClientSecret() string {
-	if d == nil {
-		return ""
-	}
-	return d.ClientSecret
-}
-
-func (d *DestinationTypeConfigOAuth2AuthorizationCodeAuth) GetRefreshToken() string {
-	if d == nil {
-		return ""
-	}
-	return d.RefreshToken
-}
-
-func (d *DestinationTypeConfigOAuth2AuthorizationCodeAuth) GetScope() string {
-	if d == nil {
-		return ""
-	}
-	return d.Scope
-}
-
-func (d *DestinationTypeConfigOAuth2AuthorizationCodeAuth) GetExtraProperties() map[string]interface{} {
-	return d.extraProperties
-}
-
-func (d *DestinationTypeConfigOAuth2AuthorizationCodeAuth) UnmarshalJSON(data []byte) error {
-	type unmarshaler DestinationTypeConfigOAuth2AuthorizationCodeAuth
-	var value unmarshaler
-	if err := json.Unmarshal(data, &value); err != nil {
-		return err
-	}
-	*d = DestinationTypeConfigOAuth2AuthorizationCodeAuth(value)
-	extraProperties, err := internal.ExtractExtraProperties(data, *d)
-	if err != nil {
-		return err
-	}
-	d.extraProperties = extraProperties
-	d.rawJSON = json.RawMessage(data)
-	return nil
-}
-
-func (d *DestinationTypeConfigOAuth2AuthorizationCodeAuth) String() string {
-	if len(d.rawJSON) > 0 {
-		if value, err := internal.StringifyJSON(d.rawJSON); err == nil {
-			return value
-		}
-	}
-	if value, err := internal.StringifyJSON(d); err == nil {
-		return value
-	}
-	return fmt.Sprintf("%#v", d)
-}
-
-type DestinationTypeConfigOAuth2AuthorizationCodeHttpMethod string
-
-const (
-	DestinationTypeConfigOAuth2AuthorizationCodeHttpMethodGet    DestinationTypeConfigOAuth2AuthorizationCodeHttpMethod = "GET"
-	DestinationTypeConfigOAuth2AuthorizationCodeHttpMethodPost   DestinationTypeConfigOAuth2AuthorizationCodeHttpMethod = "POST"
-	DestinationTypeConfigOAuth2AuthorizationCodeHttpMethodPut    DestinationTypeConfigOAuth2AuthorizationCodeHttpMethod = "PUT"
-	DestinationTypeConfigOAuth2AuthorizationCodeHttpMethodPatch  DestinationTypeConfigOAuth2AuthorizationCodeHttpMethod = "PATCH"
-	DestinationTypeConfigOAuth2AuthorizationCodeHttpMethodDelete DestinationTypeConfigOAuth2AuthorizationCodeHttpMethod = "DELETE"
-)
-
-func NewDestinationTypeConfigOAuth2AuthorizationCodeHttpMethodFromString(s string) (DestinationTypeConfigOAuth2AuthorizationCodeHttpMethod, error) {
-	switch s {
-	case "GET":
-		return DestinationTypeConfigOAuth2AuthorizationCodeHttpMethodGet, nil
-	case "POST":
-		return DestinationTypeConfigOAuth2AuthorizationCodeHttpMethodPost, nil
-	case "PUT":
-		return DestinationTypeConfigOAuth2AuthorizationCodeHttpMethodPut, nil
-	case "PATCH":
-		return DestinationTypeConfigOAuth2AuthorizationCodeHttpMethodPatch, nil
-	case "DELETE":
-		return DestinationTypeConfigOAuth2AuthorizationCodeHttpMethodDelete, nil
-	}
-	var t DestinationTypeConfigOAuth2AuthorizationCodeHttpMethod
-	return "", fmt.Errorf("%s is not a valid %T", s, t)
-}
-
-func (d DestinationTypeConfigOAuth2AuthorizationCodeHttpMethod) Ptr() *DestinationTypeConfigOAuth2AuthorizationCodeHttpMethod {
-	return &d
-}
-
-type DestinationTypeConfigOAuth2AuthorizationCodeRateLimitPeriod string
-
-const (
-	DestinationTypeConfigOAuth2AuthorizationCodeRateLimitPeriodSecond     DestinationTypeConfigOAuth2AuthorizationCodeRateLimitPeriod = "second"
-	DestinationTypeConfigOAuth2AuthorizationCodeRateLimitPeriodMinute     DestinationTypeConfigOAuth2AuthorizationCodeRateLimitPeriod = "minute"
-	DestinationTypeConfigOAuth2AuthorizationCodeRateLimitPeriodHour       DestinationTypeConfigOAuth2AuthorizationCodeRateLimitPeriod = "hour"
-	DestinationTypeConfigOAuth2AuthorizationCodeRateLimitPeriodConcurrent DestinationTypeConfigOAuth2AuthorizationCodeRateLimitPeriod = "concurrent"
-)
-
-func NewDestinationTypeConfigOAuth2AuthorizationCodeRateLimitPeriodFromString(s string) (DestinationTypeConfigOAuth2AuthorizationCodeRateLimitPeriod, error) {
-	switch s {
-	case "second":
-		return DestinationTypeConfigOAuth2AuthorizationCodeRateLimitPeriodSecond, nil
-	case "minute":
-		return DestinationTypeConfigOAuth2AuthorizationCodeRateLimitPeriodMinute, nil
-	case "hour":
-		return DestinationTypeConfigOAuth2AuthorizationCodeRateLimitPeriodHour, nil
-	case "concurrent":
-		return DestinationTypeConfigOAuth2AuthorizationCodeRateLimitPeriodConcurrent, nil
-	}
-	var t DestinationTypeConfigOAuth2AuthorizationCodeRateLimitPeriod
-	return "", fmt.Errorf("%s is not a valid %T", s, t)
-}
-
-func (d DestinationTypeConfigOAuth2AuthorizationCodeRateLimitPeriod) Ptr() *DestinationTypeConfigOAuth2AuthorizationCodeRateLimitPeriod {
-	return &d
-}
-
-// The type config for OAuth2 (Client Credentials). Requires type to be `OAUTH2_CLIENT_CREDENTIALS`.
-type DestinationTypeConfigOAuth2ClientCredentials struct {
-	Type                   *string                                                      `json:"type,omitempty" url:"type,omitempty"`
-	Url                    *string                                                      `json:"url,omitempty" url:"url,omitempty"`
-	RateLimit              *float64                                                     `json:"rate_limit,omitempty" url:"rate_limit,omitempty"`
-	RateLimitPeriod        *DestinationTypeConfigOAuth2ClientCredentialsRateLimitPeriod `json:"rate_limit_period,omitempty" url:"rate_limit_period,omitempty"`
-	PathForwardingDisabled *bool                                                        `json:"path_forwarding_disabled,omitempty" url:"path_forwarding_disabled,omitempty"`
-	HttpMethod             *DestinationTypeConfigOAuth2ClientCredentialsHttpMethod      `json:"http_method,omitempty" url:"http_method,omitempty"`
-	Auth                   *DestinationTypeConfigOAuth2ClientCredentialsAuth            `json:"auth,omitempty" url:"auth,omitempty"`
-
-	extraProperties map[string]interface{}
-	rawJSON         json.RawMessage
-}
-
-func (d *DestinationTypeConfigOAuth2ClientCredentials) GetUrl() *string {
-	if d == nil {
-		return nil
-	}
-	return d.Url
-}
-
-func (d *DestinationTypeConfigOAuth2ClientCredentials) GetRateLimit() *float64 {
-	if d == nil {
-		return nil
-	}
-	return d.RateLimit
-}
-
-func (d *DestinationTypeConfigOAuth2ClientCredentials) GetRateLimitPeriod() *DestinationTypeConfigOAuth2ClientCredentialsRateLimitPeriod {
-	if d == nil {
-		return nil
-	}
-	return d.RateLimitPeriod
-}
-
-func (d *DestinationTypeConfigOAuth2ClientCredentials) GetPathForwardingDisabled() *bool {
-	if d == nil {
-		return nil
-	}
-	return d.PathForwardingDisabled
-}
-
-func (d *DestinationTypeConfigOAuth2ClientCredentials) GetHttpMethod() *DestinationTypeConfigOAuth2ClientCredentialsHttpMethod {
-	if d == nil {
-		return nil
-	}
-	return d.HttpMethod
-}
-
-func (d *DestinationTypeConfigOAuth2ClientCredentials) GetAuth() *DestinationTypeConfigOAuth2ClientCredentialsAuth {
-	if d == nil {
-		return nil
-	}
-	return d.Auth
-}
-
-func (d *DestinationTypeConfigOAuth2ClientCredentials) GetExtraProperties() map[string]interface{} {
-	return d.extraProperties
-}
-
-func (d *DestinationTypeConfigOAuth2ClientCredentials) UnmarshalJSON(data []byte) error {
-	type unmarshaler DestinationTypeConfigOAuth2ClientCredentials
-	var value unmarshaler
-	if err := json.Unmarshal(data, &value); err != nil {
-		return err
-	}
-	*d = DestinationTypeConfigOAuth2ClientCredentials(value)
-	extraProperties, err := internal.ExtractExtraProperties(data, *d)
-	if err != nil {
-		return err
-	}
-	d.extraProperties = extraProperties
-	d.rawJSON = json.RawMessage(data)
-	return nil
-}
-
-func (d *DestinationTypeConfigOAuth2ClientCredentials) String() string {
-	if len(d.rawJSON) > 0 {
-		if value, err := internal.StringifyJSON(d.rawJSON); err == nil {
-			return value
-		}
-	}
-	if value, err := internal.StringifyJSON(d); err == nil {
-		return value
-	}
-	return fmt.Sprintf("%#v", d)
-}
-
-type DestinationTypeConfigOAuth2ClientCredentialsAuth struct {
-	AuthServer         string                                                             `json:"auth_server" url:"auth_server"`
-	ClientId           string                                                             `json:"client_id" url:"client_id"`
-	ClientSecret       string                                                             `json:"client_secret" url:"client_secret"`
-	Scope              string                                                             `json:"scope" url:"scope"`
-	AuthenticationType DestinationTypeConfigOAuth2ClientCredentialsAuthAuthenticationType `json:"authentication_type" url:"authentication_type"`
-
-	extraProperties map[string]interface{}
-	rawJSON         json.RawMessage
-}
-
-func (d *DestinationTypeConfigOAuth2ClientCredentialsAuth) GetAuthServer() string {
-	if d == nil {
-		return ""
-	}
-	return d.AuthServer
-}
-
-func (d *DestinationTypeConfigOAuth2ClientCredentialsAuth) GetClientId() string {
-	if d == nil {
-		return ""
-	}
-	return d.ClientId
-}
-
-func (d *DestinationTypeConfigOAuth2ClientCredentialsAuth) GetClientSecret() string {
-	if d == nil {
-		return ""
-	}
-	return d.ClientSecret
-}
-
-func (d *DestinationTypeConfigOAuth2ClientCredentialsAuth) GetScope() string {
-	if d == nil {
-		return ""
-	}
-	return d.Scope
-}
-
-func (d *DestinationTypeConfigOAuth2ClientCredentialsAuth) GetAuthenticationType() DestinationTypeConfigOAuth2ClientCredentialsAuthAuthenticationType {
-	if d == nil {
-		return ""
-	}
-	return d.AuthenticationType
-}
-
-func (d *DestinationTypeConfigOAuth2ClientCredentialsAuth) GetExtraProperties() map[string]interface{} {
-	return d.extraProperties
-}
-
-func (d *DestinationTypeConfigOAuth2ClientCredentialsAuth) UnmarshalJSON(data []byte) error {
-	type unmarshaler DestinationTypeConfigOAuth2ClientCredentialsAuth
-	var value unmarshaler
-	if err := json.Unmarshal(data, &value); err != nil {
-		return err
-	}
-	*d = DestinationTypeConfigOAuth2ClientCredentialsAuth(value)
-	extraProperties, err := internal.ExtractExtraProperties(data, *d)
-	if err != nil {
-		return err
-	}
-	d.extraProperties = extraProperties
-	d.rawJSON = json.RawMessage(data)
-	return nil
-}
-
-func (d *DestinationTypeConfigOAuth2ClientCredentialsAuth) String() string {
-	if len(d.rawJSON) > 0 {
-		if value, err := internal.StringifyJSON(d.rawJSON); err == nil {
-			return value
-		}
-	}
-	if value, err := internal.StringifyJSON(d); err == nil {
-		return value
-	}
-	return fmt.Sprintf("%#v", d)
-}
-
-type DestinationTypeConfigOAuth2ClientCredentialsAuthAuthenticationType string
-
-const (
-	DestinationTypeConfigOAuth2ClientCredentialsAuthAuthenticationTypeBasic              DestinationTypeConfigOAuth2ClientCredentialsAuthAuthenticationType = "basic"
-	DestinationTypeConfigOAuth2ClientCredentialsAuthAuthenticationTypeBearer             DestinationTypeConfigOAuth2ClientCredentialsAuthAuthenticationType = "bearer"
-	DestinationTypeConfigOAuth2ClientCredentialsAuthAuthenticationTypeXWwwFormUrlencoded DestinationTypeConfigOAuth2ClientCredentialsAuthAuthenticationType = "x-www-form-urlencoded"
-)
-
-func NewDestinationTypeConfigOAuth2ClientCredentialsAuthAuthenticationTypeFromString(s string) (DestinationTypeConfigOAuth2ClientCredentialsAuthAuthenticationType, error) {
-	switch s {
-	case "basic":
-		return DestinationTypeConfigOAuth2ClientCredentialsAuthAuthenticationTypeBasic, nil
-	case "bearer":
-		return DestinationTypeConfigOAuth2ClientCredentialsAuthAuthenticationTypeBearer, nil
-	case "x-www-form-urlencoded":
-		return DestinationTypeConfigOAuth2ClientCredentialsAuthAuthenticationTypeXWwwFormUrlencoded, nil
-	}
-	var t DestinationTypeConfigOAuth2ClientCredentialsAuthAuthenticationType
-	return "", fmt.Errorf("%s is not a valid %T", s, t)
-}
-
-func (d DestinationTypeConfigOAuth2ClientCredentialsAuthAuthenticationType) Ptr() *DestinationTypeConfigOAuth2ClientCredentialsAuthAuthenticationType {
-	return &d
-}
-
-type DestinationTypeConfigOAuth2ClientCredentialsHttpMethod string
-
-const (
-	DestinationTypeConfigOAuth2ClientCredentialsHttpMethodGet    DestinationTypeConfigOAuth2ClientCredentialsHttpMethod = "GET"
-	DestinationTypeConfigOAuth2ClientCredentialsHttpMethodPost   DestinationTypeConfigOAuth2ClientCredentialsHttpMethod = "POST"
-	DestinationTypeConfigOAuth2ClientCredentialsHttpMethodPut    DestinationTypeConfigOAuth2ClientCredentialsHttpMethod = "PUT"
-	DestinationTypeConfigOAuth2ClientCredentialsHttpMethodPatch  DestinationTypeConfigOAuth2ClientCredentialsHttpMethod = "PATCH"
-	DestinationTypeConfigOAuth2ClientCredentialsHttpMethodDelete DestinationTypeConfigOAuth2ClientCredentialsHttpMethod = "DELETE"
-)
-
-func NewDestinationTypeConfigOAuth2ClientCredentialsHttpMethodFromString(s string) (DestinationTypeConfigOAuth2ClientCredentialsHttpMethod, error) {
-	switch s {
-	case "GET":
-		return DestinationTypeConfigOAuth2ClientCredentialsHttpMethodGet, nil
-	case "POST":
-		return DestinationTypeConfigOAuth2ClientCredentialsHttpMethodPost, nil
-	case "PUT":
-		return DestinationTypeConfigOAuth2ClientCredentialsHttpMethodPut, nil
-	case "PATCH":
-		return DestinationTypeConfigOAuth2ClientCredentialsHttpMethodPatch, nil
-	case "DELETE":
-		return DestinationTypeConfigOAuth2ClientCredentialsHttpMethodDelete, nil
-	}
-	var t DestinationTypeConfigOAuth2ClientCredentialsHttpMethod
-	return "", fmt.Errorf("%s is not a valid %T", s, t)
-}
-
-func (d DestinationTypeConfigOAuth2ClientCredentialsHttpMethod) Ptr() *DestinationTypeConfigOAuth2ClientCredentialsHttpMethod {
-	return &d
-}
-
-type DestinationTypeConfigOAuth2ClientCredentialsRateLimitPeriod string
-
-const (
-	DestinationTypeConfigOAuth2ClientCredentialsRateLimitPeriodSecond     DestinationTypeConfigOAuth2ClientCredentialsRateLimitPeriod = "second"
-	DestinationTypeConfigOAuth2ClientCredentialsRateLimitPeriodMinute     DestinationTypeConfigOAuth2ClientCredentialsRateLimitPeriod = "minute"
-	DestinationTypeConfigOAuth2ClientCredentialsRateLimitPeriodHour       DestinationTypeConfigOAuth2ClientCredentialsRateLimitPeriod = "hour"
-	DestinationTypeConfigOAuth2ClientCredentialsRateLimitPeriodConcurrent DestinationTypeConfigOAuth2ClientCredentialsRateLimitPeriod = "concurrent"
-)
-
-func NewDestinationTypeConfigOAuth2ClientCredentialsRateLimitPeriodFromString(s string) (DestinationTypeConfigOAuth2ClientCredentialsRateLimitPeriod, error) {
-	switch s {
-	case "second":
-		return DestinationTypeConfigOAuth2ClientCredentialsRateLimitPeriodSecond, nil
-	case "minute":
-		return DestinationTypeConfigOAuth2ClientCredentialsRateLimitPeriodMinute, nil
-	case "hour":
-		return DestinationTypeConfigOAuth2ClientCredentialsRateLimitPeriodHour, nil
-	case "concurrent":
-		return DestinationTypeConfigOAuth2ClientCredentialsRateLimitPeriodConcurrent, nil
-	}
-	var t DestinationTypeConfigOAuth2ClientCredentialsRateLimitPeriod
-	return "", fmt.Errorf("%s is not a valid %T", s, t)
-}
-
-func (d DestinationTypeConfigOAuth2ClientCredentialsRateLimitPeriod) Ptr() *DestinationTypeConfigOAuth2ClientCredentialsRateLimitPeriod {
 	return &d
 }
 
@@ -6921,6 +5145,7 @@ const (
 	IntegrationProviderApiKey          IntegrationProvider = "API_KEY"
 	IntegrationProviderWebhook         IntegrationProvider = "WEBHOOK"
 	IntegrationProviderHttp            IntegrationProvider = "HTTP"
+	IntegrationProviderManaged         IntegrationProvider = "MANAGED"
 	IntegrationProviderSanity          IntegrationProvider = "SANITY"
 	IntegrationProviderBridge          IntegrationProvider = "BRIDGE"
 	IntegrationProviderCloudsignal     IntegrationProvider = "CLOUDSIGNAL"
@@ -6990,6 +5215,7 @@ const (
 	IntegrationProviderAirwallex       IntegrationProvider = "AIRWALLEX"
 	IntegrationProviderZendesk         IntegrationProvider = "ZENDESK"
 	IntegrationProviderUpollo          IntegrationProvider = "UPOLLO"
+	IntegrationProviderLinkedin        IntegrationProvider = "LINKEDIN"
 )
 
 func NewIntegrationProviderFromString(s string) (IntegrationProvider, error) {
@@ -7004,6 +5230,8 @@ func NewIntegrationProviderFromString(s string) (IntegrationProvider, error) {
 		return IntegrationProviderWebhook, nil
 	case "HTTP":
 		return IntegrationProviderHttp, nil
+	case "MANAGED":
+		return IntegrationProviderManaged, nil
 	case "SANITY":
 		return IntegrationProviderSanity, nil
 	case "BRIDGE":
@@ -7142,6 +5370,8 @@ func NewIntegrationProviderFromString(s string) (IntegrationProvider, error) {
 		return IntegrationProviderZendesk, nil
 	case "UPOLLO":
 		return IntegrationProviderUpollo, nil
+	case "LINKEDIN":
+		return IntegrationProviderLinkedin, nil
 	}
 	var t IntegrationProvider
 	return "", fmt.Errorf("%s is not a valid %T", s, t)
@@ -8050,19 +6280,18 @@ type Source struct {
 	// ID of the project
 	TeamId string `json:"team_id" url:"team_id"`
 	// A unique URL that must be supplied to your webhook's provider
-	Url                string                   `json:"url" url:"url"`
-	Verification       *VerificationConfig      `json:"verification,omitempty" url:"verification,omitempty"`
-	AllowedHttpMethods *SourceAllowedHttpMethod `json:"allowed_http_methods,omitempty" url:"allowed_http_methods,omitempty"`
-	CustomResponse     *SourceCustomResponse    `json:"custom_response,omitempty" url:"custom_response,omitempty"`
+	Url string `json:"url" url:"url"`
+	// Type of the source
+	Type string `json:"type" url:"type"`
+	// Whether the source is authenticated
+	Authenticated bool          `json:"authenticated" url:"authenticated"`
+	Config        *SourceConfig `json:"config,omitempty" url:"config,omitempty"`
 	// Date the source was disabled
 	DisabledAt *time.Time `json:"disabled_at,omitempty" url:"disabled_at,omitempty"`
 	// Date the source was last updated
 	UpdatedAt time.Time `json:"updated_at" url:"updated_at"`
 	// Date the source was created
 	CreatedAt time.Time `json:"created_at" url:"created_at"`
-	// Type of the source
-	Type   *string       `json:"type,omitempty" url:"type,omitempty"`
-	Config *SourceConfig `json:"config,omitempty" url:"config,omitempty"`
 
 	extraProperties map[string]interface{}
 	rawJSON         json.RawMessage
@@ -8103,25 +6332,25 @@ func (s *Source) GetUrl() string {
 	return s.Url
 }
 
-func (s *Source) GetVerification() *VerificationConfig {
+func (s *Source) GetType() string {
 	if s == nil {
-		return nil
+		return ""
 	}
-	return s.Verification
+	return s.Type
 }
 
-func (s *Source) GetAllowedHttpMethods() *SourceAllowedHttpMethod {
+func (s *Source) GetAuthenticated() bool {
 	if s == nil {
-		return nil
+		return false
 	}
-	return s.AllowedHttpMethods
+	return s.Authenticated
 }
 
-func (s *Source) GetCustomResponse() *SourceCustomResponse {
+func (s *Source) GetConfig() *SourceConfig {
 	if s == nil {
 		return nil
 	}
-	return s.CustomResponse
+	return s.Config
 }
 
 func (s *Source) GetDisabledAt() *time.Time {
@@ -8143,20 +6372,6 @@ func (s *Source) GetCreatedAt() time.Time {
 		return time.Time{}
 	}
 	return s.CreatedAt
-}
-
-func (s *Source) GetType() *string {
-	if s == nil {
-		return nil
-	}
-	return s.Type
-}
-
-func (s *Source) GetConfig() *SourceConfig {
-	if s == nil {
-		return nil
-	}
-	return s.Config
 }
 
 func (s *Source) GetExtraProperties() map[string]interface{} {
@@ -8217,192 +6432,11 @@ func (s *Source) String() string {
 	return fmt.Sprintf("%#v", s)
 }
 
-// List of allowed HTTP methods. Defaults to PUT, POST, PATCH, DELETE.
-type SourceAllowedHttpMethod = []SourceAllowedHttpMethodItem
-
-type SourceAllowedHttpMethodItem string
-
-const (
-	SourceAllowedHttpMethodItemGet    SourceAllowedHttpMethodItem = "GET"
-	SourceAllowedHttpMethodItemPost   SourceAllowedHttpMethodItem = "POST"
-	SourceAllowedHttpMethodItemPut    SourceAllowedHttpMethodItem = "PUT"
-	SourceAllowedHttpMethodItemPatch  SourceAllowedHttpMethodItem = "PATCH"
-	SourceAllowedHttpMethodItemDelete SourceAllowedHttpMethodItem = "DELETE"
-)
-
-func NewSourceAllowedHttpMethodItemFromString(s string) (SourceAllowedHttpMethodItem, error) {
-	switch s {
-	case "GET":
-		return SourceAllowedHttpMethodItemGet, nil
-	case "POST":
-		return SourceAllowedHttpMethodItemPost, nil
-	case "PUT":
-		return SourceAllowedHttpMethodItemPut, nil
-	case "PATCH":
-		return SourceAllowedHttpMethodItemPatch, nil
-	case "DELETE":
-		return SourceAllowedHttpMethodItemDelete, nil
-	}
-	var t SourceAllowedHttpMethodItem
-	return "", fmt.Errorf("%s is not a valid %T", s, t)
-}
-
-func (s SourceAllowedHttpMethodItem) Ptr() *SourceAllowedHttpMethodItem {
-	return &s
-}
-
 // Configuration object for the source type
 type SourceConfig struct {
-	Verification       *VerificationConfig      `json:"verification,omitempty" url:"verification,omitempty"`
-	AllowedHttpMethods *SourceAllowedHttpMethod `json:"allowed_http_methods,omitempty" url:"allowed_http_methods,omitempty"`
-	CustomResponse     *SourceCustomResponse    `json:"custom_response,omitempty" url:"custom_response,omitempty"`
-
-	extraProperties map[string]interface{}
-	rawJSON         json.RawMessage
-}
-
-func (s *SourceConfig) GetVerification() *VerificationConfig {
-	if s == nil {
-		return nil
-	}
-	return s.Verification
-}
-
-func (s *SourceConfig) GetAllowedHttpMethods() *SourceAllowedHttpMethod {
-	if s == nil {
-		return nil
-	}
-	return s.AllowedHttpMethods
-}
-
-func (s *SourceConfig) GetCustomResponse() *SourceCustomResponse {
-	if s == nil {
-		return nil
-	}
-	return s.CustomResponse
-}
-
-func (s *SourceConfig) GetExtraProperties() map[string]interface{} {
-	return s.extraProperties
-}
-
-func (s *SourceConfig) UnmarshalJSON(data []byte) error {
-	type unmarshaler SourceConfig
-	var value unmarshaler
-	if err := json.Unmarshal(data, &value); err != nil {
-		return err
-	}
-	*s = SourceConfig(value)
-	extraProperties, err := internal.ExtractExtraProperties(data, *s)
-	if err != nil {
-		return err
-	}
-	s.extraProperties = extraProperties
-	s.rawJSON = json.RawMessage(data)
-	return nil
-}
-
-func (s *SourceConfig) String() string {
-	if len(s.rawJSON) > 0 {
-		if value, err := internal.StringifyJSON(s.rawJSON); err == nil {
-			return value
-		}
-	}
-	if value, err := internal.StringifyJSON(s); err == nil {
-		return value
-	}
-	return fmt.Sprintf("%#v", s)
-}
-
-// Custom response object
-type SourceCustomResponse struct {
-	ContentType SourceCustomResponseContentType `json:"content_type" url:"content_type"`
-	// Body of the custom response
-	Body string `json:"body" url:"body"`
-
-	extraProperties map[string]interface{}
-	rawJSON         json.RawMessage
-}
-
-func (s *SourceCustomResponse) GetContentType() SourceCustomResponseContentType {
-	if s == nil {
-		return ""
-	}
-	return s.ContentType
-}
-
-func (s *SourceCustomResponse) GetBody() string {
-	if s == nil {
-		return ""
-	}
-	return s.Body
-}
-
-func (s *SourceCustomResponse) GetExtraProperties() map[string]interface{} {
-	return s.extraProperties
-}
-
-func (s *SourceCustomResponse) UnmarshalJSON(data []byte) error {
-	type unmarshaler SourceCustomResponse
-	var value unmarshaler
-	if err := json.Unmarshal(data, &value); err != nil {
-		return err
-	}
-	*s = SourceCustomResponse(value)
-	extraProperties, err := internal.ExtractExtraProperties(data, *s)
-	if err != nil {
-		return err
-	}
-	s.extraProperties = extraProperties
-	s.rawJSON = json.RawMessage(data)
-	return nil
-}
-
-func (s *SourceCustomResponse) String() string {
-	if len(s.rawJSON) > 0 {
-		if value, err := internal.StringifyJSON(s.rawJSON); err == nil {
-			return value
-		}
-	}
-	if value, err := internal.StringifyJSON(s); err == nil {
-		return value
-	}
-	return fmt.Sprintf("%#v", s)
-}
-
-// Content type of the custom response
-type SourceCustomResponseContentType string
-
-const (
-	SourceCustomResponseContentTypeJson SourceCustomResponseContentType = "json"
-	SourceCustomResponseContentTypeText SourceCustomResponseContentType = "text"
-	SourceCustomResponseContentTypeXml  SourceCustomResponseContentType = "xml"
-)
-
-func NewSourceCustomResponseContentTypeFromString(s string) (SourceCustomResponseContentType, error) {
-	switch s {
-	case "json":
-		return SourceCustomResponseContentTypeJson, nil
-	case "text":
-		return SourceCustomResponseContentTypeText, nil
-	case "xml":
-		return SourceCustomResponseContentTypeXml, nil
-	}
-	var t SourceCustomResponseContentType
-	return "", fmt.Errorf("%s is not a valid %T", s, t)
-}
-
-func (s SourceCustomResponseContentType) Ptr() *SourceCustomResponseContentType {
-	return &s
-}
-
-// The type configs for the specified type
-type SourceTypeConfig struct {
-	SourceTypeConfigHmac              *SourceTypeConfigHmac
-	SourceTypeConfigBasicAuth         *SourceTypeConfigBasicAuth
-	SourceTypeConfigApiKey            *SourceTypeConfigApiKey
 	SourceTypeConfigWebhook           *SourceTypeConfigWebhook
 	SourceTypeConfigHttp              *SourceTypeConfigHttp
+	SourceTypeConfigManaged           *SourceTypeConfigManaged
 	SourceTypeConfigSanity            *SourceTypeConfigSanity
 	SourceTypeConfigBridge            *SourceTypeConfigBridge
 	SourceTypeConfigCloudSignal       *SourceTypeConfigCloudSignal
@@ -8410,6 +6444,7 @@ type SourceTypeConfig struct {
 	SourceTypeConfigFrontApp          *SourceTypeConfigFrontApp
 	SourceTypeConfigZoom              *SourceTypeConfigZoom
 	SourceTypeConfigTwitter           *SourceTypeConfigTwitter
+	SourceTypeConfigRecharge          *SourceTypeConfigRecharge
 	SourceTypeConfigStripe            *SourceTypeConfigStripe
 	SourceTypeConfigPropertyFinder    *SourceTypeConfigPropertyFinder
 	SourceTypeConfigShopify           *SourceTypeConfigShopify
@@ -8433,6 +6468,7 @@ type SourceTypeConfig struct {
 	SourceTypeConfigWorkOs            *SourceTypeConfigWorkOs
 	SourceTypeConfigSynctera          *SourceTypeConfigSynctera
 	SourceTypeConfigAwssns            *SourceTypeConfigAwssns
+	SourceTypeConfig3DEye             *SourceTypeConfig3DEye
 	SourceTypeConfigTwitch            *SourceTypeConfigTwitch
 	SourceTypeConfigEnode             *SourceTypeConfigEnode
 	SourceTypeConfigFavro             *SourceTypeConfigFavro
@@ -8443,6 +6479,7 @@ type SourceTypeConfig struct {
 	SourceTypeConfigOrb               *SourceTypeConfigOrb
 	SourceTypeConfigPylon             *SourceTypeConfigPylon
 	SourceTypeConfigRazorpay          *SourceTypeConfigRazorpay
+	SourceTypeConfigRepay             *SourceTypeConfigRepay
 	SourceTypeConfigSquare            *SourceTypeConfigSquare
 	SourceTypeConfigSolidgate         *SourceTypeConfigSolidgate
 	SourceTypeConfigTrello            *SourceTypeConfigTrello
@@ -8454,6 +6491,7 @@ type SourceTypeConfig struct {
 	SourceTypeConfigBondsmith         *SourceTypeConfigBondsmith
 	SourceTypeConfigVercelLogDrains   *SourceTypeConfigVercelLogDrains
 	SourceTypeConfigVercelWebhooks    *SourceTypeConfigVercelWebhooks
+	SourceTypeConfigTebex             *SourceTypeConfigTebex
 	SourceTypeConfigSlack             *SourceTypeConfigSlack
 	SourceTypeConfigMailchimp         *SourceTypeConfigMailchimp
 	SourceTypeConfigPaddle            *SourceTypeConfigPaddle
@@ -8463,21 +6501,8796 @@ type SourceTypeConfig struct {
 	SourceTypeConfigCustomerIo        *SourceTypeConfigCustomerIo
 	SourceTypeConfigFacebook          *SourceTypeConfigFacebook
 	SourceTypeConfigWhatsApp          *SourceTypeConfigWhatsApp
+	SourceTypeConfigReplicate         *SourceTypeConfigReplicate
+	SourceTypeConfigTikTok            *SourceTypeConfigTikTok
+	SourceTypeConfigAirwallex         *SourceTypeConfigAirwallex
+	SourceTypeConfigZendesk           *SourceTypeConfigZendesk
 	SourceTypeConfigUpollo            *SourceTypeConfigUpollo
+	SourceTypeConfigLinkedIn          *SourceTypeConfigLinkedIn
 
 	typ string
 }
 
-func NewSourceTypeConfigFromSourceTypeConfigHmac(value *SourceTypeConfigHmac) *SourceTypeConfig {
-	return &SourceTypeConfig{typ: "SourceTypeConfigHmac", SourceTypeConfigHmac: value}
+func NewSourceConfigFromSourceTypeConfigWebhook(value *SourceTypeConfigWebhook) *SourceConfig {
+	return &SourceConfig{typ: "SourceTypeConfigWebhook", SourceTypeConfigWebhook: value}
 }
 
-func NewSourceTypeConfigFromSourceTypeConfigBasicAuth(value *SourceTypeConfigBasicAuth) *SourceTypeConfig {
-	return &SourceTypeConfig{typ: "SourceTypeConfigBasicAuth", SourceTypeConfigBasicAuth: value}
+func NewSourceConfigFromSourceTypeConfigHttp(value *SourceTypeConfigHttp) *SourceConfig {
+	return &SourceConfig{typ: "SourceTypeConfigHttp", SourceTypeConfigHttp: value}
 }
 
-func NewSourceTypeConfigFromSourceTypeConfigApiKey(value *SourceTypeConfigApiKey) *SourceTypeConfig {
-	return &SourceTypeConfig{typ: "SourceTypeConfigApiKey", SourceTypeConfigApiKey: value}
+func NewSourceConfigFromSourceTypeConfigManaged(value *SourceTypeConfigManaged) *SourceConfig {
+	return &SourceConfig{typ: "SourceTypeConfigManaged", SourceTypeConfigManaged: value}
+}
+
+func NewSourceConfigFromSourceTypeConfigSanity(value *SourceTypeConfigSanity) *SourceConfig {
+	return &SourceConfig{typ: "SourceTypeConfigSanity", SourceTypeConfigSanity: value}
+}
+
+func NewSourceConfigFromSourceTypeConfigBridge(value *SourceTypeConfigBridge) *SourceConfig {
+	return &SourceConfig{typ: "SourceTypeConfigBridge", SourceTypeConfigBridge: value}
+}
+
+func NewSourceConfigFromSourceTypeConfigCloudSignal(value *SourceTypeConfigCloudSignal) *SourceConfig {
+	return &SourceConfig{typ: "SourceTypeConfigCloudSignal", SourceTypeConfigCloudSignal: value}
+}
+
+func NewSourceConfigFromSourceTypeConfigCourier(value *SourceTypeConfigCourier) *SourceConfig {
+	return &SourceConfig{typ: "SourceTypeConfigCourier", SourceTypeConfigCourier: value}
+}
+
+func NewSourceConfigFromSourceTypeConfigFrontApp(value *SourceTypeConfigFrontApp) *SourceConfig {
+	return &SourceConfig{typ: "SourceTypeConfigFrontApp", SourceTypeConfigFrontApp: value}
+}
+
+func NewSourceConfigFromSourceTypeConfigZoom(value *SourceTypeConfigZoom) *SourceConfig {
+	return &SourceConfig{typ: "SourceTypeConfigZoom", SourceTypeConfigZoom: value}
+}
+
+func NewSourceConfigFromSourceTypeConfigTwitter(value *SourceTypeConfigTwitter) *SourceConfig {
+	return &SourceConfig{typ: "SourceTypeConfigTwitter", SourceTypeConfigTwitter: value}
+}
+
+func NewSourceConfigFromSourceTypeConfigRecharge(value *SourceTypeConfigRecharge) *SourceConfig {
+	return &SourceConfig{typ: "SourceTypeConfigRecharge", SourceTypeConfigRecharge: value}
+}
+
+func NewSourceConfigFromSourceTypeConfigStripe(value *SourceTypeConfigStripe) *SourceConfig {
+	return &SourceConfig{typ: "SourceTypeConfigStripe", SourceTypeConfigStripe: value}
+}
+
+func NewSourceConfigFromSourceTypeConfigPropertyFinder(value *SourceTypeConfigPropertyFinder) *SourceConfig {
+	return &SourceConfig{typ: "SourceTypeConfigPropertyFinder", SourceTypeConfigPropertyFinder: value}
+}
+
+func NewSourceConfigFromSourceTypeConfigShopify(value *SourceTypeConfigShopify) *SourceConfig {
+	return &SourceConfig{typ: "SourceTypeConfigShopify", SourceTypeConfigShopify: value}
+}
+
+func NewSourceConfigFromSourceTypeConfigTwilio(value *SourceTypeConfigTwilio) *SourceConfig {
+	return &SourceConfig{typ: "SourceTypeConfigTwilio", SourceTypeConfigTwilio: value}
+}
+
+func NewSourceConfigFromSourceTypeConfigGitHub(value *SourceTypeConfigGitHub) *SourceConfig {
+	return &SourceConfig{typ: "SourceTypeConfigGitHub", SourceTypeConfigGitHub: value}
+}
+
+func NewSourceConfigFromSourceTypeConfigPostmark(value *SourceTypeConfigPostmark) *SourceConfig {
+	return &SourceConfig{typ: "SourceTypeConfigPostmark", SourceTypeConfigPostmark: value}
+}
+
+func NewSourceConfigFromSourceTypeConfigTypeform(value *SourceTypeConfigTypeform) *SourceConfig {
+	return &SourceConfig{typ: "SourceTypeConfigTypeform", SourceTypeConfigTypeform: value}
+}
+
+func NewSourceConfigFromSourceTypeConfigXero(value *SourceTypeConfigXero) *SourceConfig {
+	return &SourceConfig{typ: "SourceTypeConfigXero", SourceTypeConfigXero: value}
+}
+
+func NewSourceConfigFromSourceTypeConfigSvix(value *SourceTypeConfigSvix) *SourceConfig {
+	return &SourceConfig{typ: "SourceTypeConfigSvix", SourceTypeConfigSvix: value}
+}
+
+func NewSourceConfigFromSourceTypeConfigAdyen(value *SourceTypeConfigAdyen) *SourceConfig {
+	return &SourceConfig{typ: "SourceTypeConfigAdyen", SourceTypeConfigAdyen: value}
+}
+
+func NewSourceConfigFromSourceTypeConfigAkeneo(value *SourceTypeConfigAkeneo) *SourceConfig {
+	return &SourceConfig{typ: "SourceTypeConfigAkeneo", SourceTypeConfigAkeneo: value}
+}
+
+func NewSourceConfigFromSourceTypeConfigGitLab(value *SourceTypeConfigGitLab) *SourceConfig {
+	return &SourceConfig{typ: "SourceTypeConfigGitLab", SourceTypeConfigGitLab: value}
+}
+
+func NewSourceConfigFromSourceTypeConfigWooCommerce(value *SourceTypeConfigWooCommerce) *SourceConfig {
+	return &SourceConfig{typ: "SourceTypeConfigWooCommerce", SourceTypeConfigWooCommerce: value}
+}
+
+func NewSourceConfigFromSourceTypeConfigOura(value *SourceTypeConfigOura) *SourceConfig {
+	return &SourceConfig{typ: "SourceTypeConfigOura", SourceTypeConfigOura: value}
+}
+
+func NewSourceConfigFromSourceTypeConfigCommerceLayer(value *SourceTypeConfigCommerceLayer) *SourceConfig {
+	return &SourceConfig{typ: "SourceTypeConfigCommerceLayer", SourceTypeConfigCommerceLayer: value}
+}
+
+func NewSourceConfigFromSourceTypeConfigHubspot(value *SourceTypeConfigHubspot) *SourceConfig {
+	return &SourceConfig{typ: "SourceTypeConfigHubspot", SourceTypeConfigHubspot: value}
+}
+
+func NewSourceConfigFromSourceTypeConfigMailgun(value *SourceTypeConfigMailgun) *SourceConfig {
+	return &SourceConfig{typ: "SourceTypeConfigMailgun", SourceTypeConfigMailgun: value}
+}
+
+func NewSourceConfigFromSourceTypeConfigPersona(value *SourceTypeConfigPersona) *SourceConfig {
+	return &SourceConfig{typ: "SourceTypeConfigPersona", SourceTypeConfigPersona: value}
+}
+
+func NewSourceConfigFromSourceTypeConfigPipedrive(value *SourceTypeConfigPipedrive) *SourceConfig {
+	return &SourceConfig{typ: "SourceTypeConfigPipedrive", SourceTypeConfigPipedrive: value}
+}
+
+func NewSourceConfigFromSourceTypeConfigSendgrid(value *SourceTypeConfigSendgrid) *SourceConfig {
+	return &SourceConfig{typ: "SourceTypeConfigSendgrid", SourceTypeConfigSendgrid: value}
+}
+
+func NewSourceConfigFromSourceTypeConfigWorkOs(value *SourceTypeConfigWorkOs) *SourceConfig {
+	return &SourceConfig{typ: "SourceTypeConfigWorkOs", SourceTypeConfigWorkOs: value}
+}
+
+func NewSourceConfigFromSourceTypeConfigSynctera(value *SourceTypeConfigSynctera) *SourceConfig {
+	return &SourceConfig{typ: "SourceTypeConfigSynctera", SourceTypeConfigSynctera: value}
+}
+
+func NewSourceConfigFromSourceTypeConfigAwssns(value *SourceTypeConfigAwssns) *SourceConfig {
+	return &SourceConfig{typ: "SourceTypeConfigAwssns", SourceTypeConfigAwssns: value}
+}
+
+func NewSourceConfigFromSourceTypeConfig3DEye(value *SourceTypeConfig3DEye) *SourceConfig {
+	return &SourceConfig{typ: "SourceTypeConfig3DEye", SourceTypeConfig3DEye: value}
+}
+
+func NewSourceConfigFromSourceTypeConfigTwitch(value *SourceTypeConfigTwitch) *SourceConfig {
+	return &SourceConfig{typ: "SourceTypeConfigTwitch", SourceTypeConfigTwitch: value}
+}
+
+func NewSourceConfigFromSourceTypeConfigEnode(value *SourceTypeConfigEnode) *SourceConfig {
+	return &SourceConfig{typ: "SourceTypeConfigEnode", SourceTypeConfigEnode: value}
+}
+
+func NewSourceConfigFromSourceTypeConfigFavro(value *SourceTypeConfigFavro) *SourceConfig {
+	return &SourceConfig{typ: "SourceTypeConfigFavro", SourceTypeConfigFavro: value}
+}
+
+func NewSourceConfigFromSourceTypeConfigLinear(value *SourceTypeConfigLinear) *SourceConfig {
+	return &SourceConfig{typ: "SourceTypeConfigLinear", SourceTypeConfigLinear: value}
+}
+
+func NewSourceConfigFromSourceTypeConfigShopline(value *SourceTypeConfigShopline) *SourceConfig {
+	return &SourceConfig{typ: "SourceTypeConfigShopline", SourceTypeConfigShopline: value}
+}
+
+func NewSourceConfigFromSourceTypeConfigWix(value *SourceTypeConfigWix) *SourceConfig {
+	return &SourceConfig{typ: "SourceTypeConfigWix", SourceTypeConfigWix: value}
+}
+
+func NewSourceConfigFromSourceTypeConfigNmiPaymentGateway(value *SourceTypeConfigNmiPaymentGateway) *SourceConfig {
+	return &SourceConfig{typ: "SourceTypeConfigNmiPaymentGateway", SourceTypeConfigNmiPaymentGateway: value}
+}
+
+func NewSourceConfigFromSourceTypeConfigOrb(value *SourceTypeConfigOrb) *SourceConfig {
+	return &SourceConfig{typ: "SourceTypeConfigOrb", SourceTypeConfigOrb: value}
+}
+
+func NewSourceConfigFromSourceTypeConfigPylon(value *SourceTypeConfigPylon) *SourceConfig {
+	return &SourceConfig{typ: "SourceTypeConfigPylon", SourceTypeConfigPylon: value}
+}
+
+func NewSourceConfigFromSourceTypeConfigRazorpay(value *SourceTypeConfigRazorpay) *SourceConfig {
+	return &SourceConfig{typ: "SourceTypeConfigRazorpay", SourceTypeConfigRazorpay: value}
+}
+
+func NewSourceConfigFromSourceTypeConfigRepay(value *SourceTypeConfigRepay) *SourceConfig {
+	return &SourceConfig{typ: "SourceTypeConfigRepay", SourceTypeConfigRepay: value}
+}
+
+func NewSourceConfigFromSourceTypeConfigSquare(value *SourceTypeConfigSquare) *SourceConfig {
+	return &SourceConfig{typ: "SourceTypeConfigSquare", SourceTypeConfigSquare: value}
+}
+
+func NewSourceConfigFromSourceTypeConfigSolidgate(value *SourceTypeConfigSolidgate) *SourceConfig {
+	return &SourceConfig{typ: "SourceTypeConfigSolidgate", SourceTypeConfigSolidgate: value}
+}
+
+func NewSourceConfigFromSourceTypeConfigTrello(value *SourceTypeConfigTrello) *SourceConfig {
+	return &SourceConfig{typ: "SourceTypeConfigTrello", SourceTypeConfigTrello: value}
+}
+
+func NewSourceConfigFromSourceTypeConfigEbay(value *SourceTypeConfigEbay) *SourceConfig {
+	return &SourceConfig{typ: "SourceTypeConfigEbay", SourceTypeConfigEbay: value}
+}
+
+func NewSourceConfigFromSourceTypeConfigTelnyx(value *SourceTypeConfigTelnyx) *SourceConfig {
+	return &SourceConfig{typ: "SourceTypeConfigTelnyx", SourceTypeConfigTelnyx: value}
+}
+
+func NewSourceConfigFromSourceTypeConfigDiscord(value *SourceTypeConfigDiscord) *SourceConfig {
+	return &SourceConfig{typ: "SourceTypeConfigDiscord", SourceTypeConfigDiscord: value}
+}
+
+func NewSourceConfigFromSourceTypeConfigTokenIo(value *SourceTypeConfigTokenIo) *SourceConfig {
+	return &SourceConfig{typ: "SourceTypeConfigTokenIo", SourceTypeConfigTokenIo: value}
+}
+
+func NewSourceConfigFromSourceTypeConfigFiserv(value *SourceTypeConfigFiserv) *SourceConfig {
+	return &SourceConfig{typ: "SourceTypeConfigFiserv", SourceTypeConfigFiserv: value}
+}
+
+func NewSourceConfigFromSourceTypeConfigBondsmith(value *SourceTypeConfigBondsmith) *SourceConfig {
+	return &SourceConfig{typ: "SourceTypeConfigBondsmith", SourceTypeConfigBondsmith: value}
+}
+
+func NewSourceConfigFromSourceTypeConfigVercelLogDrains(value *SourceTypeConfigVercelLogDrains) *SourceConfig {
+	return &SourceConfig{typ: "SourceTypeConfigVercelLogDrains", SourceTypeConfigVercelLogDrains: value}
+}
+
+func NewSourceConfigFromSourceTypeConfigVercelWebhooks(value *SourceTypeConfigVercelWebhooks) *SourceConfig {
+	return &SourceConfig{typ: "SourceTypeConfigVercelWebhooks", SourceTypeConfigVercelWebhooks: value}
+}
+
+func NewSourceConfigFromSourceTypeConfigTebex(value *SourceTypeConfigTebex) *SourceConfig {
+	return &SourceConfig{typ: "SourceTypeConfigTebex", SourceTypeConfigTebex: value}
+}
+
+func NewSourceConfigFromSourceTypeConfigSlack(value *SourceTypeConfigSlack) *SourceConfig {
+	return &SourceConfig{typ: "SourceTypeConfigSlack", SourceTypeConfigSlack: value}
+}
+
+func NewSourceConfigFromSourceTypeConfigMailchimp(value *SourceTypeConfigMailchimp) *SourceConfig {
+	return &SourceConfig{typ: "SourceTypeConfigMailchimp", SourceTypeConfigMailchimp: value}
+}
+
+func NewSourceConfigFromSourceTypeConfigPaddle(value *SourceTypeConfigPaddle) *SourceConfig {
+	return &SourceConfig{typ: "SourceTypeConfigPaddle", SourceTypeConfigPaddle: value}
+}
+
+func NewSourceConfigFromSourceTypeConfigPaypal(value *SourceTypeConfigPaypal) *SourceConfig {
+	return &SourceConfig{typ: "SourceTypeConfigPaypal", SourceTypeConfigPaypal: value}
+}
+
+func NewSourceConfigFromSourceTypeConfigTreezor(value *SourceTypeConfigTreezor) *SourceConfig {
+	return &SourceConfig{typ: "SourceTypeConfigTreezor", SourceTypeConfigTreezor: value}
+}
+
+func NewSourceConfigFromSourceTypeConfigPraxis(value *SourceTypeConfigPraxis) *SourceConfig {
+	return &SourceConfig{typ: "SourceTypeConfigPraxis", SourceTypeConfigPraxis: value}
+}
+
+func NewSourceConfigFromSourceTypeConfigCustomerIo(value *SourceTypeConfigCustomerIo) *SourceConfig {
+	return &SourceConfig{typ: "SourceTypeConfigCustomerIo", SourceTypeConfigCustomerIo: value}
+}
+
+func NewSourceConfigFromSourceTypeConfigFacebook(value *SourceTypeConfigFacebook) *SourceConfig {
+	return &SourceConfig{typ: "SourceTypeConfigFacebook", SourceTypeConfigFacebook: value}
+}
+
+func NewSourceConfigFromSourceTypeConfigWhatsApp(value *SourceTypeConfigWhatsApp) *SourceConfig {
+	return &SourceConfig{typ: "SourceTypeConfigWhatsApp", SourceTypeConfigWhatsApp: value}
+}
+
+func NewSourceConfigFromSourceTypeConfigReplicate(value *SourceTypeConfigReplicate) *SourceConfig {
+	return &SourceConfig{typ: "SourceTypeConfigReplicate", SourceTypeConfigReplicate: value}
+}
+
+func NewSourceConfigFromSourceTypeConfigTikTok(value *SourceTypeConfigTikTok) *SourceConfig {
+	return &SourceConfig{typ: "SourceTypeConfigTikTok", SourceTypeConfigTikTok: value}
+}
+
+func NewSourceConfigFromSourceTypeConfigAirwallex(value *SourceTypeConfigAirwallex) *SourceConfig {
+	return &SourceConfig{typ: "SourceTypeConfigAirwallex", SourceTypeConfigAirwallex: value}
+}
+
+func NewSourceConfigFromSourceTypeConfigZendesk(value *SourceTypeConfigZendesk) *SourceConfig {
+	return &SourceConfig{typ: "SourceTypeConfigZendesk", SourceTypeConfigZendesk: value}
+}
+
+func NewSourceConfigFromSourceTypeConfigUpollo(value *SourceTypeConfigUpollo) *SourceConfig {
+	return &SourceConfig{typ: "SourceTypeConfigUpollo", SourceTypeConfigUpollo: value}
+}
+
+func NewSourceConfigFromSourceTypeConfigLinkedIn(value *SourceTypeConfigLinkedIn) *SourceConfig {
+	return &SourceConfig{typ: "SourceTypeConfigLinkedIn", SourceTypeConfigLinkedIn: value}
+}
+
+func (s *SourceConfig) GetSourceTypeConfigWebhook() *SourceTypeConfigWebhook {
+	if s == nil {
+		return nil
+	}
+	return s.SourceTypeConfigWebhook
+}
+
+func (s *SourceConfig) GetSourceTypeConfigHttp() *SourceTypeConfigHttp {
+	if s == nil {
+		return nil
+	}
+	return s.SourceTypeConfigHttp
+}
+
+func (s *SourceConfig) GetSourceTypeConfigManaged() *SourceTypeConfigManaged {
+	if s == nil {
+		return nil
+	}
+	return s.SourceTypeConfigManaged
+}
+
+func (s *SourceConfig) GetSourceTypeConfigSanity() *SourceTypeConfigSanity {
+	if s == nil {
+		return nil
+	}
+	return s.SourceTypeConfigSanity
+}
+
+func (s *SourceConfig) GetSourceTypeConfigBridge() *SourceTypeConfigBridge {
+	if s == nil {
+		return nil
+	}
+	return s.SourceTypeConfigBridge
+}
+
+func (s *SourceConfig) GetSourceTypeConfigCloudSignal() *SourceTypeConfigCloudSignal {
+	if s == nil {
+		return nil
+	}
+	return s.SourceTypeConfigCloudSignal
+}
+
+func (s *SourceConfig) GetSourceTypeConfigCourier() *SourceTypeConfigCourier {
+	if s == nil {
+		return nil
+	}
+	return s.SourceTypeConfigCourier
+}
+
+func (s *SourceConfig) GetSourceTypeConfigFrontApp() *SourceTypeConfigFrontApp {
+	if s == nil {
+		return nil
+	}
+	return s.SourceTypeConfigFrontApp
+}
+
+func (s *SourceConfig) GetSourceTypeConfigZoom() *SourceTypeConfigZoom {
+	if s == nil {
+		return nil
+	}
+	return s.SourceTypeConfigZoom
+}
+
+func (s *SourceConfig) GetSourceTypeConfigTwitter() *SourceTypeConfigTwitter {
+	if s == nil {
+		return nil
+	}
+	return s.SourceTypeConfigTwitter
+}
+
+func (s *SourceConfig) GetSourceTypeConfigRecharge() *SourceTypeConfigRecharge {
+	if s == nil {
+		return nil
+	}
+	return s.SourceTypeConfigRecharge
+}
+
+func (s *SourceConfig) GetSourceTypeConfigStripe() *SourceTypeConfigStripe {
+	if s == nil {
+		return nil
+	}
+	return s.SourceTypeConfigStripe
+}
+
+func (s *SourceConfig) GetSourceTypeConfigPropertyFinder() *SourceTypeConfigPropertyFinder {
+	if s == nil {
+		return nil
+	}
+	return s.SourceTypeConfigPropertyFinder
+}
+
+func (s *SourceConfig) GetSourceTypeConfigShopify() *SourceTypeConfigShopify {
+	if s == nil {
+		return nil
+	}
+	return s.SourceTypeConfigShopify
+}
+
+func (s *SourceConfig) GetSourceTypeConfigTwilio() *SourceTypeConfigTwilio {
+	if s == nil {
+		return nil
+	}
+	return s.SourceTypeConfigTwilio
+}
+
+func (s *SourceConfig) GetSourceTypeConfigGitHub() *SourceTypeConfigGitHub {
+	if s == nil {
+		return nil
+	}
+	return s.SourceTypeConfigGitHub
+}
+
+func (s *SourceConfig) GetSourceTypeConfigPostmark() *SourceTypeConfigPostmark {
+	if s == nil {
+		return nil
+	}
+	return s.SourceTypeConfigPostmark
+}
+
+func (s *SourceConfig) GetSourceTypeConfigTypeform() *SourceTypeConfigTypeform {
+	if s == nil {
+		return nil
+	}
+	return s.SourceTypeConfigTypeform
+}
+
+func (s *SourceConfig) GetSourceTypeConfigXero() *SourceTypeConfigXero {
+	if s == nil {
+		return nil
+	}
+	return s.SourceTypeConfigXero
+}
+
+func (s *SourceConfig) GetSourceTypeConfigSvix() *SourceTypeConfigSvix {
+	if s == nil {
+		return nil
+	}
+	return s.SourceTypeConfigSvix
+}
+
+func (s *SourceConfig) GetSourceTypeConfigAdyen() *SourceTypeConfigAdyen {
+	if s == nil {
+		return nil
+	}
+	return s.SourceTypeConfigAdyen
+}
+
+func (s *SourceConfig) GetSourceTypeConfigAkeneo() *SourceTypeConfigAkeneo {
+	if s == nil {
+		return nil
+	}
+	return s.SourceTypeConfigAkeneo
+}
+
+func (s *SourceConfig) GetSourceTypeConfigGitLab() *SourceTypeConfigGitLab {
+	if s == nil {
+		return nil
+	}
+	return s.SourceTypeConfigGitLab
+}
+
+func (s *SourceConfig) GetSourceTypeConfigWooCommerce() *SourceTypeConfigWooCommerce {
+	if s == nil {
+		return nil
+	}
+	return s.SourceTypeConfigWooCommerce
+}
+
+func (s *SourceConfig) GetSourceTypeConfigOura() *SourceTypeConfigOura {
+	if s == nil {
+		return nil
+	}
+	return s.SourceTypeConfigOura
+}
+
+func (s *SourceConfig) GetSourceTypeConfigCommerceLayer() *SourceTypeConfigCommerceLayer {
+	if s == nil {
+		return nil
+	}
+	return s.SourceTypeConfigCommerceLayer
+}
+
+func (s *SourceConfig) GetSourceTypeConfigHubspot() *SourceTypeConfigHubspot {
+	if s == nil {
+		return nil
+	}
+	return s.SourceTypeConfigHubspot
+}
+
+func (s *SourceConfig) GetSourceTypeConfigMailgun() *SourceTypeConfigMailgun {
+	if s == nil {
+		return nil
+	}
+	return s.SourceTypeConfigMailgun
+}
+
+func (s *SourceConfig) GetSourceTypeConfigPersona() *SourceTypeConfigPersona {
+	if s == nil {
+		return nil
+	}
+	return s.SourceTypeConfigPersona
+}
+
+func (s *SourceConfig) GetSourceTypeConfigPipedrive() *SourceTypeConfigPipedrive {
+	if s == nil {
+		return nil
+	}
+	return s.SourceTypeConfigPipedrive
+}
+
+func (s *SourceConfig) GetSourceTypeConfigSendgrid() *SourceTypeConfigSendgrid {
+	if s == nil {
+		return nil
+	}
+	return s.SourceTypeConfigSendgrid
+}
+
+func (s *SourceConfig) GetSourceTypeConfigWorkOs() *SourceTypeConfigWorkOs {
+	if s == nil {
+		return nil
+	}
+	return s.SourceTypeConfigWorkOs
+}
+
+func (s *SourceConfig) GetSourceTypeConfigSynctera() *SourceTypeConfigSynctera {
+	if s == nil {
+		return nil
+	}
+	return s.SourceTypeConfigSynctera
+}
+
+func (s *SourceConfig) GetSourceTypeConfigAwssns() *SourceTypeConfigAwssns {
+	if s == nil {
+		return nil
+	}
+	return s.SourceTypeConfigAwssns
+}
+
+func (s *SourceConfig) GetSourceTypeConfig3DEye() *SourceTypeConfig3DEye {
+	if s == nil {
+		return nil
+	}
+	return s.SourceTypeConfig3DEye
+}
+
+func (s *SourceConfig) GetSourceTypeConfigTwitch() *SourceTypeConfigTwitch {
+	if s == nil {
+		return nil
+	}
+	return s.SourceTypeConfigTwitch
+}
+
+func (s *SourceConfig) GetSourceTypeConfigEnode() *SourceTypeConfigEnode {
+	if s == nil {
+		return nil
+	}
+	return s.SourceTypeConfigEnode
+}
+
+func (s *SourceConfig) GetSourceTypeConfigFavro() *SourceTypeConfigFavro {
+	if s == nil {
+		return nil
+	}
+	return s.SourceTypeConfigFavro
+}
+
+func (s *SourceConfig) GetSourceTypeConfigLinear() *SourceTypeConfigLinear {
+	if s == nil {
+		return nil
+	}
+	return s.SourceTypeConfigLinear
+}
+
+func (s *SourceConfig) GetSourceTypeConfigShopline() *SourceTypeConfigShopline {
+	if s == nil {
+		return nil
+	}
+	return s.SourceTypeConfigShopline
+}
+
+func (s *SourceConfig) GetSourceTypeConfigWix() *SourceTypeConfigWix {
+	if s == nil {
+		return nil
+	}
+	return s.SourceTypeConfigWix
+}
+
+func (s *SourceConfig) GetSourceTypeConfigNmiPaymentGateway() *SourceTypeConfigNmiPaymentGateway {
+	if s == nil {
+		return nil
+	}
+	return s.SourceTypeConfigNmiPaymentGateway
+}
+
+func (s *SourceConfig) GetSourceTypeConfigOrb() *SourceTypeConfigOrb {
+	if s == nil {
+		return nil
+	}
+	return s.SourceTypeConfigOrb
+}
+
+func (s *SourceConfig) GetSourceTypeConfigPylon() *SourceTypeConfigPylon {
+	if s == nil {
+		return nil
+	}
+	return s.SourceTypeConfigPylon
+}
+
+func (s *SourceConfig) GetSourceTypeConfigRazorpay() *SourceTypeConfigRazorpay {
+	if s == nil {
+		return nil
+	}
+	return s.SourceTypeConfigRazorpay
+}
+
+func (s *SourceConfig) GetSourceTypeConfigRepay() *SourceTypeConfigRepay {
+	if s == nil {
+		return nil
+	}
+	return s.SourceTypeConfigRepay
+}
+
+func (s *SourceConfig) GetSourceTypeConfigSquare() *SourceTypeConfigSquare {
+	if s == nil {
+		return nil
+	}
+	return s.SourceTypeConfigSquare
+}
+
+func (s *SourceConfig) GetSourceTypeConfigSolidgate() *SourceTypeConfigSolidgate {
+	if s == nil {
+		return nil
+	}
+	return s.SourceTypeConfigSolidgate
+}
+
+func (s *SourceConfig) GetSourceTypeConfigTrello() *SourceTypeConfigTrello {
+	if s == nil {
+		return nil
+	}
+	return s.SourceTypeConfigTrello
+}
+
+func (s *SourceConfig) GetSourceTypeConfigEbay() *SourceTypeConfigEbay {
+	if s == nil {
+		return nil
+	}
+	return s.SourceTypeConfigEbay
+}
+
+func (s *SourceConfig) GetSourceTypeConfigTelnyx() *SourceTypeConfigTelnyx {
+	if s == nil {
+		return nil
+	}
+	return s.SourceTypeConfigTelnyx
+}
+
+func (s *SourceConfig) GetSourceTypeConfigDiscord() *SourceTypeConfigDiscord {
+	if s == nil {
+		return nil
+	}
+	return s.SourceTypeConfigDiscord
+}
+
+func (s *SourceConfig) GetSourceTypeConfigTokenIo() *SourceTypeConfigTokenIo {
+	if s == nil {
+		return nil
+	}
+	return s.SourceTypeConfigTokenIo
+}
+
+func (s *SourceConfig) GetSourceTypeConfigFiserv() *SourceTypeConfigFiserv {
+	if s == nil {
+		return nil
+	}
+	return s.SourceTypeConfigFiserv
+}
+
+func (s *SourceConfig) GetSourceTypeConfigBondsmith() *SourceTypeConfigBondsmith {
+	if s == nil {
+		return nil
+	}
+	return s.SourceTypeConfigBondsmith
+}
+
+func (s *SourceConfig) GetSourceTypeConfigVercelLogDrains() *SourceTypeConfigVercelLogDrains {
+	if s == nil {
+		return nil
+	}
+	return s.SourceTypeConfigVercelLogDrains
+}
+
+func (s *SourceConfig) GetSourceTypeConfigVercelWebhooks() *SourceTypeConfigVercelWebhooks {
+	if s == nil {
+		return nil
+	}
+	return s.SourceTypeConfigVercelWebhooks
+}
+
+func (s *SourceConfig) GetSourceTypeConfigTebex() *SourceTypeConfigTebex {
+	if s == nil {
+		return nil
+	}
+	return s.SourceTypeConfigTebex
+}
+
+func (s *SourceConfig) GetSourceTypeConfigSlack() *SourceTypeConfigSlack {
+	if s == nil {
+		return nil
+	}
+	return s.SourceTypeConfigSlack
+}
+
+func (s *SourceConfig) GetSourceTypeConfigMailchimp() *SourceTypeConfigMailchimp {
+	if s == nil {
+		return nil
+	}
+	return s.SourceTypeConfigMailchimp
+}
+
+func (s *SourceConfig) GetSourceTypeConfigPaddle() *SourceTypeConfigPaddle {
+	if s == nil {
+		return nil
+	}
+	return s.SourceTypeConfigPaddle
+}
+
+func (s *SourceConfig) GetSourceTypeConfigPaypal() *SourceTypeConfigPaypal {
+	if s == nil {
+		return nil
+	}
+	return s.SourceTypeConfigPaypal
+}
+
+func (s *SourceConfig) GetSourceTypeConfigTreezor() *SourceTypeConfigTreezor {
+	if s == nil {
+		return nil
+	}
+	return s.SourceTypeConfigTreezor
+}
+
+func (s *SourceConfig) GetSourceTypeConfigPraxis() *SourceTypeConfigPraxis {
+	if s == nil {
+		return nil
+	}
+	return s.SourceTypeConfigPraxis
+}
+
+func (s *SourceConfig) GetSourceTypeConfigCustomerIo() *SourceTypeConfigCustomerIo {
+	if s == nil {
+		return nil
+	}
+	return s.SourceTypeConfigCustomerIo
+}
+
+func (s *SourceConfig) GetSourceTypeConfigFacebook() *SourceTypeConfigFacebook {
+	if s == nil {
+		return nil
+	}
+	return s.SourceTypeConfigFacebook
+}
+
+func (s *SourceConfig) GetSourceTypeConfigWhatsApp() *SourceTypeConfigWhatsApp {
+	if s == nil {
+		return nil
+	}
+	return s.SourceTypeConfigWhatsApp
+}
+
+func (s *SourceConfig) GetSourceTypeConfigReplicate() *SourceTypeConfigReplicate {
+	if s == nil {
+		return nil
+	}
+	return s.SourceTypeConfigReplicate
+}
+
+func (s *SourceConfig) GetSourceTypeConfigTikTok() *SourceTypeConfigTikTok {
+	if s == nil {
+		return nil
+	}
+	return s.SourceTypeConfigTikTok
+}
+
+func (s *SourceConfig) GetSourceTypeConfigAirwallex() *SourceTypeConfigAirwallex {
+	if s == nil {
+		return nil
+	}
+	return s.SourceTypeConfigAirwallex
+}
+
+func (s *SourceConfig) GetSourceTypeConfigZendesk() *SourceTypeConfigZendesk {
+	if s == nil {
+		return nil
+	}
+	return s.SourceTypeConfigZendesk
+}
+
+func (s *SourceConfig) GetSourceTypeConfigUpollo() *SourceTypeConfigUpollo {
+	if s == nil {
+		return nil
+	}
+	return s.SourceTypeConfigUpollo
+}
+
+func (s *SourceConfig) GetSourceTypeConfigLinkedIn() *SourceTypeConfigLinkedIn {
+	if s == nil {
+		return nil
+	}
+	return s.SourceTypeConfigLinkedIn
+}
+
+func (s *SourceConfig) UnmarshalJSON(data []byte) error {
+	valueSourceTypeConfigWebhook := new(SourceTypeConfigWebhook)
+	if err := json.Unmarshal(data, &valueSourceTypeConfigWebhook); err == nil {
+		s.typ = "SourceTypeConfigWebhook"
+		s.SourceTypeConfigWebhook = valueSourceTypeConfigWebhook
+		return nil
+	}
+	valueSourceTypeConfigHttp := new(SourceTypeConfigHttp)
+	if err := json.Unmarshal(data, &valueSourceTypeConfigHttp); err == nil {
+		s.typ = "SourceTypeConfigHttp"
+		s.SourceTypeConfigHttp = valueSourceTypeConfigHttp
+		return nil
+	}
+	valueSourceTypeConfigManaged := new(SourceTypeConfigManaged)
+	if err := json.Unmarshal(data, &valueSourceTypeConfigManaged); err == nil {
+		s.typ = "SourceTypeConfigManaged"
+		s.SourceTypeConfigManaged = valueSourceTypeConfigManaged
+		return nil
+	}
+	valueSourceTypeConfigSanity := new(SourceTypeConfigSanity)
+	if err := json.Unmarshal(data, &valueSourceTypeConfigSanity); err == nil {
+		s.typ = "SourceTypeConfigSanity"
+		s.SourceTypeConfigSanity = valueSourceTypeConfigSanity
+		return nil
+	}
+	valueSourceTypeConfigBridge := new(SourceTypeConfigBridge)
+	if err := json.Unmarshal(data, &valueSourceTypeConfigBridge); err == nil {
+		s.typ = "SourceTypeConfigBridge"
+		s.SourceTypeConfigBridge = valueSourceTypeConfigBridge
+		return nil
+	}
+	valueSourceTypeConfigCloudSignal := new(SourceTypeConfigCloudSignal)
+	if err := json.Unmarshal(data, &valueSourceTypeConfigCloudSignal); err == nil {
+		s.typ = "SourceTypeConfigCloudSignal"
+		s.SourceTypeConfigCloudSignal = valueSourceTypeConfigCloudSignal
+		return nil
+	}
+	valueSourceTypeConfigCourier := new(SourceTypeConfigCourier)
+	if err := json.Unmarshal(data, &valueSourceTypeConfigCourier); err == nil {
+		s.typ = "SourceTypeConfigCourier"
+		s.SourceTypeConfigCourier = valueSourceTypeConfigCourier
+		return nil
+	}
+	valueSourceTypeConfigFrontApp := new(SourceTypeConfigFrontApp)
+	if err := json.Unmarshal(data, &valueSourceTypeConfigFrontApp); err == nil {
+		s.typ = "SourceTypeConfigFrontApp"
+		s.SourceTypeConfigFrontApp = valueSourceTypeConfigFrontApp
+		return nil
+	}
+	valueSourceTypeConfigZoom := new(SourceTypeConfigZoom)
+	if err := json.Unmarshal(data, &valueSourceTypeConfigZoom); err == nil {
+		s.typ = "SourceTypeConfigZoom"
+		s.SourceTypeConfigZoom = valueSourceTypeConfigZoom
+		return nil
+	}
+	valueSourceTypeConfigTwitter := new(SourceTypeConfigTwitter)
+	if err := json.Unmarshal(data, &valueSourceTypeConfigTwitter); err == nil {
+		s.typ = "SourceTypeConfigTwitter"
+		s.SourceTypeConfigTwitter = valueSourceTypeConfigTwitter
+		return nil
+	}
+	valueSourceTypeConfigRecharge := new(SourceTypeConfigRecharge)
+	if err := json.Unmarshal(data, &valueSourceTypeConfigRecharge); err == nil {
+		s.typ = "SourceTypeConfigRecharge"
+		s.SourceTypeConfigRecharge = valueSourceTypeConfigRecharge
+		return nil
+	}
+	valueSourceTypeConfigStripe := new(SourceTypeConfigStripe)
+	if err := json.Unmarshal(data, &valueSourceTypeConfigStripe); err == nil {
+		s.typ = "SourceTypeConfigStripe"
+		s.SourceTypeConfigStripe = valueSourceTypeConfigStripe
+		return nil
+	}
+	valueSourceTypeConfigPropertyFinder := new(SourceTypeConfigPropertyFinder)
+	if err := json.Unmarshal(data, &valueSourceTypeConfigPropertyFinder); err == nil {
+		s.typ = "SourceTypeConfigPropertyFinder"
+		s.SourceTypeConfigPropertyFinder = valueSourceTypeConfigPropertyFinder
+		return nil
+	}
+	valueSourceTypeConfigShopify := new(SourceTypeConfigShopify)
+	if err := json.Unmarshal(data, &valueSourceTypeConfigShopify); err == nil {
+		s.typ = "SourceTypeConfigShopify"
+		s.SourceTypeConfigShopify = valueSourceTypeConfigShopify
+		return nil
+	}
+	valueSourceTypeConfigTwilio := new(SourceTypeConfigTwilio)
+	if err := json.Unmarshal(data, &valueSourceTypeConfigTwilio); err == nil {
+		s.typ = "SourceTypeConfigTwilio"
+		s.SourceTypeConfigTwilio = valueSourceTypeConfigTwilio
+		return nil
+	}
+	valueSourceTypeConfigGitHub := new(SourceTypeConfigGitHub)
+	if err := json.Unmarshal(data, &valueSourceTypeConfigGitHub); err == nil {
+		s.typ = "SourceTypeConfigGitHub"
+		s.SourceTypeConfigGitHub = valueSourceTypeConfigGitHub
+		return nil
+	}
+	valueSourceTypeConfigPostmark := new(SourceTypeConfigPostmark)
+	if err := json.Unmarshal(data, &valueSourceTypeConfigPostmark); err == nil {
+		s.typ = "SourceTypeConfigPostmark"
+		s.SourceTypeConfigPostmark = valueSourceTypeConfigPostmark
+		return nil
+	}
+	valueSourceTypeConfigTypeform := new(SourceTypeConfigTypeform)
+	if err := json.Unmarshal(data, &valueSourceTypeConfigTypeform); err == nil {
+		s.typ = "SourceTypeConfigTypeform"
+		s.SourceTypeConfigTypeform = valueSourceTypeConfigTypeform
+		return nil
+	}
+	valueSourceTypeConfigXero := new(SourceTypeConfigXero)
+	if err := json.Unmarshal(data, &valueSourceTypeConfigXero); err == nil {
+		s.typ = "SourceTypeConfigXero"
+		s.SourceTypeConfigXero = valueSourceTypeConfigXero
+		return nil
+	}
+	valueSourceTypeConfigSvix := new(SourceTypeConfigSvix)
+	if err := json.Unmarshal(data, &valueSourceTypeConfigSvix); err == nil {
+		s.typ = "SourceTypeConfigSvix"
+		s.SourceTypeConfigSvix = valueSourceTypeConfigSvix
+		return nil
+	}
+	valueSourceTypeConfigAdyen := new(SourceTypeConfigAdyen)
+	if err := json.Unmarshal(data, &valueSourceTypeConfigAdyen); err == nil {
+		s.typ = "SourceTypeConfigAdyen"
+		s.SourceTypeConfigAdyen = valueSourceTypeConfigAdyen
+		return nil
+	}
+	valueSourceTypeConfigAkeneo := new(SourceTypeConfigAkeneo)
+	if err := json.Unmarshal(data, &valueSourceTypeConfigAkeneo); err == nil {
+		s.typ = "SourceTypeConfigAkeneo"
+		s.SourceTypeConfigAkeneo = valueSourceTypeConfigAkeneo
+		return nil
+	}
+	valueSourceTypeConfigGitLab := new(SourceTypeConfigGitLab)
+	if err := json.Unmarshal(data, &valueSourceTypeConfigGitLab); err == nil {
+		s.typ = "SourceTypeConfigGitLab"
+		s.SourceTypeConfigGitLab = valueSourceTypeConfigGitLab
+		return nil
+	}
+	valueSourceTypeConfigWooCommerce := new(SourceTypeConfigWooCommerce)
+	if err := json.Unmarshal(data, &valueSourceTypeConfigWooCommerce); err == nil {
+		s.typ = "SourceTypeConfigWooCommerce"
+		s.SourceTypeConfigWooCommerce = valueSourceTypeConfigWooCommerce
+		return nil
+	}
+	valueSourceTypeConfigOura := new(SourceTypeConfigOura)
+	if err := json.Unmarshal(data, &valueSourceTypeConfigOura); err == nil {
+		s.typ = "SourceTypeConfigOura"
+		s.SourceTypeConfigOura = valueSourceTypeConfigOura
+		return nil
+	}
+	valueSourceTypeConfigCommerceLayer := new(SourceTypeConfigCommerceLayer)
+	if err := json.Unmarshal(data, &valueSourceTypeConfigCommerceLayer); err == nil {
+		s.typ = "SourceTypeConfigCommerceLayer"
+		s.SourceTypeConfigCommerceLayer = valueSourceTypeConfigCommerceLayer
+		return nil
+	}
+	valueSourceTypeConfigHubspot := new(SourceTypeConfigHubspot)
+	if err := json.Unmarshal(data, &valueSourceTypeConfigHubspot); err == nil {
+		s.typ = "SourceTypeConfigHubspot"
+		s.SourceTypeConfigHubspot = valueSourceTypeConfigHubspot
+		return nil
+	}
+	valueSourceTypeConfigMailgun := new(SourceTypeConfigMailgun)
+	if err := json.Unmarshal(data, &valueSourceTypeConfigMailgun); err == nil {
+		s.typ = "SourceTypeConfigMailgun"
+		s.SourceTypeConfigMailgun = valueSourceTypeConfigMailgun
+		return nil
+	}
+	valueSourceTypeConfigPersona := new(SourceTypeConfigPersona)
+	if err := json.Unmarshal(data, &valueSourceTypeConfigPersona); err == nil {
+		s.typ = "SourceTypeConfigPersona"
+		s.SourceTypeConfigPersona = valueSourceTypeConfigPersona
+		return nil
+	}
+	valueSourceTypeConfigPipedrive := new(SourceTypeConfigPipedrive)
+	if err := json.Unmarshal(data, &valueSourceTypeConfigPipedrive); err == nil {
+		s.typ = "SourceTypeConfigPipedrive"
+		s.SourceTypeConfigPipedrive = valueSourceTypeConfigPipedrive
+		return nil
+	}
+	valueSourceTypeConfigSendgrid := new(SourceTypeConfigSendgrid)
+	if err := json.Unmarshal(data, &valueSourceTypeConfigSendgrid); err == nil {
+		s.typ = "SourceTypeConfigSendgrid"
+		s.SourceTypeConfigSendgrid = valueSourceTypeConfigSendgrid
+		return nil
+	}
+	valueSourceTypeConfigWorkOs := new(SourceTypeConfigWorkOs)
+	if err := json.Unmarshal(data, &valueSourceTypeConfigWorkOs); err == nil {
+		s.typ = "SourceTypeConfigWorkOs"
+		s.SourceTypeConfigWorkOs = valueSourceTypeConfigWorkOs
+		return nil
+	}
+	valueSourceTypeConfigSynctera := new(SourceTypeConfigSynctera)
+	if err := json.Unmarshal(data, &valueSourceTypeConfigSynctera); err == nil {
+		s.typ = "SourceTypeConfigSynctera"
+		s.SourceTypeConfigSynctera = valueSourceTypeConfigSynctera
+		return nil
+	}
+	valueSourceTypeConfigAwssns := new(SourceTypeConfigAwssns)
+	if err := json.Unmarshal(data, &valueSourceTypeConfigAwssns); err == nil {
+		s.typ = "SourceTypeConfigAwssns"
+		s.SourceTypeConfigAwssns = valueSourceTypeConfigAwssns
+		return nil
+	}
+	valueSourceTypeConfig3DEye := new(SourceTypeConfig3DEye)
+	if err := json.Unmarshal(data, &valueSourceTypeConfig3DEye); err == nil {
+		s.typ = "SourceTypeConfig3DEye"
+		s.SourceTypeConfig3DEye = valueSourceTypeConfig3DEye
+		return nil
+	}
+	valueSourceTypeConfigTwitch := new(SourceTypeConfigTwitch)
+	if err := json.Unmarshal(data, &valueSourceTypeConfigTwitch); err == nil {
+		s.typ = "SourceTypeConfigTwitch"
+		s.SourceTypeConfigTwitch = valueSourceTypeConfigTwitch
+		return nil
+	}
+	valueSourceTypeConfigEnode := new(SourceTypeConfigEnode)
+	if err := json.Unmarshal(data, &valueSourceTypeConfigEnode); err == nil {
+		s.typ = "SourceTypeConfigEnode"
+		s.SourceTypeConfigEnode = valueSourceTypeConfigEnode
+		return nil
+	}
+	valueSourceTypeConfigFavro := new(SourceTypeConfigFavro)
+	if err := json.Unmarshal(data, &valueSourceTypeConfigFavro); err == nil {
+		s.typ = "SourceTypeConfigFavro"
+		s.SourceTypeConfigFavro = valueSourceTypeConfigFavro
+		return nil
+	}
+	valueSourceTypeConfigLinear := new(SourceTypeConfigLinear)
+	if err := json.Unmarshal(data, &valueSourceTypeConfigLinear); err == nil {
+		s.typ = "SourceTypeConfigLinear"
+		s.SourceTypeConfigLinear = valueSourceTypeConfigLinear
+		return nil
+	}
+	valueSourceTypeConfigShopline := new(SourceTypeConfigShopline)
+	if err := json.Unmarshal(data, &valueSourceTypeConfigShopline); err == nil {
+		s.typ = "SourceTypeConfigShopline"
+		s.SourceTypeConfigShopline = valueSourceTypeConfigShopline
+		return nil
+	}
+	valueSourceTypeConfigWix := new(SourceTypeConfigWix)
+	if err := json.Unmarshal(data, &valueSourceTypeConfigWix); err == nil {
+		s.typ = "SourceTypeConfigWix"
+		s.SourceTypeConfigWix = valueSourceTypeConfigWix
+		return nil
+	}
+	valueSourceTypeConfigNmiPaymentGateway := new(SourceTypeConfigNmiPaymentGateway)
+	if err := json.Unmarshal(data, &valueSourceTypeConfigNmiPaymentGateway); err == nil {
+		s.typ = "SourceTypeConfigNmiPaymentGateway"
+		s.SourceTypeConfigNmiPaymentGateway = valueSourceTypeConfigNmiPaymentGateway
+		return nil
+	}
+	valueSourceTypeConfigOrb := new(SourceTypeConfigOrb)
+	if err := json.Unmarshal(data, &valueSourceTypeConfigOrb); err == nil {
+		s.typ = "SourceTypeConfigOrb"
+		s.SourceTypeConfigOrb = valueSourceTypeConfigOrb
+		return nil
+	}
+	valueSourceTypeConfigPylon := new(SourceTypeConfigPylon)
+	if err := json.Unmarshal(data, &valueSourceTypeConfigPylon); err == nil {
+		s.typ = "SourceTypeConfigPylon"
+		s.SourceTypeConfigPylon = valueSourceTypeConfigPylon
+		return nil
+	}
+	valueSourceTypeConfigRazorpay := new(SourceTypeConfigRazorpay)
+	if err := json.Unmarshal(data, &valueSourceTypeConfigRazorpay); err == nil {
+		s.typ = "SourceTypeConfigRazorpay"
+		s.SourceTypeConfigRazorpay = valueSourceTypeConfigRazorpay
+		return nil
+	}
+	valueSourceTypeConfigRepay := new(SourceTypeConfigRepay)
+	if err := json.Unmarshal(data, &valueSourceTypeConfigRepay); err == nil {
+		s.typ = "SourceTypeConfigRepay"
+		s.SourceTypeConfigRepay = valueSourceTypeConfigRepay
+		return nil
+	}
+	valueSourceTypeConfigSquare := new(SourceTypeConfigSquare)
+	if err := json.Unmarshal(data, &valueSourceTypeConfigSquare); err == nil {
+		s.typ = "SourceTypeConfigSquare"
+		s.SourceTypeConfigSquare = valueSourceTypeConfigSquare
+		return nil
+	}
+	valueSourceTypeConfigSolidgate := new(SourceTypeConfigSolidgate)
+	if err := json.Unmarshal(data, &valueSourceTypeConfigSolidgate); err == nil {
+		s.typ = "SourceTypeConfigSolidgate"
+		s.SourceTypeConfigSolidgate = valueSourceTypeConfigSolidgate
+		return nil
+	}
+	valueSourceTypeConfigTrello := new(SourceTypeConfigTrello)
+	if err := json.Unmarshal(data, &valueSourceTypeConfigTrello); err == nil {
+		s.typ = "SourceTypeConfigTrello"
+		s.SourceTypeConfigTrello = valueSourceTypeConfigTrello
+		return nil
+	}
+	valueSourceTypeConfigEbay := new(SourceTypeConfigEbay)
+	if err := json.Unmarshal(data, &valueSourceTypeConfigEbay); err == nil {
+		s.typ = "SourceTypeConfigEbay"
+		s.SourceTypeConfigEbay = valueSourceTypeConfigEbay
+		return nil
+	}
+	valueSourceTypeConfigTelnyx := new(SourceTypeConfigTelnyx)
+	if err := json.Unmarshal(data, &valueSourceTypeConfigTelnyx); err == nil {
+		s.typ = "SourceTypeConfigTelnyx"
+		s.SourceTypeConfigTelnyx = valueSourceTypeConfigTelnyx
+		return nil
+	}
+	valueSourceTypeConfigDiscord := new(SourceTypeConfigDiscord)
+	if err := json.Unmarshal(data, &valueSourceTypeConfigDiscord); err == nil {
+		s.typ = "SourceTypeConfigDiscord"
+		s.SourceTypeConfigDiscord = valueSourceTypeConfigDiscord
+		return nil
+	}
+	valueSourceTypeConfigTokenIo := new(SourceTypeConfigTokenIo)
+	if err := json.Unmarshal(data, &valueSourceTypeConfigTokenIo); err == nil {
+		s.typ = "SourceTypeConfigTokenIo"
+		s.SourceTypeConfigTokenIo = valueSourceTypeConfigTokenIo
+		return nil
+	}
+	valueSourceTypeConfigFiserv := new(SourceTypeConfigFiserv)
+	if err := json.Unmarshal(data, &valueSourceTypeConfigFiserv); err == nil {
+		s.typ = "SourceTypeConfigFiserv"
+		s.SourceTypeConfigFiserv = valueSourceTypeConfigFiserv
+		return nil
+	}
+	valueSourceTypeConfigBondsmith := new(SourceTypeConfigBondsmith)
+	if err := json.Unmarshal(data, &valueSourceTypeConfigBondsmith); err == nil {
+		s.typ = "SourceTypeConfigBondsmith"
+		s.SourceTypeConfigBondsmith = valueSourceTypeConfigBondsmith
+		return nil
+	}
+	valueSourceTypeConfigVercelLogDrains := new(SourceTypeConfigVercelLogDrains)
+	if err := json.Unmarshal(data, &valueSourceTypeConfigVercelLogDrains); err == nil {
+		s.typ = "SourceTypeConfigVercelLogDrains"
+		s.SourceTypeConfigVercelLogDrains = valueSourceTypeConfigVercelLogDrains
+		return nil
+	}
+	valueSourceTypeConfigVercelWebhooks := new(SourceTypeConfigVercelWebhooks)
+	if err := json.Unmarshal(data, &valueSourceTypeConfigVercelWebhooks); err == nil {
+		s.typ = "SourceTypeConfigVercelWebhooks"
+		s.SourceTypeConfigVercelWebhooks = valueSourceTypeConfigVercelWebhooks
+		return nil
+	}
+	valueSourceTypeConfigTebex := new(SourceTypeConfigTebex)
+	if err := json.Unmarshal(data, &valueSourceTypeConfigTebex); err == nil {
+		s.typ = "SourceTypeConfigTebex"
+		s.SourceTypeConfigTebex = valueSourceTypeConfigTebex
+		return nil
+	}
+	valueSourceTypeConfigSlack := new(SourceTypeConfigSlack)
+	if err := json.Unmarshal(data, &valueSourceTypeConfigSlack); err == nil {
+		s.typ = "SourceTypeConfigSlack"
+		s.SourceTypeConfigSlack = valueSourceTypeConfigSlack
+		return nil
+	}
+	valueSourceTypeConfigMailchimp := new(SourceTypeConfigMailchimp)
+	if err := json.Unmarshal(data, &valueSourceTypeConfigMailchimp); err == nil {
+		s.typ = "SourceTypeConfigMailchimp"
+		s.SourceTypeConfigMailchimp = valueSourceTypeConfigMailchimp
+		return nil
+	}
+	valueSourceTypeConfigPaddle := new(SourceTypeConfigPaddle)
+	if err := json.Unmarshal(data, &valueSourceTypeConfigPaddle); err == nil {
+		s.typ = "SourceTypeConfigPaddle"
+		s.SourceTypeConfigPaddle = valueSourceTypeConfigPaddle
+		return nil
+	}
+	valueSourceTypeConfigPaypal := new(SourceTypeConfigPaypal)
+	if err := json.Unmarshal(data, &valueSourceTypeConfigPaypal); err == nil {
+		s.typ = "SourceTypeConfigPaypal"
+		s.SourceTypeConfigPaypal = valueSourceTypeConfigPaypal
+		return nil
+	}
+	valueSourceTypeConfigTreezor := new(SourceTypeConfigTreezor)
+	if err := json.Unmarshal(data, &valueSourceTypeConfigTreezor); err == nil {
+		s.typ = "SourceTypeConfigTreezor"
+		s.SourceTypeConfigTreezor = valueSourceTypeConfigTreezor
+		return nil
+	}
+	valueSourceTypeConfigPraxis := new(SourceTypeConfigPraxis)
+	if err := json.Unmarshal(data, &valueSourceTypeConfigPraxis); err == nil {
+		s.typ = "SourceTypeConfigPraxis"
+		s.SourceTypeConfigPraxis = valueSourceTypeConfigPraxis
+		return nil
+	}
+	valueSourceTypeConfigCustomerIo := new(SourceTypeConfigCustomerIo)
+	if err := json.Unmarshal(data, &valueSourceTypeConfigCustomerIo); err == nil {
+		s.typ = "SourceTypeConfigCustomerIo"
+		s.SourceTypeConfigCustomerIo = valueSourceTypeConfigCustomerIo
+		return nil
+	}
+	valueSourceTypeConfigFacebook := new(SourceTypeConfigFacebook)
+	if err := json.Unmarshal(data, &valueSourceTypeConfigFacebook); err == nil {
+		s.typ = "SourceTypeConfigFacebook"
+		s.SourceTypeConfigFacebook = valueSourceTypeConfigFacebook
+		return nil
+	}
+	valueSourceTypeConfigWhatsApp := new(SourceTypeConfigWhatsApp)
+	if err := json.Unmarshal(data, &valueSourceTypeConfigWhatsApp); err == nil {
+		s.typ = "SourceTypeConfigWhatsApp"
+		s.SourceTypeConfigWhatsApp = valueSourceTypeConfigWhatsApp
+		return nil
+	}
+	valueSourceTypeConfigReplicate := new(SourceTypeConfigReplicate)
+	if err := json.Unmarshal(data, &valueSourceTypeConfigReplicate); err == nil {
+		s.typ = "SourceTypeConfigReplicate"
+		s.SourceTypeConfigReplicate = valueSourceTypeConfigReplicate
+		return nil
+	}
+	valueSourceTypeConfigTikTok := new(SourceTypeConfigTikTok)
+	if err := json.Unmarshal(data, &valueSourceTypeConfigTikTok); err == nil {
+		s.typ = "SourceTypeConfigTikTok"
+		s.SourceTypeConfigTikTok = valueSourceTypeConfigTikTok
+		return nil
+	}
+	valueSourceTypeConfigAirwallex := new(SourceTypeConfigAirwallex)
+	if err := json.Unmarshal(data, &valueSourceTypeConfigAirwallex); err == nil {
+		s.typ = "SourceTypeConfigAirwallex"
+		s.SourceTypeConfigAirwallex = valueSourceTypeConfigAirwallex
+		return nil
+	}
+	valueSourceTypeConfigZendesk := new(SourceTypeConfigZendesk)
+	if err := json.Unmarshal(data, &valueSourceTypeConfigZendesk); err == nil {
+		s.typ = "SourceTypeConfigZendesk"
+		s.SourceTypeConfigZendesk = valueSourceTypeConfigZendesk
+		return nil
+	}
+	valueSourceTypeConfigUpollo := new(SourceTypeConfigUpollo)
+	if err := json.Unmarshal(data, &valueSourceTypeConfigUpollo); err == nil {
+		s.typ = "SourceTypeConfigUpollo"
+		s.SourceTypeConfigUpollo = valueSourceTypeConfigUpollo
+		return nil
+	}
+	valueSourceTypeConfigLinkedIn := new(SourceTypeConfigLinkedIn)
+	if err := json.Unmarshal(data, &valueSourceTypeConfigLinkedIn); err == nil {
+		s.typ = "SourceTypeConfigLinkedIn"
+		s.SourceTypeConfigLinkedIn = valueSourceTypeConfigLinkedIn
+		return nil
+	}
+	return fmt.Errorf("%s cannot be deserialized as a %T", data, s)
+}
+
+func (s SourceConfig) MarshalJSON() ([]byte, error) {
+	if s.typ == "SourceTypeConfigWebhook" || s.SourceTypeConfigWebhook != nil {
+		return json.Marshal(s.SourceTypeConfigWebhook)
+	}
+	if s.typ == "SourceTypeConfigHttp" || s.SourceTypeConfigHttp != nil {
+		return json.Marshal(s.SourceTypeConfigHttp)
+	}
+	if s.typ == "SourceTypeConfigManaged" || s.SourceTypeConfigManaged != nil {
+		return json.Marshal(s.SourceTypeConfigManaged)
+	}
+	if s.typ == "SourceTypeConfigSanity" || s.SourceTypeConfigSanity != nil {
+		return json.Marshal(s.SourceTypeConfigSanity)
+	}
+	if s.typ == "SourceTypeConfigBridge" || s.SourceTypeConfigBridge != nil {
+		return json.Marshal(s.SourceTypeConfigBridge)
+	}
+	if s.typ == "SourceTypeConfigCloudSignal" || s.SourceTypeConfigCloudSignal != nil {
+		return json.Marshal(s.SourceTypeConfigCloudSignal)
+	}
+	if s.typ == "SourceTypeConfigCourier" || s.SourceTypeConfigCourier != nil {
+		return json.Marshal(s.SourceTypeConfigCourier)
+	}
+	if s.typ == "SourceTypeConfigFrontApp" || s.SourceTypeConfigFrontApp != nil {
+		return json.Marshal(s.SourceTypeConfigFrontApp)
+	}
+	if s.typ == "SourceTypeConfigZoom" || s.SourceTypeConfigZoom != nil {
+		return json.Marshal(s.SourceTypeConfigZoom)
+	}
+	if s.typ == "SourceTypeConfigTwitter" || s.SourceTypeConfigTwitter != nil {
+		return json.Marshal(s.SourceTypeConfigTwitter)
+	}
+	if s.typ == "SourceTypeConfigRecharge" || s.SourceTypeConfigRecharge != nil {
+		return json.Marshal(s.SourceTypeConfigRecharge)
+	}
+	if s.typ == "SourceTypeConfigStripe" || s.SourceTypeConfigStripe != nil {
+		return json.Marshal(s.SourceTypeConfigStripe)
+	}
+	if s.typ == "SourceTypeConfigPropertyFinder" || s.SourceTypeConfigPropertyFinder != nil {
+		return json.Marshal(s.SourceTypeConfigPropertyFinder)
+	}
+	if s.typ == "SourceTypeConfigShopify" || s.SourceTypeConfigShopify != nil {
+		return json.Marshal(s.SourceTypeConfigShopify)
+	}
+	if s.typ == "SourceTypeConfigTwilio" || s.SourceTypeConfigTwilio != nil {
+		return json.Marshal(s.SourceTypeConfigTwilio)
+	}
+	if s.typ == "SourceTypeConfigGitHub" || s.SourceTypeConfigGitHub != nil {
+		return json.Marshal(s.SourceTypeConfigGitHub)
+	}
+	if s.typ == "SourceTypeConfigPostmark" || s.SourceTypeConfigPostmark != nil {
+		return json.Marshal(s.SourceTypeConfigPostmark)
+	}
+	if s.typ == "SourceTypeConfigTypeform" || s.SourceTypeConfigTypeform != nil {
+		return json.Marshal(s.SourceTypeConfigTypeform)
+	}
+	if s.typ == "SourceTypeConfigXero" || s.SourceTypeConfigXero != nil {
+		return json.Marshal(s.SourceTypeConfigXero)
+	}
+	if s.typ == "SourceTypeConfigSvix" || s.SourceTypeConfigSvix != nil {
+		return json.Marshal(s.SourceTypeConfigSvix)
+	}
+	if s.typ == "SourceTypeConfigAdyen" || s.SourceTypeConfigAdyen != nil {
+		return json.Marshal(s.SourceTypeConfigAdyen)
+	}
+	if s.typ == "SourceTypeConfigAkeneo" || s.SourceTypeConfigAkeneo != nil {
+		return json.Marshal(s.SourceTypeConfigAkeneo)
+	}
+	if s.typ == "SourceTypeConfigGitLab" || s.SourceTypeConfigGitLab != nil {
+		return json.Marshal(s.SourceTypeConfigGitLab)
+	}
+	if s.typ == "SourceTypeConfigWooCommerce" || s.SourceTypeConfigWooCommerce != nil {
+		return json.Marshal(s.SourceTypeConfigWooCommerce)
+	}
+	if s.typ == "SourceTypeConfigOura" || s.SourceTypeConfigOura != nil {
+		return json.Marshal(s.SourceTypeConfigOura)
+	}
+	if s.typ == "SourceTypeConfigCommerceLayer" || s.SourceTypeConfigCommerceLayer != nil {
+		return json.Marshal(s.SourceTypeConfigCommerceLayer)
+	}
+	if s.typ == "SourceTypeConfigHubspot" || s.SourceTypeConfigHubspot != nil {
+		return json.Marshal(s.SourceTypeConfigHubspot)
+	}
+	if s.typ == "SourceTypeConfigMailgun" || s.SourceTypeConfigMailgun != nil {
+		return json.Marshal(s.SourceTypeConfigMailgun)
+	}
+	if s.typ == "SourceTypeConfigPersona" || s.SourceTypeConfigPersona != nil {
+		return json.Marshal(s.SourceTypeConfigPersona)
+	}
+	if s.typ == "SourceTypeConfigPipedrive" || s.SourceTypeConfigPipedrive != nil {
+		return json.Marshal(s.SourceTypeConfigPipedrive)
+	}
+	if s.typ == "SourceTypeConfigSendgrid" || s.SourceTypeConfigSendgrid != nil {
+		return json.Marshal(s.SourceTypeConfigSendgrid)
+	}
+	if s.typ == "SourceTypeConfigWorkOs" || s.SourceTypeConfigWorkOs != nil {
+		return json.Marshal(s.SourceTypeConfigWorkOs)
+	}
+	if s.typ == "SourceTypeConfigSynctera" || s.SourceTypeConfigSynctera != nil {
+		return json.Marshal(s.SourceTypeConfigSynctera)
+	}
+	if s.typ == "SourceTypeConfigAwssns" || s.SourceTypeConfigAwssns != nil {
+		return json.Marshal(s.SourceTypeConfigAwssns)
+	}
+	if s.typ == "SourceTypeConfig3DEye" || s.SourceTypeConfig3DEye != nil {
+		return json.Marshal(s.SourceTypeConfig3DEye)
+	}
+	if s.typ == "SourceTypeConfigTwitch" || s.SourceTypeConfigTwitch != nil {
+		return json.Marshal(s.SourceTypeConfigTwitch)
+	}
+	if s.typ == "SourceTypeConfigEnode" || s.SourceTypeConfigEnode != nil {
+		return json.Marshal(s.SourceTypeConfigEnode)
+	}
+	if s.typ == "SourceTypeConfigFavro" || s.SourceTypeConfigFavro != nil {
+		return json.Marshal(s.SourceTypeConfigFavro)
+	}
+	if s.typ == "SourceTypeConfigLinear" || s.SourceTypeConfigLinear != nil {
+		return json.Marshal(s.SourceTypeConfigLinear)
+	}
+	if s.typ == "SourceTypeConfigShopline" || s.SourceTypeConfigShopline != nil {
+		return json.Marshal(s.SourceTypeConfigShopline)
+	}
+	if s.typ == "SourceTypeConfigWix" || s.SourceTypeConfigWix != nil {
+		return json.Marshal(s.SourceTypeConfigWix)
+	}
+	if s.typ == "SourceTypeConfigNmiPaymentGateway" || s.SourceTypeConfigNmiPaymentGateway != nil {
+		return json.Marshal(s.SourceTypeConfigNmiPaymentGateway)
+	}
+	if s.typ == "SourceTypeConfigOrb" || s.SourceTypeConfigOrb != nil {
+		return json.Marshal(s.SourceTypeConfigOrb)
+	}
+	if s.typ == "SourceTypeConfigPylon" || s.SourceTypeConfigPylon != nil {
+		return json.Marshal(s.SourceTypeConfigPylon)
+	}
+	if s.typ == "SourceTypeConfigRazorpay" || s.SourceTypeConfigRazorpay != nil {
+		return json.Marshal(s.SourceTypeConfigRazorpay)
+	}
+	if s.typ == "SourceTypeConfigRepay" || s.SourceTypeConfigRepay != nil {
+		return json.Marshal(s.SourceTypeConfigRepay)
+	}
+	if s.typ == "SourceTypeConfigSquare" || s.SourceTypeConfigSquare != nil {
+		return json.Marshal(s.SourceTypeConfigSquare)
+	}
+	if s.typ == "SourceTypeConfigSolidgate" || s.SourceTypeConfigSolidgate != nil {
+		return json.Marshal(s.SourceTypeConfigSolidgate)
+	}
+	if s.typ == "SourceTypeConfigTrello" || s.SourceTypeConfigTrello != nil {
+		return json.Marshal(s.SourceTypeConfigTrello)
+	}
+	if s.typ == "SourceTypeConfigEbay" || s.SourceTypeConfigEbay != nil {
+		return json.Marshal(s.SourceTypeConfigEbay)
+	}
+	if s.typ == "SourceTypeConfigTelnyx" || s.SourceTypeConfigTelnyx != nil {
+		return json.Marshal(s.SourceTypeConfigTelnyx)
+	}
+	if s.typ == "SourceTypeConfigDiscord" || s.SourceTypeConfigDiscord != nil {
+		return json.Marshal(s.SourceTypeConfigDiscord)
+	}
+	if s.typ == "SourceTypeConfigTokenIo" || s.SourceTypeConfigTokenIo != nil {
+		return json.Marshal(s.SourceTypeConfigTokenIo)
+	}
+	if s.typ == "SourceTypeConfigFiserv" || s.SourceTypeConfigFiserv != nil {
+		return json.Marshal(s.SourceTypeConfigFiserv)
+	}
+	if s.typ == "SourceTypeConfigBondsmith" || s.SourceTypeConfigBondsmith != nil {
+		return json.Marshal(s.SourceTypeConfigBondsmith)
+	}
+	if s.typ == "SourceTypeConfigVercelLogDrains" || s.SourceTypeConfigVercelLogDrains != nil {
+		return json.Marshal(s.SourceTypeConfigVercelLogDrains)
+	}
+	if s.typ == "SourceTypeConfigVercelWebhooks" || s.SourceTypeConfigVercelWebhooks != nil {
+		return json.Marshal(s.SourceTypeConfigVercelWebhooks)
+	}
+	if s.typ == "SourceTypeConfigTebex" || s.SourceTypeConfigTebex != nil {
+		return json.Marshal(s.SourceTypeConfigTebex)
+	}
+	if s.typ == "SourceTypeConfigSlack" || s.SourceTypeConfigSlack != nil {
+		return json.Marshal(s.SourceTypeConfigSlack)
+	}
+	if s.typ == "SourceTypeConfigMailchimp" || s.SourceTypeConfigMailchimp != nil {
+		return json.Marshal(s.SourceTypeConfigMailchimp)
+	}
+	if s.typ == "SourceTypeConfigPaddle" || s.SourceTypeConfigPaddle != nil {
+		return json.Marshal(s.SourceTypeConfigPaddle)
+	}
+	if s.typ == "SourceTypeConfigPaypal" || s.SourceTypeConfigPaypal != nil {
+		return json.Marshal(s.SourceTypeConfigPaypal)
+	}
+	if s.typ == "SourceTypeConfigTreezor" || s.SourceTypeConfigTreezor != nil {
+		return json.Marshal(s.SourceTypeConfigTreezor)
+	}
+	if s.typ == "SourceTypeConfigPraxis" || s.SourceTypeConfigPraxis != nil {
+		return json.Marshal(s.SourceTypeConfigPraxis)
+	}
+	if s.typ == "SourceTypeConfigCustomerIo" || s.SourceTypeConfigCustomerIo != nil {
+		return json.Marshal(s.SourceTypeConfigCustomerIo)
+	}
+	if s.typ == "SourceTypeConfigFacebook" || s.SourceTypeConfigFacebook != nil {
+		return json.Marshal(s.SourceTypeConfigFacebook)
+	}
+	if s.typ == "SourceTypeConfigWhatsApp" || s.SourceTypeConfigWhatsApp != nil {
+		return json.Marshal(s.SourceTypeConfigWhatsApp)
+	}
+	if s.typ == "SourceTypeConfigReplicate" || s.SourceTypeConfigReplicate != nil {
+		return json.Marshal(s.SourceTypeConfigReplicate)
+	}
+	if s.typ == "SourceTypeConfigTikTok" || s.SourceTypeConfigTikTok != nil {
+		return json.Marshal(s.SourceTypeConfigTikTok)
+	}
+	if s.typ == "SourceTypeConfigAirwallex" || s.SourceTypeConfigAirwallex != nil {
+		return json.Marshal(s.SourceTypeConfigAirwallex)
+	}
+	if s.typ == "SourceTypeConfigZendesk" || s.SourceTypeConfigZendesk != nil {
+		return json.Marshal(s.SourceTypeConfigZendesk)
+	}
+	if s.typ == "SourceTypeConfigUpollo" || s.SourceTypeConfigUpollo != nil {
+		return json.Marshal(s.SourceTypeConfigUpollo)
+	}
+	if s.typ == "SourceTypeConfigLinkedIn" || s.SourceTypeConfigLinkedIn != nil {
+		return json.Marshal(s.SourceTypeConfigLinkedIn)
+	}
+	return nil, fmt.Errorf("type %T does not include a non-empty union type", s)
+}
+
+type SourceConfigVisitor interface {
+	VisitSourceTypeConfigWebhook(*SourceTypeConfigWebhook) error
+	VisitSourceTypeConfigHttp(*SourceTypeConfigHttp) error
+	VisitSourceTypeConfigManaged(*SourceTypeConfigManaged) error
+	VisitSourceTypeConfigSanity(*SourceTypeConfigSanity) error
+	VisitSourceTypeConfigBridge(*SourceTypeConfigBridge) error
+	VisitSourceTypeConfigCloudSignal(*SourceTypeConfigCloudSignal) error
+	VisitSourceTypeConfigCourier(*SourceTypeConfigCourier) error
+	VisitSourceTypeConfigFrontApp(*SourceTypeConfigFrontApp) error
+	VisitSourceTypeConfigZoom(*SourceTypeConfigZoom) error
+	VisitSourceTypeConfigTwitter(*SourceTypeConfigTwitter) error
+	VisitSourceTypeConfigRecharge(*SourceTypeConfigRecharge) error
+	VisitSourceTypeConfigStripe(*SourceTypeConfigStripe) error
+	VisitSourceTypeConfigPropertyFinder(*SourceTypeConfigPropertyFinder) error
+	VisitSourceTypeConfigShopify(*SourceTypeConfigShopify) error
+	VisitSourceTypeConfigTwilio(*SourceTypeConfigTwilio) error
+	VisitSourceTypeConfigGitHub(*SourceTypeConfigGitHub) error
+	VisitSourceTypeConfigPostmark(*SourceTypeConfigPostmark) error
+	VisitSourceTypeConfigTypeform(*SourceTypeConfigTypeform) error
+	VisitSourceTypeConfigXero(*SourceTypeConfigXero) error
+	VisitSourceTypeConfigSvix(*SourceTypeConfigSvix) error
+	VisitSourceTypeConfigAdyen(*SourceTypeConfigAdyen) error
+	VisitSourceTypeConfigAkeneo(*SourceTypeConfigAkeneo) error
+	VisitSourceTypeConfigGitLab(*SourceTypeConfigGitLab) error
+	VisitSourceTypeConfigWooCommerce(*SourceTypeConfigWooCommerce) error
+	VisitSourceTypeConfigOura(*SourceTypeConfigOura) error
+	VisitSourceTypeConfigCommerceLayer(*SourceTypeConfigCommerceLayer) error
+	VisitSourceTypeConfigHubspot(*SourceTypeConfigHubspot) error
+	VisitSourceTypeConfigMailgun(*SourceTypeConfigMailgun) error
+	VisitSourceTypeConfigPersona(*SourceTypeConfigPersona) error
+	VisitSourceTypeConfigPipedrive(*SourceTypeConfigPipedrive) error
+	VisitSourceTypeConfigSendgrid(*SourceTypeConfigSendgrid) error
+	VisitSourceTypeConfigWorkOs(*SourceTypeConfigWorkOs) error
+	VisitSourceTypeConfigSynctera(*SourceTypeConfigSynctera) error
+	VisitSourceTypeConfigAwssns(*SourceTypeConfigAwssns) error
+	VisitSourceTypeConfig3DEye(*SourceTypeConfig3DEye) error
+	VisitSourceTypeConfigTwitch(*SourceTypeConfigTwitch) error
+	VisitSourceTypeConfigEnode(*SourceTypeConfigEnode) error
+	VisitSourceTypeConfigFavro(*SourceTypeConfigFavro) error
+	VisitSourceTypeConfigLinear(*SourceTypeConfigLinear) error
+	VisitSourceTypeConfigShopline(*SourceTypeConfigShopline) error
+	VisitSourceTypeConfigWix(*SourceTypeConfigWix) error
+	VisitSourceTypeConfigNmiPaymentGateway(*SourceTypeConfigNmiPaymentGateway) error
+	VisitSourceTypeConfigOrb(*SourceTypeConfigOrb) error
+	VisitSourceTypeConfigPylon(*SourceTypeConfigPylon) error
+	VisitSourceTypeConfigRazorpay(*SourceTypeConfigRazorpay) error
+	VisitSourceTypeConfigRepay(*SourceTypeConfigRepay) error
+	VisitSourceTypeConfigSquare(*SourceTypeConfigSquare) error
+	VisitSourceTypeConfigSolidgate(*SourceTypeConfigSolidgate) error
+	VisitSourceTypeConfigTrello(*SourceTypeConfigTrello) error
+	VisitSourceTypeConfigEbay(*SourceTypeConfigEbay) error
+	VisitSourceTypeConfigTelnyx(*SourceTypeConfigTelnyx) error
+	VisitSourceTypeConfigDiscord(*SourceTypeConfigDiscord) error
+	VisitSourceTypeConfigTokenIo(*SourceTypeConfigTokenIo) error
+	VisitSourceTypeConfigFiserv(*SourceTypeConfigFiserv) error
+	VisitSourceTypeConfigBondsmith(*SourceTypeConfigBondsmith) error
+	VisitSourceTypeConfigVercelLogDrains(*SourceTypeConfigVercelLogDrains) error
+	VisitSourceTypeConfigVercelWebhooks(*SourceTypeConfigVercelWebhooks) error
+	VisitSourceTypeConfigTebex(*SourceTypeConfigTebex) error
+	VisitSourceTypeConfigSlack(*SourceTypeConfigSlack) error
+	VisitSourceTypeConfigMailchimp(*SourceTypeConfigMailchimp) error
+	VisitSourceTypeConfigPaddle(*SourceTypeConfigPaddle) error
+	VisitSourceTypeConfigPaypal(*SourceTypeConfigPaypal) error
+	VisitSourceTypeConfigTreezor(*SourceTypeConfigTreezor) error
+	VisitSourceTypeConfigPraxis(*SourceTypeConfigPraxis) error
+	VisitSourceTypeConfigCustomerIo(*SourceTypeConfigCustomerIo) error
+	VisitSourceTypeConfigFacebook(*SourceTypeConfigFacebook) error
+	VisitSourceTypeConfigWhatsApp(*SourceTypeConfigWhatsApp) error
+	VisitSourceTypeConfigReplicate(*SourceTypeConfigReplicate) error
+	VisitSourceTypeConfigTikTok(*SourceTypeConfigTikTok) error
+	VisitSourceTypeConfigAirwallex(*SourceTypeConfigAirwallex) error
+	VisitSourceTypeConfigZendesk(*SourceTypeConfigZendesk) error
+	VisitSourceTypeConfigUpollo(*SourceTypeConfigUpollo) error
+	VisitSourceTypeConfigLinkedIn(*SourceTypeConfigLinkedIn) error
+}
+
+func (s *SourceConfig) Accept(visitor SourceConfigVisitor) error {
+	if s.typ == "SourceTypeConfigWebhook" || s.SourceTypeConfigWebhook != nil {
+		return visitor.VisitSourceTypeConfigWebhook(s.SourceTypeConfigWebhook)
+	}
+	if s.typ == "SourceTypeConfigHttp" || s.SourceTypeConfigHttp != nil {
+		return visitor.VisitSourceTypeConfigHttp(s.SourceTypeConfigHttp)
+	}
+	if s.typ == "SourceTypeConfigManaged" || s.SourceTypeConfigManaged != nil {
+		return visitor.VisitSourceTypeConfigManaged(s.SourceTypeConfigManaged)
+	}
+	if s.typ == "SourceTypeConfigSanity" || s.SourceTypeConfigSanity != nil {
+		return visitor.VisitSourceTypeConfigSanity(s.SourceTypeConfigSanity)
+	}
+	if s.typ == "SourceTypeConfigBridge" || s.SourceTypeConfigBridge != nil {
+		return visitor.VisitSourceTypeConfigBridge(s.SourceTypeConfigBridge)
+	}
+	if s.typ == "SourceTypeConfigCloudSignal" || s.SourceTypeConfigCloudSignal != nil {
+		return visitor.VisitSourceTypeConfigCloudSignal(s.SourceTypeConfigCloudSignal)
+	}
+	if s.typ == "SourceTypeConfigCourier" || s.SourceTypeConfigCourier != nil {
+		return visitor.VisitSourceTypeConfigCourier(s.SourceTypeConfigCourier)
+	}
+	if s.typ == "SourceTypeConfigFrontApp" || s.SourceTypeConfigFrontApp != nil {
+		return visitor.VisitSourceTypeConfigFrontApp(s.SourceTypeConfigFrontApp)
+	}
+	if s.typ == "SourceTypeConfigZoom" || s.SourceTypeConfigZoom != nil {
+		return visitor.VisitSourceTypeConfigZoom(s.SourceTypeConfigZoom)
+	}
+	if s.typ == "SourceTypeConfigTwitter" || s.SourceTypeConfigTwitter != nil {
+		return visitor.VisitSourceTypeConfigTwitter(s.SourceTypeConfigTwitter)
+	}
+	if s.typ == "SourceTypeConfigRecharge" || s.SourceTypeConfigRecharge != nil {
+		return visitor.VisitSourceTypeConfigRecharge(s.SourceTypeConfigRecharge)
+	}
+	if s.typ == "SourceTypeConfigStripe" || s.SourceTypeConfigStripe != nil {
+		return visitor.VisitSourceTypeConfigStripe(s.SourceTypeConfigStripe)
+	}
+	if s.typ == "SourceTypeConfigPropertyFinder" || s.SourceTypeConfigPropertyFinder != nil {
+		return visitor.VisitSourceTypeConfigPropertyFinder(s.SourceTypeConfigPropertyFinder)
+	}
+	if s.typ == "SourceTypeConfigShopify" || s.SourceTypeConfigShopify != nil {
+		return visitor.VisitSourceTypeConfigShopify(s.SourceTypeConfigShopify)
+	}
+	if s.typ == "SourceTypeConfigTwilio" || s.SourceTypeConfigTwilio != nil {
+		return visitor.VisitSourceTypeConfigTwilio(s.SourceTypeConfigTwilio)
+	}
+	if s.typ == "SourceTypeConfigGitHub" || s.SourceTypeConfigGitHub != nil {
+		return visitor.VisitSourceTypeConfigGitHub(s.SourceTypeConfigGitHub)
+	}
+	if s.typ == "SourceTypeConfigPostmark" || s.SourceTypeConfigPostmark != nil {
+		return visitor.VisitSourceTypeConfigPostmark(s.SourceTypeConfigPostmark)
+	}
+	if s.typ == "SourceTypeConfigTypeform" || s.SourceTypeConfigTypeform != nil {
+		return visitor.VisitSourceTypeConfigTypeform(s.SourceTypeConfigTypeform)
+	}
+	if s.typ == "SourceTypeConfigXero" || s.SourceTypeConfigXero != nil {
+		return visitor.VisitSourceTypeConfigXero(s.SourceTypeConfigXero)
+	}
+	if s.typ == "SourceTypeConfigSvix" || s.SourceTypeConfigSvix != nil {
+		return visitor.VisitSourceTypeConfigSvix(s.SourceTypeConfigSvix)
+	}
+	if s.typ == "SourceTypeConfigAdyen" || s.SourceTypeConfigAdyen != nil {
+		return visitor.VisitSourceTypeConfigAdyen(s.SourceTypeConfigAdyen)
+	}
+	if s.typ == "SourceTypeConfigAkeneo" || s.SourceTypeConfigAkeneo != nil {
+		return visitor.VisitSourceTypeConfigAkeneo(s.SourceTypeConfigAkeneo)
+	}
+	if s.typ == "SourceTypeConfigGitLab" || s.SourceTypeConfigGitLab != nil {
+		return visitor.VisitSourceTypeConfigGitLab(s.SourceTypeConfigGitLab)
+	}
+	if s.typ == "SourceTypeConfigWooCommerce" || s.SourceTypeConfigWooCommerce != nil {
+		return visitor.VisitSourceTypeConfigWooCommerce(s.SourceTypeConfigWooCommerce)
+	}
+	if s.typ == "SourceTypeConfigOura" || s.SourceTypeConfigOura != nil {
+		return visitor.VisitSourceTypeConfigOura(s.SourceTypeConfigOura)
+	}
+	if s.typ == "SourceTypeConfigCommerceLayer" || s.SourceTypeConfigCommerceLayer != nil {
+		return visitor.VisitSourceTypeConfigCommerceLayer(s.SourceTypeConfigCommerceLayer)
+	}
+	if s.typ == "SourceTypeConfigHubspot" || s.SourceTypeConfigHubspot != nil {
+		return visitor.VisitSourceTypeConfigHubspot(s.SourceTypeConfigHubspot)
+	}
+	if s.typ == "SourceTypeConfigMailgun" || s.SourceTypeConfigMailgun != nil {
+		return visitor.VisitSourceTypeConfigMailgun(s.SourceTypeConfigMailgun)
+	}
+	if s.typ == "SourceTypeConfigPersona" || s.SourceTypeConfigPersona != nil {
+		return visitor.VisitSourceTypeConfigPersona(s.SourceTypeConfigPersona)
+	}
+	if s.typ == "SourceTypeConfigPipedrive" || s.SourceTypeConfigPipedrive != nil {
+		return visitor.VisitSourceTypeConfigPipedrive(s.SourceTypeConfigPipedrive)
+	}
+	if s.typ == "SourceTypeConfigSendgrid" || s.SourceTypeConfigSendgrid != nil {
+		return visitor.VisitSourceTypeConfigSendgrid(s.SourceTypeConfigSendgrid)
+	}
+	if s.typ == "SourceTypeConfigWorkOs" || s.SourceTypeConfigWorkOs != nil {
+		return visitor.VisitSourceTypeConfigWorkOs(s.SourceTypeConfigWorkOs)
+	}
+	if s.typ == "SourceTypeConfigSynctera" || s.SourceTypeConfigSynctera != nil {
+		return visitor.VisitSourceTypeConfigSynctera(s.SourceTypeConfigSynctera)
+	}
+	if s.typ == "SourceTypeConfigAwssns" || s.SourceTypeConfigAwssns != nil {
+		return visitor.VisitSourceTypeConfigAwssns(s.SourceTypeConfigAwssns)
+	}
+	if s.typ == "SourceTypeConfig3DEye" || s.SourceTypeConfig3DEye != nil {
+		return visitor.VisitSourceTypeConfig3DEye(s.SourceTypeConfig3DEye)
+	}
+	if s.typ == "SourceTypeConfigTwitch" || s.SourceTypeConfigTwitch != nil {
+		return visitor.VisitSourceTypeConfigTwitch(s.SourceTypeConfigTwitch)
+	}
+	if s.typ == "SourceTypeConfigEnode" || s.SourceTypeConfigEnode != nil {
+		return visitor.VisitSourceTypeConfigEnode(s.SourceTypeConfigEnode)
+	}
+	if s.typ == "SourceTypeConfigFavro" || s.SourceTypeConfigFavro != nil {
+		return visitor.VisitSourceTypeConfigFavro(s.SourceTypeConfigFavro)
+	}
+	if s.typ == "SourceTypeConfigLinear" || s.SourceTypeConfigLinear != nil {
+		return visitor.VisitSourceTypeConfigLinear(s.SourceTypeConfigLinear)
+	}
+	if s.typ == "SourceTypeConfigShopline" || s.SourceTypeConfigShopline != nil {
+		return visitor.VisitSourceTypeConfigShopline(s.SourceTypeConfigShopline)
+	}
+	if s.typ == "SourceTypeConfigWix" || s.SourceTypeConfigWix != nil {
+		return visitor.VisitSourceTypeConfigWix(s.SourceTypeConfigWix)
+	}
+	if s.typ == "SourceTypeConfigNmiPaymentGateway" || s.SourceTypeConfigNmiPaymentGateway != nil {
+		return visitor.VisitSourceTypeConfigNmiPaymentGateway(s.SourceTypeConfigNmiPaymentGateway)
+	}
+	if s.typ == "SourceTypeConfigOrb" || s.SourceTypeConfigOrb != nil {
+		return visitor.VisitSourceTypeConfigOrb(s.SourceTypeConfigOrb)
+	}
+	if s.typ == "SourceTypeConfigPylon" || s.SourceTypeConfigPylon != nil {
+		return visitor.VisitSourceTypeConfigPylon(s.SourceTypeConfigPylon)
+	}
+	if s.typ == "SourceTypeConfigRazorpay" || s.SourceTypeConfigRazorpay != nil {
+		return visitor.VisitSourceTypeConfigRazorpay(s.SourceTypeConfigRazorpay)
+	}
+	if s.typ == "SourceTypeConfigRepay" || s.SourceTypeConfigRepay != nil {
+		return visitor.VisitSourceTypeConfigRepay(s.SourceTypeConfigRepay)
+	}
+	if s.typ == "SourceTypeConfigSquare" || s.SourceTypeConfigSquare != nil {
+		return visitor.VisitSourceTypeConfigSquare(s.SourceTypeConfigSquare)
+	}
+	if s.typ == "SourceTypeConfigSolidgate" || s.SourceTypeConfigSolidgate != nil {
+		return visitor.VisitSourceTypeConfigSolidgate(s.SourceTypeConfigSolidgate)
+	}
+	if s.typ == "SourceTypeConfigTrello" || s.SourceTypeConfigTrello != nil {
+		return visitor.VisitSourceTypeConfigTrello(s.SourceTypeConfigTrello)
+	}
+	if s.typ == "SourceTypeConfigEbay" || s.SourceTypeConfigEbay != nil {
+		return visitor.VisitSourceTypeConfigEbay(s.SourceTypeConfigEbay)
+	}
+	if s.typ == "SourceTypeConfigTelnyx" || s.SourceTypeConfigTelnyx != nil {
+		return visitor.VisitSourceTypeConfigTelnyx(s.SourceTypeConfigTelnyx)
+	}
+	if s.typ == "SourceTypeConfigDiscord" || s.SourceTypeConfigDiscord != nil {
+		return visitor.VisitSourceTypeConfigDiscord(s.SourceTypeConfigDiscord)
+	}
+	if s.typ == "SourceTypeConfigTokenIo" || s.SourceTypeConfigTokenIo != nil {
+		return visitor.VisitSourceTypeConfigTokenIo(s.SourceTypeConfigTokenIo)
+	}
+	if s.typ == "SourceTypeConfigFiserv" || s.SourceTypeConfigFiserv != nil {
+		return visitor.VisitSourceTypeConfigFiserv(s.SourceTypeConfigFiserv)
+	}
+	if s.typ == "SourceTypeConfigBondsmith" || s.SourceTypeConfigBondsmith != nil {
+		return visitor.VisitSourceTypeConfigBondsmith(s.SourceTypeConfigBondsmith)
+	}
+	if s.typ == "SourceTypeConfigVercelLogDrains" || s.SourceTypeConfigVercelLogDrains != nil {
+		return visitor.VisitSourceTypeConfigVercelLogDrains(s.SourceTypeConfigVercelLogDrains)
+	}
+	if s.typ == "SourceTypeConfigVercelWebhooks" || s.SourceTypeConfigVercelWebhooks != nil {
+		return visitor.VisitSourceTypeConfigVercelWebhooks(s.SourceTypeConfigVercelWebhooks)
+	}
+	if s.typ == "SourceTypeConfigTebex" || s.SourceTypeConfigTebex != nil {
+		return visitor.VisitSourceTypeConfigTebex(s.SourceTypeConfigTebex)
+	}
+	if s.typ == "SourceTypeConfigSlack" || s.SourceTypeConfigSlack != nil {
+		return visitor.VisitSourceTypeConfigSlack(s.SourceTypeConfigSlack)
+	}
+	if s.typ == "SourceTypeConfigMailchimp" || s.SourceTypeConfigMailchimp != nil {
+		return visitor.VisitSourceTypeConfigMailchimp(s.SourceTypeConfigMailchimp)
+	}
+	if s.typ == "SourceTypeConfigPaddle" || s.SourceTypeConfigPaddle != nil {
+		return visitor.VisitSourceTypeConfigPaddle(s.SourceTypeConfigPaddle)
+	}
+	if s.typ == "SourceTypeConfigPaypal" || s.SourceTypeConfigPaypal != nil {
+		return visitor.VisitSourceTypeConfigPaypal(s.SourceTypeConfigPaypal)
+	}
+	if s.typ == "SourceTypeConfigTreezor" || s.SourceTypeConfigTreezor != nil {
+		return visitor.VisitSourceTypeConfigTreezor(s.SourceTypeConfigTreezor)
+	}
+	if s.typ == "SourceTypeConfigPraxis" || s.SourceTypeConfigPraxis != nil {
+		return visitor.VisitSourceTypeConfigPraxis(s.SourceTypeConfigPraxis)
+	}
+	if s.typ == "SourceTypeConfigCustomerIo" || s.SourceTypeConfigCustomerIo != nil {
+		return visitor.VisitSourceTypeConfigCustomerIo(s.SourceTypeConfigCustomerIo)
+	}
+	if s.typ == "SourceTypeConfigFacebook" || s.SourceTypeConfigFacebook != nil {
+		return visitor.VisitSourceTypeConfigFacebook(s.SourceTypeConfigFacebook)
+	}
+	if s.typ == "SourceTypeConfigWhatsApp" || s.SourceTypeConfigWhatsApp != nil {
+		return visitor.VisitSourceTypeConfigWhatsApp(s.SourceTypeConfigWhatsApp)
+	}
+	if s.typ == "SourceTypeConfigReplicate" || s.SourceTypeConfigReplicate != nil {
+		return visitor.VisitSourceTypeConfigReplicate(s.SourceTypeConfigReplicate)
+	}
+	if s.typ == "SourceTypeConfigTikTok" || s.SourceTypeConfigTikTok != nil {
+		return visitor.VisitSourceTypeConfigTikTok(s.SourceTypeConfigTikTok)
+	}
+	if s.typ == "SourceTypeConfigAirwallex" || s.SourceTypeConfigAirwallex != nil {
+		return visitor.VisitSourceTypeConfigAirwallex(s.SourceTypeConfigAirwallex)
+	}
+	if s.typ == "SourceTypeConfigZendesk" || s.SourceTypeConfigZendesk != nil {
+		return visitor.VisitSourceTypeConfigZendesk(s.SourceTypeConfigZendesk)
+	}
+	if s.typ == "SourceTypeConfigUpollo" || s.SourceTypeConfigUpollo != nil {
+		return visitor.VisitSourceTypeConfigUpollo(s.SourceTypeConfigUpollo)
+	}
+	if s.typ == "SourceTypeConfigLinkedIn" || s.SourceTypeConfigLinkedIn != nil {
+		return visitor.VisitSourceTypeConfigLinkedIn(s.SourceTypeConfigLinkedIn)
+	}
+	return fmt.Errorf("type %T does not include a non-empty union type", s)
+}
+
+type SourceConfig3DEyeAuth struct {
+	WebhookSecretKey string `json:"webhook_secret_key" url:"webhook_secret_key"`
+
+	extraProperties map[string]interface{}
+	rawJSON         json.RawMessage
+}
+
+func (s *SourceConfig3DEyeAuth) GetWebhookSecretKey() string {
+	if s == nil {
+		return ""
+	}
+	return s.WebhookSecretKey
+}
+
+func (s *SourceConfig3DEyeAuth) GetExtraProperties() map[string]interface{} {
+	return s.extraProperties
+}
+
+func (s *SourceConfig3DEyeAuth) UnmarshalJSON(data []byte) error {
+	type unmarshaler SourceConfig3DEyeAuth
+	var value unmarshaler
+	if err := json.Unmarshal(data, &value); err != nil {
+		return err
+	}
+	*s = SourceConfig3DEyeAuth(value)
+	extraProperties, err := internal.ExtractExtraProperties(data, *s)
+	if err != nil {
+		return err
+	}
+	s.extraProperties = extraProperties
+	s.rawJSON = json.RawMessage(data)
+	return nil
+}
+
+func (s *SourceConfig3DEyeAuth) String() string {
+	if len(s.rawJSON) > 0 {
+		if value, err := internal.StringifyJSON(s.rawJSON); err == nil {
+			return value
+		}
+	}
+	if value, err := internal.StringifyJSON(s); err == nil {
+		return value
+	}
+	return fmt.Sprintf("%#v", s)
+}
+
+type SourceConfigAdyenAuth struct {
+	WebhookSecretKey string `json:"webhook_secret_key" url:"webhook_secret_key"`
+
+	extraProperties map[string]interface{}
+	rawJSON         json.RawMessage
+}
+
+func (s *SourceConfigAdyenAuth) GetWebhookSecretKey() string {
+	if s == nil {
+		return ""
+	}
+	return s.WebhookSecretKey
+}
+
+func (s *SourceConfigAdyenAuth) GetExtraProperties() map[string]interface{} {
+	return s.extraProperties
+}
+
+func (s *SourceConfigAdyenAuth) UnmarshalJSON(data []byte) error {
+	type unmarshaler SourceConfigAdyenAuth
+	var value unmarshaler
+	if err := json.Unmarshal(data, &value); err != nil {
+		return err
+	}
+	*s = SourceConfigAdyenAuth(value)
+	extraProperties, err := internal.ExtractExtraProperties(data, *s)
+	if err != nil {
+		return err
+	}
+	s.extraProperties = extraProperties
+	s.rawJSON = json.RawMessage(data)
+	return nil
+}
+
+func (s *SourceConfigAdyenAuth) String() string {
+	if len(s.rawJSON) > 0 {
+		if value, err := internal.StringifyJSON(s.rawJSON); err == nil {
+			return value
+		}
+	}
+	if value, err := internal.StringifyJSON(s); err == nil {
+		return value
+	}
+	return fmt.Sprintf("%#v", s)
+}
+
+type SourceConfigAirwallexAuth struct {
+	WebhookSecretKey string `json:"webhook_secret_key" url:"webhook_secret_key"`
+
+	extraProperties map[string]interface{}
+	rawJSON         json.RawMessage
+}
+
+func (s *SourceConfigAirwallexAuth) GetWebhookSecretKey() string {
+	if s == nil {
+		return ""
+	}
+	return s.WebhookSecretKey
+}
+
+func (s *SourceConfigAirwallexAuth) GetExtraProperties() map[string]interface{} {
+	return s.extraProperties
+}
+
+func (s *SourceConfigAirwallexAuth) UnmarshalJSON(data []byte) error {
+	type unmarshaler SourceConfigAirwallexAuth
+	var value unmarshaler
+	if err := json.Unmarshal(data, &value); err != nil {
+		return err
+	}
+	*s = SourceConfigAirwallexAuth(value)
+	extraProperties, err := internal.ExtractExtraProperties(data, *s)
+	if err != nil {
+		return err
+	}
+	s.extraProperties = extraProperties
+	s.rawJSON = json.RawMessage(data)
+	return nil
+}
+
+func (s *SourceConfigAirwallexAuth) String() string {
+	if len(s.rawJSON) > 0 {
+		if value, err := internal.StringifyJSON(s.rawJSON); err == nil {
+			return value
+		}
+	}
+	if value, err := internal.StringifyJSON(s); err == nil {
+		return value
+	}
+	return fmt.Sprintf("%#v", s)
+}
+
+type SourceConfigAkeneoAuth struct {
+	WebhookSecretKey string `json:"webhook_secret_key" url:"webhook_secret_key"`
+
+	extraProperties map[string]interface{}
+	rawJSON         json.RawMessage
+}
+
+func (s *SourceConfigAkeneoAuth) GetWebhookSecretKey() string {
+	if s == nil {
+		return ""
+	}
+	return s.WebhookSecretKey
+}
+
+func (s *SourceConfigAkeneoAuth) GetExtraProperties() map[string]interface{} {
+	return s.extraProperties
+}
+
+func (s *SourceConfigAkeneoAuth) UnmarshalJSON(data []byte) error {
+	type unmarshaler SourceConfigAkeneoAuth
+	var value unmarshaler
+	if err := json.Unmarshal(data, &value); err != nil {
+		return err
+	}
+	*s = SourceConfigAkeneoAuth(value)
+	extraProperties, err := internal.ExtractExtraProperties(data, *s)
+	if err != nil {
+		return err
+	}
+	s.extraProperties = extraProperties
+	s.rawJSON = json.RawMessage(data)
+	return nil
+}
+
+func (s *SourceConfigAkeneoAuth) String() string {
+	if len(s.rawJSON) > 0 {
+		if value, err := internal.StringifyJSON(s.rawJSON); err == nil {
+			return value
+		}
+	}
+	if value, err := internal.StringifyJSON(s); err == nil {
+		return value
+	}
+	return fmt.Sprintf("%#v", s)
+}
+
+type SourceConfigAwssnsAuth struct {
+	extraProperties map[string]interface{}
+	rawJSON         json.RawMessage
+}
+
+func (s *SourceConfigAwssnsAuth) GetExtraProperties() map[string]interface{} {
+	return s.extraProperties
+}
+
+func (s *SourceConfigAwssnsAuth) UnmarshalJSON(data []byte) error {
+	type unmarshaler SourceConfigAwssnsAuth
+	var value unmarshaler
+	if err := json.Unmarshal(data, &value); err != nil {
+		return err
+	}
+	*s = SourceConfigAwssnsAuth(value)
+	extraProperties, err := internal.ExtractExtraProperties(data, *s)
+	if err != nil {
+		return err
+	}
+	s.extraProperties = extraProperties
+	s.rawJSON = json.RawMessage(data)
+	return nil
+}
+
+func (s *SourceConfigAwssnsAuth) String() string {
+	if len(s.rawJSON) > 0 {
+		if value, err := internal.StringifyJSON(s.rawJSON); err == nil {
+			return value
+		}
+	}
+	if value, err := internal.StringifyJSON(s); err == nil {
+		return value
+	}
+	return fmt.Sprintf("%#v", s)
+}
+
+type SourceConfigBondsmithAuth struct {
+	WebhookSecretKey string `json:"webhook_secret_key" url:"webhook_secret_key"`
+
+	extraProperties map[string]interface{}
+	rawJSON         json.RawMessage
+}
+
+func (s *SourceConfigBondsmithAuth) GetWebhookSecretKey() string {
+	if s == nil {
+		return ""
+	}
+	return s.WebhookSecretKey
+}
+
+func (s *SourceConfigBondsmithAuth) GetExtraProperties() map[string]interface{} {
+	return s.extraProperties
+}
+
+func (s *SourceConfigBondsmithAuth) UnmarshalJSON(data []byte) error {
+	type unmarshaler SourceConfigBondsmithAuth
+	var value unmarshaler
+	if err := json.Unmarshal(data, &value); err != nil {
+		return err
+	}
+	*s = SourceConfigBondsmithAuth(value)
+	extraProperties, err := internal.ExtractExtraProperties(data, *s)
+	if err != nil {
+		return err
+	}
+	s.extraProperties = extraProperties
+	s.rawJSON = json.RawMessage(data)
+	return nil
+}
+
+func (s *SourceConfigBondsmithAuth) String() string {
+	if len(s.rawJSON) > 0 {
+		if value, err := internal.StringifyJSON(s.rawJSON); err == nil {
+			return value
+		}
+	}
+	if value, err := internal.StringifyJSON(s); err == nil {
+		return value
+	}
+	return fmt.Sprintf("%#v", s)
+}
+
+type SourceConfigBridgeAuth struct {
+	PublicKey string `json:"public_key" url:"public_key"`
+
+	extraProperties map[string]interface{}
+	rawJSON         json.RawMessage
+}
+
+func (s *SourceConfigBridgeAuth) GetPublicKey() string {
+	if s == nil {
+		return ""
+	}
+	return s.PublicKey
+}
+
+func (s *SourceConfigBridgeAuth) GetExtraProperties() map[string]interface{} {
+	return s.extraProperties
+}
+
+func (s *SourceConfigBridgeAuth) UnmarshalJSON(data []byte) error {
+	type unmarshaler SourceConfigBridgeAuth
+	var value unmarshaler
+	if err := json.Unmarshal(data, &value); err != nil {
+		return err
+	}
+	*s = SourceConfigBridgeAuth(value)
+	extraProperties, err := internal.ExtractExtraProperties(data, *s)
+	if err != nil {
+		return err
+	}
+	s.extraProperties = extraProperties
+	s.rawJSON = json.RawMessage(data)
+	return nil
+}
+
+func (s *SourceConfigBridgeAuth) String() string {
+	if len(s.rawJSON) > 0 {
+		if value, err := internal.StringifyJSON(s.rawJSON); err == nil {
+			return value
+		}
+	}
+	if value, err := internal.StringifyJSON(s); err == nil {
+		return value
+	}
+	return fmt.Sprintf("%#v", s)
+}
+
+type SourceConfigCliAuth struct {
+	extraProperties map[string]interface{}
+	rawJSON         json.RawMessage
+}
+
+func (s *SourceConfigCliAuth) GetExtraProperties() map[string]interface{} {
+	return s.extraProperties
+}
+
+func (s *SourceConfigCliAuth) UnmarshalJSON(data []byte) error {
+	type unmarshaler SourceConfigCliAuth
+	var value unmarshaler
+	if err := json.Unmarshal(data, &value); err != nil {
+		return err
+	}
+	*s = SourceConfigCliAuth(value)
+	extraProperties, err := internal.ExtractExtraProperties(data, *s)
+	if err != nil {
+		return err
+	}
+	s.extraProperties = extraProperties
+	s.rawJSON = json.RawMessage(data)
+	return nil
+}
+
+func (s *SourceConfigCliAuth) String() string {
+	if len(s.rawJSON) > 0 {
+		if value, err := internal.StringifyJSON(s.rawJSON); err == nil {
+			return value
+		}
+	}
+	if value, err := internal.StringifyJSON(s); err == nil {
+		return value
+	}
+	return fmt.Sprintf("%#v", s)
+}
+
+type SourceConfigCloudSignalAuth struct {
+	ApiKey string `json:"api_key" url:"api_key"`
+
+	extraProperties map[string]interface{}
+	rawJSON         json.RawMessage
+}
+
+func (s *SourceConfigCloudSignalAuth) GetApiKey() string {
+	if s == nil {
+		return ""
+	}
+	return s.ApiKey
+}
+
+func (s *SourceConfigCloudSignalAuth) GetExtraProperties() map[string]interface{} {
+	return s.extraProperties
+}
+
+func (s *SourceConfigCloudSignalAuth) UnmarshalJSON(data []byte) error {
+	type unmarshaler SourceConfigCloudSignalAuth
+	var value unmarshaler
+	if err := json.Unmarshal(data, &value); err != nil {
+		return err
+	}
+	*s = SourceConfigCloudSignalAuth(value)
+	extraProperties, err := internal.ExtractExtraProperties(data, *s)
+	if err != nil {
+		return err
+	}
+	s.extraProperties = extraProperties
+	s.rawJSON = json.RawMessage(data)
+	return nil
+}
+
+func (s *SourceConfigCloudSignalAuth) String() string {
+	if len(s.rawJSON) > 0 {
+		if value, err := internal.StringifyJSON(s.rawJSON); err == nil {
+			return value
+		}
+	}
+	if value, err := internal.StringifyJSON(s); err == nil {
+		return value
+	}
+	return fmt.Sprintf("%#v", s)
+}
+
+type SourceConfigCommerceLayerAuth struct {
+	WebhookSecretKey string `json:"webhook_secret_key" url:"webhook_secret_key"`
+
+	extraProperties map[string]interface{}
+	rawJSON         json.RawMessage
+}
+
+func (s *SourceConfigCommerceLayerAuth) GetWebhookSecretKey() string {
+	if s == nil {
+		return ""
+	}
+	return s.WebhookSecretKey
+}
+
+func (s *SourceConfigCommerceLayerAuth) GetExtraProperties() map[string]interface{} {
+	return s.extraProperties
+}
+
+func (s *SourceConfigCommerceLayerAuth) UnmarshalJSON(data []byte) error {
+	type unmarshaler SourceConfigCommerceLayerAuth
+	var value unmarshaler
+	if err := json.Unmarshal(data, &value); err != nil {
+		return err
+	}
+	*s = SourceConfigCommerceLayerAuth(value)
+	extraProperties, err := internal.ExtractExtraProperties(data, *s)
+	if err != nil {
+		return err
+	}
+	s.extraProperties = extraProperties
+	s.rawJSON = json.RawMessage(data)
+	return nil
+}
+
+func (s *SourceConfigCommerceLayerAuth) String() string {
+	if len(s.rawJSON) > 0 {
+		if value, err := internal.StringifyJSON(s.rawJSON); err == nil {
+			return value
+		}
+	}
+	if value, err := internal.StringifyJSON(s); err == nil {
+		return value
+	}
+	return fmt.Sprintf("%#v", s)
+}
+
+type SourceConfigCourierAuth struct {
+	WebhookSecretKey string `json:"webhook_secret_key" url:"webhook_secret_key"`
+
+	extraProperties map[string]interface{}
+	rawJSON         json.RawMessage
+}
+
+func (s *SourceConfigCourierAuth) GetWebhookSecretKey() string {
+	if s == nil {
+		return ""
+	}
+	return s.WebhookSecretKey
+}
+
+func (s *SourceConfigCourierAuth) GetExtraProperties() map[string]interface{} {
+	return s.extraProperties
+}
+
+func (s *SourceConfigCourierAuth) UnmarshalJSON(data []byte) error {
+	type unmarshaler SourceConfigCourierAuth
+	var value unmarshaler
+	if err := json.Unmarshal(data, &value); err != nil {
+		return err
+	}
+	*s = SourceConfigCourierAuth(value)
+	extraProperties, err := internal.ExtractExtraProperties(data, *s)
+	if err != nil {
+		return err
+	}
+	s.extraProperties = extraProperties
+	s.rawJSON = json.RawMessage(data)
+	return nil
+}
+
+func (s *SourceConfigCourierAuth) String() string {
+	if len(s.rawJSON) > 0 {
+		if value, err := internal.StringifyJSON(s.rawJSON); err == nil {
+			return value
+		}
+	}
+	if value, err := internal.StringifyJSON(s); err == nil {
+		return value
+	}
+	return fmt.Sprintf("%#v", s)
+}
+
+type SourceConfigCustomerIoAuth struct {
+	WebhookSecretKey string `json:"webhook_secret_key" url:"webhook_secret_key"`
+
+	extraProperties map[string]interface{}
+	rawJSON         json.RawMessage
+}
+
+func (s *SourceConfigCustomerIoAuth) GetWebhookSecretKey() string {
+	if s == nil {
+		return ""
+	}
+	return s.WebhookSecretKey
+}
+
+func (s *SourceConfigCustomerIoAuth) GetExtraProperties() map[string]interface{} {
+	return s.extraProperties
+}
+
+func (s *SourceConfigCustomerIoAuth) UnmarshalJSON(data []byte) error {
+	type unmarshaler SourceConfigCustomerIoAuth
+	var value unmarshaler
+	if err := json.Unmarshal(data, &value); err != nil {
+		return err
+	}
+	*s = SourceConfigCustomerIoAuth(value)
+	extraProperties, err := internal.ExtractExtraProperties(data, *s)
+	if err != nil {
+		return err
+	}
+	s.extraProperties = extraProperties
+	s.rawJSON = json.RawMessage(data)
+	return nil
+}
+
+func (s *SourceConfigCustomerIoAuth) String() string {
+	if len(s.rawJSON) > 0 {
+		if value, err := internal.StringifyJSON(s.rawJSON); err == nil {
+			return value
+		}
+	}
+	if value, err := internal.StringifyJSON(s); err == nil {
+		return value
+	}
+	return fmt.Sprintf("%#v", s)
+}
+
+type SourceConfigDiscordAuth struct {
+	PublicKey string `json:"public_key" url:"public_key"`
+
+	extraProperties map[string]interface{}
+	rawJSON         json.RawMessage
+}
+
+func (s *SourceConfigDiscordAuth) GetPublicKey() string {
+	if s == nil {
+		return ""
+	}
+	return s.PublicKey
+}
+
+func (s *SourceConfigDiscordAuth) GetExtraProperties() map[string]interface{} {
+	return s.extraProperties
+}
+
+func (s *SourceConfigDiscordAuth) UnmarshalJSON(data []byte) error {
+	type unmarshaler SourceConfigDiscordAuth
+	var value unmarshaler
+	if err := json.Unmarshal(data, &value); err != nil {
+		return err
+	}
+	*s = SourceConfigDiscordAuth(value)
+	extraProperties, err := internal.ExtractExtraProperties(data, *s)
+	if err != nil {
+		return err
+	}
+	s.extraProperties = extraProperties
+	s.rawJSON = json.RawMessage(data)
+	return nil
+}
+
+func (s *SourceConfigDiscordAuth) String() string {
+	if len(s.rawJSON) > 0 {
+		if value, err := internal.StringifyJSON(s.rawJSON); err == nil {
+			return value
+		}
+	}
+	if value, err := internal.StringifyJSON(s); err == nil {
+		return value
+	}
+	return fmt.Sprintf("%#v", s)
+}
+
+type SourceConfigEbayAuth struct {
+	Environment       SourceConfigEbayAuthEnvironment `json:"environment" url:"environment"`
+	DevId             string                          `json:"dev_id" url:"dev_id"`
+	ClientId          string                          `json:"client_id" url:"client_id"`
+	ClientSecret      string                          `json:"client_secret" url:"client_secret"`
+	VerificationToken string                          `json:"verification_token" url:"verification_token"`
+
+	extraProperties map[string]interface{}
+	rawJSON         json.RawMessage
+}
+
+func (s *SourceConfigEbayAuth) GetEnvironment() SourceConfigEbayAuthEnvironment {
+	if s == nil {
+		return ""
+	}
+	return s.Environment
+}
+
+func (s *SourceConfigEbayAuth) GetDevId() string {
+	if s == nil {
+		return ""
+	}
+	return s.DevId
+}
+
+func (s *SourceConfigEbayAuth) GetClientId() string {
+	if s == nil {
+		return ""
+	}
+	return s.ClientId
+}
+
+func (s *SourceConfigEbayAuth) GetClientSecret() string {
+	if s == nil {
+		return ""
+	}
+	return s.ClientSecret
+}
+
+func (s *SourceConfigEbayAuth) GetVerificationToken() string {
+	if s == nil {
+		return ""
+	}
+	return s.VerificationToken
+}
+
+func (s *SourceConfigEbayAuth) GetExtraProperties() map[string]interface{} {
+	return s.extraProperties
+}
+
+func (s *SourceConfigEbayAuth) UnmarshalJSON(data []byte) error {
+	type unmarshaler SourceConfigEbayAuth
+	var value unmarshaler
+	if err := json.Unmarshal(data, &value); err != nil {
+		return err
+	}
+	*s = SourceConfigEbayAuth(value)
+	extraProperties, err := internal.ExtractExtraProperties(data, *s)
+	if err != nil {
+		return err
+	}
+	s.extraProperties = extraProperties
+	s.rawJSON = json.RawMessage(data)
+	return nil
+}
+
+func (s *SourceConfigEbayAuth) String() string {
+	if len(s.rawJSON) > 0 {
+		if value, err := internal.StringifyJSON(s.rawJSON); err == nil {
+			return value
+		}
+	}
+	if value, err := internal.StringifyJSON(s); err == nil {
+		return value
+	}
+	return fmt.Sprintf("%#v", s)
+}
+
+type SourceConfigEbayAuthEnvironment string
+
+const (
+	SourceConfigEbayAuthEnvironmentProduction SourceConfigEbayAuthEnvironment = "PRODUCTION"
+	SourceConfigEbayAuthEnvironmentSandbox    SourceConfigEbayAuthEnvironment = "SANDBOX"
+)
+
+func NewSourceConfigEbayAuthEnvironmentFromString(s string) (SourceConfigEbayAuthEnvironment, error) {
+	switch s {
+	case "PRODUCTION":
+		return SourceConfigEbayAuthEnvironmentProduction, nil
+	case "SANDBOX":
+		return SourceConfigEbayAuthEnvironmentSandbox, nil
+	}
+	var t SourceConfigEbayAuthEnvironment
+	return "", fmt.Errorf("%s is not a valid %T", s, t)
+}
+
+func (s SourceConfigEbayAuthEnvironment) Ptr() *SourceConfigEbayAuthEnvironment {
+	return &s
+}
+
+type SourceConfigEnodeAuth struct {
+	WebhookSecretKey string `json:"webhook_secret_key" url:"webhook_secret_key"`
+
+	extraProperties map[string]interface{}
+	rawJSON         json.RawMessage
+}
+
+func (s *SourceConfigEnodeAuth) GetWebhookSecretKey() string {
+	if s == nil {
+		return ""
+	}
+	return s.WebhookSecretKey
+}
+
+func (s *SourceConfigEnodeAuth) GetExtraProperties() map[string]interface{} {
+	return s.extraProperties
+}
+
+func (s *SourceConfigEnodeAuth) UnmarshalJSON(data []byte) error {
+	type unmarshaler SourceConfigEnodeAuth
+	var value unmarshaler
+	if err := json.Unmarshal(data, &value); err != nil {
+		return err
+	}
+	*s = SourceConfigEnodeAuth(value)
+	extraProperties, err := internal.ExtractExtraProperties(data, *s)
+	if err != nil {
+		return err
+	}
+	s.extraProperties = extraProperties
+	s.rawJSON = json.RawMessage(data)
+	return nil
+}
+
+func (s *SourceConfigEnodeAuth) String() string {
+	if len(s.rawJSON) > 0 {
+		if value, err := internal.StringifyJSON(s.rawJSON); err == nil {
+			return value
+		}
+	}
+	if value, err := internal.StringifyJSON(s); err == nil {
+		return value
+	}
+	return fmt.Sprintf("%#v", s)
+}
+
+type SourceConfigFacebookAuth struct {
+	WebhookSecretKey string `json:"webhook_secret_key" url:"webhook_secret_key"`
+
+	extraProperties map[string]interface{}
+	rawJSON         json.RawMessage
+}
+
+func (s *SourceConfigFacebookAuth) GetWebhookSecretKey() string {
+	if s == nil {
+		return ""
+	}
+	return s.WebhookSecretKey
+}
+
+func (s *SourceConfigFacebookAuth) GetExtraProperties() map[string]interface{} {
+	return s.extraProperties
+}
+
+func (s *SourceConfigFacebookAuth) UnmarshalJSON(data []byte) error {
+	type unmarshaler SourceConfigFacebookAuth
+	var value unmarshaler
+	if err := json.Unmarshal(data, &value); err != nil {
+		return err
+	}
+	*s = SourceConfigFacebookAuth(value)
+	extraProperties, err := internal.ExtractExtraProperties(data, *s)
+	if err != nil {
+		return err
+	}
+	s.extraProperties = extraProperties
+	s.rawJSON = json.RawMessage(data)
+	return nil
+}
+
+func (s *SourceConfigFacebookAuth) String() string {
+	if len(s.rawJSON) > 0 {
+		if value, err := internal.StringifyJSON(s.rawJSON); err == nil {
+			return value
+		}
+	}
+	if value, err := internal.StringifyJSON(s); err == nil {
+		return value
+	}
+	return fmt.Sprintf("%#v", s)
+}
+
+type SourceConfigFavroAuth struct {
+	WebhookSecretKey string `json:"webhook_secret_key" url:"webhook_secret_key"`
+
+	extraProperties map[string]interface{}
+	rawJSON         json.RawMessage
+}
+
+func (s *SourceConfigFavroAuth) GetWebhookSecretKey() string {
+	if s == nil {
+		return ""
+	}
+	return s.WebhookSecretKey
+}
+
+func (s *SourceConfigFavroAuth) GetExtraProperties() map[string]interface{} {
+	return s.extraProperties
+}
+
+func (s *SourceConfigFavroAuth) UnmarshalJSON(data []byte) error {
+	type unmarshaler SourceConfigFavroAuth
+	var value unmarshaler
+	if err := json.Unmarshal(data, &value); err != nil {
+		return err
+	}
+	*s = SourceConfigFavroAuth(value)
+	extraProperties, err := internal.ExtractExtraProperties(data, *s)
+	if err != nil {
+		return err
+	}
+	s.extraProperties = extraProperties
+	s.rawJSON = json.RawMessage(data)
+	return nil
+}
+
+func (s *SourceConfigFavroAuth) String() string {
+	if len(s.rawJSON) > 0 {
+		if value, err := internal.StringifyJSON(s.rawJSON); err == nil {
+			return value
+		}
+	}
+	if value, err := internal.StringifyJSON(s); err == nil {
+		return value
+	}
+	return fmt.Sprintf("%#v", s)
+}
+
+type SourceConfigFiservAuth struct {
+	WebhookSecretKey string  `json:"webhook_secret_key" url:"webhook_secret_key"`
+	StoreName        *string `json:"store_name,omitempty" url:"store_name,omitempty"`
+
+	extraProperties map[string]interface{}
+	rawJSON         json.RawMessage
+}
+
+func (s *SourceConfigFiservAuth) GetWebhookSecretKey() string {
+	if s == nil {
+		return ""
+	}
+	return s.WebhookSecretKey
+}
+
+func (s *SourceConfigFiservAuth) GetStoreName() *string {
+	if s == nil {
+		return nil
+	}
+	return s.StoreName
+}
+
+func (s *SourceConfigFiservAuth) GetExtraProperties() map[string]interface{} {
+	return s.extraProperties
+}
+
+func (s *SourceConfigFiservAuth) UnmarshalJSON(data []byte) error {
+	type unmarshaler SourceConfigFiservAuth
+	var value unmarshaler
+	if err := json.Unmarshal(data, &value); err != nil {
+		return err
+	}
+	*s = SourceConfigFiservAuth(value)
+	extraProperties, err := internal.ExtractExtraProperties(data, *s)
+	if err != nil {
+		return err
+	}
+	s.extraProperties = extraProperties
+	s.rawJSON = json.RawMessage(data)
+	return nil
+}
+
+func (s *SourceConfigFiservAuth) String() string {
+	if len(s.rawJSON) > 0 {
+		if value, err := internal.StringifyJSON(s.rawJSON); err == nil {
+			return value
+		}
+	}
+	if value, err := internal.StringifyJSON(s); err == nil {
+		return value
+	}
+	return fmt.Sprintf("%#v", s)
+}
+
+type SourceConfigFrontAppAuth struct {
+	WebhookSecretKey string `json:"webhook_secret_key" url:"webhook_secret_key"`
+
+	extraProperties map[string]interface{}
+	rawJSON         json.RawMessage
+}
+
+func (s *SourceConfigFrontAppAuth) GetWebhookSecretKey() string {
+	if s == nil {
+		return ""
+	}
+	return s.WebhookSecretKey
+}
+
+func (s *SourceConfigFrontAppAuth) GetExtraProperties() map[string]interface{} {
+	return s.extraProperties
+}
+
+func (s *SourceConfigFrontAppAuth) UnmarshalJSON(data []byte) error {
+	type unmarshaler SourceConfigFrontAppAuth
+	var value unmarshaler
+	if err := json.Unmarshal(data, &value); err != nil {
+		return err
+	}
+	*s = SourceConfigFrontAppAuth(value)
+	extraProperties, err := internal.ExtractExtraProperties(data, *s)
+	if err != nil {
+		return err
+	}
+	s.extraProperties = extraProperties
+	s.rawJSON = json.RawMessage(data)
+	return nil
+}
+
+func (s *SourceConfigFrontAppAuth) String() string {
+	if len(s.rawJSON) > 0 {
+		if value, err := internal.StringifyJSON(s.rawJSON); err == nil {
+			return value
+		}
+	}
+	if value, err := internal.StringifyJSON(s); err == nil {
+		return value
+	}
+	return fmt.Sprintf("%#v", s)
+}
+
+type SourceConfigGitHubAuth struct {
+	WebhookSecretKey string `json:"webhook_secret_key" url:"webhook_secret_key"`
+
+	extraProperties map[string]interface{}
+	rawJSON         json.RawMessage
+}
+
+func (s *SourceConfigGitHubAuth) GetWebhookSecretKey() string {
+	if s == nil {
+		return ""
+	}
+	return s.WebhookSecretKey
+}
+
+func (s *SourceConfigGitHubAuth) GetExtraProperties() map[string]interface{} {
+	return s.extraProperties
+}
+
+func (s *SourceConfigGitHubAuth) UnmarshalJSON(data []byte) error {
+	type unmarshaler SourceConfigGitHubAuth
+	var value unmarshaler
+	if err := json.Unmarshal(data, &value); err != nil {
+		return err
+	}
+	*s = SourceConfigGitHubAuth(value)
+	extraProperties, err := internal.ExtractExtraProperties(data, *s)
+	if err != nil {
+		return err
+	}
+	s.extraProperties = extraProperties
+	s.rawJSON = json.RawMessage(data)
+	return nil
+}
+
+func (s *SourceConfigGitHubAuth) String() string {
+	if len(s.rawJSON) > 0 {
+		if value, err := internal.StringifyJSON(s.rawJSON); err == nil {
+			return value
+		}
+	}
+	if value, err := internal.StringifyJSON(s); err == nil {
+		return value
+	}
+	return fmt.Sprintf("%#v", s)
+}
+
+type SourceConfigGitLabAuth struct {
+	ApiKey string `json:"api_key" url:"api_key"`
+
+	extraProperties map[string]interface{}
+	rawJSON         json.RawMessage
+}
+
+func (s *SourceConfigGitLabAuth) GetApiKey() string {
+	if s == nil {
+		return ""
+	}
+	return s.ApiKey
+}
+
+func (s *SourceConfigGitLabAuth) GetExtraProperties() map[string]interface{} {
+	return s.extraProperties
+}
+
+func (s *SourceConfigGitLabAuth) UnmarshalJSON(data []byte) error {
+	type unmarshaler SourceConfigGitLabAuth
+	var value unmarshaler
+	if err := json.Unmarshal(data, &value); err != nil {
+		return err
+	}
+	*s = SourceConfigGitLabAuth(value)
+	extraProperties, err := internal.ExtractExtraProperties(data, *s)
+	if err != nil {
+		return err
+	}
+	s.extraProperties = extraProperties
+	s.rawJSON = json.RawMessage(data)
+	return nil
+}
+
+func (s *SourceConfigGitLabAuth) String() string {
+	if len(s.rawJSON) > 0 {
+		if value, err := internal.StringifyJSON(s.rawJSON); err == nil {
+			return value
+		}
+	}
+	if value, err := internal.StringifyJSON(s); err == nil {
+		return value
+	}
+	return fmt.Sprintf("%#v", s)
+}
+
+type SourceConfigHubspotAuth struct {
+	WebhookSecretKey string `json:"webhook_secret_key" url:"webhook_secret_key"`
+
+	extraProperties map[string]interface{}
+	rawJSON         json.RawMessage
+}
+
+func (s *SourceConfigHubspotAuth) GetWebhookSecretKey() string {
+	if s == nil {
+		return ""
+	}
+	return s.WebhookSecretKey
+}
+
+func (s *SourceConfigHubspotAuth) GetExtraProperties() map[string]interface{} {
+	return s.extraProperties
+}
+
+func (s *SourceConfigHubspotAuth) UnmarshalJSON(data []byte) error {
+	type unmarshaler SourceConfigHubspotAuth
+	var value unmarshaler
+	if err := json.Unmarshal(data, &value); err != nil {
+		return err
+	}
+	*s = SourceConfigHubspotAuth(value)
+	extraProperties, err := internal.ExtractExtraProperties(data, *s)
+	if err != nil {
+		return err
+	}
+	s.extraProperties = extraProperties
+	s.rawJSON = json.RawMessage(data)
+	return nil
+}
+
+func (s *SourceConfigHubspotAuth) String() string {
+	if len(s.rawJSON) > 0 {
+		if value, err := internal.StringifyJSON(s.rawJSON); err == nil {
+			return value
+		}
+	}
+	if value, err := internal.StringifyJSON(s); err == nil {
+		return value
+	}
+	return fmt.Sprintf("%#v", s)
+}
+
+type SourceConfigLinearAuth struct {
+	WebhookSecretKey string `json:"webhook_secret_key" url:"webhook_secret_key"`
+
+	extraProperties map[string]interface{}
+	rawJSON         json.RawMessage
+}
+
+func (s *SourceConfigLinearAuth) GetWebhookSecretKey() string {
+	if s == nil {
+		return ""
+	}
+	return s.WebhookSecretKey
+}
+
+func (s *SourceConfigLinearAuth) GetExtraProperties() map[string]interface{} {
+	return s.extraProperties
+}
+
+func (s *SourceConfigLinearAuth) UnmarshalJSON(data []byte) error {
+	type unmarshaler SourceConfigLinearAuth
+	var value unmarshaler
+	if err := json.Unmarshal(data, &value); err != nil {
+		return err
+	}
+	*s = SourceConfigLinearAuth(value)
+	extraProperties, err := internal.ExtractExtraProperties(data, *s)
+	if err != nil {
+		return err
+	}
+	s.extraProperties = extraProperties
+	s.rawJSON = json.RawMessage(data)
+	return nil
+}
+
+func (s *SourceConfigLinearAuth) String() string {
+	if len(s.rawJSON) > 0 {
+		if value, err := internal.StringifyJSON(s.rawJSON); err == nil {
+			return value
+		}
+	}
+	if value, err := internal.StringifyJSON(s); err == nil {
+		return value
+	}
+	return fmt.Sprintf("%#v", s)
+}
+
+type SourceConfigLinkedInAuth struct {
+	WebhookSecretKey string `json:"webhook_secret_key" url:"webhook_secret_key"`
+
+	extraProperties map[string]interface{}
+	rawJSON         json.RawMessage
+}
+
+func (s *SourceConfigLinkedInAuth) GetWebhookSecretKey() string {
+	if s == nil {
+		return ""
+	}
+	return s.WebhookSecretKey
+}
+
+func (s *SourceConfigLinkedInAuth) GetExtraProperties() map[string]interface{} {
+	return s.extraProperties
+}
+
+func (s *SourceConfigLinkedInAuth) UnmarshalJSON(data []byte) error {
+	type unmarshaler SourceConfigLinkedInAuth
+	var value unmarshaler
+	if err := json.Unmarshal(data, &value); err != nil {
+		return err
+	}
+	*s = SourceConfigLinkedInAuth(value)
+	extraProperties, err := internal.ExtractExtraProperties(data, *s)
+	if err != nil {
+		return err
+	}
+	s.extraProperties = extraProperties
+	s.rawJSON = json.RawMessage(data)
+	return nil
+}
+
+func (s *SourceConfigLinkedInAuth) String() string {
+	if len(s.rawJSON) > 0 {
+		if value, err := internal.StringifyJSON(s.rawJSON); err == nil {
+			return value
+		}
+	}
+	if value, err := internal.StringifyJSON(s); err == nil {
+		return value
+	}
+	return fmt.Sprintf("%#v", s)
+}
+
+type SourceConfigMailchimpAuth struct {
+	WebhookSecretKey string `json:"webhook_secret_key" url:"webhook_secret_key"`
+
+	extraProperties map[string]interface{}
+	rawJSON         json.RawMessage
+}
+
+func (s *SourceConfigMailchimpAuth) GetWebhookSecretKey() string {
+	if s == nil {
+		return ""
+	}
+	return s.WebhookSecretKey
+}
+
+func (s *SourceConfigMailchimpAuth) GetExtraProperties() map[string]interface{} {
+	return s.extraProperties
+}
+
+func (s *SourceConfigMailchimpAuth) UnmarshalJSON(data []byte) error {
+	type unmarshaler SourceConfigMailchimpAuth
+	var value unmarshaler
+	if err := json.Unmarshal(data, &value); err != nil {
+		return err
+	}
+	*s = SourceConfigMailchimpAuth(value)
+	extraProperties, err := internal.ExtractExtraProperties(data, *s)
+	if err != nil {
+		return err
+	}
+	s.extraProperties = extraProperties
+	s.rawJSON = json.RawMessage(data)
+	return nil
+}
+
+func (s *SourceConfigMailchimpAuth) String() string {
+	if len(s.rawJSON) > 0 {
+		if value, err := internal.StringifyJSON(s.rawJSON); err == nil {
+			return value
+		}
+	}
+	if value, err := internal.StringifyJSON(s); err == nil {
+		return value
+	}
+	return fmt.Sprintf("%#v", s)
+}
+
+type SourceConfigMailgunAuth struct {
+	WebhookSecretKey string `json:"webhook_secret_key" url:"webhook_secret_key"`
+
+	extraProperties map[string]interface{}
+	rawJSON         json.RawMessage
+}
+
+func (s *SourceConfigMailgunAuth) GetWebhookSecretKey() string {
+	if s == nil {
+		return ""
+	}
+	return s.WebhookSecretKey
+}
+
+func (s *SourceConfigMailgunAuth) GetExtraProperties() map[string]interface{} {
+	return s.extraProperties
+}
+
+func (s *SourceConfigMailgunAuth) UnmarshalJSON(data []byte) error {
+	type unmarshaler SourceConfigMailgunAuth
+	var value unmarshaler
+	if err := json.Unmarshal(data, &value); err != nil {
+		return err
+	}
+	*s = SourceConfigMailgunAuth(value)
+	extraProperties, err := internal.ExtractExtraProperties(data, *s)
+	if err != nil {
+		return err
+	}
+	s.extraProperties = extraProperties
+	s.rawJSON = json.RawMessage(data)
+	return nil
+}
+
+func (s *SourceConfigMailgunAuth) String() string {
+	if len(s.rawJSON) > 0 {
+		if value, err := internal.StringifyJSON(s.rawJSON); err == nil {
+			return value
+		}
+	}
+	if value, err := internal.StringifyJSON(s); err == nil {
+		return value
+	}
+	return fmt.Sprintf("%#v", s)
+}
+
+type SourceConfigManagedAuth struct {
+	extraProperties map[string]interface{}
+	rawJSON         json.RawMessage
+}
+
+func (s *SourceConfigManagedAuth) GetExtraProperties() map[string]interface{} {
+	return s.extraProperties
+}
+
+func (s *SourceConfigManagedAuth) UnmarshalJSON(data []byte) error {
+	type unmarshaler SourceConfigManagedAuth
+	var value unmarshaler
+	if err := json.Unmarshal(data, &value); err != nil {
+		return err
+	}
+	*s = SourceConfigManagedAuth(value)
+	extraProperties, err := internal.ExtractExtraProperties(data, *s)
+	if err != nil {
+		return err
+	}
+	s.extraProperties = extraProperties
+	s.rawJSON = json.RawMessage(data)
+	return nil
+}
+
+func (s *SourceConfigManagedAuth) String() string {
+	if len(s.rawJSON) > 0 {
+		if value, err := internal.StringifyJSON(s.rawJSON); err == nil {
+			return value
+		}
+	}
+	if value, err := internal.StringifyJSON(s); err == nil {
+		return value
+	}
+	return fmt.Sprintf("%#v", s)
+}
+
+type SourceConfigMockApiAuth struct {
+	extraProperties map[string]interface{}
+	rawJSON         json.RawMessage
+}
+
+func (s *SourceConfigMockApiAuth) GetExtraProperties() map[string]interface{} {
+	return s.extraProperties
+}
+
+func (s *SourceConfigMockApiAuth) UnmarshalJSON(data []byte) error {
+	type unmarshaler SourceConfigMockApiAuth
+	var value unmarshaler
+	if err := json.Unmarshal(data, &value); err != nil {
+		return err
+	}
+	*s = SourceConfigMockApiAuth(value)
+	extraProperties, err := internal.ExtractExtraProperties(data, *s)
+	if err != nil {
+		return err
+	}
+	s.extraProperties = extraProperties
+	s.rawJSON = json.RawMessage(data)
+	return nil
+}
+
+func (s *SourceConfigMockApiAuth) String() string {
+	if len(s.rawJSON) > 0 {
+		if value, err := internal.StringifyJSON(s.rawJSON); err == nil {
+			return value
+		}
+	}
+	if value, err := internal.StringifyJSON(s); err == nil {
+		return value
+	}
+	return fmt.Sprintf("%#v", s)
+}
+
+type SourceConfigNmiPaymentGatewayAuth struct {
+	WebhookSecretKey string `json:"webhook_secret_key" url:"webhook_secret_key"`
+
+	extraProperties map[string]interface{}
+	rawJSON         json.RawMessage
+}
+
+func (s *SourceConfigNmiPaymentGatewayAuth) GetWebhookSecretKey() string {
+	if s == nil {
+		return ""
+	}
+	return s.WebhookSecretKey
+}
+
+func (s *SourceConfigNmiPaymentGatewayAuth) GetExtraProperties() map[string]interface{} {
+	return s.extraProperties
+}
+
+func (s *SourceConfigNmiPaymentGatewayAuth) UnmarshalJSON(data []byte) error {
+	type unmarshaler SourceConfigNmiPaymentGatewayAuth
+	var value unmarshaler
+	if err := json.Unmarshal(data, &value); err != nil {
+		return err
+	}
+	*s = SourceConfigNmiPaymentGatewayAuth(value)
+	extraProperties, err := internal.ExtractExtraProperties(data, *s)
+	if err != nil {
+		return err
+	}
+	s.extraProperties = extraProperties
+	s.rawJSON = json.RawMessage(data)
+	return nil
+}
+
+func (s *SourceConfigNmiPaymentGatewayAuth) String() string {
+	if len(s.rawJSON) > 0 {
+		if value, err := internal.StringifyJSON(s.rawJSON); err == nil {
+			return value
+		}
+	}
+	if value, err := internal.StringifyJSON(s); err == nil {
+		return value
+	}
+	return fmt.Sprintf("%#v", s)
+}
+
+type SourceConfigOrbAuth struct {
+	WebhookSecretKey string `json:"webhook_secret_key" url:"webhook_secret_key"`
+
+	extraProperties map[string]interface{}
+	rawJSON         json.RawMessage
+}
+
+func (s *SourceConfigOrbAuth) GetWebhookSecretKey() string {
+	if s == nil {
+		return ""
+	}
+	return s.WebhookSecretKey
+}
+
+func (s *SourceConfigOrbAuth) GetExtraProperties() map[string]interface{} {
+	return s.extraProperties
+}
+
+func (s *SourceConfigOrbAuth) UnmarshalJSON(data []byte) error {
+	type unmarshaler SourceConfigOrbAuth
+	var value unmarshaler
+	if err := json.Unmarshal(data, &value); err != nil {
+		return err
+	}
+	*s = SourceConfigOrbAuth(value)
+	extraProperties, err := internal.ExtractExtraProperties(data, *s)
+	if err != nil {
+		return err
+	}
+	s.extraProperties = extraProperties
+	s.rawJSON = json.RawMessage(data)
+	return nil
+}
+
+func (s *SourceConfigOrbAuth) String() string {
+	if len(s.rawJSON) > 0 {
+		if value, err := internal.StringifyJSON(s.rawJSON); err == nil {
+			return value
+		}
+	}
+	if value, err := internal.StringifyJSON(s); err == nil {
+		return value
+	}
+	return fmt.Sprintf("%#v", s)
+}
+
+type SourceConfigOuraAuth struct {
+	WebhookSecretKey string `json:"webhook_secret_key" url:"webhook_secret_key"`
+
+	extraProperties map[string]interface{}
+	rawJSON         json.RawMessage
+}
+
+func (s *SourceConfigOuraAuth) GetWebhookSecretKey() string {
+	if s == nil {
+		return ""
+	}
+	return s.WebhookSecretKey
+}
+
+func (s *SourceConfigOuraAuth) GetExtraProperties() map[string]interface{} {
+	return s.extraProperties
+}
+
+func (s *SourceConfigOuraAuth) UnmarshalJSON(data []byte) error {
+	type unmarshaler SourceConfigOuraAuth
+	var value unmarshaler
+	if err := json.Unmarshal(data, &value); err != nil {
+		return err
+	}
+	*s = SourceConfigOuraAuth(value)
+	extraProperties, err := internal.ExtractExtraProperties(data, *s)
+	if err != nil {
+		return err
+	}
+	s.extraProperties = extraProperties
+	s.rawJSON = json.RawMessage(data)
+	return nil
+}
+
+func (s *SourceConfigOuraAuth) String() string {
+	if len(s.rawJSON) > 0 {
+		if value, err := internal.StringifyJSON(s.rawJSON); err == nil {
+			return value
+		}
+	}
+	if value, err := internal.StringifyJSON(s); err == nil {
+		return value
+	}
+	return fmt.Sprintf("%#v", s)
+}
+
+type SourceConfigPaddleAuth struct {
+	WebhookSecretKey string `json:"webhook_secret_key" url:"webhook_secret_key"`
+
+	extraProperties map[string]interface{}
+	rawJSON         json.RawMessage
+}
+
+func (s *SourceConfigPaddleAuth) GetWebhookSecretKey() string {
+	if s == nil {
+		return ""
+	}
+	return s.WebhookSecretKey
+}
+
+func (s *SourceConfigPaddleAuth) GetExtraProperties() map[string]interface{} {
+	return s.extraProperties
+}
+
+func (s *SourceConfigPaddleAuth) UnmarshalJSON(data []byte) error {
+	type unmarshaler SourceConfigPaddleAuth
+	var value unmarshaler
+	if err := json.Unmarshal(data, &value); err != nil {
+		return err
+	}
+	*s = SourceConfigPaddleAuth(value)
+	extraProperties, err := internal.ExtractExtraProperties(data, *s)
+	if err != nil {
+		return err
+	}
+	s.extraProperties = extraProperties
+	s.rawJSON = json.RawMessage(data)
+	return nil
+}
+
+func (s *SourceConfigPaddleAuth) String() string {
+	if len(s.rawJSON) > 0 {
+		if value, err := internal.StringifyJSON(s.rawJSON); err == nil {
+			return value
+		}
+	}
+	if value, err := internal.StringifyJSON(s); err == nil {
+		return value
+	}
+	return fmt.Sprintf("%#v", s)
+}
+
+type SourceConfigPaypalAuth struct {
+	WebhookId string `json:"webhook_id" url:"webhook_id"`
+
+	extraProperties map[string]interface{}
+	rawJSON         json.RawMessage
+}
+
+func (s *SourceConfigPaypalAuth) GetWebhookId() string {
+	if s == nil {
+		return ""
+	}
+	return s.WebhookId
+}
+
+func (s *SourceConfigPaypalAuth) GetExtraProperties() map[string]interface{} {
+	return s.extraProperties
+}
+
+func (s *SourceConfigPaypalAuth) UnmarshalJSON(data []byte) error {
+	type unmarshaler SourceConfigPaypalAuth
+	var value unmarshaler
+	if err := json.Unmarshal(data, &value); err != nil {
+		return err
+	}
+	*s = SourceConfigPaypalAuth(value)
+	extraProperties, err := internal.ExtractExtraProperties(data, *s)
+	if err != nil {
+		return err
+	}
+	s.extraProperties = extraProperties
+	s.rawJSON = json.RawMessage(data)
+	return nil
+}
+
+func (s *SourceConfigPaypalAuth) String() string {
+	if len(s.rawJSON) > 0 {
+		if value, err := internal.StringifyJSON(s.rawJSON); err == nil {
+			return value
+		}
+	}
+	if value, err := internal.StringifyJSON(s); err == nil {
+		return value
+	}
+	return fmt.Sprintf("%#v", s)
+}
+
+type SourceConfigPersonaAuth struct {
+	WebhookSecretKey string `json:"webhook_secret_key" url:"webhook_secret_key"`
+
+	extraProperties map[string]interface{}
+	rawJSON         json.RawMessage
+}
+
+func (s *SourceConfigPersonaAuth) GetWebhookSecretKey() string {
+	if s == nil {
+		return ""
+	}
+	return s.WebhookSecretKey
+}
+
+func (s *SourceConfigPersonaAuth) GetExtraProperties() map[string]interface{} {
+	return s.extraProperties
+}
+
+func (s *SourceConfigPersonaAuth) UnmarshalJSON(data []byte) error {
+	type unmarshaler SourceConfigPersonaAuth
+	var value unmarshaler
+	if err := json.Unmarshal(data, &value); err != nil {
+		return err
+	}
+	*s = SourceConfigPersonaAuth(value)
+	extraProperties, err := internal.ExtractExtraProperties(data, *s)
+	if err != nil {
+		return err
+	}
+	s.extraProperties = extraProperties
+	s.rawJSON = json.RawMessage(data)
+	return nil
+}
+
+func (s *SourceConfigPersonaAuth) String() string {
+	if len(s.rawJSON) > 0 {
+		if value, err := internal.StringifyJSON(s.rawJSON); err == nil {
+			return value
+		}
+	}
+	if value, err := internal.StringifyJSON(s); err == nil {
+		return value
+	}
+	return fmt.Sprintf("%#v", s)
+}
+
+type SourceConfigPipedriveAuth struct {
+	Username *string `json:"username,omitempty" url:"username,omitempty"`
+	Password *string `json:"password,omitempty" url:"password,omitempty"`
+
+	extraProperties map[string]interface{}
+	rawJSON         json.RawMessage
+}
+
+func (s *SourceConfigPipedriveAuth) GetUsername() *string {
+	if s == nil {
+		return nil
+	}
+	return s.Username
+}
+
+func (s *SourceConfigPipedriveAuth) GetPassword() *string {
+	if s == nil {
+		return nil
+	}
+	return s.Password
+}
+
+func (s *SourceConfigPipedriveAuth) GetExtraProperties() map[string]interface{} {
+	return s.extraProperties
+}
+
+func (s *SourceConfigPipedriveAuth) UnmarshalJSON(data []byte) error {
+	type unmarshaler SourceConfigPipedriveAuth
+	var value unmarshaler
+	if err := json.Unmarshal(data, &value); err != nil {
+		return err
+	}
+	*s = SourceConfigPipedriveAuth(value)
+	extraProperties, err := internal.ExtractExtraProperties(data, *s)
+	if err != nil {
+		return err
+	}
+	s.extraProperties = extraProperties
+	s.rawJSON = json.RawMessage(data)
+	return nil
+}
+
+func (s *SourceConfigPipedriveAuth) String() string {
+	if len(s.rawJSON) > 0 {
+		if value, err := internal.StringifyJSON(s.rawJSON); err == nil {
+			return value
+		}
+	}
+	if value, err := internal.StringifyJSON(s); err == nil {
+		return value
+	}
+	return fmt.Sprintf("%#v", s)
+}
+
+type SourceConfigPostmarkAuth struct {
+	Username *string `json:"username,omitempty" url:"username,omitempty"`
+	Password *string `json:"password,omitempty" url:"password,omitempty"`
+
+	extraProperties map[string]interface{}
+	rawJSON         json.RawMessage
+}
+
+func (s *SourceConfigPostmarkAuth) GetUsername() *string {
+	if s == nil {
+		return nil
+	}
+	return s.Username
+}
+
+func (s *SourceConfigPostmarkAuth) GetPassword() *string {
+	if s == nil {
+		return nil
+	}
+	return s.Password
+}
+
+func (s *SourceConfigPostmarkAuth) GetExtraProperties() map[string]interface{} {
+	return s.extraProperties
+}
+
+func (s *SourceConfigPostmarkAuth) UnmarshalJSON(data []byte) error {
+	type unmarshaler SourceConfigPostmarkAuth
+	var value unmarshaler
+	if err := json.Unmarshal(data, &value); err != nil {
+		return err
+	}
+	*s = SourceConfigPostmarkAuth(value)
+	extraProperties, err := internal.ExtractExtraProperties(data, *s)
+	if err != nil {
+		return err
+	}
+	s.extraProperties = extraProperties
+	s.rawJSON = json.RawMessage(data)
+	return nil
+}
+
+func (s *SourceConfigPostmarkAuth) String() string {
+	if len(s.rawJSON) > 0 {
+		if value, err := internal.StringifyJSON(s.rawJSON); err == nil {
+			return value
+		}
+	}
+	if value, err := internal.StringifyJSON(s); err == nil {
+		return value
+	}
+	return fmt.Sprintf("%#v", s)
+}
+
+type SourceConfigPraxisAuth struct {
+	WebhookSecretKey string `json:"webhook_secret_key" url:"webhook_secret_key"`
+
+	extraProperties map[string]interface{}
+	rawJSON         json.RawMessage
+}
+
+func (s *SourceConfigPraxisAuth) GetWebhookSecretKey() string {
+	if s == nil {
+		return ""
+	}
+	return s.WebhookSecretKey
+}
+
+func (s *SourceConfigPraxisAuth) GetExtraProperties() map[string]interface{} {
+	return s.extraProperties
+}
+
+func (s *SourceConfigPraxisAuth) UnmarshalJSON(data []byte) error {
+	type unmarshaler SourceConfigPraxisAuth
+	var value unmarshaler
+	if err := json.Unmarshal(data, &value); err != nil {
+		return err
+	}
+	*s = SourceConfigPraxisAuth(value)
+	extraProperties, err := internal.ExtractExtraProperties(data, *s)
+	if err != nil {
+		return err
+	}
+	s.extraProperties = extraProperties
+	s.rawJSON = json.RawMessage(data)
+	return nil
+}
+
+func (s *SourceConfigPraxisAuth) String() string {
+	if len(s.rawJSON) > 0 {
+		if value, err := internal.StringifyJSON(s.rawJSON); err == nil {
+			return value
+		}
+	}
+	if value, err := internal.StringifyJSON(s); err == nil {
+		return value
+	}
+	return fmt.Sprintf("%#v", s)
+}
+
+type SourceConfigPropertyFinderAuth struct {
+	WebhookSecretKey string `json:"webhook_secret_key" url:"webhook_secret_key"`
+
+	extraProperties map[string]interface{}
+	rawJSON         json.RawMessage
+}
+
+func (s *SourceConfigPropertyFinderAuth) GetWebhookSecretKey() string {
+	if s == nil {
+		return ""
+	}
+	return s.WebhookSecretKey
+}
+
+func (s *SourceConfigPropertyFinderAuth) GetExtraProperties() map[string]interface{} {
+	return s.extraProperties
+}
+
+func (s *SourceConfigPropertyFinderAuth) UnmarshalJSON(data []byte) error {
+	type unmarshaler SourceConfigPropertyFinderAuth
+	var value unmarshaler
+	if err := json.Unmarshal(data, &value); err != nil {
+		return err
+	}
+	*s = SourceConfigPropertyFinderAuth(value)
+	extraProperties, err := internal.ExtractExtraProperties(data, *s)
+	if err != nil {
+		return err
+	}
+	s.extraProperties = extraProperties
+	s.rawJSON = json.RawMessage(data)
+	return nil
+}
+
+func (s *SourceConfigPropertyFinderAuth) String() string {
+	if len(s.rawJSON) > 0 {
+		if value, err := internal.StringifyJSON(s.rawJSON); err == nil {
+			return value
+		}
+	}
+	if value, err := internal.StringifyJSON(s); err == nil {
+		return value
+	}
+	return fmt.Sprintf("%#v", s)
+}
+
+type SourceConfigPylonAuth struct {
+	WebhookSecretKey string `json:"webhook_secret_key" url:"webhook_secret_key"`
+
+	extraProperties map[string]interface{}
+	rawJSON         json.RawMessage
+}
+
+func (s *SourceConfigPylonAuth) GetWebhookSecretKey() string {
+	if s == nil {
+		return ""
+	}
+	return s.WebhookSecretKey
+}
+
+func (s *SourceConfigPylonAuth) GetExtraProperties() map[string]interface{} {
+	return s.extraProperties
+}
+
+func (s *SourceConfigPylonAuth) UnmarshalJSON(data []byte) error {
+	type unmarshaler SourceConfigPylonAuth
+	var value unmarshaler
+	if err := json.Unmarshal(data, &value); err != nil {
+		return err
+	}
+	*s = SourceConfigPylonAuth(value)
+	extraProperties, err := internal.ExtractExtraProperties(data, *s)
+	if err != nil {
+		return err
+	}
+	s.extraProperties = extraProperties
+	s.rawJSON = json.RawMessage(data)
+	return nil
+}
+
+func (s *SourceConfigPylonAuth) String() string {
+	if len(s.rawJSON) > 0 {
+		if value, err := internal.StringifyJSON(s.rawJSON); err == nil {
+			return value
+		}
+	}
+	if value, err := internal.StringifyJSON(s); err == nil {
+		return value
+	}
+	return fmt.Sprintf("%#v", s)
+}
+
+type SourceConfigRazorpayAuth struct {
+	WebhookSecretKey string `json:"webhook_secret_key" url:"webhook_secret_key"`
+
+	extraProperties map[string]interface{}
+	rawJSON         json.RawMessage
+}
+
+func (s *SourceConfigRazorpayAuth) GetWebhookSecretKey() string {
+	if s == nil {
+		return ""
+	}
+	return s.WebhookSecretKey
+}
+
+func (s *SourceConfigRazorpayAuth) GetExtraProperties() map[string]interface{} {
+	return s.extraProperties
+}
+
+func (s *SourceConfigRazorpayAuth) UnmarshalJSON(data []byte) error {
+	type unmarshaler SourceConfigRazorpayAuth
+	var value unmarshaler
+	if err := json.Unmarshal(data, &value); err != nil {
+		return err
+	}
+	*s = SourceConfigRazorpayAuth(value)
+	extraProperties, err := internal.ExtractExtraProperties(data, *s)
+	if err != nil {
+		return err
+	}
+	s.extraProperties = extraProperties
+	s.rawJSON = json.RawMessage(data)
+	return nil
+}
+
+func (s *SourceConfigRazorpayAuth) String() string {
+	if len(s.rawJSON) > 0 {
+		if value, err := internal.StringifyJSON(s.rawJSON); err == nil {
+			return value
+		}
+	}
+	if value, err := internal.StringifyJSON(s); err == nil {
+		return value
+	}
+	return fmt.Sprintf("%#v", s)
+}
+
+type SourceConfigRechargeAuth struct {
+	WebhookSecretKey string `json:"webhook_secret_key" url:"webhook_secret_key"`
+
+	extraProperties map[string]interface{}
+	rawJSON         json.RawMessage
+}
+
+func (s *SourceConfigRechargeAuth) GetWebhookSecretKey() string {
+	if s == nil {
+		return ""
+	}
+	return s.WebhookSecretKey
+}
+
+func (s *SourceConfigRechargeAuth) GetExtraProperties() map[string]interface{} {
+	return s.extraProperties
+}
+
+func (s *SourceConfigRechargeAuth) UnmarshalJSON(data []byte) error {
+	type unmarshaler SourceConfigRechargeAuth
+	var value unmarshaler
+	if err := json.Unmarshal(data, &value); err != nil {
+		return err
+	}
+	*s = SourceConfigRechargeAuth(value)
+	extraProperties, err := internal.ExtractExtraProperties(data, *s)
+	if err != nil {
+		return err
+	}
+	s.extraProperties = extraProperties
+	s.rawJSON = json.RawMessage(data)
+	return nil
+}
+
+func (s *SourceConfigRechargeAuth) String() string {
+	if len(s.rawJSON) > 0 {
+		if value, err := internal.StringifyJSON(s.rawJSON); err == nil {
+			return value
+		}
+	}
+	if value, err := internal.StringifyJSON(s); err == nil {
+		return value
+	}
+	return fmt.Sprintf("%#v", s)
+}
+
+type SourceConfigRepayAuth struct {
+	WebhookSecretKey string `json:"webhook_secret_key" url:"webhook_secret_key"`
+
+	extraProperties map[string]interface{}
+	rawJSON         json.RawMessage
+}
+
+func (s *SourceConfigRepayAuth) GetWebhookSecretKey() string {
+	if s == nil {
+		return ""
+	}
+	return s.WebhookSecretKey
+}
+
+func (s *SourceConfigRepayAuth) GetExtraProperties() map[string]interface{} {
+	return s.extraProperties
+}
+
+func (s *SourceConfigRepayAuth) UnmarshalJSON(data []byte) error {
+	type unmarshaler SourceConfigRepayAuth
+	var value unmarshaler
+	if err := json.Unmarshal(data, &value); err != nil {
+		return err
+	}
+	*s = SourceConfigRepayAuth(value)
+	extraProperties, err := internal.ExtractExtraProperties(data, *s)
+	if err != nil {
+		return err
+	}
+	s.extraProperties = extraProperties
+	s.rawJSON = json.RawMessage(data)
+	return nil
+}
+
+func (s *SourceConfigRepayAuth) String() string {
+	if len(s.rawJSON) > 0 {
+		if value, err := internal.StringifyJSON(s.rawJSON); err == nil {
+			return value
+		}
+	}
+	if value, err := internal.StringifyJSON(s); err == nil {
+		return value
+	}
+	return fmt.Sprintf("%#v", s)
+}
+
+type SourceConfigReplicateAuth struct {
+	WebhookSecretKey string `json:"webhook_secret_key" url:"webhook_secret_key"`
+
+	extraProperties map[string]interface{}
+	rawJSON         json.RawMessage
+}
+
+func (s *SourceConfigReplicateAuth) GetWebhookSecretKey() string {
+	if s == nil {
+		return ""
+	}
+	return s.WebhookSecretKey
+}
+
+func (s *SourceConfigReplicateAuth) GetExtraProperties() map[string]interface{} {
+	return s.extraProperties
+}
+
+func (s *SourceConfigReplicateAuth) UnmarshalJSON(data []byte) error {
+	type unmarshaler SourceConfigReplicateAuth
+	var value unmarshaler
+	if err := json.Unmarshal(data, &value); err != nil {
+		return err
+	}
+	*s = SourceConfigReplicateAuth(value)
+	extraProperties, err := internal.ExtractExtraProperties(data, *s)
+	if err != nil {
+		return err
+	}
+	s.extraProperties = extraProperties
+	s.rawJSON = json.RawMessage(data)
+	return nil
+}
+
+func (s *SourceConfigReplicateAuth) String() string {
+	if len(s.rawJSON) > 0 {
+		if value, err := internal.StringifyJSON(s.rawJSON); err == nil {
+			return value
+		}
+	}
+	if value, err := internal.StringifyJSON(s); err == nil {
+		return value
+	}
+	return fmt.Sprintf("%#v", s)
+}
+
+type SourceConfigSanityAuth struct {
+	WebhookSecretKey string `json:"webhook_secret_key" url:"webhook_secret_key"`
+
+	extraProperties map[string]interface{}
+	rawJSON         json.RawMessage
+}
+
+func (s *SourceConfigSanityAuth) GetWebhookSecretKey() string {
+	if s == nil {
+		return ""
+	}
+	return s.WebhookSecretKey
+}
+
+func (s *SourceConfigSanityAuth) GetExtraProperties() map[string]interface{} {
+	return s.extraProperties
+}
+
+func (s *SourceConfigSanityAuth) UnmarshalJSON(data []byte) error {
+	type unmarshaler SourceConfigSanityAuth
+	var value unmarshaler
+	if err := json.Unmarshal(data, &value); err != nil {
+		return err
+	}
+	*s = SourceConfigSanityAuth(value)
+	extraProperties, err := internal.ExtractExtraProperties(data, *s)
+	if err != nil {
+		return err
+	}
+	s.extraProperties = extraProperties
+	s.rawJSON = json.RawMessage(data)
+	return nil
+}
+
+func (s *SourceConfigSanityAuth) String() string {
+	if len(s.rawJSON) > 0 {
+		if value, err := internal.StringifyJSON(s.rawJSON); err == nil {
+			return value
+		}
+	}
+	if value, err := internal.StringifyJSON(s); err == nil {
+		return value
+	}
+	return fmt.Sprintf("%#v", s)
+}
+
+type SourceConfigSendgridAuth struct {
+	WebhookSecretKey string `json:"webhook_secret_key" url:"webhook_secret_key"`
+
+	extraProperties map[string]interface{}
+	rawJSON         json.RawMessage
+}
+
+func (s *SourceConfigSendgridAuth) GetWebhookSecretKey() string {
+	if s == nil {
+		return ""
+	}
+	return s.WebhookSecretKey
+}
+
+func (s *SourceConfigSendgridAuth) GetExtraProperties() map[string]interface{} {
+	return s.extraProperties
+}
+
+func (s *SourceConfigSendgridAuth) UnmarshalJSON(data []byte) error {
+	type unmarshaler SourceConfigSendgridAuth
+	var value unmarshaler
+	if err := json.Unmarshal(data, &value); err != nil {
+		return err
+	}
+	*s = SourceConfigSendgridAuth(value)
+	extraProperties, err := internal.ExtractExtraProperties(data, *s)
+	if err != nil {
+		return err
+	}
+	s.extraProperties = extraProperties
+	s.rawJSON = json.RawMessage(data)
+	return nil
+}
+
+func (s *SourceConfigSendgridAuth) String() string {
+	if len(s.rawJSON) > 0 {
+		if value, err := internal.StringifyJSON(s.rawJSON); err == nil {
+			return value
+		}
+	}
+	if value, err := internal.StringifyJSON(s); err == nil {
+		return value
+	}
+	return fmt.Sprintf("%#v", s)
+}
+
+type SourceConfigShopifyAuth struct {
+	WebhookSecretKey string `json:"webhook_secret_key" url:"webhook_secret_key"`
+
+	extraProperties map[string]interface{}
+	rawJSON         json.RawMessage
+}
+
+func (s *SourceConfigShopifyAuth) GetWebhookSecretKey() string {
+	if s == nil {
+		return ""
+	}
+	return s.WebhookSecretKey
+}
+
+func (s *SourceConfigShopifyAuth) GetExtraProperties() map[string]interface{} {
+	return s.extraProperties
+}
+
+func (s *SourceConfigShopifyAuth) UnmarshalJSON(data []byte) error {
+	type unmarshaler SourceConfigShopifyAuth
+	var value unmarshaler
+	if err := json.Unmarshal(data, &value); err != nil {
+		return err
+	}
+	*s = SourceConfigShopifyAuth(value)
+	extraProperties, err := internal.ExtractExtraProperties(data, *s)
+	if err != nil {
+		return err
+	}
+	s.extraProperties = extraProperties
+	s.rawJSON = json.RawMessage(data)
+	return nil
+}
+
+func (s *SourceConfigShopifyAuth) String() string {
+	if len(s.rawJSON) > 0 {
+		if value, err := internal.StringifyJSON(s.rawJSON); err == nil {
+			return value
+		}
+	}
+	if value, err := internal.StringifyJSON(s); err == nil {
+		return value
+	}
+	return fmt.Sprintf("%#v", s)
+}
+
+type SourceConfigShoplineAuth struct {
+	WebhookSecretKey string `json:"webhook_secret_key" url:"webhook_secret_key"`
+
+	extraProperties map[string]interface{}
+	rawJSON         json.RawMessage
+}
+
+func (s *SourceConfigShoplineAuth) GetWebhookSecretKey() string {
+	if s == nil {
+		return ""
+	}
+	return s.WebhookSecretKey
+}
+
+func (s *SourceConfigShoplineAuth) GetExtraProperties() map[string]interface{} {
+	return s.extraProperties
+}
+
+func (s *SourceConfigShoplineAuth) UnmarshalJSON(data []byte) error {
+	type unmarshaler SourceConfigShoplineAuth
+	var value unmarshaler
+	if err := json.Unmarshal(data, &value); err != nil {
+		return err
+	}
+	*s = SourceConfigShoplineAuth(value)
+	extraProperties, err := internal.ExtractExtraProperties(data, *s)
+	if err != nil {
+		return err
+	}
+	s.extraProperties = extraProperties
+	s.rawJSON = json.RawMessage(data)
+	return nil
+}
+
+func (s *SourceConfigShoplineAuth) String() string {
+	if len(s.rawJSON) > 0 {
+		if value, err := internal.StringifyJSON(s.rawJSON); err == nil {
+			return value
+		}
+	}
+	if value, err := internal.StringifyJSON(s); err == nil {
+		return value
+	}
+	return fmt.Sprintf("%#v", s)
+}
+
+type SourceConfigSlackAuth struct {
+	WebhookSecretKey string `json:"webhook_secret_key" url:"webhook_secret_key"`
+
+	extraProperties map[string]interface{}
+	rawJSON         json.RawMessage
+}
+
+func (s *SourceConfigSlackAuth) GetWebhookSecretKey() string {
+	if s == nil {
+		return ""
+	}
+	return s.WebhookSecretKey
+}
+
+func (s *SourceConfigSlackAuth) GetExtraProperties() map[string]interface{} {
+	return s.extraProperties
+}
+
+func (s *SourceConfigSlackAuth) UnmarshalJSON(data []byte) error {
+	type unmarshaler SourceConfigSlackAuth
+	var value unmarshaler
+	if err := json.Unmarshal(data, &value); err != nil {
+		return err
+	}
+	*s = SourceConfigSlackAuth(value)
+	extraProperties, err := internal.ExtractExtraProperties(data, *s)
+	if err != nil {
+		return err
+	}
+	s.extraProperties = extraProperties
+	s.rawJSON = json.RawMessage(data)
+	return nil
+}
+
+func (s *SourceConfigSlackAuth) String() string {
+	if len(s.rawJSON) > 0 {
+		if value, err := internal.StringifyJSON(s.rawJSON); err == nil {
+			return value
+		}
+	}
+	if value, err := internal.StringifyJSON(s); err == nil {
+		return value
+	}
+	return fmt.Sprintf("%#v", s)
+}
+
+type SourceConfigSolidgateAuth struct {
+	WebhookSecretKey string `json:"webhook_secret_key" url:"webhook_secret_key"`
+
+	extraProperties map[string]interface{}
+	rawJSON         json.RawMessage
+}
+
+func (s *SourceConfigSolidgateAuth) GetWebhookSecretKey() string {
+	if s == nil {
+		return ""
+	}
+	return s.WebhookSecretKey
+}
+
+func (s *SourceConfigSolidgateAuth) GetExtraProperties() map[string]interface{} {
+	return s.extraProperties
+}
+
+func (s *SourceConfigSolidgateAuth) UnmarshalJSON(data []byte) error {
+	type unmarshaler SourceConfigSolidgateAuth
+	var value unmarshaler
+	if err := json.Unmarshal(data, &value); err != nil {
+		return err
+	}
+	*s = SourceConfigSolidgateAuth(value)
+	extraProperties, err := internal.ExtractExtraProperties(data, *s)
+	if err != nil {
+		return err
+	}
+	s.extraProperties = extraProperties
+	s.rawJSON = json.RawMessage(data)
+	return nil
+}
+
+func (s *SourceConfigSolidgateAuth) String() string {
+	if len(s.rawJSON) > 0 {
+		if value, err := internal.StringifyJSON(s.rawJSON); err == nil {
+			return value
+		}
+	}
+	if value, err := internal.StringifyJSON(s); err == nil {
+		return value
+	}
+	return fmt.Sprintf("%#v", s)
+}
+
+type SourceConfigSquareAuth struct {
+	WebhookSecretKey string `json:"webhook_secret_key" url:"webhook_secret_key"`
+
+	extraProperties map[string]interface{}
+	rawJSON         json.RawMessage
+}
+
+func (s *SourceConfigSquareAuth) GetWebhookSecretKey() string {
+	if s == nil {
+		return ""
+	}
+	return s.WebhookSecretKey
+}
+
+func (s *SourceConfigSquareAuth) GetExtraProperties() map[string]interface{} {
+	return s.extraProperties
+}
+
+func (s *SourceConfigSquareAuth) UnmarshalJSON(data []byte) error {
+	type unmarshaler SourceConfigSquareAuth
+	var value unmarshaler
+	if err := json.Unmarshal(data, &value); err != nil {
+		return err
+	}
+	*s = SourceConfigSquareAuth(value)
+	extraProperties, err := internal.ExtractExtraProperties(data, *s)
+	if err != nil {
+		return err
+	}
+	s.extraProperties = extraProperties
+	s.rawJSON = json.RawMessage(data)
+	return nil
+}
+
+func (s *SourceConfigSquareAuth) String() string {
+	if len(s.rawJSON) > 0 {
+		if value, err := internal.StringifyJSON(s.rawJSON); err == nil {
+			return value
+		}
+	}
+	if value, err := internal.StringifyJSON(s); err == nil {
+		return value
+	}
+	return fmt.Sprintf("%#v", s)
+}
+
+type SourceConfigStripeAuth struct {
+	WebhookSecretKey string `json:"webhook_secret_key" url:"webhook_secret_key"`
+
+	extraProperties map[string]interface{}
+	rawJSON         json.RawMessage
+}
+
+func (s *SourceConfigStripeAuth) GetWebhookSecretKey() string {
+	if s == nil {
+		return ""
+	}
+	return s.WebhookSecretKey
+}
+
+func (s *SourceConfigStripeAuth) GetExtraProperties() map[string]interface{} {
+	return s.extraProperties
+}
+
+func (s *SourceConfigStripeAuth) UnmarshalJSON(data []byte) error {
+	type unmarshaler SourceConfigStripeAuth
+	var value unmarshaler
+	if err := json.Unmarshal(data, &value); err != nil {
+		return err
+	}
+	*s = SourceConfigStripeAuth(value)
+	extraProperties, err := internal.ExtractExtraProperties(data, *s)
+	if err != nil {
+		return err
+	}
+	s.extraProperties = extraProperties
+	s.rawJSON = json.RawMessage(data)
+	return nil
+}
+
+func (s *SourceConfigStripeAuth) String() string {
+	if len(s.rawJSON) > 0 {
+		if value, err := internal.StringifyJSON(s.rawJSON); err == nil {
+			return value
+		}
+	}
+	if value, err := internal.StringifyJSON(s); err == nil {
+		return value
+	}
+	return fmt.Sprintf("%#v", s)
+}
+
+type SourceConfigSvixAuth struct {
+	WebhookSecretKey string `json:"webhook_secret_key" url:"webhook_secret_key"`
+
+	extraProperties map[string]interface{}
+	rawJSON         json.RawMessage
+}
+
+func (s *SourceConfigSvixAuth) GetWebhookSecretKey() string {
+	if s == nil {
+		return ""
+	}
+	return s.WebhookSecretKey
+}
+
+func (s *SourceConfigSvixAuth) GetExtraProperties() map[string]interface{} {
+	return s.extraProperties
+}
+
+func (s *SourceConfigSvixAuth) UnmarshalJSON(data []byte) error {
+	type unmarshaler SourceConfigSvixAuth
+	var value unmarshaler
+	if err := json.Unmarshal(data, &value); err != nil {
+		return err
+	}
+	*s = SourceConfigSvixAuth(value)
+	extraProperties, err := internal.ExtractExtraProperties(data, *s)
+	if err != nil {
+		return err
+	}
+	s.extraProperties = extraProperties
+	s.rawJSON = json.RawMessage(data)
+	return nil
+}
+
+func (s *SourceConfigSvixAuth) String() string {
+	if len(s.rawJSON) > 0 {
+		if value, err := internal.StringifyJSON(s.rawJSON); err == nil {
+			return value
+		}
+	}
+	if value, err := internal.StringifyJSON(s); err == nil {
+		return value
+	}
+	return fmt.Sprintf("%#v", s)
+}
+
+type SourceConfigSyncteraAuth struct {
+	WebhookSecretKey string `json:"webhook_secret_key" url:"webhook_secret_key"`
+
+	extraProperties map[string]interface{}
+	rawJSON         json.RawMessage
+}
+
+func (s *SourceConfigSyncteraAuth) GetWebhookSecretKey() string {
+	if s == nil {
+		return ""
+	}
+	return s.WebhookSecretKey
+}
+
+func (s *SourceConfigSyncteraAuth) GetExtraProperties() map[string]interface{} {
+	return s.extraProperties
+}
+
+func (s *SourceConfigSyncteraAuth) UnmarshalJSON(data []byte) error {
+	type unmarshaler SourceConfigSyncteraAuth
+	var value unmarshaler
+	if err := json.Unmarshal(data, &value); err != nil {
+		return err
+	}
+	*s = SourceConfigSyncteraAuth(value)
+	extraProperties, err := internal.ExtractExtraProperties(data, *s)
+	if err != nil {
+		return err
+	}
+	s.extraProperties = extraProperties
+	s.rawJSON = json.RawMessage(data)
+	return nil
+}
+
+func (s *SourceConfigSyncteraAuth) String() string {
+	if len(s.rawJSON) > 0 {
+		if value, err := internal.StringifyJSON(s.rawJSON); err == nil {
+			return value
+		}
+	}
+	if value, err := internal.StringifyJSON(s); err == nil {
+		return value
+	}
+	return fmt.Sprintf("%#v", s)
+}
+
+type SourceConfigTebexAuth struct {
+	WebhookSecretKey string `json:"webhook_secret_key" url:"webhook_secret_key"`
+
+	extraProperties map[string]interface{}
+	rawJSON         json.RawMessage
+}
+
+func (s *SourceConfigTebexAuth) GetWebhookSecretKey() string {
+	if s == nil {
+		return ""
+	}
+	return s.WebhookSecretKey
+}
+
+func (s *SourceConfigTebexAuth) GetExtraProperties() map[string]interface{} {
+	return s.extraProperties
+}
+
+func (s *SourceConfigTebexAuth) UnmarshalJSON(data []byte) error {
+	type unmarshaler SourceConfigTebexAuth
+	var value unmarshaler
+	if err := json.Unmarshal(data, &value); err != nil {
+		return err
+	}
+	*s = SourceConfigTebexAuth(value)
+	extraProperties, err := internal.ExtractExtraProperties(data, *s)
+	if err != nil {
+		return err
+	}
+	s.extraProperties = extraProperties
+	s.rawJSON = json.RawMessage(data)
+	return nil
+}
+
+func (s *SourceConfigTebexAuth) String() string {
+	if len(s.rawJSON) > 0 {
+		if value, err := internal.StringifyJSON(s.rawJSON); err == nil {
+			return value
+		}
+	}
+	if value, err := internal.StringifyJSON(s); err == nil {
+		return value
+	}
+	return fmt.Sprintf("%#v", s)
+}
+
+type SourceConfigTelnyxAuth struct {
+	PublicKey string `json:"public_key" url:"public_key"`
+
+	extraProperties map[string]interface{}
+	rawJSON         json.RawMessage
+}
+
+func (s *SourceConfigTelnyxAuth) GetPublicKey() string {
+	if s == nil {
+		return ""
+	}
+	return s.PublicKey
+}
+
+func (s *SourceConfigTelnyxAuth) GetExtraProperties() map[string]interface{} {
+	return s.extraProperties
+}
+
+func (s *SourceConfigTelnyxAuth) UnmarshalJSON(data []byte) error {
+	type unmarshaler SourceConfigTelnyxAuth
+	var value unmarshaler
+	if err := json.Unmarshal(data, &value); err != nil {
+		return err
+	}
+	*s = SourceConfigTelnyxAuth(value)
+	extraProperties, err := internal.ExtractExtraProperties(data, *s)
+	if err != nil {
+		return err
+	}
+	s.extraProperties = extraProperties
+	s.rawJSON = json.RawMessage(data)
+	return nil
+}
+
+func (s *SourceConfigTelnyxAuth) String() string {
+	if len(s.rawJSON) > 0 {
+		if value, err := internal.StringifyJSON(s.rawJSON); err == nil {
+			return value
+		}
+	}
+	if value, err := internal.StringifyJSON(s); err == nil {
+		return value
+	}
+	return fmt.Sprintf("%#v", s)
+}
+
+type SourceConfigTikTokAuth struct {
+	WebhookSecretKey string `json:"webhook_secret_key" url:"webhook_secret_key"`
+	AppKey           string `json:"app_key" url:"app_key"`
+
+	extraProperties map[string]interface{}
+	rawJSON         json.RawMessage
+}
+
+func (s *SourceConfigTikTokAuth) GetWebhookSecretKey() string {
+	if s == nil {
+		return ""
+	}
+	return s.WebhookSecretKey
+}
+
+func (s *SourceConfigTikTokAuth) GetAppKey() string {
+	if s == nil {
+		return ""
+	}
+	return s.AppKey
+}
+
+func (s *SourceConfigTikTokAuth) GetExtraProperties() map[string]interface{} {
+	return s.extraProperties
+}
+
+func (s *SourceConfigTikTokAuth) UnmarshalJSON(data []byte) error {
+	type unmarshaler SourceConfigTikTokAuth
+	var value unmarshaler
+	if err := json.Unmarshal(data, &value); err != nil {
+		return err
+	}
+	*s = SourceConfigTikTokAuth(value)
+	extraProperties, err := internal.ExtractExtraProperties(data, *s)
+	if err != nil {
+		return err
+	}
+	s.extraProperties = extraProperties
+	s.rawJSON = json.RawMessage(data)
+	return nil
+}
+
+func (s *SourceConfigTikTokAuth) String() string {
+	if len(s.rawJSON) > 0 {
+		if value, err := internal.StringifyJSON(s.rawJSON); err == nil {
+			return value
+		}
+	}
+	if value, err := internal.StringifyJSON(s); err == nil {
+		return value
+	}
+	return fmt.Sprintf("%#v", s)
+}
+
+type SourceConfigTokenIoAuth struct {
+	PublicKey string `json:"public_key" url:"public_key"`
+
+	extraProperties map[string]interface{}
+	rawJSON         json.RawMessage
+}
+
+func (s *SourceConfigTokenIoAuth) GetPublicKey() string {
+	if s == nil {
+		return ""
+	}
+	return s.PublicKey
+}
+
+func (s *SourceConfigTokenIoAuth) GetExtraProperties() map[string]interface{} {
+	return s.extraProperties
+}
+
+func (s *SourceConfigTokenIoAuth) UnmarshalJSON(data []byte) error {
+	type unmarshaler SourceConfigTokenIoAuth
+	var value unmarshaler
+	if err := json.Unmarshal(data, &value); err != nil {
+		return err
+	}
+	*s = SourceConfigTokenIoAuth(value)
+	extraProperties, err := internal.ExtractExtraProperties(data, *s)
+	if err != nil {
+		return err
+	}
+	s.extraProperties = extraProperties
+	s.rawJSON = json.RawMessage(data)
+	return nil
+}
+
+func (s *SourceConfigTokenIoAuth) String() string {
+	if len(s.rawJSON) > 0 {
+		if value, err := internal.StringifyJSON(s.rawJSON); err == nil {
+			return value
+		}
+	}
+	if value, err := internal.StringifyJSON(s); err == nil {
+		return value
+	}
+	return fmt.Sprintf("%#v", s)
+}
+
+type SourceConfigTreezorAuth struct {
+	WebhookSecretKey string `json:"webhook_secret_key" url:"webhook_secret_key"`
+
+	extraProperties map[string]interface{}
+	rawJSON         json.RawMessage
+}
+
+func (s *SourceConfigTreezorAuth) GetWebhookSecretKey() string {
+	if s == nil {
+		return ""
+	}
+	return s.WebhookSecretKey
+}
+
+func (s *SourceConfigTreezorAuth) GetExtraProperties() map[string]interface{} {
+	return s.extraProperties
+}
+
+func (s *SourceConfigTreezorAuth) UnmarshalJSON(data []byte) error {
+	type unmarshaler SourceConfigTreezorAuth
+	var value unmarshaler
+	if err := json.Unmarshal(data, &value); err != nil {
+		return err
+	}
+	*s = SourceConfigTreezorAuth(value)
+	extraProperties, err := internal.ExtractExtraProperties(data, *s)
+	if err != nil {
+		return err
+	}
+	s.extraProperties = extraProperties
+	s.rawJSON = json.RawMessage(data)
+	return nil
+}
+
+func (s *SourceConfigTreezorAuth) String() string {
+	if len(s.rawJSON) > 0 {
+		if value, err := internal.StringifyJSON(s.rawJSON); err == nil {
+			return value
+		}
+	}
+	if value, err := internal.StringifyJSON(s); err == nil {
+		return value
+	}
+	return fmt.Sprintf("%#v", s)
+}
+
+type SourceConfigTrelloAuth struct {
+	WebhookSecretKey string `json:"webhook_secret_key" url:"webhook_secret_key"`
+
+	extraProperties map[string]interface{}
+	rawJSON         json.RawMessage
+}
+
+func (s *SourceConfigTrelloAuth) GetWebhookSecretKey() string {
+	if s == nil {
+		return ""
+	}
+	return s.WebhookSecretKey
+}
+
+func (s *SourceConfigTrelloAuth) GetExtraProperties() map[string]interface{} {
+	return s.extraProperties
+}
+
+func (s *SourceConfigTrelloAuth) UnmarshalJSON(data []byte) error {
+	type unmarshaler SourceConfigTrelloAuth
+	var value unmarshaler
+	if err := json.Unmarshal(data, &value); err != nil {
+		return err
+	}
+	*s = SourceConfigTrelloAuth(value)
+	extraProperties, err := internal.ExtractExtraProperties(data, *s)
+	if err != nil {
+		return err
+	}
+	s.extraProperties = extraProperties
+	s.rawJSON = json.RawMessage(data)
+	return nil
+}
+
+func (s *SourceConfigTrelloAuth) String() string {
+	if len(s.rawJSON) > 0 {
+		if value, err := internal.StringifyJSON(s.rawJSON); err == nil {
+			return value
+		}
+	}
+	if value, err := internal.StringifyJSON(s); err == nil {
+		return value
+	}
+	return fmt.Sprintf("%#v", s)
+}
+
+type SourceConfigTwilioAuth struct {
+	WebhookSecretKey string `json:"webhook_secret_key" url:"webhook_secret_key"`
+
+	extraProperties map[string]interface{}
+	rawJSON         json.RawMessage
+}
+
+func (s *SourceConfigTwilioAuth) GetWebhookSecretKey() string {
+	if s == nil {
+		return ""
+	}
+	return s.WebhookSecretKey
+}
+
+func (s *SourceConfigTwilioAuth) GetExtraProperties() map[string]interface{} {
+	return s.extraProperties
+}
+
+func (s *SourceConfigTwilioAuth) UnmarshalJSON(data []byte) error {
+	type unmarshaler SourceConfigTwilioAuth
+	var value unmarshaler
+	if err := json.Unmarshal(data, &value); err != nil {
+		return err
+	}
+	*s = SourceConfigTwilioAuth(value)
+	extraProperties, err := internal.ExtractExtraProperties(data, *s)
+	if err != nil {
+		return err
+	}
+	s.extraProperties = extraProperties
+	s.rawJSON = json.RawMessage(data)
+	return nil
+}
+
+func (s *SourceConfigTwilioAuth) String() string {
+	if len(s.rawJSON) > 0 {
+		if value, err := internal.StringifyJSON(s.rawJSON); err == nil {
+			return value
+		}
+	}
+	if value, err := internal.StringifyJSON(s); err == nil {
+		return value
+	}
+	return fmt.Sprintf("%#v", s)
+}
+
+type SourceConfigTwitchAuth struct {
+	WebhookSecretKey string `json:"webhook_secret_key" url:"webhook_secret_key"`
+
+	extraProperties map[string]interface{}
+	rawJSON         json.RawMessage
+}
+
+func (s *SourceConfigTwitchAuth) GetWebhookSecretKey() string {
+	if s == nil {
+		return ""
+	}
+	return s.WebhookSecretKey
+}
+
+func (s *SourceConfigTwitchAuth) GetExtraProperties() map[string]interface{} {
+	return s.extraProperties
+}
+
+func (s *SourceConfigTwitchAuth) UnmarshalJSON(data []byte) error {
+	type unmarshaler SourceConfigTwitchAuth
+	var value unmarshaler
+	if err := json.Unmarshal(data, &value); err != nil {
+		return err
+	}
+	*s = SourceConfigTwitchAuth(value)
+	extraProperties, err := internal.ExtractExtraProperties(data, *s)
+	if err != nil {
+		return err
+	}
+	s.extraProperties = extraProperties
+	s.rawJSON = json.RawMessage(data)
+	return nil
+}
+
+func (s *SourceConfigTwitchAuth) String() string {
+	if len(s.rawJSON) > 0 {
+		if value, err := internal.StringifyJSON(s.rawJSON); err == nil {
+			return value
+		}
+	}
+	if value, err := internal.StringifyJSON(s); err == nil {
+		return value
+	}
+	return fmt.Sprintf("%#v", s)
+}
+
+type SourceConfigTwitterAuth struct {
+	ApiKey string `json:"api_key" url:"api_key"`
+
+	extraProperties map[string]interface{}
+	rawJSON         json.RawMessage
+}
+
+func (s *SourceConfigTwitterAuth) GetApiKey() string {
+	if s == nil {
+		return ""
+	}
+	return s.ApiKey
+}
+
+func (s *SourceConfigTwitterAuth) GetExtraProperties() map[string]interface{} {
+	return s.extraProperties
+}
+
+func (s *SourceConfigTwitterAuth) UnmarshalJSON(data []byte) error {
+	type unmarshaler SourceConfigTwitterAuth
+	var value unmarshaler
+	if err := json.Unmarshal(data, &value); err != nil {
+		return err
+	}
+	*s = SourceConfigTwitterAuth(value)
+	extraProperties, err := internal.ExtractExtraProperties(data, *s)
+	if err != nil {
+		return err
+	}
+	s.extraProperties = extraProperties
+	s.rawJSON = json.RawMessage(data)
+	return nil
+}
+
+func (s *SourceConfigTwitterAuth) String() string {
+	if len(s.rawJSON) > 0 {
+		if value, err := internal.StringifyJSON(s.rawJSON); err == nil {
+			return value
+		}
+	}
+	if value, err := internal.StringifyJSON(s); err == nil {
+		return value
+	}
+	return fmt.Sprintf("%#v", s)
+}
+
+type SourceConfigTypeformAuth struct {
+	WebhookSecretKey string `json:"webhook_secret_key" url:"webhook_secret_key"`
+
+	extraProperties map[string]interface{}
+	rawJSON         json.RawMessage
+}
+
+func (s *SourceConfigTypeformAuth) GetWebhookSecretKey() string {
+	if s == nil {
+		return ""
+	}
+	return s.WebhookSecretKey
+}
+
+func (s *SourceConfigTypeformAuth) GetExtraProperties() map[string]interface{} {
+	return s.extraProperties
+}
+
+func (s *SourceConfigTypeformAuth) UnmarshalJSON(data []byte) error {
+	type unmarshaler SourceConfigTypeformAuth
+	var value unmarshaler
+	if err := json.Unmarshal(data, &value); err != nil {
+		return err
+	}
+	*s = SourceConfigTypeformAuth(value)
+	extraProperties, err := internal.ExtractExtraProperties(data, *s)
+	if err != nil {
+		return err
+	}
+	s.extraProperties = extraProperties
+	s.rawJSON = json.RawMessage(data)
+	return nil
+}
+
+func (s *SourceConfigTypeformAuth) String() string {
+	if len(s.rawJSON) > 0 {
+		if value, err := internal.StringifyJSON(s.rawJSON); err == nil {
+			return value
+		}
+	}
+	if value, err := internal.StringifyJSON(s); err == nil {
+		return value
+	}
+	return fmt.Sprintf("%#v", s)
+}
+
+type SourceConfigUpolloAuth struct {
+	WebhookSecretKey string `json:"webhook_secret_key" url:"webhook_secret_key"`
+
+	extraProperties map[string]interface{}
+	rawJSON         json.RawMessage
+}
+
+func (s *SourceConfigUpolloAuth) GetWebhookSecretKey() string {
+	if s == nil {
+		return ""
+	}
+	return s.WebhookSecretKey
+}
+
+func (s *SourceConfigUpolloAuth) GetExtraProperties() map[string]interface{} {
+	return s.extraProperties
+}
+
+func (s *SourceConfigUpolloAuth) UnmarshalJSON(data []byte) error {
+	type unmarshaler SourceConfigUpolloAuth
+	var value unmarshaler
+	if err := json.Unmarshal(data, &value); err != nil {
+		return err
+	}
+	*s = SourceConfigUpolloAuth(value)
+	extraProperties, err := internal.ExtractExtraProperties(data, *s)
+	if err != nil {
+		return err
+	}
+	s.extraProperties = extraProperties
+	s.rawJSON = json.RawMessage(data)
+	return nil
+}
+
+func (s *SourceConfigUpolloAuth) String() string {
+	if len(s.rawJSON) > 0 {
+		if value, err := internal.StringifyJSON(s.rawJSON); err == nil {
+			return value
+		}
+	}
+	if value, err := internal.StringifyJSON(s); err == nil {
+		return value
+	}
+	return fmt.Sprintf("%#v", s)
+}
+
+type SourceConfigVercelLogDrainsAuth struct {
+	WebhookSecretKey *string `json:"webhook_secret_key,omitempty" url:"webhook_secret_key,omitempty"`
+
+	extraProperties map[string]interface{}
+	rawJSON         json.RawMessage
+}
+
+func (s *SourceConfigVercelLogDrainsAuth) GetWebhookSecretKey() *string {
+	if s == nil {
+		return nil
+	}
+	return s.WebhookSecretKey
+}
+
+func (s *SourceConfigVercelLogDrainsAuth) GetExtraProperties() map[string]interface{} {
+	return s.extraProperties
+}
+
+func (s *SourceConfigVercelLogDrainsAuth) UnmarshalJSON(data []byte) error {
+	type unmarshaler SourceConfigVercelLogDrainsAuth
+	var value unmarshaler
+	if err := json.Unmarshal(data, &value); err != nil {
+		return err
+	}
+	*s = SourceConfigVercelLogDrainsAuth(value)
+	extraProperties, err := internal.ExtractExtraProperties(data, *s)
+	if err != nil {
+		return err
+	}
+	s.extraProperties = extraProperties
+	s.rawJSON = json.RawMessage(data)
+	return nil
+}
+
+func (s *SourceConfigVercelLogDrainsAuth) String() string {
+	if len(s.rawJSON) > 0 {
+		if value, err := internal.StringifyJSON(s.rawJSON); err == nil {
+			return value
+		}
+	}
+	if value, err := internal.StringifyJSON(s); err == nil {
+		return value
+	}
+	return fmt.Sprintf("%#v", s)
+}
+
+type SourceConfigVercelWebhooksAuth struct {
+	WebhookSecretKey string `json:"webhook_secret_key" url:"webhook_secret_key"`
+
+	extraProperties map[string]interface{}
+	rawJSON         json.RawMessage
+}
+
+func (s *SourceConfigVercelWebhooksAuth) GetWebhookSecretKey() string {
+	if s == nil {
+		return ""
+	}
+	return s.WebhookSecretKey
+}
+
+func (s *SourceConfigVercelWebhooksAuth) GetExtraProperties() map[string]interface{} {
+	return s.extraProperties
+}
+
+func (s *SourceConfigVercelWebhooksAuth) UnmarshalJSON(data []byte) error {
+	type unmarshaler SourceConfigVercelWebhooksAuth
+	var value unmarshaler
+	if err := json.Unmarshal(data, &value); err != nil {
+		return err
+	}
+	*s = SourceConfigVercelWebhooksAuth(value)
+	extraProperties, err := internal.ExtractExtraProperties(data, *s)
+	if err != nil {
+		return err
+	}
+	s.extraProperties = extraProperties
+	s.rawJSON = json.RawMessage(data)
+	return nil
+}
+
+func (s *SourceConfigVercelWebhooksAuth) String() string {
+	if len(s.rawJSON) > 0 {
+		if value, err := internal.StringifyJSON(s.rawJSON); err == nil {
+			return value
+		}
+	}
+	if value, err := internal.StringifyJSON(s); err == nil {
+		return value
+	}
+	return fmt.Sprintf("%#v", s)
+}
+
+type SourceConfigWebhookAuth3DEye struct {
+	WebhookSecretKey string `json:"webhook_secret_key" url:"webhook_secret_key"`
+
+	extraProperties map[string]interface{}
+	rawJSON         json.RawMessage
+}
+
+func (s *SourceConfigWebhookAuth3DEye) GetWebhookSecretKey() string {
+	if s == nil {
+		return ""
+	}
+	return s.WebhookSecretKey
+}
+
+func (s *SourceConfigWebhookAuth3DEye) GetExtraProperties() map[string]interface{} {
+	return s.extraProperties
+}
+
+func (s *SourceConfigWebhookAuth3DEye) UnmarshalJSON(data []byte) error {
+	type unmarshaler SourceConfigWebhookAuth3DEye
+	var value unmarshaler
+	if err := json.Unmarshal(data, &value); err != nil {
+		return err
+	}
+	*s = SourceConfigWebhookAuth3DEye(value)
+	extraProperties, err := internal.ExtractExtraProperties(data, *s)
+	if err != nil {
+		return err
+	}
+	s.extraProperties = extraProperties
+	s.rawJSON = json.RawMessage(data)
+	return nil
+}
+
+func (s *SourceConfigWebhookAuth3DEye) String() string {
+	if len(s.rawJSON) > 0 {
+		if value, err := internal.StringifyJSON(s.rawJSON); err == nil {
+			return value
+		}
+	}
+	if value, err := internal.StringifyJSON(s); err == nil {
+		return value
+	}
+	return fmt.Sprintf("%#v", s)
+}
+
+type SourceConfigWebhookAuthAdyen struct {
+	WebhookSecretKey string `json:"webhook_secret_key" url:"webhook_secret_key"`
+
+	extraProperties map[string]interface{}
+	rawJSON         json.RawMessage
+}
+
+func (s *SourceConfigWebhookAuthAdyen) GetWebhookSecretKey() string {
+	if s == nil {
+		return ""
+	}
+	return s.WebhookSecretKey
+}
+
+func (s *SourceConfigWebhookAuthAdyen) GetExtraProperties() map[string]interface{} {
+	return s.extraProperties
+}
+
+func (s *SourceConfigWebhookAuthAdyen) UnmarshalJSON(data []byte) error {
+	type unmarshaler SourceConfigWebhookAuthAdyen
+	var value unmarshaler
+	if err := json.Unmarshal(data, &value); err != nil {
+		return err
+	}
+	*s = SourceConfigWebhookAuthAdyen(value)
+	extraProperties, err := internal.ExtractExtraProperties(data, *s)
+	if err != nil {
+		return err
+	}
+	s.extraProperties = extraProperties
+	s.rawJSON = json.RawMessage(data)
+	return nil
+}
+
+func (s *SourceConfigWebhookAuthAdyen) String() string {
+	if len(s.rawJSON) > 0 {
+		if value, err := internal.StringifyJSON(s.rawJSON); err == nil {
+			return value
+		}
+	}
+	if value, err := internal.StringifyJSON(s); err == nil {
+		return value
+	}
+	return fmt.Sprintf("%#v", s)
+}
+
+type SourceConfigWebhookAuthAirwallex struct {
+	WebhookSecretKey string `json:"webhook_secret_key" url:"webhook_secret_key"`
+
+	extraProperties map[string]interface{}
+	rawJSON         json.RawMessage
+}
+
+func (s *SourceConfigWebhookAuthAirwallex) GetWebhookSecretKey() string {
+	if s == nil {
+		return ""
+	}
+	return s.WebhookSecretKey
+}
+
+func (s *SourceConfigWebhookAuthAirwallex) GetExtraProperties() map[string]interface{} {
+	return s.extraProperties
+}
+
+func (s *SourceConfigWebhookAuthAirwallex) UnmarshalJSON(data []byte) error {
+	type unmarshaler SourceConfigWebhookAuthAirwallex
+	var value unmarshaler
+	if err := json.Unmarshal(data, &value); err != nil {
+		return err
+	}
+	*s = SourceConfigWebhookAuthAirwallex(value)
+	extraProperties, err := internal.ExtractExtraProperties(data, *s)
+	if err != nil {
+		return err
+	}
+	s.extraProperties = extraProperties
+	s.rawJSON = json.RawMessage(data)
+	return nil
+}
+
+func (s *SourceConfigWebhookAuthAirwallex) String() string {
+	if len(s.rawJSON) > 0 {
+		if value, err := internal.StringifyJSON(s.rawJSON); err == nil {
+			return value
+		}
+	}
+	if value, err := internal.StringifyJSON(s); err == nil {
+		return value
+	}
+	return fmt.Sprintf("%#v", s)
+}
+
+type SourceConfigWebhookAuthAkeneo struct {
+	WebhookSecretKey string `json:"webhook_secret_key" url:"webhook_secret_key"`
+
+	extraProperties map[string]interface{}
+	rawJSON         json.RawMessage
+}
+
+func (s *SourceConfigWebhookAuthAkeneo) GetWebhookSecretKey() string {
+	if s == nil {
+		return ""
+	}
+	return s.WebhookSecretKey
+}
+
+func (s *SourceConfigWebhookAuthAkeneo) GetExtraProperties() map[string]interface{} {
+	return s.extraProperties
+}
+
+func (s *SourceConfigWebhookAuthAkeneo) UnmarshalJSON(data []byte) error {
+	type unmarshaler SourceConfigWebhookAuthAkeneo
+	var value unmarshaler
+	if err := json.Unmarshal(data, &value); err != nil {
+		return err
+	}
+	*s = SourceConfigWebhookAuthAkeneo(value)
+	extraProperties, err := internal.ExtractExtraProperties(data, *s)
+	if err != nil {
+		return err
+	}
+	s.extraProperties = extraProperties
+	s.rawJSON = json.RawMessage(data)
+	return nil
+}
+
+func (s *SourceConfigWebhookAuthAkeneo) String() string {
+	if len(s.rawJSON) > 0 {
+		if value, err := internal.StringifyJSON(s.rawJSON); err == nil {
+			return value
+		}
+	}
+	if value, err := internal.StringifyJSON(s); err == nil {
+		return value
+	}
+	return fmt.Sprintf("%#v", s)
+}
+
+type SourceConfigWebhookAuthApiKey struct {
+	HeaderKey string `json:"header_key" url:"header_key"`
+	ApiKey    string `json:"api_key" url:"api_key"`
+
+	extraProperties map[string]interface{}
+	rawJSON         json.RawMessage
+}
+
+func (s *SourceConfigWebhookAuthApiKey) GetHeaderKey() string {
+	if s == nil {
+		return ""
+	}
+	return s.HeaderKey
+}
+
+func (s *SourceConfigWebhookAuthApiKey) GetApiKey() string {
+	if s == nil {
+		return ""
+	}
+	return s.ApiKey
+}
+
+func (s *SourceConfigWebhookAuthApiKey) GetExtraProperties() map[string]interface{} {
+	return s.extraProperties
+}
+
+func (s *SourceConfigWebhookAuthApiKey) UnmarshalJSON(data []byte) error {
+	type unmarshaler SourceConfigWebhookAuthApiKey
+	var value unmarshaler
+	if err := json.Unmarshal(data, &value); err != nil {
+		return err
+	}
+	*s = SourceConfigWebhookAuthApiKey(value)
+	extraProperties, err := internal.ExtractExtraProperties(data, *s)
+	if err != nil {
+		return err
+	}
+	s.extraProperties = extraProperties
+	s.rawJSON = json.RawMessage(data)
+	return nil
+}
+
+func (s *SourceConfigWebhookAuthApiKey) String() string {
+	if len(s.rawJSON) > 0 {
+		if value, err := internal.StringifyJSON(s.rawJSON); err == nil {
+			return value
+		}
+	}
+	if value, err := internal.StringifyJSON(s); err == nil {
+		return value
+	}
+	return fmt.Sprintf("%#v", s)
+}
+
+type SourceConfigWebhookAuthAwssns struct {
+	extraProperties map[string]interface{}
+	rawJSON         json.RawMessage
+}
+
+func (s *SourceConfigWebhookAuthAwssns) GetExtraProperties() map[string]interface{} {
+	return s.extraProperties
+}
+
+func (s *SourceConfigWebhookAuthAwssns) UnmarshalJSON(data []byte) error {
+	type unmarshaler SourceConfigWebhookAuthAwssns
+	var value unmarshaler
+	if err := json.Unmarshal(data, &value); err != nil {
+		return err
+	}
+	*s = SourceConfigWebhookAuthAwssns(value)
+	extraProperties, err := internal.ExtractExtraProperties(data, *s)
+	if err != nil {
+		return err
+	}
+	s.extraProperties = extraProperties
+	s.rawJSON = json.RawMessage(data)
+	return nil
+}
+
+func (s *SourceConfigWebhookAuthAwssns) String() string {
+	if len(s.rawJSON) > 0 {
+		if value, err := internal.StringifyJSON(s.rawJSON); err == nil {
+			return value
+		}
+	}
+	if value, err := internal.StringifyJSON(s); err == nil {
+		return value
+	}
+	return fmt.Sprintf("%#v", s)
+}
+
+type SourceConfigWebhookAuthBasicAuth struct {
+	Username *string `json:"username,omitempty" url:"username,omitempty"`
+	Password *string `json:"password,omitempty" url:"password,omitempty"`
+
+	extraProperties map[string]interface{}
+	rawJSON         json.RawMessage
+}
+
+func (s *SourceConfigWebhookAuthBasicAuth) GetUsername() *string {
+	if s == nil {
+		return nil
+	}
+	return s.Username
+}
+
+func (s *SourceConfigWebhookAuthBasicAuth) GetPassword() *string {
+	if s == nil {
+		return nil
+	}
+	return s.Password
+}
+
+func (s *SourceConfigWebhookAuthBasicAuth) GetExtraProperties() map[string]interface{} {
+	return s.extraProperties
+}
+
+func (s *SourceConfigWebhookAuthBasicAuth) UnmarshalJSON(data []byte) error {
+	type unmarshaler SourceConfigWebhookAuthBasicAuth
+	var value unmarshaler
+	if err := json.Unmarshal(data, &value); err != nil {
+		return err
+	}
+	*s = SourceConfigWebhookAuthBasicAuth(value)
+	extraProperties, err := internal.ExtractExtraProperties(data, *s)
+	if err != nil {
+		return err
+	}
+	s.extraProperties = extraProperties
+	s.rawJSON = json.RawMessage(data)
+	return nil
+}
+
+func (s *SourceConfigWebhookAuthBasicAuth) String() string {
+	if len(s.rawJSON) > 0 {
+		if value, err := internal.StringifyJSON(s.rawJSON); err == nil {
+			return value
+		}
+	}
+	if value, err := internal.StringifyJSON(s); err == nil {
+		return value
+	}
+	return fmt.Sprintf("%#v", s)
+}
+
+type SourceConfigWebhookAuthBondsmith struct {
+	WebhookSecretKey string `json:"webhook_secret_key" url:"webhook_secret_key"`
+
+	extraProperties map[string]interface{}
+	rawJSON         json.RawMessage
+}
+
+func (s *SourceConfigWebhookAuthBondsmith) GetWebhookSecretKey() string {
+	if s == nil {
+		return ""
+	}
+	return s.WebhookSecretKey
+}
+
+func (s *SourceConfigWebhookAuthBondsmith) GetExtraProperties() map[string]interface{} {
+	return s.extraProperties
+}
+
+func (s *SourceConfigWebhookAuthBondsmith) UnmarshalJSON(data []byte) error {
+	type unmarshaler SourceConfigWebhookAuthBondsmith
+	var value unmarshaler
+	if err := json.Unmarshal(data, &value); err != nil {
+		return err
+	}
+	*s = SourceConfigWebhookAuthBondsmith(value)
+	extraProperties, err := internal.ExtractExtraProperties(data, *s)
+	if err != nil {
+		return err
+	}
+	s.extraProperties = extraProperties
+	s.rawJSON = json.RawMessage(data)
+	return nil
+}
+
+func (s *SourceConfigWebhookAuthBondsmith) String() string {
+	if len(s.rawJSON) > 0 {
+		if value, err := internal.StringifyJSON(s.rawJSON); err == nil {
+			return value
+		}
+	}
+	if value, err := internal.StringifyJSON(s); err == nil {
+		return value
+	}
+	return fmt.Sprintf("%#v", s)
+}
+
+type SourceConfigWebhookAuthBridge struct {
+	PublicKey string `json:"public_key" url:"public_key"`
+
+	extraProperties map[string]interface{}
+	rawJSON         json.RawMessage
+}
+
+func (s *SourceConfigWebhookAuthBridge) GetPublicKey() string {
+	if s == nil {
+		return ""
+	}
+	return s.PublicKey
+}
+
+func (s *SourceConfigWebhookAuthBridge) GetExtraProperties() map[string]interface{} {
+	return s.extraProperties
+}
+
+func (s *SourceConfigWebhookAuthBridge) UnmarshalJSON(data []byte) error {
+	type unmarshaler SourceConfigWebhookAuthBridge
+	var value unmarshaler
+	if err := json.Unmarshal(data, &value); err != nil {
+		return err
+	}
+	*s = SourceConfigWebhookAuthBridge(value)
+	extraProperties, err := internal.ExtractExtraProperties(data, *s)
+	if err != nil {
+		return err
+	}
+	s.extraProperties = extraProperties
+	s.rawJSON = json.RawMessage(data)
+	return nil
+}
+
+func (s *SourceConfigWebhookAuthBridge) String() string {
+	if len(s.rawJSON) > 0 {
+		if value, err := internal.StringifyJSON(s.rawJSON); err == nil {
+			return value
+		}
+	}
+	if value, err := internal.StringifyJSON(s); err == nil {
+		return value
+	}
+	return fmt.Sprintf("%#v", s)
+}
+
+type SourceConfigWebhookAuthCloudSignal struct {
+	ApiKey string `json:"api_key" url:"api_key"`
+
+	extraProperties map[string]interface{}
+	rawJSON         json.RawMessage
+}
+
+func (s *SourceConfigWebhookAuthCloudSignal) GetApiKey() string {
+	if s == nil {
+		return ""
+	}
+	return s.ApiKey
+}
+
+func (s *SourceConfigWebhookAuthCloudSignal) GetExtraProperties() map[string]interface{} {
+	return s.extraProperties
+}
+
+func (s *SourceConfigWebhookAuthCloudSignal) UnmarshalJSON(data []byte) error {
+	type unmarshaler SourceConfigWebhookAuthCloudSignal
+	var value unmarshaler
+	if err := json.Unmarshal(data, &value); err != nil {
+		return err
+	}
+	*s = SourceConfigWebhookAuthCloudSignal(value)
+	extraProperties, err := internal.ExtractExtraProperties(data, *s)
+	if err != nil {
+		return err
+	}
+	s.extraProperties = extraProperties
+	s.rawJSON = json.RawMessage(data)
+	return nil
+}
+
+func (s *SourceConfigWebhookAuthCloudSignal) String() string {
+	if len(s.rawJSON) > 0 {
+		if value, err := internal.StringifyJSON(s.rawJSON); err == nil {
+			return value
+		}
+	}
+	if value, err := internal.StringifyJSON(s); err == nil {
+		return value
+	}
+	return fmt.Sprintf("%#v", s)
+}
+
+type SourceConfigWebhookAuthCommerceLayer struct {
+	WebhookSecretKey string `json:"webhook_secret_key" url:"webhook_secret_key"`
+
+	extraProperties map[string]interface{}
+	rawJSON         json.RawMessage
+}
+
+func (s *SourceConfigWebhookAuthCommerceLayer) GetWebhookSecretKey() string {
+	if s == nil {
+		return ""
+	}
+	return s.WebhookSecretKey
+}
+
+func (s *SourceConfigWebhookAuthCommerceLayer) GetExtraProperties() map[string]interface{} {
+	return s.extraProperties
+}
+
+func (s *SourceConfigWebhookAuthCommerceLayer) UnmarshalJSON(data []byte) error {
+	type unmarshaler SourceConfigWebhookAuthCommerceLayer
+	var value unmarshaler
+	if err := json.Unmarshal(data, &value); err != nil {
+		return err
+	}
+	*s = SourceConfigWebhookAuthCommerceLayer(value)
+	extraProperties, err := internal.ExtractExtraProperties(data, *s)
+	if err != nil {
+		return err
+	}
+	s.extraProperties = extraProperties
+	s.rawJSON = json.RawMessage(data)
+	return nil
+}
+
+func (s *SourceConfigWebhookAuthCommerceLayer) String() string {
+	if len(s.rawJSON) > 0 {
+		if value, err := internal.StringifyJSON(s.rawJSON); err == nil {
+			return value
+		}
+	}
+	if value, err := internal.StringifyJSON(s); err == nil {
+		return value
+	}
+	return fmt.Sprintf("%#v", s)
+}
+
+type SourceConfigWebhookAuthCourier struct {
+	WebhookSecretKey string `json:"webhook_secret_key" url:"webhook_secret_key"`
+
+	extraProperties map[string]interface{}
+	rawJSON         json.RawMessage
+}
+
+func (s *SourceConfigWebhookAuthCourier) GetWebhookSecretKey() string {
+	if s == nil {
+		return ""
+	}
+	return s.WebhookSecretKey
+}
+
+func (s *SourceConfigWebhookAuthCourier) GetExtraProperties() map[string]interface{} {
+	return s.extraProperties
+}
+
+func (s *SourceConfigWebhookAuthCourier) UnmarshalJSON(data []byte) error {
+	type unmarshaler SourceConfigWebhookAuthCourier
+	var value unmarshaler
+	if err := json.Unmarshal(data, &value); err != nil {
+		return err
+	}
+	*s = SourceConfigWebhookAuthCourier(value)
+	extraProperties, err := internal.ExtractExtraProperties(data, *s)
+	if err != nil {
+		return err
+	}
+	s.extraProperties = extraProperties
+	s.rawJSON = json.RawMessage(data)
+	return nil
+}
+
+func (s *SourceConfigWebhookAuthCourier) String() string {
+	if len(s.rawJSON) > 0 {
+		if value, err := internal.StringifyJSON(s.rawJSON); err == nil {
+			return value
+		}
+	}
+	if value, err := internal.StringifyJSON(s); err == nil {
+		return value
+	}
+	return fmt.Sprintf("%#v", s)
+}
+
+type SourceConfigWebhookAuthCustomerIo struct {
+	WebhookSecretKey string `json:"webhook_secret_key" url:"webhook_secret_key"`
+
+	extraProperties map[string]interface{}
+	rawJSON         json.RawMessage
+}
+
+func (s *SourceConfigWebhookAuthCustomerIo) GetWebhookSecretKey() string {
+	if s == nil {
+		return ""
+	}
+	return s.WebhookSecretKey
+}
+
+func (s *SourceConfigWebhookAuthCustomerIo) GetExtraProperties() map[string]interface{} {
+	return s.extraProperties
+}
+
+func (s *SourceConfigWebhookAuthCustomerIo) UnmarshalJSON(data []byte) error {
+	type unmarshaler SourceConfigWebhookAuthCustomerIo
+	var value unmarshaler
+	if err := json.Unmarshal(data, &value); err != nil {
+		return err
+	}
+	*s = SourceConfigWebhookAuthCustomerIo(value)
+	extraProperties, err := internal.ExtractExtraProperties(data, *s)
+	if err != nil {
+		return err
+	}
+	s.extraProperties = extraProperties
+	s.rawJSON = json.RawMessage(data)
+	return nil
+}
+
+func (s *SourceConfigWebhookAuthCustomerIo) String() string {
+	if len(s.rawJSON) > 0 {
+		if value, err := internal.StringifyJSON(s.rawJSON); err == nil {
+			return value
+		}
+	}
+	if value, err := internal.StringifyJSON(s); err == nil {
+		return value
+	}
+	return fmt.Sprintf("%#v", s)
+}
+
+type SourceConfigWebhookAuthDiscord struct {
+	PublicKey string `json:"public_key" url:"public_key"`
+
+	extraProperties map[string]interface{}
+	rawJSON         json.RawMessage
+}
+
+func (s *SourceConfigWebhookAuthDiscord) GetPublicKey() string {
+	if s == nil {
+		return ""
+	}
+	return s.PublicKey
+}
+
+func (s *SourceConfigWebhookAuthDiscord) GetExtraProperties() map[string]interface{} {
+	return s.extraProperties
+}
+
+func (s *SourceConfigWebhookAuthDiscord) UnmarshalJSON(data []byte) error {
+	type unmarshaler SourceConfigWebhookAuthDiscord
+	var value unmarshaler
+	if err := json.Unmarshal(data, &value); err != nil {
+		return err
+	}
+	*s = SourceConfigWebhookAuthDiscord(value)
+	extraProperties, err := internal.ExtractExtraProperties(data, *s)
+	if err != nil {
+		return err
+	}
+	s.extraProperties = extraProperties
+	s.rawJSON = json.RawMessage(data)
+	return nil
+}
+
+func (s *SourceConfigWebhookAuthDiscord) String() string {
+	if len(s.rawJSON) > 0 {
+		if value, err := internal.StringifyJSON(s.rawJSON); err == nil {
+			return value
+		}
+	}
+	if value, err := internal.StringifyJSON(s); err == nil {
+		return value
+	}
+	return fmt.Sprintf("%#v", s)
+}
+
+type SourceConfigWebhookAuthEbay struct {
+	Environment       SourceConfigWebhookAuthEbayEnvironment `json:"environment" url:"environment"`
+	DevId             string                                 `json:"dev_id" url:"dev_id"`
+	ClientId          string                                 `json:"client_id" url:"client_id"`
+	ClientSecret      string                                 `json:"client_secret" url:"client_secret"`
+	VerificationToken string                                 `json:"verification_token" url:"verification_token"`
+
+	extraProperties map[string]interface{}
+	rawJSON         json.RawMessage
+}
+
+func (s *SourceConfigWebhookAuthEbay) GetEnvironment() SourceConfigWebhookAuthEbayEnvironment {
+	if s == nil {
+		return ""
+	}
+	return s.Environment
+}
+
+func (s *SourceConfigWebhookAuthEbay) GetDevId() string {
+	if s == nil {
+		return ""
+	}
+	return s.DevId
+}
+
+func (s *SourceConfigWebhookAuthEbay) GetClientId() string {
+	if s == nil {
+		return ""
+	}
+	return s.ClientId
+}
+
+func (s *SourceConfigWebhookAuthEbay) GetClientSecret() string {
+	if s == nil {
+		return ""
+	}
+	return s.ClientSecret
+}
+
+func (s *SourceConfigWebhookAuthEbay) GetVerificationToken() string {
+	if s == nil {
+		return ""
+	}
+	return s.VerificationToken
+}
+
+func (s *SourceConfigWebhookAuthEbay) GetExtraProperties() map[string]interface{} {
+	return s.extraProperties
+}
+
+func (s *SourceConfigWebhookAuthEbay) UnmarshalJSON(data []byte) error {
+	type unmarshaler SourceConfigWebhookAuthEbay
+	var value unmarshaler
+	if err := json.Unmarshal(data, &value); err != nil {
+		return err
+	}
+	*s = SourceConfigWebhookAuthEbay(value)
+	extraProperties, err := internal.ExtractExtraProperties(data, *s)
+	if err != nil {
+		return err
+	}
+	s.extraProperties = extraProperties
+	s.rawJSON = json.RawMessage(data)
+	return nil
+}
+
+func (s *SourceConfigWebhookAuthEbay) String() string {
+	if len(s.rawJSON) > 0 {
+		if value, err := internal.StringifyJSON(s.rawJSON); err == nil {
+			return value
+		}
+	}
+	if value, err := internal.StringifyJSON(s); err == nil {
+		return value
+	}
+	return fmt.Sprintf("%#v", s)
+}
+
+type SourceConfigWebhookAuthEbayEnvironment string
+
+const (
+	SourceConfigWebhookAuthEbayEnvironmentProduction SourceConfigWebhookAuthEbayEnvironment = "PRODUCTION"
+	SourceConfigWebhookAuthEbayEnvironmentSandbox    SourceConfigWebhookAuthEbayEnvironment = "SANDBOX"
+)
+
+func NewSourceConfigWebhookAuthEbayEnvironmentFromString(s string) (SourceConfigWebhookAuthEbayEnvironment, error) {
+	switch s {
+	case "PRODUCTION":
+		return SourceConfigWebhookAuthEbayEnvironmentProduction, nil
+	case "SANDBOX":
+		return SourceConfigWebhookAuthEbayEnvironmentSandbox, nil
+	}
+	var t SourceConfigWebhookAuthEbayEnvironment
+	return "", fmt.Errorf("%s is not a valid %T", s, t)
+}
+
+func (s SourceConfigWebhookAuthEbayEnvironment) Ptr() *SourceConfigWebhookAuthEbayEnvironment {
+	return &s
+}
+
+type SourceConfigWebhookAuthEnode struct {
+	WebhookSecretKey string `json:"webhook_secret_key" url:"webhook_secret_key"`
+
+	extraProperties map[string]interface{}
+	rawJSON         json.RawMessage
+}
+
+func (s *SourceConfigWebhookAuthEnode) GetWebhookSecretKey() string {
+	if s == nil {
+		return ""
+	}
+	return s.WebhookSecretKey
+}
+
+func (s *SourceConfigWebhookAuthEnode) GetExtraProperties() map[string]interface{} {
+	return s.extraProperties
+}
+
+func (s *SourceConfigWebhookAuthEnode) UnmarshalJSON(data []byte) error {
+	type unmarshaler SourceConfigWebhookAuthEnode
+	var value unmarshaler
+	if err := json.Unmarshal(data, &value); err != nil {
+		return err
+	}
+	*s = SourceConfigWebhookAuthEnode(value)
+	extraProperties, err := internal.ExtractExtraProperties(data, *s)
+	if err != nil {
+		return err
+	}
+	s.extraProperties = extraProperties
+	s.rawJSON = json.RawMessage(data)
+	return nil
+}
+
+func (s *SourceConfigWebhookAuthEnode) String() string {
+	if len(s.rawJSON) > 0 {
+		if value, err := internal.StringifyJSON(s.rawJSON); err == nil {
+			return value
+		}
+	}
+	if value, err := internal.StringifyJSON(s); err == nil {
+		return value
+	}
+	return fmt.Sprintf("%#v", s)
+}
+
+type SourceConfigWebhookAuthFacebook struct {
+	WebhookSecretKey string `json:"webhook_secret_key" url:"webhook_secret_key"`
+
+	extraProperties map[string]interface{}
+	rawJSON         json.RawMessage
+}
+
+func (s *SourceConfigWebhookAuthFacebook) GetWebhookSecretKey() string {
+	if s == nil {
+		return ""
+	}
+	return s.WebhookSecretKey
+}
+
+func (s *SourceConfigWebhookAuthFacebook) GetExtraProperties() map[string]interface{} {
+	return s.extraProperties
+}
+
+func (s *SourceConfigWebhookAuthFacebook) UnmarshalJSON(data []byte) error {
+	type unmarshaler SourceConfigWebhookAuthFacebook
+	var value unmarshaler
+	if err := json.Unmarshal(data, &value); err != nil {
+		return err
+	}
+	*s = SourceConfigWebhookAuthFacebook(value)
+	extraProperties, err := internal.ExtractExtraProperties(data, *s)
+	if err != nil {
+		return err
+	}
+	s.extraProperties = extraProperties
+	s.rawJSON = json.RawMessage(data)
+	return nil
+}
+
+func (s *SourceConfigWebhookAuthFacebook) String() string {
+	if len(s.rawJSON) > 0 {
+		if value, err := internal.StringifyJSON(s.rawJSON); err == nil {
+			return value
+		}
+	}
+	if value, err := internal.StringifyJSON(s); err == nil {
+		return value
+	}
+	return fmt.Sprintf("%#v", s)
+}
+
+type SourceConfigWebhookAuthFavro struct {
+	WebhookSecretKey string `json:"webhook_secret_key" url:"webhook_secret_key"`
+
+	extraProperties map[string]interface{}
+	rawJSON         json.RawMessage
+}
+
+func (s *SourceConfigWebhookAuthFavro) GetWebhookSecretKey() string {
+	if s == nil {
+		return ""
+	}
+	return s.WebhookSecretKey
+}
+
+func (s *SourceConfigWebhookAuthFavro) GetExtraProperties() map[string]interface{} {
+	return s.extraProperties
+}
+
+func (s *SourceConfigWebhookAuthFavro) UnmarshalJSON(data []byte) error {
+	type unmarshaler SourceConfigWebhookAuthFavro
+	var value unmarshaler
+	if err := json.Unmarshal(data, &value); err != nil {
+		return err
+	}
+	*s = SourceConfigWebhookAuthFavro(value)
+	extraProperties, err := internal.ExtractExtraProperties(data, *s)
+	if err != nil {
+		return err
+	}
+	s.extraProperties = extraProperties
+	s.rawJSON = json.RawMessage(data)
+	return nil
+}
+
+func (s *SourceConfigWebhookAuthFavro) String() string {
+	if len(s.rawJSON) > 0 {
+		if value, err := internal.StringifyJSON(s.rawJSON); err == nil {
+			return value
+		}
+	}
+	if value, err := internal.StringifyJSON(s); err == nil {
+		return value
+	}
+	return fmt.Sprintf("%#v", s)
+}
+
+type SourceConfigWebhookAuthFiserv struct {
+	WebhookSecretKey string  `json:"webhook_secret_key" url:"webhook_secret_key"`
+	StoreName        *string `json:"store_name,omitempty" url:"store_name,omitempty"`
+
+	extraProperties map[string]interface{}
+	rawJSON         json.RawMessage
+}
+
+func (s *SourceConfigWebhookAuthFiserv) GetWebhookSecretKey() string {
+	if s == nil {
+		return ""
+	}
+	return s.WebhookSecretKey
+}
+
+func (s *SourceConfigWebhookAuthFiserv) GetStoreName() *string {
+	if s == nil {
+		return nil
+	}
+	return s.StoreName
+}
+
+func (s *SourceConfigWebhookAuthFiserv) GetExtraProperties() map[string]interface{} {
+	return s.extraProperties
+}
+
+func (s *SourceConfigWebhookAuthFiserv) UnmarshalJSON(data []byte) error {
+	type unmarshaler SourceConfigWebhookAuthFiserv
+	var value unmarshaler
+	if err := json.Unmarshal(data, &value); err != nil {
+		return err
+	}
+	*s = SourceConfigWebhookAuthFiserv(value)
+	extraProperties, err := internal.ExtractExtraProperties(data, *s)
+	if err != nil {
+		return err
+	}
+	s.extraProperties = extraProperties
+	s.rawJSON = json.RawMessage(data)
+	return nil
+}
+
+func (s *SourceConfigWebhookAuthFiserv) String() string {
+	if len(s.rawJSON) > 0 {
+		if value, err := internal.StringifyJSON(s.rawJSON); err == nil {
+			return value
+		}
+	}
+	if value, err := internal.StringifyJSON(s); err == nil {
+		return value
+	}
+	return fmt.Sprintf("%#v", s)
+}
+
+type SourceConfigWebhookAuthFrontApp struct {
+	WebhookSecretKey string `json:"webhook_secret_key" url:"webhook_secret_key"`
+
+	extraProperties map[string]interface{}
+	rawJSON         json.RawMessage
+}
+
+func (s *SourceConfigWebhookAuthFrontApp) GetWebhookSecretKey() string {
+	if s == nil {
+		return ""
+	}
+	return s.WebhookSecretKey
+}
+
+func (s *SourceConfigWebhookAuthFrontApp) GetExtraProperties() map[string]interface{} {
+	return s.extraProperties
+}
+
+func (s *SourceConfigWebhookAuthFrontApp) UnmarshalJSON(data []byte) error {
+	type unmarshaler SourceConfigWebhookAuthFrontApp
+	var value unmarshaler
+	if err := json.Unmarshal(data, &value); err != nil {
+		return err
+	}
+	*s = SourceConfigWebhookAuthFrontApp(value)
+	extraProperties, err := internal.ExtractExtraProperties(data, *s)
+	if err != nil {
+		return err
+	}
+	s.extraProperties = extraProperties
+	s.rawJSON = json.RawMessage(data)
+	return nil
+}
+
+func (s *SourceConfigWebhookAuthFrontApp) String() string {
+	if len(s.rawJSON) > 0 {
+		if value, err := internal.StringifyJSON(s.rawJSON); err == nil {
+			return value
+		}
+	}
+	if value, err := internal.StringifyJSON(s); err == nil {
+		return value
+	}
+	return fmt.Sprintf("%#v", s)
+}
+
+type SourceConfigWebhookAuthGitHub struct {
+	WebhookSecretKey string `json:"webhook_secret_key" url:"webhook_secret_key"`
+
+	extraProperties map[string]interface{}
+	rawJSON         json.RawMessage
+}
+
+func (s *SourceConfigWebhookAuthGitHub) GetWebhookSecretKey() string {
+	if s == nil {
+		return ""
+	}
+	return s.WebhookSecretKey
+}
+
+func (s *SourceConfigWebhookAuthGitHub) GetExtraProperties() map[string]interface{} {
+	return s.extraProperties
+}
+
+func (s *SourceConfigWebhookAuthGitHub) UnmarshalJSON(data []byte) error {
+	type unmarshaler SourceConfigWebhookAuthGitHub
+	var value unmarshaler
+	if err := json.Unmarshal(data, &value); err != nil {
+		return err
+	}
+	*s = SourceConfigWebhookAuthGitHub(value)
+	extraProperties, err := internal.ExtractExtraProperties(data, *s)
+	if err != nil {
+		return err
+	}
+	s.extraProperties = extraProperties
+	s.rawJSON = json.RawMessage(data)
+	return nil
+}
+
+func (s *SourceConfigWebhookAuthGitHub) String() string {
+	if len(s.rawJSON) > 0 {
+		if value, err := internal.StringifyJSON(s.rawJSON); err == nil {
+			return value
+		}
+	}
+	if value, err := internal.StringifyJSON(s); err == nil {
+		return value
+	}
+	return fmt.Sprintf("%#v", s)
+}
+
+type SourceConfigWebhookAuthGitLab struct {
+	ApiKey string `json:"api_key" url:"api_key"`
+
+	extraProperties map[string]interface{}
+	rawJSON         json.RawMessage
+}
+
+func (s *SourceConfigWebhookAuthGitLab) GetApiKey() string {
+	if s == nil {
+		return ""
+	}
+	return s.ApiKey
+}
+
+func (s *SourceConfigWebhookAuthGitLab) GetExtraProperties() map[string]interface{} {
+	return s.extraProperties
+}
+
+func (s *SourceConfigWebhookAuthGitLab) UnmarshalJSON(data []byte) error {
+	type unmarshaler SourceConfigWebhookAuthGitLab
+	var value unmarshaler
+	if err := json.Unmarshal(data, &value); err != nil {
+		return err
+	}
+	*s = SourceConfigWebhookAuthGitLab(value)
+	extraProperties, err := internal.ExtractExtraProperties(data, *s)
+	if err != nil {
+		return err
+	}
+	s.extraProperties = extraProperties
+	s.rawJSON = json.RawMessage(data)
+	return nil
+}
+
+func (s *SourceConfigWebhookAuthGitLab) String() string {
+	if len(s.rawJSON) > 0 {
+		if value, err := internal.StringifyJSON(s.rawJSON); err == nil {
+			return value
+		}
+	}
+	if value, err := internal.StringifyJSON(s); err == nil {
+		return value
+	}
+	return fmt.Sprintf("%#v", s)
+}
+
+type SourceConfigWebhookAuthHmac struct {
+	Algorithm        SourceConfigWebhookAuthHmacAlgorithm `json:"algorithm" url:"algorithm"`
+	Encoding         SourceConfigWebhookAuthHmacEncoding  `json:"encoding" url:"encoding"`
+	HeaderKey        string                               `json:"header_key" url:"header_key"`
+	WebhookSecretKey string                               `json:"webhook_secret_key" url:"webhook_secret_key"`
+
+	extraProperties map[string]interface{}
+	rawJSON         json.RawMessage
+}
+
+func (s *SourceConfigWebhookAuthHmac) GetAlgorithm() SourceConfigWebhookAuthHmacAlgorithm {
+	if s == nil {
+		return ""
+	}
+	return s.Algorithm
+}
+
+func (s *SourceConfigWebhookAuthHmac) GetEncoding() SourceConfigWebhookAuthHmacEncoding {
+	if s == nil {
+		return ""
+	}
+	return s.Encoding
+}
+
+func (s *SourceConfigWebhookAuthHmac) GetHeaderKey() string {
+	if s == nil {
+		return ""
+	}
+	return s.HeaderKey
+}
+
+func (s *SourceConfigWebhookAuthHmac) GetWebhookSecretKey() string {
+	if s == nil {
+		return ""
+	}
+	return s.WebhookSecretKey
+}
+
+func (s *SourceConfigWebhookAuthHmac) GetExtraProperties() map[string]interface{} {
+	return s.extraProperties
+}
+
+func (s *SourceConfigWebhookAuthHmac) UnmarshalJSON(data []byte) error {
+	type unmarshaler SourceConfigWebhookAuthHmac
+	var value unmarshaler
+	if err := json.Unmarshal(data, &value); err != nil {
+		return err
+	}
+	*s = SourceConfigWebhookAuthHmac(value)
+	extraProperties, err := internal.ExtractExtraProperties(data, *s)
+	if err != nil {
+		return err
+	}
+	s.extraProperties = extraProperties
+	s.rawJSON = json.RawMessage(data)
+	return nil
+}
+
+func (s *SourceConfigWebhookAuthHmac) String() string {
+	if len(s.rawJSON) > 0 {
+		if value, err := internal.StringifyJSON(s.rawJSON); err == nil {
+			return value
+		}
+	}
+	if value, err := internal.StringifyJSON(s); err == nil {
+		return value
+	}
+	return fmt.Sprintf("%#v", s)
+}
+
+type SourceConfigWebhookAuthHmacAlgorithm string
+
+const (
+	SourceConfigWebhookAuthHmacAlgorithmSha1   SourceConfigWebhookAuthHmacAlgorithm = "sha1"
+	SourceConfigWebhookAuthHmacAlgorithmSha256 SourceConfigWebhookAuthHmacAlgorithm = "sha256"
+	SourceConfigWebhookAuthHmacAlgorithmSha512 SourceConfigWebhookAuthHmacAlgorithm = "sha512"
+	SourceConfigWebhookAuthHmacAlgorithmMd5    SourceConfigWebhookAuthHmacAlgorithm = "md5"
+)
+
+func NewSourceConfigWebhookAuthHmacAlgorithmFromString(s string) (SourceConfigWebhookAuthHmacAlgorithm, error) {
+	switch s {
+	case "sha1":
+		return SourceConfigWebhookAuthHmacAlgorithmSha1, nil
+	case "sha256":
+		return SourceConfigWebhookAuthHmacAlgorithmSha256, nil
+	case "sha512":
+		return SourceConfigWebhookAuthHmacAlgorithmSha512, nil
+	case "md5":
+		return SourceConfigWebhookAuthHmacAlgorithmMd5, nil
+	}
+	var t SourceConfigWebhookAuthHmacAlgorithm
+	return "", fmt.Errorf("%s is not a valid %T", s, t)
+}
+
+func (s SourceConfigWebhookAuthHmacAlgorithm) Ptr() *SourceConfigWebhookAuthHmacAlgorithm {
+	return &s
+}
+
+type SourceConfigWebhookAuthHmacEncoding string
+
+const (
+	SourceConfigWebhookAuthHmacEncodingBase64    SourceConfigWebhookAuthHmacEncoding = "base64"
+	SourceConfigWebhookAuthHmacEncodingBase64Url SourceConfigWebhookAuthHmacEncoding = "base64url"
+	SourceConfigWebhookAuthHmacEncodingHex       SourceConfigWebhookAuthHmacEncoding = "hex"
+)
+
+func NewSourceConfigWebhookAuthHmacEncodingFromString(s string) (SourceConfigWebhookAuthHmacEncoding, error) {
+	switch s {
+	case "base64":
+		return SourceConfigWebhookAuthHmacEncodingBase64, nil
+	case "base64url":
+		return SourceConfigWebhookAuthHmacEncodingBase64Url, nil
+	case "hex":
+		return SourceConfigWebhookAuthHmacEncodingHex, nil
+	}
+	var t SourceConfigWebhookAuthHmacEncoding
+	return "", fmt.Errorf("%s is not a valid %T", s, t)
+}
+
+func (s SourceConfigWebhookAuthHmacEncoding) Ptr() *SourceConfigWebhookAuthHmacEncoding {
+	return &s
+}
+
+type SourceConfigWebhookAuthHubspot struct {
+	WebhookSecretKey string `json:"webhook_secret_key" url:"webhook_secret_key"`
+
+	extraProperties map[string]interface{}
+	rawJSON         json.RawMessage
+}
+
+func (s *SourceConfigWebhookAuthHubspot) GetWebhookSecretKey() string {
+	if s == nil {
+		return ""
+	}
+	return s.WebhookSecretKey
+}
+
+func (s *SourceConfigWebhookAuthHubspot) GetExtraProperties() map[string]interface{} {
+	return s.extraProperties
+}
+
+func (s *SourceConfigWebhookAuthHubspot) UnmarshalJSON(data []byte) error {
+	type unmarshaler SourceConfigWebhookAuthHubspot
+	var value unmarshaler
+	if err := json.Unmarshal(data, &value); err != nil {
+		return err
+	}
+	*s = SourceConfigWebhookAuthHubspot(value)
+	extraProperties, err := internal.ExtractExtraProperties(data, *s)
+	if err != nil {
+		return err
+	}
+	s.extraProperties = extraProperties
+	s.rawJSON = json.RawMessage(data)
+	return nil
+}
+
+func (s *SourceConfigWebhookAuthHubspot) String() string {
+	if len(s.rawJSON) > 0 {
+		if value, err := internal.StringifyJSON(s.rawJSON); err == nil {
+			return value
+		}
+	}
+	if value, err := internal.StringifyJSON(s); err == nil {
+		return value
+	}
+	return fmt.Sprintf("%#v", s)
+}
+
+type SourceConfigWebhookAuthLinear struct {
+	WebhookSecretKey string `json:"webhook_secret_key" url:"webhook_secret_key"`
+
+	extraProperties map[string]interface{}
+	rawJSON         json.RawMessage
+}
+
+func (s *SourceConfigWebhookAuthLinear) GetWebhookSecretKey() string {
+	if s == nil {
+		return ""
+	}
+	return s.WebhookSecretKey
+}
+
+func (s *SourceConfigWebhookAuthLinear) GetExtraProperties() map[string]interface{} {
+	return s.extraProperties
+}
+
+func (s *SourceConfigWebhookAuthLinear) UnmarshalJSON(data []byte) error {
+	type unmarshaler SourceConfigWebhookAuthLinear
+	var value unmarshaler
+	if err := json.Unmarshal(data, &value); err != nil {
+		return err
+	}
+	*s = SourceConfigWebhookAuthLinear(value)
+	extraProperties, err := internal.ExtractExtraProperties(data, *s)
+	if err != nil {
+		return err
+	}
+	s.extraProperties = extraProperties
+	s.rawJSON = json.RawMessage(data)
+	return nil
+}
+
+func (s *SourceConfigWebhookAuthLinear) String() string {
+	if len(s.rawJSON) > 0 {
+		if value, err := internal.StringifyJSON(s.rawJSON); err == nil {
+			return value
+		}
+	}
+	if value, err := internal.StringifyJSON(s); err == nil {
+		return value
+	}
+	return fmt.Sprintf("%#v", s)
+}
+
+type SourceConfigWebhookAuthLinkedIn struct {
+	WebhookSecretKey string `json:"webhook_secret_key" url:"webhook_secret_key"`
+
+	extraProperties map[string]interface{}
+	rawJSON         json.RawMessage
+}
+
+func (s *SourceConfigWebhookAuthLinkedIn) GetWebhookSecretKey() string {
+	if s == nil {
+		return ""
+	}
+	return s.WebhookSecretKey
+}
+
+func (s *SourceConfigWebhookAuthLinkedIn) GetExtraProperties() map[string]interface{} {
+	return s.extraProperties
+}
+
+func (s *SourceConfigWebhookAuthLinkedIn) UnmarshalJSON(data []byte) error {
+	type unmarshaler SourceConfigWebhookAuthLinkedIn
+	var value unmarshaler
+	if err := json.Unmarshal(data, &value); err != nil {
+		return err
+	}
+	*s = SourceConfigWebhookAuthLinkedIn(value)
+	extraProperties, err := internal.ExtractExtraProperties(data, *s)
+	if err != nil {
+		return err
+	}
+	s.extraProperties = extraProperties
+	s.rawJSON = json.RawMessage(data)
+	return nil
+}
+
+func (s *SourceConfigWebhookAuthLinkedIn) String() string {
+	if len(s.rawJSON) > 0 {
+		if value, err := internal.StringifyJSON(s.rawJSON); err == nil {
+			return value
+		}
+	}
+	if value, err := internal.StringifyJSON(s); err == nil {
+		return value
+	}
+	return fmt.Sprintf("%#v", s)
+}
+
+type SourceConfigWebhookAuthMailchimp struct {
+	WebhookSecretKey string `json:"webhook_secret_key" url:"webhook_secret_key"`
+
+	extraProperties map[string]interface{}
+	rawJSON         json.RawMessage
+}
+
+func (s *SourceConfigWebhookAuthMailchimp) GetWebhookSecretKey() string {
+	if s == nil {
+		return ""
+	}
+	return s.WebhookSecretKey
+}
+
+func (s *SourceConfigWebhookAuthMailchimp) GetExtraProperties() map[string]interface{} {
+	return s.extraProperties
+}
+
+func (s *SourceConfigWebhookAuthMailchimp) UnmarshalJSON(data []byte) error {
+	type unmarshaler SourceConfigWebhookAuthMailchimp
+	var value unmarshaler
+	if err := json.Unmarshal(data, &value); err != nil {
+		return err
+	}
+	*s = SourceConfigWebhookAuthMailchimp(value)
+	extraProperties, err := internal.ExtractExtraProperties(data, *s)
+	if err != nil {
+		return err
+	}
+	s.extraProperties = extraProperties
+	s.rawJSON = json.RawMessage(data)
+	return nil
+}
+
+func (s *SourceConfigWebhookAuthMailchimp) String() string {
+	if len(s.rawJSON) > 0 {
+		if value, err := internal.StringifyJSON(s.rawJSON); err == nil {
+			return value
+		}
+	}
+	if value, err := internal.StringifyJSON(s); err == nil {
+		return value
+	}
+	return fmt.Sprintf("%#v", s)
+}
+
+type SourceConfigWebhookAuthMailgun struct {
+	WebhookSecretKey string `json:"webhook_secret_key" url:"webhook_secret_key"`
+
+	extraProperties map[string]interface{}
+	rawJSON         json.RawMessage
+}
+
+func (s *SourceConfigWebhookAuthMailgun) GetWebhookSecretKey() string {
+	if s == nil {
+		return ""
+	}
+	return s.WebhookSecretKey
+}
+
+func (s *SourceConfigWebhookAuthMailgun) GetExtraProperties() map[string]interface{} {
+	return s.extraProperties
+}
+
+func (s *SourceConfigWebhookAuthMailgun) UnmarshalJSON(data []byte) error {
+	type unmarshaler SourceConfigWebhookAuthMailgun
+	var value unmarshaler
+	if err := json.Unmarshal(data, &value); err != nil {
+		return err
+	}
+	*s = SourceConfigWebhookAuthMailgun(value)
+	extraProperties, err := internal.ExtractExtraProperties(data, *s)
+	if err != nil {
+		return err
+	}
+	s.extraProperties = extraProperties
+	s.rawJSON = json.RawMessage(data)
+	return nil
+}
+
+func (s *SourceConfigWebhookAuthMailgun) String() string {
+	if len(s.rawJSON) > 0 {
+		if value, err := internal.StringifyJSON(s.rawJSON); err == nil {
+			return value
+		}
+	}
+	if value, err := internal.StringifyJSON(s); err == nil {
+		return value
+	}
+	return fmt.Sprintf("%#v", s)
+}
+
+type SourceConfigWebhookAuthNmiPaymentGateway struct {
+	WebhookSecretKey string `json:"webhook_secret_key" url:"webhook_secret_key"`
+
+	extraProperties map[string]interface{}
+	rawJSON         json.RawMessage
+}
+
+func (s *SourceConfigWebhookAuthNmiPaymentGateway) GetWebhookSecretKey() string {
+	if s == nil {
+		return ""
+	}
+	return s.WebhookSecretKey
+}
+
+func (s *SourceConfigWebhookAuthNmiPaymentGateway) GetExtraProperties() map[string]interface{} {
+	return s.extraProperties
+}
+
+func (s *SourceConfigWebhookAuthNmiPaymentGateway) UnmarshalJSON(data []byte) error {
+	type unmarshaler SourceConfigWebhookAuthNmiPaymentGateway
+	var value unmarshaler
+	if err := json.Unmarshal(data, &value); err != nil {
+		return err
+	}
+	*s = SourceConfigWebhookAuthNmiPaymentGateway(value)
+	extraProperties, err := internal.ExtractExtraProperties(data, *s)
+	if err != nil {
+		return err
+	}
+	s.extraProperties = extraProperties
+	s.rawJSON = json.RawMessage(data)
+	return nil
+}
+
+func (s *SourceConfigWebhookAuthNmiPaymentGateway) String() string {
+	if len(s.rawJSON) > 0 {
+		if value, err := internal.StringifyJSON(s.rawJSON); err == nil {
+			return value
+		}
+	}
+	if value, err := internal.StringifyJSON(s); err == nil {
+		return value
+	}
+	return fmt.Sprintf("%#v", s)
+}
+
+type SourceConfigWebhookAuthOrb struct {
+	WebhookSecretKey string `json:"webhook_secret_key" url:"webhook_secret_key"`
+
+	extraProperties map[string]interface{}
+	rawJSON         json.RawMessage
+}
+
+func (s *SourceConfigWebhookAuthOrb) GetWebhookSecretKey() string {
+	if s == nil {
+		return ""
+	}
+	return s.WebhookSecretKey
+}
+
+func (s *SourceConfigWebhookAuthOrb) GetExtraProperties() map[string]interface{} {
+	return s.extraProperties
+}
+
+func (s *SourceConfigWebhookAuthOrb) UnmarshalJSON(data []byte) error {
+	type unmarshaler SourceConfigWebhookAuthOrb
+	var value unmarshaler
+	if err := json.Unmarshal(data, &value); err != nil {
+		return err
+	}
+	*s = SourceConfigWebhookAuthOrb(value)
+	extraProperties, err := internal.ExtractExtraProperties(data, *s)
+	if err != nil {
+		return err
+	}
+	s.extraProperties = extraProperties
+	s.rawJSON = json.RawMessage(data)
+	return nil
+}
+
+func (s *SourceConfigWebhookAuthOrb) String() string {
+	if len(s.rawJSON) > 0 {
+		if value, err := internal.StringifyJSON(s.rawJSON); err == nil {
+			return value
+		}
+	}
+	if value, err := internal.StringifyJSON(s); err == nil {
+		return value
+	}
+	return fmt.Sprintf("%#v", s)
+}
+
+type SourceConfigWebhookAuthOura struct {
+	WebhookSecretKey string `json:"webhook_secret_key" url:"webhook_secret_key"`
+
+	extraProperties map[string]interface{}
+	rawJSON         json.RawMessage
+}
+
+func (s *SourceConfigWebhookAuthOura) GetWebhookSecretKey() string {
+	if s == nil {
+		return ""
+	}
+	return s.WebhookSecretKey
+}
+
+func (s *SourceConfigWebhookAuthOura) GetExtraProperties() map[string]interface{} {
+	return s.extraProperties
+}
+
+func (s *SourceConfigWebhookAuthOura) UnmarshalJSON(data []byte) error {
+	type unmarshaler SourceConfigWebhookAuthOura
+	var value unmarshaler
+	if err := json.Unmarshal(data, &value); err != nil {
+		return err
+	}
+	*s = SourceConfigWebhookAuthOura(value)
+	extraProperties, err := internal.ExtractExtraProperties(data, *s)
+	if err != nil {
+		return err
+	}
+	s.extraProperties = extraProperties
+	s.rawJSON = json.RawMessage(data)
+	return nil
+}
+
+func (s *SourceConfigWebhookAuthOura) String() string {
+	if len(s.rawJSON) > 0 {
+		if value, err := internal.StringifyJSON(s.rawJSON); err == nil {
+			return value
+		}
+	}
+	if value, err := internal.StringifyJSON(s); err == nil {
+		return value
+	}
+	return fmt.Sprintf("%#v", s)
+}
+
+type SourceConfigWebhookAuthPaddle struct {
+	WebhookSecretKey string `json:"webhook_secret_key" url:"webhook_secret_key"`
+
+	extraProperties map[string]interface{}
+	rawJSON         json.RawMessage
+}
+
+func (s *SourceConfigWebhookAuthPaddle) GetWebhookSecretKey() string {
+	if s == nil {
+		return ""
+	}
+	return s.WebhookSecretKey
+}
+
+func (s *SourceConfigWebhookAuthPaddle) GetExtraProperties() map[string]interface{} {
+	return s.extraProperties
+}
+
+func (s *SourceConfigWebhookAuthPaddle) UnmarshalJSON(data []byte) error {
+	type unmarshaler SourceConfigWebhookAuthPaddle
+	var value unmarshaler
+	if err := json.Unmarshal(data, &value); err != nil {
+		return err
+	}
+	*s = SourceConfigWebhookAuthPaddle(value)
+	extraProperties, err := internal.ExtractExtraProperties(data, *s)
+	if err != nil {
+		return err
+	}
+	s.extraProperties = extraProperties
+	s.rawJSON = json.RawMessage(data)
+	return nil
+}
+
+func (s *SourceConfigWebhookAuthPaddle) String() string {
+	if len(s.rawJSON) > 0 {
+		if value, err := internal.StringifyJSON(s.rawJSON); err == nil {
+			return value
+		}
+	}
+	if value, err := internal.StringifyJSON(s); err == nil {
+		return value
+	}
+	return fmt.Sprintf("%#v", s)
+}
+
+type SourceConfigWebhookAuthPaypal struct {
+	WebhookId string `json:"webhook_id" url:"webhook_id"`
+
+	extraProperties map[string]interface{}
+	rawJSON         json.RawMessage
+}
+
+func (s *SourceConfigWebhookAuthPaypal) GetWebhookId() string {
+	if s == nil {
+		return ""
+	}
+	return s.WebhookId
+}
+
+func (s *SourceConfigWebhookAuthPaypal) GetExtraProperties() map[string]interface{} {
+	return s.extraProperties
+}
+
+func (s *SourceConfigWebhookAuthPaypal) UnmarshalJSON(data []byte) error {
+	type unmarshaler SourceConfigWebhookAuthPaypal
+	var value unmarshaler
+	if err := json.Unmarshal(data, &value); err != nil {
+		return err
+	}
+	*s = SourceConfigWebhookAuthPaypal(value)
+	extraProperties, err := internal.ExtractExtraProperties(data, *s)
+	if err != nil {
+		return err
+	}
+	s.extraProperties = extraProperties
+	s.rawJSON = json.RawMessage(data)
+	return nil
+}
+
+func (s *SourceConfigWebhookAuthPaypal) String() string {
+	if len(s.rawJSON) > 0 {
+		if value, err := internal.StringifyJSON(s.rawJSON); err == nil {
+			return value
+		}
+	}
+	if value, err := internal.StringifyJSON(s); err == nil {
+		return value
+	}
+	return fmt.Sprintf("%#v", s)
+}
+
+type SourceConfigWebhookAuthPersona struct {
+	WebhookSecretKey string `json:"webhook_secret_key" url:"webhook_secret_key"`
+
+	extraProperties map[string]interface{}
+	rawJSON         json.RawMessage
+}
+
+func (s *SourceConfigWebhookAuthPersona) GetWebhookSecretKey() string {
+	if s == nil {
+		return ""
+	}
+	return s.WebhookSecretKey
+}
+
+func (s *SourceConfigWebhookAuthPersona) GetExtraProperties() map[string]interface{} {
+	return s.extraProperties
+}
+
+func (s *SourceConfigWebhookAuthPersona) UnmarshalJSON(data []byte) error {
+	type unmarshaler SourceConfigWebhookAuthPersona
+	var value unmarshaler
+	if err := json.Unmarshal(data, &value); err != nil {
+		return err
+	}
+	*s = SourceConfigWebhookAuthPersona(value)
+	extraProperties, err := internal.ExtractExtraProperties(data, *s)
+	if err != nil {
+		return err
+	}
+	s.extraProperties = extraProperties
+	s.rawJSON = json.RawMessage(data)
+	return nil
+}
+
+func (s *SourceConfigWebhookAuthPersona) String() string {
+	if len(s.rawJSON) > 0 {
+		if value, err := internal.StringifyJSON(s.rawJSON); err == nil {
+			return value
+		}
+	}
+	if value, err := internal.StringifyJSON(s); err == nil {
+		return value
+	}
+	return fmt.Sprintf("%#v", s)
+}
+
+type SourceConfigWebhookAuthPipedrive struct {
+	Username *string `json:"username,omitempty" url:"username,omitempty"`
+	Password *string `json:"password,omitempty" url:"password,omitempty"`
+
+	extraProperties map[string]interface{}
+	rawJSON         json.RawMessage
+}
+
+func (s *SourceConfigWebhookAuthPipedrive) GetUsername() *string {
+	if s == nil {
+		return nil
+	}
+	return s.Username
+}
+
+func (s *SourceConfigWebhookAuthPipedrive) GetPassword() *string {
+	if s == nil {
+		return nil
+	}
+	return s.Password
+}
+
+func (s *SourceConfigWebhookAuthPipedrive) GetExtraProperties() map[string]interface{} {
+	return s.extraProperties
+}
+
+func (s *SourceConfigWebhookAuthPipedrive) UnmarshalJSON(data []byte) error {
+	type unmarshaler SourceConfigWebhookAuthPipedrive
+	var value unmarshaler
+	if err := json.Unmarshal(data, &value); err != nil {
+		return err
+	}
+	*s = SourceConfigWebhookAuthPipedrive(value)
+	extraProperties, err := internal.ExtractExtraProperties(data, *s)
+	if err != nil {
+		return err
+	}
+	s.extraProperties = extraProperties
+	s.rawJSON = json.RawMessage(data)
+	return nil
+}
+
+func (s *SourceConfigWebhookAuthPipedrive) String() string {
+	if len(s.rawJSON) > 0 {
+		if value, err := internal.StringifyJSON(s.rawJSON); err == nil {
+			return value
+		}
+	}
+	if value, err := internal.StringifyJSON(s); err == nil {
+		return value
+	}
+	return fmt.Sprintf("%#v", s)
+}
+
+type SourceConfigWebhookAuthPostmark struct {
+	Username *string `json:"username,omitempty" url:"username,omitempty"`
+	Password *string `json:"password,omitempty" url:"password,omitempty"`
+
+	extraProperties map[string]interface{}
+	rawJSON         json.RawMessage
+}
+
+func (s *SourceConfigWebhookAuthPostmark) GetUsername() *string {
+	if s == nil {
+		return nil
+	}
+	return s.Username
+}
+
+func (s *SourceConfigWebhookAuthPostmark) GetPassword() *string {
+	if s == nil {
+		return nil
+	}
+	return s.Password
+}
+
+func (s *SourceConfigWebhookAuthPostmark) GetExtraProperties() map[string]interface{} {
+	return s.extraProperties
+}
+
+func (s *SourceConfigWebhookAuthPostmark) UnmarshalJSON(data []byte) error {
+	type unmarshaler SourceConfigWebhookAuthPostmark
+	var value unmarshaler
+	if err := json.Unmarshal(data, &value); err != nil {
+		return err
+	}
+	*s = SourceConfigWebhookAuthPostmark(value)
+	extraProperties, err := internal.ExtractExtraProperties(data, *s)
+	if err != nil {
+		return err
+	}
+	s.extraProperties = extraProperties
+	s.rawJSON = json.RawMessage(data)
+	return nil
+}
+
+func (s *SourceConfigWebhookAuthPostmark) String() string {
+	if len(s.rawJSON) > 0 {
+		if value, err := internal.StringifyJSON(s.rawJSON); err == nil {
+			return value
+		}
+	}
+	if value, err := internal.StringifyJSON(s); err == nil {
+		return value
+	}
+	return fmt.Sprintf("%#v", s)
+}
+
+type SourceConfigWebhookAuthPraxis struct {
+	WebhookSecretKey string `json:"webhook_secret_key" url:"webhook_secret_key"`
+
+	extraProperties map[string]interface{}
+	rawJSON         json.RawMessage
+}
+
+func (s *SourceConfigWebhookAuthPraxis) GetWebhookSecretKey() string {
+	if s == nil {
+		return ""
+	}
+	return s.WebhookSecretKey
+}
+
+func (s *SourceConfigWebhookAuthPraxis) GetExtraProperties() map[string]interface{} {
+	return s.extraProperties
+}
+
+func (s *SourceConfigWebhookAuthPraxis) UnmarshalJSON(data []byte) error {
+	type unmarshaler SourceConfigWebhookAuthPraxis
+	var value unmarshaler
+	if err := json.Unmarshal(data, &value); err != nil {
+		return err
+	}
+	*s = SourceConfigWebhookAuthPraxis(value)
+	extraProperties, err := internal.ExtractExtraProperties(data, *s)
+	if err != nil {
+		return err
+	}
+	s.extraProperties = extraProperties
+	s.rawJSON = json.RawMessage(data)
+	return nil
+}
+
+func (s *SourceConfigWebhookAuthPraxis) String() string {
+	if len(s.rawJSON) > 0 {
+		if value, err := internal.StringifyJSON(s.rawJSON); err == nil {
+			return value
+		}
+	}
+	if value, err := internal.StringifyJSON(s); err == nil {
+		return value
+	}
+	return fmt.Sprintf("%#v", s)
+}
+
+type SourceConfigWebhookAuthPropertyFinder struct {
+	WebhookSecretKey string `json:"webhook_secret_key" url:"webhook_secret_key"`
+
+	extraProperties map[string]interface{}
+	rawJSON         json.RawMessage
+}
+
+func (s *SourceConfigWebhookAuthPropertyFinder) GetWebhookSecretKey() string {
+	if s == nil {
+		return ""
+	}
+	return s.WebhookSecretKey
+}
+
+func (s *SourceConfigWebhookAuthPropertyFinder) GetExtraProperties() map[string]interface{} {
+	return s.extraProperties
+}
+
+func (s *SourceConfigWebhookAuthPropertyFinder) UnmarshalJSON(data []byte) error {
+	type unmarshaler SourceConfigWebhookAuthPropertyFinder
+	var value unmarshaler
+	if err := json.Unmarshal(data, &value); err != nil {
+		return err
+	}
+	*s = SourceConfigWebhookAuthPropertyFinder(value)
+	extraProperties, err := internal.ExtractExtraProperties(data, *s)
+	if err != nil {
+		return err
+	}
+	s.extraProperties = extraProperties
+	s.rawJSON = json.RawMessage(data)
+	return nil
+}
+
+func (s *SourceConfigWebhookAuthPropertyFinder) String() string {
+	if len(s.rawJSON) > 0 {
+		if value, err := internal.StringifyJSON(s.rawJSON); err == nil {
+			return value
+		}
+	}
+	if value, err := internal.StringifyJSON(s); err == nil {
+		return value
+	}
+	return fmt.Sprintf("%#v", s)
+}
+
+type SourceConfigWebhookAuthPylon struct {
+	WebhookSecretKey string `json:"webhook_secret_key" url:"webhook_secret_key"`
+
+	extraProperties map[string]interface{}
+	rawJSON         json.RawMessage
+}
+
+func (s *SourceConfigWebhookAuthPylon) GetWebhookSecretKey() string {
+	if s == nil {
+		return ""
+	}
+	return s.WebhookSecretKey
+}
+
+func (s *SourceConfigWebhookAuthPylon) GetExtraProperties() map[string]interface{} {
+	return s.extraProperties
+}
+
+func (s *SourceConfigWebhookAuthPylon) UnmarshalJSON(data []byte) error {
+	type unmarshaler SourceConfigWebhookAuthPylon
+	var value unmarshaler
+	if err := json.Unmarshal(data, &value); err != nil {
+		return err
+	}
+	*s = SourceConfigWebhookAuthPylon(value)
+	extraProperties, err := internal.ExtractExtraProperties(data, *s)
+	if err != nil {
+		return err
+	}
+	s.extraProperties = extraProperties
+	s.rawJSON = json.RawMessage(data)
+	return nil
+}
+
+func (s *SourceConfigWebhookAuthPylon) String() string {
+	if len(s.rawJSON) > 0 {
+		if value, err := internal.StringifyJSON(s.rawJSON); err == nil {
+			return value
+		}
+	}
+	if value, err := internal.StringifyJSON(s); err == nil {
+		return value
+	}
+	return fmt.Sprintf("%#v", s)
+}
+
+type SourceConfigWebhookAuthRazorpay struct {
+	WebhookSecretKey string `json:"webhook_secret_key" url:"webhook_secret_key"`
+
+	extraProperties map[string]interface{}
+	rawJSON         json.RawMessage
+}
+
+func (s *SourceConfigWebhookAuthRazorpay) GetWebhookSecretKey() string {
+	if s == nil {
+		return ""
+	}
+	return s.WebhookSecretKey
+}
+
+func (s *SourceConfigWebhookAuthRazorpay) GetExtraProperties() map[string]interface{} {
+	return s.extraProperties
+}
+
+func (s *SourceConfigWebhookAuthRazorpay) UnmarshalJSON(data []byte) error {
+	type unmarshaler SourceConfigWebhookAuthRazorpay
+	var value unmarshaler
+	if err := json.Unmarshal(data, &value); err != nil {
+		return err
+	}
+	*s = SourceConfigWebhookAuthRazorpay(value)
+	extraProperties, err := internal.ExtractExtraProperties(data, *s)
+	if err != nil {
+		return err
+	}
+	s.extraProperties = extraProperties
+	s.rawJSON = json.RawMessage(data)
+	return nil
+}
+
+func (s *SourceConfigWebhookAuthRazorpay) String() string {
+	if len(s.rawJSON) > 0 {
+		if value, err := internal.StringifyJSON(s.rawJSON); err == nil {
+			return value
+		}
+	}
+	if value, err := internal.StringifyJSON(s); err == nil {
+		return value
+	}
+	return fmt.Sprintf("%#v", s)
+}
+
+type SourceConfigWebhookAuthRecharge struct {
+	WebhookSecretKey string `json:"webhook_secret_key" url:"webhook_secret_key"`
+
+	extraProperties map[string]interface{}
+	rawJSON         json.RawMessage
+}
+
+func (s *SourceConfigWebhookAuthRecharge) GetWebhookSecretKey() string {
+	if s == nil {
+		return ""
+	}
+	return s.WebhookSecretKey
+}
+
+func (s *SourceConfigWebhookAuthRecharge) GetExtraProperties() map[string]interface{} {
+	return s.extraProperties
+}
+
+func (s *SourceConfigWebhookAuthRecharge) UnmarshalJSON(data []byte) error {
+	type unmarshaler SourceConfigWebhookAuthRecharge
+	var value unmarshaler
+	if err := json.Unmarshal(data, &value); err != nil {
+		return err
+	}
+	*s = SourceConfigWebhookAuthRecharge(value)
+	extraProperties, err := internal.ExtractExtraProperties(data, *s)
+	if err != nil {
+		return err
+	}
+	s.extraProperties = extraProperties
+	s.rawJSON = json.RawMessage(data)
+	return nil
+}
+
+func (s *SourceConfigWebhookAuthRecharge) String() string {
+	if len(s.rawJSON) > 0 {
+		if value, err := internal.StringifyJSON(s.rawJSON); err == nil {
+			return value
+		}
+	}
+	if value, err := internal.StringifyJSON(s); err == nil {
+		return value
+	}
+	return fmt.Sprintf("%#v", s)
+}
+
+type SourceConfigWebhookAuthRepay struct {
+	WebhookSecretKey string `json:"webhook_secret_key" url:"webhook_secret_key"`
+
+	extraProperties map[string]interface{}
+	rawJSON         json.RawMessage
+}
+
+func (s *SourceConfigWebhookAuthRepay) GetWebhookSecretKey() string {
+	if s == nil {
+		return ""
+	}
+	return s.WebhookSecretKey
+}
+
+func (s *SourceConfigWebhookAuthRepay) GetExtraProperties() map[string]interface{} {
+	return s.extraProperties
+}
+
+func (s *SourceConfigWebhookAuthRepay) UnmarshalJSON(data []byte) error {
+	type unmarshaler SourceConfigWebhookAuthRepay
+	var value unmarshaler
+	if err := json.Unmarshal(data, &value); err != nil {
+		return err
+	}
+	*s = SourceConfigWebhookAuthRepay(value)
+	extraProperties, err := internal.ExtractExtraProperties(data, *s)
+	if err != nil {
+		return err
+	}
+	s.extraProperties = extraProperties
+	s.rawJSON = json.RawMessage(data)
+	return nil
+}
+
+func (s *SourceConfigWebhookAuthRepay) String() string {
+	if len(s.rawJSON) > 0 {
+		if value, err := internal.StringifyJSON(s.rawJSON); err == nil {
+			return value
+		}
+	}
+	if value, err := internal.StringifyJSON(s); err == nil {
+		return value
+	}
+	return fmt.Sprintf("%#v", s)
+}
+
+type SourceConfigWebhookAuthReplicate struct {
+	WebhookSecretKey string `json:"webhook_secret_key" url:"webhook_secret_key"`
+
+	extraProperties map[string]interface{}
+	rawJSON         json.RawMessage
+}
+
+func (s *SourceConfigWebhookAuthReplicate) GetWebhookSecretKey() string {
+	if s == nil {
+		return ""
+	}
+	return s.WebhookSecretKey
+}
+
+func (s *SourceConfigWebhookAuthReplicate) GetExtraProperties() map[string]interface{} {
+	return s.extraProperties
+}
+
+func (s *SourceConfigWebhookAuthReplicate) UnmarshalJSON(data []byte) error {
+	type unmarshaler SourceConfigWebhookAuthReplicate
+	var value unmarshaler
+	if err := json.Unmarshal(data, &value); err != nil {
+		return err
+	}
+	*s = SourceConfigWebhookAuthReplicate(value)
+	extraProperties, err := internal.ExtractExtraProperties(data, *s)
+	if err != nil {
+		return err
+	}
+	s.extraProperties = extraProperties
+	s.rawJSON = json.RawMessage(data)
+	return nil
+}
+
+func (s *SourceConfigWebhookAuthReplicate) String() string {
+	if len(s.rawJSON) > 0 {
+		if value, err := internal.StringifyJSON(s.rawJSON); err == nil {
+			return value
+		}
+	}
+	if value, err := internal.StringifyJSON(s); err == nil {
+		return value
+	}
+	return fmt.Sprintf("%#v", s)
+}
+
+type SourceConfigWebhookAuthSanity struct {
+	WebhookSecretKey string `json:"webhook_secret_key" url:"webhook_secret_key"`
+
+	extraProperties map[string]interface{}
+	rawJSON         json.RawMessage
+}
+
+func (s *SourceConfigWebhookAuthSanity) GetWebhookSecretKey() string {
+	if s == nil {
+		return ""
+	}
+	return s.WebhookSecretKey
+}
+
+func (s *SourceConfigWebhookAuthSanity) GetExtraProperties() map[string]interface{} {
+	return s.extraProperties
+}
+
+func (s *SourceConfigWebhookAuthSanity) UnmarshalJSON(data []byte) error {
+	type unmarshaler SourceConfigWebhookAuthSanity
+	var value unmarshaler
+	if err := json.Unmarshal(data, &value); err != nil {
+		return err
+	}
+	*s = SourceConfigWebhookAuthSanity(value)
+	extraProperties, err := internal.ExtractExtraProperties(data, *s)
+	if err != nil {
+		return err
+	}
+	s.extraProperties = extraProperties
+	s.rawJSON = json.RawMessage(data)
+	return nil
+}
+
+func (s *SourceConfigWebhookAuthSanity) String() string {
+	if len(s.rawJSON) > 0 {
+		if value, err := internal.StringifyJSON(s.rawJSON); err == nil {
+			return value
+		}
+	}
+	if value, err := internal.StringifyJSON(s); err == nil {
+		return value
+	}
+	return fmt.Sprintf("%#v", s)
+}
+
+type SourceConfigWebhookAuthSendgrid struct {
+	WebhookSecretKey string `json:"webhook_secret_key" url:"webhook_secret_key"`
+
+	extraProperties map[string]interface{}
+	rawJSON         json.RawMessage
+}
+
+func (s *SourceConfigWebhookAuthSendgrid) GetWebhookSecretKey() string {
+	if s == nil {
+		return ""
+	}
+	return s.WebhookSecretKey
+}
+
+func (s *SourceConfigWebhookAuthSendgrid) GetExtraProperties() map[string]interface{} {
+	return s.extraProperties
+}
+
+func (s *SourceConfigWebhookAuthSendgrid) UnmarshalJSON(data []byte) error {
+	type unmarshaler SourceConfigWebhookAuthSendgrid
+	var value unmarshaler
+	if err := json.Unmarshal(data, &value); err != nil {
+		return err
+	}
+	*s = SourceConfigWebhookAuthSendgrid(value)
+	extraProperties, err := internal.ExtractExtraProperties(data, *s)
+	if err != nil {
+		return err
+	}
+	s.extraProperties = extraProperties
+	s.rawJSON = json.RawMessage(data)
+	return nil
+}
+
+func (s *SourceConfigWebhookAuthSendgrid) String() string {
+	if len(s.rawJSON) > 0 {
+		if value, err := internal.StringifyJSON(s.rawJSON); err == nil {
+			return value
+		}
+	}
+	if value, err := internal.StringifyJSON(s); err == nil {
+		return value
+	}
+	return fmt.Sprintf("%#v", s)
+}
+
+type SourceConfigWebhookAuthShopify struct {
+	WebhookSecretKey string `json:"webhook_secret_key" url:"webhook_secret_key"`
+
+	extraProperties map[string]interface{}
+	rawJSON         json.RawMessage
+}
+
+func (s *SourceConfigWebhookAuthShopify) GetWebhookSecretKey() string {
+	if s == nil {
+		return ""
+	}
+	return s.WebhookSecretKey
+}
+
+func (s *SourceConfigWebhookAuthShopify) GetExtraProperties() map[string]interface{} {
+	return s.extraProperties
+}
+
+func (s *SourceConfigWebhookAuthShopify) UnmarshalJSON(data []byte) error {
+	type unmarshaler SourceConfigWebhookAuthShopify
+	var value unmarshaler
+	if err := json.Unmarshal(data, &value); err != nil {
+		return err
+	}
+	*s = SourceConfigWebhookAuthShopify(value)
+	extraProperties, err := internal.ExtractExtraProperties(data, *s)
+	if err != nil {
+		return err
+	}
+	s.extraProperties = extraProperties
+	s.rawJSON = json.RawMessage(data)
+	return nil
+}
+
+func (s *SourceConfigWebhookAuthShopify) String() string {
+	if len(s.rawJSON) > 0 {
+		if value, err := internal.StringifyJSON(s.rawJSON); err == nil {
+			return value
+		}
+	}
+	if value, err := internal.StringifyJSON(s); err == nil {
+		return value
+	}
+	return fmt.Sprintf("%#v", s)
+}
+
+type SourceConfigWebhookAuthShopline struct {
+	WebhookSecretKey string `json:"webhook_secret_key" url:"webhook_secret_key"`
+
+	extraProperties map[string]interface{}
+	rawJSON         json.RawMessage
+}
+
+func (s *SourceConfigWebhookAuthShopline) GetWebhookSecretKey() string {
+	if s == nil {
+		return ""
+	}
+	return s.WebhookSecretKey
+}
+
+func (s *SourceConfigWebhookAuthShopline) GetExtraProperties() map[string]interface{} {
+	return s.extraProperties
+}
+
+func (s *SourceConfigWebhookAuthShopline) UnmarshalJSON(data []byte) error {
+	type unmarshaler SourceConfigWebhookAuthShopline
+	var value unmarshaler
+	if err := json.Unmarshal(data, &value); err != nil {
+		return err
+	}
+	*s = SourceConfigWebhookAuthShopline(value)
+	extraProperties, err := internal.ExtractExtraProperties(data, *s)
+	if err != nil {
+		return err
+	}
+	s.extraProperties = extraProperties
+	s.rawJSON = json.RawMessage(data)
+	return nil
+}
+
+func (s *SourceConfigWebhookAuthShopline) String() string {
+	if len(s.rawJSON) > 0 {
+		if value, err := internal.StringifyJSON(s.rawJSON); err == nil {
+			return value
+		}
+	}
+	if value, err := internal.StringifyJSON(s); err == nil {
+		return value
+	}
+	return fmt.Sprintf("%#v", s)
+}
+
+type SourceConfigWebhookAuthSlack struct {
+	WebhookSecretKey string `json:"webhook_secret_key" url:"webhook_secret_key"`
+
+	extraProperties map[string]interface{}
+	rawJSON         json.RawMessage
+}
+
+func (s *SourceConfigWebhookAuthSlack) GetWebhookSecretKey() string {
+	if s == nil {
+		return ""
+	}
+	return s.WebhookSecretKey
+}
+
+func (s *SourceConfigWebhookAuthSlack) GetExtraProperties() map[string]interface{} {
+	return s.extraProperties
+}
+
+func (s *SourceConfigWebhookAuthSlack) UnmarshalJSON(data []byte) error {
+	type unmarshaler SourceConfigWebhookAuthSlack
+	var value unmarshaler
+	if err := json.Unmarshal(data, &value); err != nil {
+		return err
+	}
+	*s = SourceConfigWebhookAuthSlack(value)
+	extraProperties, err := internal.ExtractExtraProperties(data, *s)
+	if err != nil {
+		return err
+	}
+	s.extraProperties = extraProperties
+	s.rawJSON = json.RawMessage(data)
+	return nil
+}
+
+func (s *SourceConfigWebhookAuthSlack) String() string {
+	if len(s.rawJSON) > 0 {
+		if value, err := internal.StringifyJSON(s.rawJSON); err == nil {
+			return value
+		}
+	}
+	if value, err := internal.StringifyJSON(s); err == nil {
+		return value
+	}
+	return fmt.Sprintf("%#v", s)
+}
+
+type SourceConfigWebhookAuthSolidgate struct {
+	WebhookSecretKey string `json:"webhook_secret_key" url:"webhook_secret_key"`
+
+	extraProperties map[string]interface{}
+	rawJSON         json.RawMessage
+}
+
+func (s *SourceConfigWebhookAuthSolidgate) GetWebhookSecretKey() string {
+	if s == nil {
+		return ""
+	}
+	return s.WebhookSecretKey
+}
+
+func (s *SourceConfigWebhookAuthSolidgate) GetExtraProperties() map[string]interface{} {
+	return s.extraProperties
+}
+
+func (s *SourceConfigWebhookAuthSolidgate) UnmarshalJSON(data []byte) error {
+	type unmarshaler SourceConfigWebhookAuthSolidgate
+	var value unmarshaler
+	if err := json.Unmarshal(data, &value); err != nil {
+		return err
+	}
+	*s = SourceConfigWebhookAuthSolidgate(value)
+	extraProperties, err := internal.ExtractExtraProperties(data, *s)
+	if err != nil {
+		return err
+	}
+	s.extraProperties = extraProperties
+	s.rawJSON = json.RawMessage(data)
+	return nil
+}
+
+func (s *SourceConfigWebhookAuthSolidgate) String() string {
+	if len(s.rawJSON) > 0 {
+		if value, err := internal.StringifyJSON(s.rawJSON); err == nil {
+			return value
+		}
+	}
+	if value, err := internal.StringifyJSON(s); err == nil {
+		return value
+	}
+	return fmt.Sprintf("%#v", s)
+}
+
+type SourceConfigWebhookAuthSquare struct {
+	WebhookSecretKey string `json:"webhook_secret_key" url:"webhook_secret_key"`
+
+	extraProperties map[string]interface{}
+	rawJSON         json.RawMessage
+}
+
+func (s *SourceConfigWebhookAuthSquare) GetWebhookSecretKey() string {
+	if s == nil {
+		return ""
+	}
+	return s.WebhookSecretKey
+}
+
+func (s *SourceConfigWebhookAuthSquare) GetExtraProperties() map[string]interface{} {
+	return s.extraProperties
+}
+
+func (s *SourceConfigWebhookAuthSquare) UnmarshalJSON(data []byte) error {
+	type unmarshaler SourceConfigWebhookAuthSquare
+	var value unmarshaler
+	if err := json.Unmarshal(data, &value); err != nil {
+		return err
+	}
+	*s = SourceConfigWebhookAuthSquare(value)
+	extraProperties, err := internal.ExtractExtraProperties(data, *s)
+	if err != nil {
+		return err
+	}
+	s.extraProperties = extraProperties
+	s.rawJSON = json.RawMessage(data)
+	return nil
+}
+
+func (s *SourceConfigWebhookAuthSquare) String() string {
+	if len(s.rawJSON) > 0 {
+		if value, err := internal.StringifyJSON(s.rawJSON); err == nil {
+			return value
+		}
+	}
+	if value, err := internal.StringifyJSON(s); err == nil {
+		return value
+	}
+	return fmt.Sprintf("%#v", s)
+}
+
+type SourceConfigWebhookAuthStripe struct {
+	WebhookSecretKey string `json:"webhook_secret_key" url:"webhook_secret_key"`
+
+	extraProperties map[string]interface{}
+	rawJSON         json.RawMessage
+}
+
+func (s *SourceConfigWebhookAuthStripe) GetWebhookSecretKey() string {
+	if s == nil {
+		return ""
+	}
+	return s.WebhookSecretKey
+}
+
+func (s *SourceConfigWebhookAuthStripe) GetExtraProperties() map[string]interface{} {
+	return s.extraProperties
+}
+
+func (s *SourceConfigWebhookAuthStripe) UnmarshalJSON(data []byte) error {
+	type unmarshaler SourceConfigWebhookAuthStripe
+	var value unmarshaler
+	if err := json.Unmarshal(data, &value); err != nil {
+		return err
+	}
+	*s = SourceConfigWebhookAuthStripe(value)
+	extraProperties, err := internal.ExtractExtraProperties(data, *s)
+	if err != nil {
+		return err
+	}
+	s.extraProperties = extraProperties
+	s.rawJSON = json.RawMessage(data)
+	return nil
+}
+
+func (s *SourceConfigWebhookAuthStripe) String() string {
+	if len(s.rawJSON) > 0 {
+		if value, err := internal.StringifyJSON(s.rawJSON); err == nil {
+			return value
+		}
+	}
+	if value, err := internal.StringifyJSON(s); err == nil {
+		return value
+	}
+	return fmt.Sprintf("%#v", s)
+}
+
+type SourceConfigWebhookAuthSvix struct {
+	WebhookSecretKey string `json:"webhook_secret_key" url:"webhook_secret_key"`
+
+	extraProperties map[string]interface{}
+	rawJSON         json.RawMessage
+}
+
+func (s *SourceConfigWebhookAuthSvix) GetWebhookSecretKey() string {
+	if s == nil {
+		return ""
+	}
+	return s.WebhookSecretKey
+}
+
+func (s *SourceConfigWebhookAuthSvix) GetExtraProperties() map[string]interface{} {
+	return s.extraProperties
+}
+
+func (s *SourceConfigWebhookAuthSvix) UnmarshalJSON(data []byte) error {
+	type unmarshaler SourceConfigWebhookAuthSvix
+	var value unmarshaler
+	if err := json.Unmarshal(data, &value); err != nil {
+		return err
+	}
+	*s = SourceConfigWebhookAuthSvix(value)
+	extraProperties, err := internal.ExtractExtraProperties(data, *s)
+	if err != nil {
+		return err
+	}
+	s.extraProperties = extraProperties
+	s.rawJSON = json.RawMessage(data)
+	return nil
+}
+
+func (s *SourceConfigWebhookAuthSvix) String() string {
+	if len(s.rawJSON) > 0 {
+		if value, err := internal.StringifyJSON(s.rawJSON); err == nil {
+			return value
+		}
+	}
+	if value, err := internal.StringifyJSON(s); err == nil {
+		return value
+	}
+	return fmt.Sprintf("%#v", s)
+}
+
+type SourceConfigWebhookAuthSynctera struct {
+	WebhookSecretKey string `json:"webhook_secret_key" url:"webhook_secret_key"`
+
+	extraProperties map[string]interface{}
+	rawJSON         json.RawMessage
+}
+
+func (s *SourceConfigWebhookAuthSynctera) GetWebhookSecretKey() string {
+	if s == nil {
+		return ""
+	}
+	return s.WebhookSecretKey
+}
+
+func (s *SourceConfigWebhookAuthSynctera) GetExtraProperties() map[string]interface{} {
+	return s.extraProperties
+}
+
+func (s *SourceConfigWebhookAuthSynctera) UnmarshalJSON(data []byte) error {
+	type unmarshaler SourceConfigWebhookAuthSynctera
+	var value unmarshaler
+	if err := json.Unmarshal(data, &value); err != nil {
+		return err
+	}
+	*s = SourceConfigWebhookAuthSynctera(value)
+	extraProperties, err := internal.ExtractExtraProperties(data, *s)
+	if err != nil {
+		return err
+	}
+	s.extraProperties = extraProperties
+	s.rawJSON = json.RawMessage(data)
+	return nil
+}
+
+func (s *SourceConfigWebhookAuthSynctera) String() string {
+	if len(s.rawJSON) > 0 {
+		if value, err := internal.StringifyJSON(s.rawJSON); err == nil {
+			return value
+		}
+	}
+	if value, err := internal.StringifyJSON(s); err == nil {
+		return value
+	}
+	return fmt.Sprintf("%#v", s)
+}
+
+type SourceConfigWebhookAuthTebex struct {
+	WebhookSecretKey string `json:"webhook_secret_key" url:"webhook_secret_key"`
+
+	extraProperties map[string]interface{}
+	rawJSON         json.RawMessage
+}
+
+func (s *SourceConfigWebhookAuthTebex) GetWebhookSecretKey() string {
+	if s == nil {
+		return ""
+	}
+	return s.WebhookSecretKey
+}
+
+func (s *SourceConfigWebhookAuthTebex) GetExtraProperties() map[string]interface{} {
+	return s.extraProperties
+}
+
+func (s *SourceConfigWebhookAuthTebex) UnmarshalJSON(data []byte) error {
+	type unmarshaler SourceConfigWebhookAuthTebex
+	var value unmarshaler
+	if err := json.Unmarshal(data, &value); err != nil {
+		return err
+	}
+	*s = SourceConfigWebhookAuthTebex(value)
+	extraProperties, err := internal.ExtractExtraProperties(data, *s)
+	if err != nil {
+		return err
+	}
+	s.extraProperties = extraProperties
+	s.rawJSON = json.RawMessage(data)
+	return nil
+}
+
+func (s *SourceConfigWebhookAuthTebex) String() string {
+	if len(s.rawJSON) > 0 {
+		if value, err := internal.StringifyJSON(s.rawJSON); err == nil {
+			return value
+		}
+	}
+	if value, err := internal.StringifyJSON(s); err == nil {
+		return value
+	}
+	return fmt.Sprintf("%#v", s)
+}
+
+type SourceConfigWebhookAuthTelnyx struct {
+	PublicKey string `json:"public_key" url:"public_key"`
+
+	extraProperties map[string]interface{}
+	rawJSON         json.RawMessage
+}
+
+func (s *SourceConfigWebhookAuthTelnyx) GetPublicKey() string {
+	if s == nil {
+		return ""
+	}
+	return s.PublicKey
+}
+
+func (s *SourceConfigWebhookAuthTelnyx) GetExtraProperties() map[string]interface{} {
+	return s.extraProperties
+}
+
+func (s *SourceConfigWebhookAuthTelnyx) UnmarshalJSON(data []byte) error {
+	type unmarshaler SourceConfigWebhookAuthTelnyx
+	var value unmarshaler
+	if err := json.Unmarshal(data, &value); err != nil {
+		return err
+	}
+	*s = SourceConfigWebhookAuthTelnyx(value)
+	extraProperties, err := internal.ExtractExtraProperties(data, *s)
+	if err != nil {
+		return err
+	}
+	s.extraProperties = extraProperties
+	s.rawJSON = json.RawMessage(data)
+	return nil
+}
+
+func (s *SourceConfigWebhookAuthTelnyx) String() string {
+	if len(s.rawJSON) > 0 {
+		if value, err := internal.StringifyJSON(s.rawJSON); err == nil {
+			return value
+		}
+	}
+	if value, err := internal.StringifyJSON(s); err == nil {
+		return value
+	}
+	return fmt.Sprintf("%#v", s)
+}
+
+type SourceConfigWebhookAuthTikTok struct {
+	WebhookSecretKey string `json:"webhook_secret_key" url:"webhook_secret_key"`
+	AppKey           string `json:"app_key" url:"app_key"`
+
+	extraProperties map[string]interface{}
+	rawJSON         json.RawMessage
+}
+
+func (s *SourceConfigWebhookAuthTikTok) GetWebhookSecretKey() string {
+	if s == nil {
+		return ""
+	}
+	return s.WebhookSecretKey
+}
+
+func (s *SourceConfigWebhookAuthTikTok) GetAppKey() string {
+	if s == nil {
+		return ""
+	}
+	return s.AppKey
+}
+
+func (s *SourceConfigWebhookAuthTikTok) GetExtraProperties() map[string]interface{} {
+	return s.extraProperties
+}
+
+func (s *SourceConfigWebhookAuthTikTok) UnmarshalJSON(data []byte) error {
+	type unmarshaler SourceConfigWebhookAuthTikTok
+	var value unmarshaler
+	if err := json.Unmarshal(data, &value); err != nil {
+		return err
+	}
+	*s = SourceConfigWebhookAuthTikTok(value)
+	extraProperties, err := internal.ExtractExtraProperties(data, *s)
+	if err != nil {
+		return err
+	}
+	s.extraProperties = extraProperties
+	s.rawJSON = json.RawMessage(data)
+	return nil
+}
+
+func (s *SourceConfigWebhookAuthTikTok) String() string {
+	if len(s.rawJSON) > 0 {
+		if value, err := internal.StringifyJSON(s.rawJSON); err == nil {
+			return value
+		}
+	}
+	if value, err := internal.StringifyJSON(s); err == nil {
+		return value
+	}
+	return fmt.Sprintf("%#v", s)
+}
+
+type SourceConfigWebhookAuthTokenIo struct {
+	PublicKey string `json:"public_key" url:"public_key"`
+
+	extraProperties map[string]interface{}
+	rawJSON         json.RawMessage
+}
+
+func (s *SourceConfigWebhookAuthTokenIo) GetPublicKey() string {
+	if s == nil {
+		return ""
+	}
+	return s.PublicKey
+}
+
+func (s *SourceConfigWebhookAuthTokenIo) GetExtraProperties() map[string]interface{} {
+	return s.extraProperties
+}
+
+func (s *SourceConfigWebhookAuthTokenIo) UnmarshalJSON(data []byte) error {
+	type unmarshaler SourceConfigWebhookAuthTokenIo
+	var value unmarshaler
+	if err := json.Unmarshal(data, &value); err != nil {
+		return err
+	}
+	*s = SourceConfigWebhookAuthTokenIo(value)
+	extraProperties, err := internal.ExtractExtraProperties(data, *s)
+	if err != nil {
+		return err
+	}
+	s.extraProperties = extraProperties
+	s.rawJSON = json.RawMessage(data)
+	return nil
+}
+
+func (s *SourceConfigWebhookAuthTokenIo) String() string {
+	if len(s.rawJSON) > 0 {
+		if value, err := internal.StringifyJSON(s.rawJSON); err == nil {
+			return value
+		}
+	}
+	if value, err := internal.StringifyJSON(s); err == nil {
+		return value
+	}
+	return fmt.Sprintf("%#v", s)
+}
+
+type SourceConfigWebhookAuthTreezor struct {
+	WebhookSecretKey string `json:"webhook_secret_key" url:"webhook_secret_key"`
+
+	extraProperties map[string]interface{}
+	rawJSON         json.RawMessage
+}
+
+func (s *SourceConfigWebhookAuthTreezor) GetWebhookSecretKey() string {
+	if s == nil {
+		return ""
+	}
+	return s.WebhookSecretKey
+}
+
+func (s *SourceConfigWebhookAuthTreezor) GetExtraProperties() map[string]interface{} {
+	return s.extraProperties
+}
+
+func (s *SourceConfigWebhookAuthTreezor) UnmarshalJSON(data []byte) error {
+	type unmarshaler SourceConfigWebhookAuthTreezor
+	var value unmarshaler
+	if err := json.Unmarshal(data, &value); err != nil {
+		return err
+	}
+	*s = SourceConfigWebhookAuthTreezor(value)
+	extraProperties, err := internal.ExtractExtraProperties(data, *s)
+	if err != nil {
+		return err
+	}
+	s.extraProperties = extraProperties
+	s.rawJSON = json.RawMessage(data)
+	return nil
+}
+
+func (s *SourceConfigWebhookAuthTreezor) String() string {
+	if len(s.rawJSON) > 0 {
+		if value, err := internal.StringifyJSON(s.rawJSON); err == nil {
+			return value
+		}
+	}
+	if value, err := internal.StringifyJSON(s); err == nil {
+		return value
+	}
+	return fmt.Sprintf("%#v", s)
+}
+
+type SourceConfigWebhookAuthTrello struct {
+	WebhookSecretKey string `json:"webhook_secret_key" url:"webhook_secret_key"`
+
+	extraProperties map[string]interface{}
+	rawJSON         json.RawMessage
+}
+
+func (s *SourceConfigWebhookAuthTrello) GetWebhookSecretKey() string {
+	if s == nil {
+		return ""
+	}
+	return s.WebhookSecretKey
+}
+
+func (s *SourceConfigWebhookAuthTrello) GetExtraProperties() map[string]interface{} {
+	return s.extraProperties
+}
+
+func (s *SourceConfigWebhookAuthTrello) UnmarshalJSON(data []byte) error {
+	type unmarshaler SourceConfigWebhookAuthTrello
+	var value unmarshaler
+	if err := json.Unmarshal(data, &value); err != nil {
+		return err
+	}
+	*s = SourceConfigWebhookAuthTrello(value)
+	extraProperties, err := internal.ExtractExtraProperties(data, *s)
+	if err != nil {
+		return err
+	}
+	s.extraProperties = extraProperties
+	s.rawJSON = json.RawMessage(data)
+	return nil
+}
+
+func (s *SourceConfigWebhookAuthTrello) String() string {
+	if len(s.rawJSON) > 0 {
+		if value, err := internal.StringifyJSON(s.rawJSON); err == nil {
+			return value
+		}
+	}
+	if value, err := internal.StringifyJSON(s); err == nil {
+		return value
+	}
+	return fmt.Sprintf("%#v", s)
+}
+
+type SourceConfigWebhookAuthTwilio struct {
+	WebhookSecretKey string `json:"webhook_secret_key" url:"webhook_secret_key"`
+
+	extraProperties map[string]interface{}
+	rawJSON         json.RawMessage
+}
+
+func (s *SourceConfigWebhookAuthTwilio) GetWebhookSecretKey() string {
+	if s == nil {
+		return ""
+	}
+	return s.WebhookSecretKey
+}
+
+func (s *SourceConfigWebhookAuthTwilio) GetExtraProperties() map[string]interface{} {
+	return s.extraProperties
+}
+
+func (s *SourceConfigWebhookAuthTwilio) UnmarshalJSON(data []byte) error {
+	type unmarshaler SourceConfigWebhookAuthTwilio
+	var value unmarshaler
+	if err := json.Unmarshal(data, &value); err != nil {
+		return err
+	}
+	*s = SourceConfigWebhookAuthTwilio(value)
+	extraProperties, err := internal.ExtractExtraProperties(data, *s)
+	if err != nil {
+		return err
+	}
+	s.extraProperties = extraProperties
+	s.rawJSON = json.RawMessage(data)
+	return nil
+}
+
+func (s *SourceConfigWebhookAuthTwilio) String() string {
+	if len(s.rawJSON) > 0 {
+		if value, err := internal.StringifyJSON(s.rawJSON); err == nil {
+			return value
+		}
+	}
+	if value, err := internal.StringifyJSON(s); err == nil {
+		return value
+	}
+	return fmt.Sprintf("%#v", s)
+}
+
+type SourceConfigWebhookAuthTwitch struct {
+	WebhookSecretKey string `json:"webhook_secret_key" url:"webhook_secret_key"`
+
+	extraProperties map[string]interface{}
+	rawJSON         json.RawMessage
+}
+
+func (s *SourceConfigWebhookAuthTwitch) GetWebhookSecretKey() string {
+	if s == nil {
+		return ""
+	}
+	return s.WebhookSecretKey
+}
+
+func (s *SourceConfigWebhookAuthTwitch) GetExtraProperties() map[string]interface{} {
+	return s.extraProperties
+}
+
+func (s *SourceConfigWebhookAuthTwitch) UnmarshalJSON(data []byte) error {
+	type unmarshaler SourceConfigWebhookAuthTwitch
+	var value unmarshaler
+	if err := json.Unmarshal(data, &value); err != nil {
+		return err
+	}
+	*s = SourceConfigWebhookAuthTwitch(value)
+	extraProperties, err := internal.ExtractExtraProperties(data, *s)
+	if err != nil {
+		return err
+	}
+	s.extraProperties = extraProperties
+	s.rawJSON = json.RawMessage(data)
+	return nil
+}
+
+func (s *SourceConfigWebhookAuthTwitch) String() string {
+	if len(s.rawJSON) > 0 {
+		if value, err := internal.StringifyJSON(s.rawJSON); err == nil {
+			return value
+		}
+	}
+	if value, err := internal.StringifyJSON(s); err == nil {
+		return value
+	}
+	return fmt.Sprintf("%#v", s)
+}
+
+type SourceConfigWebhookAuthTwitter struct {
+	ApiKey string `json:"api_key" url:"api_key"`
+
+	extraProperties map[string]interface{}
+	rawJSON         json.RawMessage
+}
+
+func (s *SourceConfigWebhookAuthTwitter) GetApiKey() string {
+	if s == nil {
+		return ""
+	}
+	return s.ApiKey
+}
+
+func (s *SourceConfigWebhookAuthTwitter) GetExtraProperties() map[string]interface{} {
+	return s.extraProperties
+}
+
+func (s *SourceConfigWebhookAuthTwitter) UnmarshalJSON(data []byte) error {
+	type unmarshaler SourceConfigWebhookAuthTwitter
+	var value unmarshaler
+	if err := json.Unmarshal(data, &value); err != nil {
+		return err
+	}
+	*s = SourceConfigWebhookAuthTwitter(value)
+	extraProperties, err := internal.ExtractExtraProperties(data, *s)
+	if err != nil {
+		return err
+	}
+	s.extraProperties = extraProperties
+	s.rawJSON = json.RawMessage(data)
+	return nil
+}
+
+func (s *SourceConfigWebhookAuthTwitter) String() string {
+	if len(s.rawJSON) > 0 {
+		if value, err := internal.StringifyJSON(s.rawJSON); err == nil {
+			return value
+		}
+	}
+	if value, err := internal.StringifyJSON(s); err == nil {
+		return value
+	}
+	return fmt.Sprintf("%#v", s)
+}
+
+type SourceConfigWebhookAuthTypeform struct {
+	WebhookSecretKey string `json:"webhook_secret_key" url:"webhook_secret_key"`
+
+	extraProperties map[string]interface{}
+	rawJSON         json.RawMessage
+}
+
+func (s *SourceConfigWebhookAuthTypeform) GetWebhookSecretKey() string {
+	if s == nil {
+		return ""
+	}
+	return s.WebhookSecretKey
+}
+
+func (s *SourceConfigWebhookAuthTypeform) GetExtraProperties() map[string]interface{} {
+	return s.extraProperties
+}
+
+func (s *SourceConfigWebhookAuthTypeform) UnmarshalJSON(data []byte) error {
+	type unmarshaler SourceConfigWebhookAuthTypeform
+	var value unmarshaler
+	if err := json.Unmarshal(data, &value); err != nil {
+		return err
+	}
+	*s = SourceConfigWebhookAuthTypeform(value)
+	extraProperties, err := internal.ExtractExtraProperties(data, *s)
+	if err != nil {
+		return err
+	}
+	s.extraProperties = extraProperties
+	s.rawJSON = json.RawMessage(data)
+	return nil
+}
+
+func (s *SourceConfigWebhookAuthTypeform) String() string {
+	if len(s.rawJSON) > 0 {
+		if value, err := internal.StringifyJSON(s.rawJSON); err == nil {
+			return value
+		}
+	}
+	if value, err := internal.StringifyJSON(s); err == nil {
+		return value
+	}
+	return fmt.Sprintf("%#v", s)
+}
+
+type SourceConfigWebhookAuthUpollo struct {
+	WebhookSecretKey string `json:"webhook_secret_key" url:"webhook_secret_key"`
+
+	extraProperties map[string]interface{}
+	rawJSON         json.RawMessage
+}
+
+func (s *SourceConfigWebhookAuthUpollo) GetWebhookSecretKey() string {
+	if s == nil {
+		return ""
+	}
+	return s.WebhookSecretKey
+}
+
+func (s *SourceConfigWebhookAuthUpollo) GetExtraProperties() map[string]interface{} {
+	return s.extraProperties
+}
+
+func (s *SourceConfigWebhookAuthUpollo) UnmarshalJSON(data []byte) error {
+	type unmarshaler SourceConfigWebhookAuthUpollo
+	var value unmarshaler
+	if err := json.Unmarshal(data, &value); err != nil {
+		return err
+	}
+	*s = SourceConfigWebhookAuthUpollo(value)
+	extraProperties, err := internal.ExtractExtraProperties(data, *s)
+	if err != nil {
+		return err
+	}
+	s.extraProperties = extraProperties
+	s.rawJSON = json.RawMessage(data)
+	return nil
+}
+
+func (s *SourceConfigWebhookAuthUpollo) String() string {
+	if len(s.rawJSON) > 0 {
+		if value, err := internal.StringifyJSON(s.rawJSON); err == nil {
+			return value
+		}
+	}
+	if value, err := internal.StringifyJSON(s); err == nil {
+		return value
+	}
+	return fmt.Sprintf("%#v", s)
+}
+
+type SourceConfigWebhookAuthVercelLogDrains struct {
+	WebhookSecretKey *string `json:"webhook_secret_key,omitempty" url:"webhook_secret_key,omitempty"`
+
+	extraProperties map[string]interface{}
+	rawJSON         json.RawMessage
+}
+
+func (s *SourceConfigWebhookAuthVercelLogDrains) GetWebhookSecretKey() *string {
+	if s == nil {
+		return nil
+	}
+	return s.WebhookSecretKey
+}
+
+func (s *SourceConfigWebhookAuthVercelLogDrains) GetExtraProperties() map[string]interface{} {
+	return s.extraProperties
+}
+
+func (s *SourceConfigWebhookAuthVercelLogDrains) UnmarshalJSON(data []byte) error {
+	type unmarshaler SourceConfigWebhookAuthVercelLogDrains
+	var value unmarshaler
+	if err := json.Unmarshal(data, &value); err != nil {
+		return err
+	}
+	*s = SourceConfigWebhookAuthVercelLogDrains(value)
+	extraProperties, err := internal.ExtractExtraProperties(data, *s)
+	if err != nil {
+		return err
+	}
+	s.extraProperties = extraProperties
+	s.rawJSON = json.RawMessage(data)
+	return nil
+}
+
+func (s *SourceConfigWebhookAuthVercelLogDrains) String() string {
+	if len(s.rawJSON) > 0 {
+		if value, err := internal.StringifyJSON(s.rawJSON); err == nil {
+			return value
+		}
+	}
+	if value, err := internal.StringifyJSON(s); err == nil {
+		return value
+	}
+	return fmt.Sprintf("%#v", s)
+}
+
+type SourceConfigWebhookAuthVercelWebhooks struct {
+	WebhookSecretKey string `json:"webhook_secret_key" url:"webhook_secret_key"`
+
+	extraProperties map[string]interface{}
+	rawJSON         json.RawMessage
+}
+
+func (s *SourceConfigWebhookAuthVercelWebhooks) GetWebhookSecretKey() string {
+	if s == nil {
+		return ""
+	}
+	return s.WebhookSecretKey
+}
+
+func (s *SourceConfigWebhookAuthVercelWebhooks) GetExtraProperties() map[string]interface{} {
+	return s.extraProperties
+}
+
+func (s *SourceConfigWebhookAuthVercelWebhooks) UnmarshalJSON(data []byte) error {
+	type unmarshaler SourceConfigWebhookAuthVercelWebhooks
+	var value unmarshaler
+	if err := json.Unmarshal(data, &value); err != nil {
+		return err
+	}
+	*s = SourceConfigWebhookAuthVercelWebhooks(value)
+	extraProperties, err := internal.ExtractExtraProperties(data, *s)
+	if err != nil {
+		return err
+	}
+	s.extraProperties = extraProperties
+	s.rawJSON = json.RawMessage(data)
+	return nil
+}
+
+func (s *SourceConfigWebhookAuthVercelWebhooks) String() string {
+	if len(s.rawJSON) > 0 {
+		if value, err := internal.StringifyJSON(s.rawJSON); err == nil {
+			return value
+		}
+	}
+	if value, err := internal.StringifyJSON(s); err == nil {
+		return value
+	}
+	return fmt.Sprintf("%#v", s)
+}
+
+type SourceConfigWebhookAuthWhatsApp struct {
+	WebhookSecretKey string `json:"webhook_secret_key" url:"webhook_secret_key"`
+
+	extraProperties map[string]interface{}
+	rawJSON         json.RawMessage
+}
+
+func (s *SourceConfigWebhookAuthWhatsApp) GetWebhookSecretKey() string {
+	if s == nil {
+		return ""
+	}
+	return s.WebhookSecretKey
+}
+
+func (s *SourceConfigWebhookAuthWhatsApp) GetExtraProperties() map[string]interface{} {
+	return s.extraProperties
+}
+
+func (s *SourceConfigWebhookAuthWhatsApp) UnmarshalJSON(data []byte) error {
+	type unmarshaler SourceConfigWebhookAuthWhatsApp
+	var value unmarshaler
+	if err := json.Unmarshal(data, &value); err != nil {
+		return err
+	}
+	*s = SourceConfigWebhookAuthWhatsApp(value)
+	extraProperties, err := internal.ExtractExtraProperties(data, *s)
+	if err != nil {
+		return err
+	}
+	s.extraProperties = extraProperties
+	s.rawJSON = json.RawMessage(data)
+	return nil
+}
+
+func (s *SourceConfigWebhookAuthWhatsApp) String() string {
+	if len(s.rawJSON) > 0 {
+		if value, err := internal.StringifyJSON(s.rawJSON); err == nil {
+			return value
+		}
+	}
+	if value, err := internal.StringifyJSON(s); err == nil {
+		return value
+	}
+	return fmt.Sprintf("%#v", s)
+}
+
+type SourceConfigWebhookAuthWix struct {
+	WebhookSecretKey string `json:"webhook_secret_key" url:"webhook_secret_key"`
+
+	extraProperties map[string]interface{}
+	rawJSON         json.RawMessage
+}
+
+func (s *SourceConfigWebhookAuthWix) GetWebhookSecretKey() string {
+	if s == nil {
+		return ""
+	}
+	return s.WebhookSecretKey
+}
+
+func (s *SourceConfigWebhookAuthWix) GetExtraProperties() map[string]interface{} {
+	return s.extraProperties
+}
+
+func (s *SourceConfigWebhookAuthWix) UnmarshalJSON(data []byte) error {
+	type unmarshaler SourceConfigWebhookAuthWix
+	var value unmarshaler
+	if err := json.Unmarshal(data, &value); err != nil {
+		return err
+	}
+	*s = SourceConfigWebhookAuthWix(value)
+	extraProperties, err := internal.ExtractExtraProperties(data, *s)
+	if err != nil {
+		return err
+	}
+	s.extraProperties = extraProperties
+	s.rawJSON = json.RawMessage(data)
+	return nil
+}
+
+func (s *SourceConfigWebhookAuthWix) String() string {
+	if len(s.rawJSON) > 0 {
+		if value, err := internal.StringifyJSON(s.rawJSON); err == nil {
+			return value
+		}
+	}
+	if value, err := internal.StringifyJSON(s); err == nil {
+		return value
+	}
+	return fmt.Sprintf("%#v", s)
+}
+
+type SourceConfigWebhookAuthWooCommerce struct {
+	WebhookSecretKey string `json:"webhook_secret_key" url:"webhook_secret_key"`
+
+	extraProperties map[string]interface{}
+	rawJSON         json.RawMessage
+}
+
+func (s *SourceConfigWebhookAuthWooCommerce) GetWebhookSecretKey() string {
+	if s == nil {
+		return ""
+	}
+	return s.WebhookSecretKey
+}
+
+func (s *SourceConfigWebhookAuthWooCommerce) GetExtraProperties() map[string]interface{} {
+	return s.extraProperties
+}
+
+func (s *SourceConfigWebhookAuthWooCommerce) UnmarshalJSON(data []byte) error {
+	type unmarshaler SourceConfigWebhookAuthWooCommerce
+	var value unmarshaler
+	if err := json.Unmarshal(data, &value); err != nil {
+		return err
+	}
+	*s = SourceConfigWebhookAuthWooCommerce(value)
+	extraProperties, err := internal.ExtractExtraProperties(data, *s)
+	if err != nil {
+		return err
+	}
+	s.extraProperties = extraProperties
+	s.rawJSON = json.RawMessage(data)
+	return nil
+}
+
+func (s *SourceConfigWebhookAuthWooCommerce) String() string {
+	if len(s.rawJSON) > 0 {
+		if value, err := internal.StringifyJSON(s.rawJSON); err == nil {
+			return value
+		}
+	}
+	if value, err := internal.StringifyJSON(s); err == nil {
+		return value
+	}
+	return fmt.Sprintf("%#v", s)
+}
+
+type SourceConfigWebhookAuthWorkOs struct {
+	WebhookSecretKey string `json:"webhook_secret_key" url:"webhook_secret_key"`
+
+	extraProperties map[string]interface{}
+	rawJSON         json.RawMessage
+}
+
+func (s *SourceConfigWebhookAuthWorkOs) GetWebhookSecretKey() string {
+	if s == nil {
+		return ""
+	}
+	return s.WebhookSecretKey
+}
+
+func (s *SourceConfigWebhookAuthWorkOs) GetExtraProperties() map[string]interface{} {
+	return s.extraProperties
+}
+
+func (s *SourceConfigWebhookAuthWorkOs) UnmarshalJSON(data []byte) error {
+	type unmarshaler SourceConfigWebhookAuthWorkOs
+	var value unmarshaler
+	if err := json.Unmarshal(data, &value); err != nil {
+		return err
+	}
+	*s = SourceConfigWebhookAuthWorkOs(value)
+	extraProperties, err := internal.ExtractExtraProperties(data, *s)
+	if err != nil {
+		return err
+	}
+	s.extraProperties = extraProperties
+	s.rawJSON = json.RawMessage(data)
+	return nil
+}
+
+func (s *SourceConfigWebhookAuthWorkOs) String() string {
+	if len(s.rawJSON) > 0 {
+		if value, err := internal.StringifyJSON(s.rawJSON); err == nil {
+			return value
+		}
+	}
+	if value, err := internal.StringifyJSON(s); err == nil {
+		return value
+	}
+	return fmt.Sprintf("%#v", s)
+}
+
+type SourceConfigWebhookAuthXero struct {
+	WebhookSecretKey string `json:"webhook_secret_key" url:"webhook_secret_key"`
+
+	extraProperties map[string]interface{}
+	rawJSON         json.RawMessage
+}
+
+func (s *SourceConfigWebhookAuthXero) GetWebhookSecretKey() string {
+	if s == nil {
+		return ""
+	}
+	return s.WebhookSecretKey
+}
+
+func (s *SourceConfigWebhookAuthXero) GetExtraProperties() map[string]interface{} {
+	return s.extraProperties
+}
+
+func (s *SourceConfigWebhookAuthXero) UnmarshalJSON(data []byte) error {
+	type unmarshaler SourceConfigWebhookAuthXero
+	var value unmarshaler
+	if err := json.Unmarshal(data, &value); err != nil {
+		return err
+	}
+	*s = SourceConfigWebhookAuthXero(value)
+	extraProperties, err := internal.ExtractExtraProperties(data, *s)
+	if err != nil {
+		return err
+	}
+	s.extraProperties = extraProperties
+	s.rawJSON = json.RawMessage(data)
+	return nil
+}
+
+func (s *SourceConfigWebhookAuthXero) String() string {
+	if len(s.rawJSON) > 0 {
+		if value, err := internal.StringifyJSON(s.rawJSON); err == nil {
+			return value
+		}
+	}
+	if value, err := internal.StringifyJSON(s); err == nil {
+		return value
+	}
+	return fmt.Sprintf("%#v", s)
+}
+
+type SourceConfigWebhookAuthZendesk struct {
+	WebhookSecretKey string `json:"webhook_secret_key" url:"webhook_secret_key"`
+
+	extraProperties map[string]interface{}
+	rawJSON         json.RawMessage
+}
+
+func (s *SourceConfigWebhookAuthZendesk) GetWebhookSecretKey() string {
+	if s == nil {
+		return ""
+	}
+	return s.WebhookSecretKey
+}
+
+func (s *SourceConfigWebhookAuthZendesk) GetExtraProperties() map[string]interface{} {
+	return s.extraProperties
+}
+
+func (s *SourceConfigWebhookAuthZendesk) UnmarshalJSON(data []byte) error {
+	type unmarshaler SourceConfigWebhookAuthZendesk
+	var value unmarshaler
+	if err := json.Unmarshal(data, &value); err != nil {
+		return err
+	}
+	*s = SourceConfigWebhookAuthZendesk(value)
+	extraProperties, err := internal.ExtractExtraProperties(data, *s)
+	if err != nil {
+		return err
+	}
+	s.extraProperties = extraProperties
+	s.rawJSON = json.RawMessage(data)
+	return nil
+}
+
+func (s *SourceConfigWebhookAuthZendesk) String() string {
+	if len(s.rawJSON) > 0 {
+		if value, err := internal.StringifyJSON(s.rawJSON); err == nil {
+			return value
+		}
+	}
+	if value, err := internal.StringifyJSON(s); err == nil {
+		return value
+	}
+	return fmt.Sprintf("%#v", s)
+}
+
+type SourceConfigWebhookAuthZoom struct {
+	WebhookSecretKey string `json:"webhook_secret_key" url:"webhook_secret_key"`
+
+	extraProperties map[string]interface{}
+	rawJSON         json.RawMessage
+}
+
+func (s *SourceConfigWebhookAuthZoom) GetWebhookSecretKey() string {
+	if s == nil {
+		return ""
+	}
+	return s.WebhookSecretKey
+}
+
+func (s *SourceConfigWebhookAuthZoom) GetExtraProperties() map[string]interface{} {
+	return s.extraProperties
+}
+
+func (s *SourceConfigWebhookAuthZoom) UnmarshalJSON(data []byte) error {
+	type unmarshaler SourceConfigWebhookAuthZoom
+	var value unmarshaler
+	if err := json.Unmarshal(data, &value); err != nil {
+		return err
+	}
+	*s = SourceConfigWebhookAuthZoom(value)
+	extraProperties, err := internal.ExtractExtraProperties(data, *s)
+	if err != nil {
+		return err
+	}
+	s.extraProperties = extraProperties
+	s.rawJSON = json.RawMessage(data)
+	return nil
+}
+
+func (s *SourceConfigWebhookAuthZoom) String() string {
+	if len(s.rawJSON) > 0 {
+		if value, err := internal.StringifyJSON(s.rawJSON); err == nil {
+			return value
+		}
+	}
+	if value, err := internal.StringifyJSON(s); err == nil {
+		return value
+	}
+	return fmt.Sprintf("%#v", s)
+}
+
+type SourceConfigWhatsAppAuth struct {
+	WebhookSecretKey string `json:"webhook_secret_key" url:"webhook_secret_key"`
+
+	extraProperties map[string]interface{}
+	rawJSON         json.RawMessage
+}
+
+func (s *SourceConfigWhatsAppAuth) GetWebhookSecretKey() string {
+	if s == nil {
+		return ""
+	}
+	return s.WebhookSecretKey
+}
+
+func (s *SourceConfigWhatsAppAuth) GetExtraProperties() map[string]interface{} {
+	return s.extraProperties
+}
+
+func (s *SourceConfigWhatsAppAuth) UnmarshalJSON(data []byte) error {
+	type unmarshaler SourceConfigWhatsAppAuth
+	var value unmarshaler
+	if err := json.Unmarshal(data, &value); err != nil {
+		return err
+	}
+	*s = SourceConfigWhatsAppAuth(value)
+	extraProperties, err := internal.ExtractExtraProperties(data, *s)
+	if err != nil {
+		return err
+	}
+	s.extraProperties = extraProperties
+	s.rawJSON = json.RawMessage(data)
+	return nil
+}
+
+func (s *SourceConfigWhatsAppAuth) String() string {
+	if len(s.rawJSON) > 0 {
+		if value, err := internal.StringifyJSON(s.rawJSON); err == nil {
+			return value
+		}
+	}
+	if value, err := internal.StringifyJSON(s); err == nil {
+		return value
+	}
+	return fmt.Sprintf("%#v", s)
+}
+
+type SourceConfigWixAuth struct {
+	WebhookSecretKey string `json:"webhook_secret_key" url:"webhook_secret_key"`
+
+	extraProperties map[string]interface{}
+	rawJSON         json.RawMessage
+}
+
+func (s *SourceConfigWixAuth) GetWebhookSecretKey() string {
+	if s == nil {
+		return ""
+	}
+	return s.WebhookSecretKey
+}
+
+func (s *SourceConfigWixAuth) GetExtraProperties() map[string]interface{} {
+	return s.extraProperties
+}
+
+func (s *SourceConfigWixAuth) UnmarshalJSON(data []byte) error {
+	type unmarshaler SourceConfigWixAuth
+	var value unmarshaler
+	if err := json.Unmarshal(data, &value); err != nil {
+		return err
+	}
+	*s = SourceConfigWixAuth(value)
+	extraProperties, err := internal.ExtractExtraProperties(data, *s)
+	if err != nil {
+		return err
+	}
+	s.extraProperties = extraProperties
+	s.rawJSON = json.RawMessage(data)
+	return nil
+}
+
+func (s *SourceConfigWixAuth) String() string {
+	if len(s.rawJSON) > 0 {
+		if value, err := internal.StringifyJSON(s.rawJSON); err == nil {
+			return value
+		}
+	}
+	if value, err := internal.StringifyJSON(s); err == nil {
+		return value
+	}
+	return fmt.Sprintf("%#v", s)
+}
+
+type SourceConfigWooCommerceAuth struct {
+	WebhookSecretKey string `json:"webhook_secret_key" url:"webhook_secret_key"`
+
+	extraProperties map[string]interface{}
+	rawJSON         json.RawMessage
+}
+
+func (s *SourceConfigWooCommerceAuth) GetWebhookSecretKey() string {
+	if s == nil {
+		return ""
+	}
+	return s.WebhookSecretKey
+}
+
+func (s *SourceConfigWooCommerceAuth) GetExtraProperties() map[string]interface{} {
+	return s.extraProperties
+}
+
+func (s *SourceConfigWooCommerceAuth) UnmarshalJSON(data []byte) error {
+	type unmarshaler SourceConfigWooCommerceAuth
+	var value unmarshaler
+	if err := json.Unmarshal(data, &value); err != nil {
+		return err
+	}
+	*s = SourceConfigWooCommerceAuth(value)
+	extraProperties, err := internal.ExtractExtraProperties(data, *s)
+	if err != nil {
+		return err
+	}
+	s.extraProperties = extraProperties
+	s.rawJSON = json.RawMessage(data)
+	return nil
+}
+
+func (s *SourceConfigWooCommerceAuth) String() string {
+	if len(s.rawJSON) > 0 {
+		if value, err := internal.StringifyJSON(s.rawJSON); err == nil {
+			return value
+		}
+	}
+	if value, err := internal.StringifyJSON(s); err == nil {
+		return value
+	}
+	return fmt.Sprintf("%#v", s)
+}
+
+type SourceConfigWorkOsAuth struct {
+	WebhookSecretKey string `json:"webhook_secret_key" url:"webhook_secret_key"`
+
+	extraProperties map[string]interface{}
+	rawJSON         json.RawMessage
+}
+
+func (s *SourceConfigWorkOsAuth) GetWebhookSecretKey() string {
+	if s == nil {
+		return ""
+	}
+	return s.WebhookSecretKey
+}
+
+func (s *SourceConfigWorkOsAuth) GetExtraProperties() map[string]interface{} {
+	return s.extraProperties
+}
+
+func (s *SourceConfigWorkOsAuth) UnmarshalJSON(data []byte) error {
+	type unmarshaler SourceConfigWorkOsAuth
+	var value unmarshaler
+	if err := json.Unmarshal(data, &value); err != nil {
+		return err
+	}
+	*s = SourceConfigWorkOsAuth(value)
+	extraProperties, err := internal.ExtractExtraProperties(data, *s)
+	if err != nil {
+		return err
+	}
+	s.extraProperties = extraProperties
+	s.rawJSON = json.RawMessage(data)
+	return nil
+}
+
+func (s *SourceConfigWorkOsAuth) String() string {
+	if len(s.rawJSON) > 0 {
+		if value, err := internal.StringifyJSON(s.rawJSON); err == nil {
+			return value
+		}
+	}
+	if value, err := internal.StringifyJSON(s); err == nil {
+		return value
+	}
+	return fmt.Sprintf("%#v", s)
+}
+
+type SourceConfigXeroAuth struct {
+	WebhookSecretKey string `json:"webhook_secret_key" url:"webhook_secret_key"`
+
+	extraProperties map[string]interface{}
+	rawJSON         json.RawMessage
+}
+
+func (s *SourceConfigXeroAuth) GetWebhookSecretKey() string {
+	if s == nil {
+		return ""
+	}
+	return s.WebhookSecretKey
+}
+
+func (s *SourceConfigXeroAuth) GetExtraProperties() map[string]interface{} {
+	return s.extraProperties
+}
+
+func (s *SourceConfigXeroAuth) UnmarshalJSON(data []byte) error {
+	type unmarshaler SourceConfigXeroAuth
+	var value unmarshaler
+	if err := json.Unmarshal(data, &value); err != nil {
+		return err
+	}
+	*s = SourceConfigXeroAuth(value)
+	extraProperties, err := internal.ExtractExtraProperties(data, *s)
+	if err != nil {
+		return err
+	}
+	s.extraProperties = extraProperties
+	s.rawJSON = json.RawMessage(data)
+	return nil
+}
+
+func (s *SourceConfigXeroAuth) String() string {
+	if len(s.rawJSON) > 0 {
+		if value, err := internal.StringifyJSON(s.rawJSON); err == nil {
+			return value
+		}
+	}
+	if value, err := internal.StringifyJSON(s); err == nil {
+		return value
+	}
+	return fmt.Sprintf("%#v", s)
+}
+
+type SourceConfigZendeskAuth struct {
+	WebhookSecretKey string `json:"webhook_secret_key" url:"webhook_secret_key"`
+
+	extraProperties map[string]interface{}
+	rawJSON         json.RawMessage
+}
+
+func (s *SourceConfigZendeskAuth) GetWebhookSecretKey() string {
+	if s == nil {
+		return ""
+	}
+	return s.WebhookSecretKey
+}
+
+func (s *SourceConfigZendeskAuth) GetExtraProperties() map[string]interface{} {
+	return s.extraProperties
+}
+
+func (s *SourceConfigZendeskAuth) UnmarshalJSON(data []byte) error {
+	type unmarshaler SourceConfigZendeskAuth
+	var value unmarshaler
+	if err := json.Unmarshal(data, &value); err != nil {
+		return err
+	}
+	*s = SourceConfigZendeskAuth(value)
+	extraProperties, err := internal.ExtractExtraProperties(data, *s)
+	if err != nil {
+		return err
+	}
+	s.extraProperties = extraProperties
+	s.rawJSON = json.RawMessage(data)
+	return nil
+}
+
+func (s *SourceConfigZendeskAuth) String() string {
+	if len(s.rawJSON) > 0 {
+		if value, err := internal.StringifyJSON(s.rawJSON); err == nil {
+			return value
+		}
+	}
+	if value, err := internal.StringifyJSON(s); err == nil {
+		return value
+	}
+	return fmt.Sprintf("%#v", s)
+}
+
+type SourceConfigZoomAuth struct {
+	WebhookSecretKey string `json:"webhook_secret_key" url:"webhook_secret_key"`
+
+	extraProperties map[string]interface{}
+	rawJSON         json.RawMessage
+}
+
+func (s *SourceConfigZoomAuth) GetWebhookSecretKey() string {
+	if s == nil {
+		return ""
+	}
+	return s.WebhookSecretKey
+}
+
+func (s *SourceConfigZoomAuth) GetExtraProperties() map[string]interface{} {
+	return s.extraProperties
+}
+
+func (s *SourceConfigZoomAuth) UnmarshalJSON(data []byte) error {
+	type unmarshaler SourceConfigZoomAuth
+	var value unmarshaler
+	if err := json.Unmarshal(data, &value); err != nil {
+		return err
+	}
+	*s = SourceConfigZoomAuth(value)
+	extraProperties, err := internal.ExtractExtraProperties(data, *s)
+	if err != nil {
+		return err
+	}
+	s.extraProperties = extraProperties
+	s.rawJSON = json.RawMessage(data)
+	return nil
+}
+
+func (s *SourceConfigZoomAuth) String() string {
+	if len(s.rawJSON) > 0 {
+		if value, err := internal.StringifyJSON(s.rawJSON); err == nil {
+			return value
+		}
+	}
+	if value, err := internal.StringifyJSON(s); err == nil {
+		return value
+	}
+	return fmt.Sprintf("%#v", s)
+}
+
+// The type configs for the specified type
+type SourceTypeConfig struct {
+	SourceTypeConfigWebhook           *SourceTypeConfigWebhook
+	SourceTypeConfigHttp              *SourceTypeConfigHttp
+	SourceTypeConfigManaged           *SourceTypeConfigManaged
+	SourceTypeConfigSanity            *SourceTypeConfigSanity
+	SourceTypeConfigBridge            *SourceTypeConfigBridge
+	SourceTypeConfigCloudSignal       *SourceTypeConfigCloudSignal
+	SourceTypeConfigCourier           *SourceTypeConfigCourier
+	SourceTypeConfigFrontApp          *SourceTypeConfigFrontApp
+	SourceTypeConfigZoom              *SourceTypeConfigZoom
+	SourceTypeConfigTwitter           *SourceTypeConfigTwitter
+	SourceTypeConfigRecharge          *SourceTypeConfigRecharge
+	SourceTypeConfigStripe            *SourceTypeConfigStripe
+	SourceTypeConfigPropertyFinder    *SourceTypeConfigPropertyFinder
+	SourceTypeConfigShopify           *SourceTypeConfigShopify
+	SourceTypeConfigTwilio            *SourceTypeConfigTwilio
+	SourceTypeConfigGitHub            *SourceTypeConfigGitHub
+	SourceTypeConfigPostmark          *SourceTypeConfigPostmark
+	SourceTypeConfigTypeform          *SourceTypeConfigTypeform
+	SourceTypeConfigXero              *SourceTypeConfigXero
+	SourceTypeConfigSvix              *SourceTypeConfigSvix
+	SourceTypeConfigAdyen             *SourceTypeConfigAdyen
+	SourceTypeConfigAkeneo            *SourceTypeConfigAkeneo
+	SourceTypeConfigGitLab            *SourceTypeConfigGitLab
+	SourceTypeConfigWooCommerce       *SourceTypeConfigWooCommerce
+	SourceTypeConfigOura              *SourceTypeConfigOura
+	SourceTypeConfigCommerceLayer     *SourceTypeConfigCommerceLayer
+	SourceTypeConfigHubspot           *SourceTypeConfigHubspot
+	SourceTypeConfigMailgun           *SourceTypeConfigMailgun
+	SourceTypeConfigPersona           *SourceTypeConfigPersona
+	SourceTypeConfigPipedrive         *SourceTypeConfigPipedrive
+	SourceTypeConfigSendgrid          *SourceTypeConfigSendgrid
+	SourceTypeConfigWorkOs            *SourceTypeConfigWorkOs
+	SourceTypeConfigSynctera          *SourceTypeConfigSynctera
+	SourceTypeConfigAwssns            *SourceTypeConfigAwssns
+	SourceTypeConfig3DEye             *SourceTypeConfig3DEye
+	SourceTypeConfigTwitch            *SourceTypeConfigTwitch
+	SourceTypeConfigEnode             *SourceTypeConfigEnode
+	SourceTypeConfigFavro             *SourceTypeConfigFavro
+	SourceTypeConfigLinear            *SourceTypeConfigLinear
+	SourceTypeConfigShopline          *SourceTypeConfigShopline
+	SourceTypeConfigWix               *SourceTypeConfigWix
+	SourceTypeConfigNmiPaymentGateway *SourceTypeConfigNmiPaymentGateway
+	SourceTypeConfigOrb               *SourceTypeConfigOrb
+	SourceTypeConfigPylon             *SourceTypeConfigPylon
+	SourceTypeConfigRazorpay          *SourceTypeConfigRazorpay
+	SourceTypeConfigRepay             *SourceTypeConfigRepay
+	SourceTypeConfigSquare            *SourceTypeConfigSquare
+	SourceTypeConfigSolidgate         *SourceTypeConfigSolidgate
+	SourceTypeConfigTrello            *SourceTypeConfigTrello
+	SourceTypeConfigEbay              *SourceTypeConfigEbay
+	SourceTypeConfigTelnyx            *SourceTypeConfigTelnyx
+	SourceTypeConfigDiscord           *SourceTypeConfigDiscord
+	SourceTypeConfigTokenIo           *SourceTypeConfigTokenIo
+	SourceTypeConfigFiserv            *SourceTypeConfigFiserv
+	SourceTypeConfigBondsmith         *SourceTypeConfigBondsmith
+	SourceTypeConfigVercelLogDrains   *SourceTypeConfigVercelLogDrains
+	SourceTypeConfigVercelWebhooks    *SourceTypeConfigVercelWebhooks
+	SourceTypeConfigTebex             *SourceTypeConfigTebex
+	SourceTypeConfigSlack             *SourceTypeConfigSlack
+	SourceTypeConfigMailchimp         *SourceTypeConfigMailchimp
+	SourceTypeConfigPaddle            *SourceTypeConfigPaddle
+	SourceTypeConfigPaypal            *SourceTypeConfigPaypal
+	SourceTypeConfigTreezor           *SourceTypeConfigTreezor
+	SourceTypeConfigPraxis            *SourceTypeConfigPraxis
+	SourceTypeConfigCustomerIo        *SourceTypeConfigCustomerIo
+	SourceTypeConfigFacebook          *SourceTypeConfigFacebook
+	SourceTypeConfigWhatsApp          *SourceTypeConfigWhatsApp
+	SourceTypeConfigReplicate         *SourceTypeConfigReplicate
+	SourceTypeConfigTikTok            *SourceTypeConfigTikTok
+	SourceTypeConfigAirwallex         *SourceTypeConfigAirwallex
+	SourceTypeConfigZendesk           *SourceTypeConfigZendesk
+	SourceTypeConfigUpollo            *SourceTypeConfigUpollo
+	SourceTypeConfigLinkedIn          *SourceTypeConfigLinkedIn
+
+	typ string
 }
 
 func NewSourceTypeConfigFromSourceTypeConfigWebhook(value *SourceTypeConfigWebhook) *SourceTypeConfig {
@@ -8486,6 +15299,10 @@ func NewSourceTypeConfigFromSourceTypeConfigWebhook(value *SourceTypeConfigWebho
 
 func NewSourceTypeConfigFromSourceTypeConfigHttp(value *SourceTypeConfigHttp) *SourceTypeConfig {
 	return &SourceTypeConfig{typ: "SourceTypeConfigHttp", SourceTypeConfigHttp: value}
+}
+
+func NewSourceTypeConfigFromSourceTypeConfigManaged(value *SourceTypeConfigManaged) *SourceTypeConfig {
+	return &SourceTypeConfig{typ: "SourceTypeConfigManaged", SourceTypeConfigManaged: value}
 }
 
 func NewSourceTypeConfigFromSourceTypeConfigSanity(value *SourceTypeConfigSanity) *SourceTypeConfig {
@@ -8514,6 +15331,10 @@ func NewSourceTypeConfigFromSourceTypeConfigZoom(value *SourceTypeConfigZoom) *S
 
 func NewSourceTypeConfigFromSourceTypeConfigTwitter(value *SourceTypeConfigTwitter) *SourceTypeConfig {
 	return &SourceTypeConfig{typ: "SourceTypeConfigTwitter", SourceTypeConfigTwitter: value}
+}
+
+func NewSourceTypeConfigFromSourceTypeConfigRecharge(value *SourceTypeConfigRecharge) *SourceTypeConfig {
+	return &SourceTypeConfig{typ: "SourceTypeConfigRecharge", SourceTypeConfigRecharge: value}
 }
 
 func NewSourceTypeConfigFromSourceTypeConfigStripe(value *SourceTypeConfigStripe) *SourceTypeConfig {
@@ -8608,6 +15429,10 @@ func NewSourceTypeConfigFromSourceTypeConfigAwssns(value *SourceTypeConfigAwssns
 	return &SourceTypeConfig{typ: "SourceTypeConfigAwssns", SourceTypeConfigAwssns: value}
 }
 
+func NewSourceTypeConfigFromSourceTypeConfig3DEye(value *SourceTypeConfig3DEye) *SourceTypeConfig {
+	return &SourceTypeConfig{typ: "SourceTypeConfig3DEye", SourceTypeConfig3DEye: value}
+}
+
 func NewSourceTypeConfigFromSourceTypeConfigTwitch(value *SourceTypeConfigTwitch) *SourceTypeConfig {
 	return &SourceTypeConfig{typ: "SourceTypeConfigTwitch", SourceTypeConfigTwitch: value}
 }
@@ -8646,6 +15471,10 @@ func NewSourceTypeConfigFromSourceTypeConfigPylon(value *SourceTypeConfigPylon) 
 
 func NewSourceTypeConfigFromSourceTypeConfigRazorpay(value *SourceTypeConfigRazorpay) *SourceTypeConfig {
 	return &SourceTypeConfig{typ: "SourceTypeConfigRazorpay", SourceTypeConfigRazorpay: value}
+}
+
+func NewSourceTypeConfigFromSourceTypeConfigRepay(value *SourceTypeConfigRepay) *SourceTypeConfig {
+	return &SourceTypeConfig{typ: "SourceTypeConfigRepay", SourceTypeConfigRepay: value}
 }
 
 func NewSourceTypeConfigFromSourceTypeConfigSquare(value *SourceTypeConfigSquare) *SourceTypeConfig {
@@ -8692,6 +15521,10 @@ func NewSourceTypeConfigFromSourceTypeConfigVercelWebhooks(value *SourceTypeConf
 	return &SourceTypeConfig{typ: "SourceTypeConfigVercelWebhooks", SourceTypeConfigVercelWebhooks: value}
 }
 
+func NewSourceTypeConfigFromSourceTypeConfigTebex(value *SourceTypeConfigTebex) *SourceTypeConfig {
+	return &SourceTypeConfig{typ: "SourceTypeConfigTebex", SourceTypeConfigTebex: value}
+}
+
 func NewSourceTypeConfigFromSourceTypeConfigSlack(value *SourceTypeConfigSlack) *SourceTypeConfig {
 	return &SourceTypeConfig{typ: "SourceTypeConfigSlack", SourceTypeConfigSlack: value}
 }
@@ -8728,29 +15561,28 @@ func NewSourceTypeConfigFromSourceTypeConfigWhatsApp(value *SourceTypeConfigWhat
 	return &SourceTypeConfig{typ: "SourceTypeConfigWhatsApp", SourceTypeConfigWhatsApp: value}
 }
 
+func NewSourceTypeConfigFromSourceTypeConfigReplicate(value *SourceTypeConfigReplicate) *SourceTypeConfig {
+	return &SourceTypeConfig{typ: "SourceTypeConfigReplicate", SourceTypeConfigReplicate: value}
+}
+
+func NewSourceTypeConfigFromSourceTypeConfigTikTok(value *SourceTypeConfigTikTok) *SourceTypeConfig {
+	return &SourceTypeConfig{typ: "SourceTypeConfigTikTok", SourceTypeConfigTikTok: value}
+}
+
+func NewSourceTypeConfigFromSourceTypeConfigAirwallex(value *SourceTypeConfigAirwallex) *SourceTypeConfig {
+	return &SourceTypeConfig{typ: "SourceTypeConfigAirwallex", SourceTypeConfigAirwallex: value}
+}
+
+func NewSourceTypeConfigFromSourceTypeConfigZendesk(value *SourceTypeConfigZendesk) *SourceTypeConfig {
+	return &SourceTypeConfig{typ: "SourceTypeConfigZendesk", SourceTypeConfigZendesk: value}
+}
+
 func NewSourceTypeConfigFromSourceTypeConfigUpollo(value *SourceTypeConfigUpollo) *SourceTypeConfig {
 	return &SourceTypeConfig{typ: "SourceTypeConfigUpollo", SourceTypeConfigUpollo: value}
 }
 
-func (s *SourceTypeConfig) GetSourceTypeConfigHmac() *SourceTypeConfigHmac {
-	if s == nil {
-		return nil
-	}
-	return s.SourceTypeConfigHmac
-}
-
-func (s *SourceTypeConfig) GetSourceTypeConfigBasicAuth() *SourceTypeConfigBasicAuth {
-	if s == nil {
-		return nil
-	}
-	return s.SourceTypeConfigBasicAuth
-}
-
-func (s *SourceTypeConfig) GetSourceTypeConfigApiKey() *SourceTypeConfigApiKey {
-	if s == nil {
-		return nil
-	}
-	return s.SourceTypeConfigApiKey
+func NewSourceTypeConfigFromSourceTypeConfigLinkedIn(value *SourceTypeConfigLinkedIn) *SourceTypeConfig {
+	return &SourceTypeConfig{typ: "SourceTypeConfigLinkedIn", SourceTypeConfigLinkedIn: value}
 }
 
 func (s *SourceTypeConfig) GetSourceTypeConfigWebhook() *SourceTypeConfigWebhook {
@@ -8765,6 +15597,13 @@ func (s *SourceTypeConfig) GetSourceTypeConfigHttp() *SourceTypeConfigHttp {
 		return nil
 	}
 	return s.SourceTypeConfigHttp
+}
+
+func (s *SourceTypeConfig) GetSourceTypeConfigManaged() *SourceTypeConfigManaged {
+	if s == nil {
+		return nil
+	}
+	return s.SourceTypeConfigManaged
 }
 
 func (s *SourceTypeConfig) GetSourceTypeConfigSanity() *SourceTypeConfigSanity {
@@ -8814,6 +15653,13 @@ func (s *SourceTypeConfig) GetSourceTypeConfigTwitter() *SourceTypeConfigTwitter
 		return nil
 	}
 	return s.SourceTypeConfigTwitter
+}
+
+func (s *SourceTypeConfig) GetSourceTypeConfigRecharge() *SourceTypeConfigRecharge {
+	if s == nil {
+		return nil
+	}
+	return s.SourceTypeConfigRecharge
 }
 
 func (s *SourceTypeConfig) GetSourceTypeConfigStripe() *SourceTypeConfigStripe {
@@ -8977,6 +15823,13 @@ func (s *SourceTypeConfig) GetSourceTypeConfigAwssns() *SourceTypeConfigAwssns {
 	return s.SourceTypeConfigAwssns
 }
 
+func (s *SourceTypeConfig) GetSourceTypeConfig3DEye() *SourceTypeConfig3DEye {
+	if s == nil {
+		return nil
+	}
+	return s.SourceTypeConfig3DEye
+}
+
 func (s *SourceTypeConfig) GetSourceTypeConfigTwitch() *SourceTypeConfigTwitch {
 	if s == nil {
 		return nil
@@ -9045,6 +15898,13 @@ func (s *SourceTypeConfig) GetSourceTypeConfigRazorpay() *SourceTypeConfigRazorp
 		return nil
 	}
 	return s.SourceTypeConfigRazorpay
+}
+
+func (s *SourceTypeConfig) GetSourceTypeConfigRepay() *SourceTypeConfigRepay {
+	if s == nil {
+		return nil
+	}
+	return s.SourceTypeConfigRepay
 }
 
 func (s *SourceTypeConfig) GetSourceTypeConfigSquare() *SourceTypeConfigSquare {
@@ -9124,6 +15984,13 @@ func (s *SourceTypeConfig) GetSourceTypeConfigVercelWebhooks() *SourceTypeConfig
 	return s.SourceTypeConfigVercelWebhooks
 }
 
+func (s *SourceTypeConfig) GetSourceTypeConfigTebex() *SourceTypeConfigTebex {
+	if s == nil {
+		return nil
+	}
+	return s.SourceTypeConfigTebex
+}
+
 func (s *SourceTypeConfig) GetSourceTypeConfigSlack() *SourceTypeConfigSlack {
 	if s == nil {
 		return nil
@@ -9187,6 +16054,34 @@ func (s *SourceTypeConfig) GetSourceTypeConfigWhatsApp() *SourceTypeConfigWhatsA
 	return s.SourceTypeConfigWhatsApp
 }
 
+func (s *SourceTypeConfig) GetSourceTypeConfigReplicate() *SourceTypeConfigReplicate {
+	if s == nil {
+		return nil
+	}
+	return s.SourceTypeConfigReplicate
+}
+
+func (s *SourceTypeConfig) GetSourceTypeConfigTikTok() *SourceTypeConfigTikTok {
+	if s == nil {
+		return nil
+	}
+	return s.SourceTypeConfigTikTok
+}
+
+func (s *SourceTypeConfig) GetSourceTypeConfigAirwallex() *SourceTypeConfigAirwallex {
+	if s == nil {
+		return nil
+	}
+	return s.SourceTypeConfigAirwallex
+}
+
+func (s *SourceTypeConfig) GetSourceTypeConfigZendesk() *SourceTypeConfigZendesk {
+	if s == nil {
+		return nil
+	}
+	return s.SourceTypeConfigZendesk
+}
+
 func (s *SourceTypeConfig) GetSourceTypeConfigUpollo() *SourceTypeConfigUpollo {
 	if s == nil {
 		return nil
@@ -9194,25 +16089,14 @@ func (s *SourceTypeConfig) GetSourceTypeConfigUpollo() *SourceTypeConfigUpollo {
 	return s.SourceTypeConfigUpollo
 }
 
+func (s *SourceTypeConfig) GetSourceTypeConfigLinkedIn() *SourceTypeConfigLinkedIn {
+	if s == nil {
+		return nil
+	}
+	return s.SourceTypeConfigLinkedIn
+}
+
 func (s *SourceTypeConfig) UnmarshalJSON(data []byte) error {
-	valueSourceTypeConfigHmac := new(SourceTypeConfigHmac)
-	if err := json.Unmarshal(data, &valueSourceTypeConfigHmac); err == nil {
-		s.typ = "SourceTypeConfigHmac"
-		s.SourceTypeConfigHmac = valueSourceTypeConfigHmac
-		return nil
-	}
-	valueSourceTypeConfigBasicAuth := new(SourceTypeConfigBasicAuth)
-	if err := json.Unmarshal(data, &valueSourceTypeConfigBasicAuth); err == nil {
-		s.typ = "SourceTypeConfigBasicAuth"
-		s.SourceTypeConfigBasicAuth = valueSourceTypeConfigBasicAuth
-		return nil
-	}
-	valueSourceTypeConfigApiKey := new(SourceTypeConfigApiKey)
-	if err := json.Unmarshal(data, &valueSourceTypeConfigApiKey); err == nil {
-		s.typ = "SourceTypeConfigApiKey"
-		s.SourceTypeConfigApiKey = valueSourceTypeConfigApiKey
-		return nil
-	}
 	valueSourceTypeConfigWebhook := new(SourceTypeConfigWebhook)
 	if err := json.Unmarshal(data, &valueSourceTypeConfigWebhook); err == nil {
 		s.typ = "SourceTypeConfigWebhook"
@@ -9223,6 +16107,12 @@ func (s *SourceTypeConfig) UnmarshalJSON(data []byte) error {
 	if err := json.Unmarshal(data, &valueSourceTypeConfigHttp); err == nil {
 		s.typ = "SourceTypeConfigHttp"
 		s.SourceTypeConfigHttp = valueSourceTypeConfigHttp
+		return nil
+	}
+	valueSourceTypeConfigManaged := new(SourceTypeConfigManaged)
+	if err := json.Unmarshal(data, &valueSourceTypeConfigManaged); err == nil {
+		s.typ = "SourceTypeConfigManaged"
+		s.SourceTypeConfigManaged = valueSourceTypeConfigManaged
 		return nil
 	}
 	valueSourceTypeConfigSanity := new(SourceTypeConfigSanity)
@@ -9265,6 +16155,12 @@ func (s *SourceTypeConfig) UnmarshalJSON(data []byte) error {
 	if err := json.Unmarshal(data, &valueSourceTypeConfigTwitter); err == nil {
 		s.typ = "SourceTypeConfigTwitter"
 		s.SourceTypeConfigTwitter = valueSourceTypeConfigTwitter
+		return nil
+	}
+	valueSourceTypeConfigRecharge := new(SourceTypeConfigRecharge)
+	if err := json.Unmarshal(data, &valueSourceTypeConfigRecharge); err == nil {
+		s.typ = "SourceTypeConfigRecharge"
+		s.SourceTypeConfigRecharge = valueSourceTypeConfigRecharge
 		return nil
 	}
 	valueSourceTypeConfigStripe := new(SourceTypeConfigStripe)
@@ -9405,6 +16301,12 @@ func (s *SourceTypeConfig) UnmarshalJSON(data []byte) error {
 		s.SourceTypeConfigAwssns = valueSourceTypeConfigAwssns
 		return nil
 	}
+	valueSourceTypeConfig3DEye := new(SourceTypeConfig3DEye)
+	if err := json.Unmarshal(data, &valueSourceTypeConfig3DEye); err == nil {
+		s.typ = "SourceTypeConfig3DEye"
+		s.SourceTypeConfig3DEye = valueSourceTypeConfig3DEye
+		return nil
+	}
 	valueSourceTypeConfigTwitch := new(SourceTypeConfigTwitch)
 	if err := json.Unmarshal(data, &valueSourceTypeConfigTwitch); err == nil {
 		s.typ = "SourceTypeConfigTwitch"
@@ -9463,6 +16365,12 @@ func (s *SourceTypeConfig) UnmarshalJSON(data []byte) error {
 	if err := json.Unmarshal(data, &valueSourceTypeConfigRazorpay); err == nil {
 		s.typ = "SourceTypeConfigRazorpay"
 		s.SourceTypeConfigRazorpay = valueSourceTypeConfigRazorpay
+		return nil
+	}
+	valueSourceTypeConfigRepay := new(SourceTypeConfigRepay)
+	if err := json.Unmarshal(data, &valueSourceTypeConfigRepay); err == nil {
+		s.typ = "SourceTypeConfigRepay"
+		s.SourceTypeConfigRepay = valueSourceTypeConfigRepay
 		return nil
 	}
 	valueSourceTypeConfigSquare := new(SourceTypeConfigSquare)
@@ -9531,6 +16439,12 @@ func (s *SourceTypeConfig) UnmarshalJSON(data []byte) error {
 		s.SourceTypeConfigVercelWebhooks = valueSourceTypeConfigVercelWebhooks
 		return nil
 	}
+	valueSourceTypeConfigTebex := new(SourceTypeConfigTebex)
+	if err := json.Unmarshal(data, &valueSourceTypeConfigTebex); err == nil {
+		s.typ = "SourceTypeConfigTebex"
+		s.SourceTypeConfigTebex = valueSourceTypeConfigTebex
+		return nil
+	}
 	valueSourceTypeConfigSlack := new(SourceTypeConfigSlack)
 	if err := json.Unmarshal(data, &valueSourceTypeConfigSlack); err == nil {
 		s.typ = "SourceTypeConfigSlack"
@@ -9585,30 +16499,54 @@ func (s *SourceTypeConfig) UnmarshalJSON(data []byte) error {
 		s.SourceTypeConfigWhatsApp = valueSourceTypeConfigWhatsApp
 		return nil
 	}
+	valueSourceTypeConfigReplicate := new(SourceTypeConfigReplicate)
+	if err := json.Unmarshal(data, &valueSourceTypeConfigReplicate); err == nil {
+		s.typ = "SourceTypeConfigReplicate"
+		s.SourceTypeConfigReplicate = valueSourceTypeConfigReplicate
+		return nil
+	}
+	valueSourceTypeConfigTikTok := new(SourceTypeConfigTikTok)
+	if err := json.Unmarshal(data, &valueSourceTypeConfigTikTok); err == nil {
+		s.typ = "SourceTypeConfigTikTok"
+		s.SourceTypeConfigTikTok = valueSourceTypeConfigTikTok
+		return nil
+	}
+	valueSourceTypeConfigAirwallex := new(SourceTypeConfigAirwallex)
+	if err := json.Unmarshal(data, &valueSourceTypeConfigAirwallex); err == nil {
+		s.typ = "SourceTypeConfigAirwallex"
+		s.SourceTypeConfigAirwallex = valueSourceTypeConfigAirwallex
+		return nil
+	}
+	valueSourceTypeConfigZendesk := new(SourceTypeConfigZendesk)
+	if err := json.Unmarshal(data, &valueSourceTypeConfigZendesk); err == nil {
+		s.typ = "SourceTypeConfigZendesk"
+		s.SourceTypeConfigZendesk = valueSourceTypeConfigZendesk
+		return nil
+	}
 	valueSourceTypeConfigUpollo := new(SourceTypeConfigUpollo)
 	if err := json.Unmarshal(data, &valueSourceTypeConfigUpollo); err == nil {
 		s.typ = "SourceTypeConfigUpollo"
 		s.SourceTypeConfigUpollo = valueSourceTypeConfigUpollo
 		return nil
 	}
+	valueSourceTypeConfigLinkedIn := new(SourceTypeConfigLinkedIn)
+	if err := json.Unmarshal(data, &valueSourceTypeConfigLinkedIn); err == nil {
+		s.typ = "SourceTypeConfigLinkedIn"
+		s.SourceTypeConfigLinkedIn = valueSourceTypeConfigLinkedIn
+		return nil
+	}
 	return fmt.Errorf("%s cannot be deserialized as a %T", data, s)
 }
 
 func (s SourceTypeConfig) MarshalJSON() ([]byte, error) {
-	if s.typ == "SourceTypeConfigHmac" || s.SourceTypeConfigHmac != nil {
-		return json.Marshal(s.SourceTypeConfigHmac)
-	}
-	if s.typ == "SourceTypeConfigBasicAuth" || s.SourceTypeConfigBasicAuth != nil {
-		return json.Marshal(s.SourceTypeConfigBasicAuth)
-	}
-	if s.typ == "SourceTypeConfigApiKey" || s.SourceTypeConfigApiKey != nil {
-		return json.Marshal(s.SourceTypeConfigApiKey)
-	}
 	if s.typ == "SourceTypeConfigWebhook" || s.SourceTypeConfigWebhook != nil {
 		return json.Marshal(s.SourceTypeConfigWebhook)
 	}
 	if s.typ == "SourceTypeConfigHttp" || s.SourceTypeConfigHttp != nil {
 		return json.Marshal(s.SourceTypeConfigHttp)
+	}
+	if s.typ == "SourceTypeConfigManaged" || s.SourceTypeConfigManaged != nil {
+		return json.Marshal(s.SourceTypeConfigManaged)
 	}
 	if s.typ == "SourceTypeConfigSanity" || s.SourceTypeConfigSanity != nil {
 		return json.Marshal(s.SourceTypeConfigSanity)
@@ -9630,6 +16568,9 @@ func (s SourceTypeConfig) MarshalJSON() ([]byte, error) {
 	}
 	if s.typ == "SourceTypeConfigTwitter" || s.SourceTypeConfigTwitter != nil {
 		return json.Marshal(s.SourceTypeConfigTwitter)
+	}
+	if s.typ == "SourceTypeConfigRecharge" || s.SourceTypeConfigRecharge != nil {
+		return json.Marshal(s.SourceTypeConfigRecharge)
 	}
 	if s.typ == "SourceTypeConfigStripe" || s.SourceTypeConfigStripe != nil {
 		return json.Marshal(s.SourceTypeConfigStripe)
@@ -9700,6 +16641,9 @@ func (s SourceTypeConfig) MarshalJSON() ([]byte, error) {
 	if s.typ == "SourceTypeConfigAwssns" || s.SourceTypeConfigAwssns != nil {
 		return json.Marshal(s.SourceTypeConfigAwssns)
 	}
+	if s.typ == "SourceTypeConfig3DEye" || s.SourceTypeConfig3DEye != nil {
+		return json.Marshal(s.SourceTypeConfig3DEye)
+	}
 	if s.typ == "SourceTypeConfigTwitch" || s.SourceTypeConfigTwitch != nil {
 		return json.Marshal(s.SourceTypeConfigTwitch)
 	}
@@ -9729,6 +16673,9 @@ func (s SourceTypeConfig) MarshalJSON() ([]byte, error) {
 	}
 	if s.typ == "SourceTypeConfigRazorpay" || s.SourceTypeConfigRazorpay != nil {
 		return json.Marshal(s.SourceTypeConfigRazorpay)
+	}
+	if s.typ == "SourceTypeConfigRepay" || s.SourceTypeConfigRepay != nil {
+		return json.Marshal(s.SourceTypeConfigRepay)
 	}
 	if s.typ == "SourceTypeConfigSquare" || s.SourceTypeConfigSquare != nil {
 		return json.Marshal(s.SourceTypeConfigSquare)
@@ -9763,6 +16710,9 @@ func (s SourceTypeConfig) MarshalJSON() ([]byte, error) {
 	if s.typ == "SourceTypeConfigVercelWebhooks" || s.SourceTypeConfigVercelWebhooks != nil {
 		return json.Marshal(s.SourceTypeConfigVercelWebhooks)
 	}
+	if s.typ == "SourceTypeConfigTebex" || s.SourceTypeConfigTebex != nil {
+		return json.Marshal(s.SourceTypeConfigTebex)
+	}
 	if s.typ == "SourceTypeConfigSlack" || s.SourceTypeConfigSlack != nil {
 		return json.Marshal(s.SourceTypeConfigSlack)
 	}
@@ -9790,18 +16740,31 @@ func (s SourceTypeConfig) MarshalJSON() ([]byte, error) {
 	if s.typ == "SourceTypeConfigWhatsApp" || s.SourceTypeConfigWhatsApp != nil {
 		return json.Marshal(s.SourceTypeConfigWhatsApp)
 	}
+	if s.typ == "SourceTypeConfigReplicate" || s.SourceTypeConfigReplicate != nil {
+		return json.Marshal(s.SourceTypeConfigReplicate)
+	}
+	if s.typ == "SourceTypeConfigTikTok" || s.SourceTypeConfigTikTok != nil {
+		return json.Marshal(s.SourceTypeConfigTikTok)
+	}
+	if s.typ == "SourceTypeConfigAirwallex" || s.SourceTypeConfigAirwallex != nil {
+		return json.Marshal(s.SourceTypeConfigAirwallex)
+	}
+	if s.typ == "SourceTypeConfigZendesk" || s.SourceTypeConfigZendesk != nil {
+		return json.Marshal(s.SourceTypeConfigZendesk)
+	}
 	if s.typ == "SourceTypeConfigUpollo" || s.SourceTypeConfigUpollo != nil {
 		return json.Marshal(s.SourceTypeConfigUpollo)
+	}
+	if s.typ == "SourceTypeConfigLinkedIn" || s.SourceTypeConfigLinkedIn != nil {
+		return json.Marshal(s.SourceTypeConfigLinkedIn)
 	}
 	return nil, fmt.Errorf("type %T does not include a non-empty union type", s)
 }
 
 type SourceTypeConfigVisitor interface {
-	VisitSourceTypeConfigHmac(*SourceTypeConfigHmac) error
-	VisitSourceTypeConfigBasicAuth(*SourceTypeConfigBasicAuth) error
-	VisitSourceTypeConfigApiKey(*SourceTypeConfigApiKey) error
 	VisitSourceTypeConfigWebhook(*SourceTypeConfigWebhook) error
 	VisitSourceTypeConfigHttp(*SourceTypeConfigHttp) error
+	VisitSourceTypeConfigManaged(*SourceTypeConfigManaged) error
 	VisitSourceTypeConfigSanity(*SourceTypeConfigSanity) error
 	VisitSourceTypeConfigBridge(*SourceTypeConfigBridge) error
 	VisitSourceTypeConfigCloudSignal(*SourceTypeConfigCloudSignal) error
@@ -9809,6 +16772,7 @@ type SourceTypeConfigVisitor interface {
 	VisitSourceTypeConfigFrontApp(*SourceTypeConfigFrontApp) error
 	VisitSourceTypeConfigZoom(*SourceTypeConfigZoom) error
 	VisitSourceTypeConfigTwitter(*SourceTypeConfigTwitter) error
+	VisitSourceTypeConfigRecharge(*SourceTypeConfigRecharge) error
 	VisitSourceTypeConfigStripe(*SourceTypeConfigStripe) error
 	VisitSourceTypeConfigPropertyFinder(*SourceTypeConfigPropertyFinder) error
 	VisitSourceTypeConfigShopify(*SourceTypeConfigShopify) error
@@ -9832,6 +16796,7 @@ type SourceTypeConfigVisitor interface {
 	VisitSourceTypeConfigWorkOs(*SourceTypeConfigWorkOs) error
 	VisitSourceTypeConfigSynctera(*SourceTypeConfigSynctera) error
 	VisitSourceTypeConfigAwssns(*SourceTypeConfigAwssns) error
+	VisitSourceTypeConfig3DEye(*SourceTypeConfig3DEye) error
 	VisitSourceTypeConfigTwitch(*SourceTypeConfigTwitch) error
 	VisitSourceTypeConfigEnode(*SourceTypeConfigEnode) error
 	VisitSourceTypeConfigFavro(*SourceTypeConfigFavro) error
@@ -9842,6 +16807,7 @@ type SourceTypeConfigVisitor interface {
 	VisitSourceTypeConfigOrb(*SourceTypeConfigOrb) error
 	VisitSourceTypeConfigPylon(*SourceTypeConfigPylon) error
 	VisitSourceTypeConfigRazorpay(*SourceTypeConfigRazorpay) error
+	VisitSourceTypeConfigRepay(*SourceTypeConfigRepay) error
 	VisitSourceTypeConfigSquare(*SourceTypeConfigSquare) error
 	VisitSourceTypeConfigSolidgate(*SourceTypeConfigSolidgate) error
 	VisitSourceTypeConfigTrello(*SourceTypeConfigTrello) error
@@ -9853,6 +16819,7 @@ type SourceTypeConfigVisitor interface {
 	VisitSourceTypeConfigBondsmith(*SourceTypeConfigBondsmith) error
 	VisitSourceTypeConfigVercelLogDrains(*SourceTypeConfigVercelLogDrains) error
 	VisitSourceTypeConfigVercelWebhooks(*SourceTypeConfigVercelWebhooks) error
+	VisitSourceTypeConfigTebex(*SourceTypeConfigTebex) error
 	VisitSourceTypeConfigSlack(*SourceTypeConfigSlack) error
 	VisitSourceTypeConfigMailchimp(*SourceTypeConfigMailchimp) error
 	VisitSourceTypeConfigPaddle(*SourceTypeConfigPaddle) error
@@ -9862,24 +16829,23 @@ type SourceTypeConfigVisitor interface {
 	VisitSourceTypeConfigCustomerIo(*SourceTypeConfigCustomerIo) error
 	VisitSourceTypeConfigFacebook(*SourceTypeConfigFacebook) error
 	VisitSourceTypeConfigWhatsApp(*SourceTypeConfigWhatsApp) error
+	VisitSourceTypeConfigReplicate(*SourceTypeConfigReplicate) error
+	VisitSourceTypeConfigTikTok(*SourceTypeConfigTikTok) error
+	VisitSourceTypeConfigAirwallex(*SourceTypeConfigAirwallex) error
+	VisitSourceTypeConfigZendesk(*SourceTypeConfigZendesk) error
 	VisitSourceTypeConfigUpollo(*SourceTypeConfigUpollo) error
+	VisitSourceTypeConfigLinkedIn(*SourceTypeConfigLinkedIn) error
 }
 
 func (s *SourceTypeConfig) Accept(visitor SourceTypeConfigVisitor) error {
-	if s.typ == "SourceTypeConfigHmac" || s.SourceTypeConfigHmac != nil {
-		return visitor.VisitSourceTypeConfigHmac(s.SourceTypeConfigHmac)
-	}
-	if s.typ == "SourceTypeConfigBasicAuth" || s.SourceTypeConfigBasicAuth != nil {
-		return visitor.VisitSourceTypeConfigBasicAuth(s.SourceTypeConfigBasicAuth)
-	}
-	if s.typ == "SourceTypeConfigApiKey" || s.SourceTypeConfigApiKey != nil {
-		return visitor.VisitSourceTypeConfigApiKey(s.SourceTypeConfigApiKey)
-	}
 	if s.typ == "SourceTypeConfigWebhook" || s.SourceTypeConfigWebhook != nil {
 		return visitor.VisitSourceTypeConfigWebhook(s.SourceTypeConfigWebhook)
 	}
 	if s.typ == "SourceTypeConfigHttp" || s.SourceTypeConfigHttp != nil {
 		return visitor.VisitSourceTypeConfigHttp(s.SourceTypeConfigHttp)
+	}
+	if s.typ == "SourceTypeConfigManaged" || s.SourceTypeConfigManaged != nil {
+		return visitor.VisitSourceTypeConfigManaged(s.SourceTypeConfigManaged)
 	}
 	if s.typ == "SourceTypeConfigSanity" || s.SourceTypeConfigSanity != nil {
 		return visitor.VisitSourceTypeConfigSanity(s.SourceTypeConfigSanity)
@@ -9901,6 +16867,9 @@ func (s *SourceTypeConfig) Accept(visitor SourceTypeConfigVisitor) error {
 	}
 	if s.typ == "SourceTypeConfigTwitter" || s.SourceTypeConfigTwitter != nil {
 		return visitor.VisitSourceTypeConfigTwitter(s.SourceTypeConfigTwitter)
+	}
+	if s.typ == "SourceTypeConfigRecharge" || s.SourceTypeConfigRecharge != nil {
+		return visitor.VisitSourceTypeConfigRecharge(s.SourceTypeConfigRecharge)
 	}
 	if s.typ == "SourceTypeConfigStripe" || s.SourceTypeConfigStripe != nil {
 		return visitor.VisitSourceTypeConfigStripe(s.SourceTypeConfigStripe)
@@ -9971,6 +16940,9 @@ func (s *SourceTypeConfig) Accept(visitor SourceTypeConfigVisitor) error {
 	if s.typ == "SourceTypeConfigAwssns" || s.SourceTypeConfigAwssns != nil {
 		return visitor.VisitSourceTypeConfigAwssns(s.SourceTypeConfigAwssns)
 	}
+	if s.typ == "SourceTypeConfig3DEye" || s.SourceTypeConfig3DEye != nil {
+		return visitor.VisitSourceTypeConfig3DEye(s.SourceTypeConfig3DEye)
+	}
 	if s.typ == "SourceTypeConfigTwitch" || s.SourceTypeConfigTwitch != nil {
 		return visitor.VisitSourceTypeConfigTwitch(s.SourceTypeConfigTwitch)
 	}
@@ -10000,6 +16972,9 @@ func (s *SourceTypeConfig) Accept(visitor SourceTypeConfigVisitor) error {
 	}
 	if s.typ == "SourceTypeConfigRazorpay" || s.SourceTypeConfigRazorpay != nil {
 		return visitor.VisitSourceTypeConfigRazorpay(s.SourceTypeConfigRazorpay)
+	}
+	if s.typ == "SourceTypeConfigRepay" || s.SourceTypeConfigRepay != nil {
+		return visitor.VisitSourceTypeConfigRepay(s.SourceTypeConfigRepay)
 	}
 	if s.typ == "SourceTypeConfigSquare" || s.SourceTypeConfigSquare != nil {
 		return visitor.VisitSourceTypeConfigSquare(s.SourceTypeConfigSquare)
@@ -10034,6 +17009,9 @@ func (s *SourceTypeConfig) Accept(visitor SourceTypeConfigVisitor) error {
 	if s.typ == "SourceTypeConfigVercelWebhooks" || s.SourceTypeConfigVercelWebhooks != nil {
 		return visitor.VisitSourceTypeConfigVercelWebhooks(s.SourceTypeConfigVercelWebhooks)
 	}
+	if s.typ == "SourceTypeConfigTebex" || s.SourceTypeConfigTebex != nil {
+		return visitor.VisitSourceTypeConfigTebex(s.SourceTypeConfigTebex)
+	}
 	if s.typ == "SourceTypeConfigSlack" || s.SourceTypeConfigSlack != nil {
 		return visitor.VisitSourceTypeConfigSlack(s.SourceTypeConfigSlack)
 	}
@@ -10061,29 +17039,83 @@ func (s *SourceTypeConfig) Accept(visitor SourceTypeConfigVisitor) error {
 	if s.typ == "SourceTypeConfigWhatsApp" || s.SourceTypeConfigWhatsApp != nil {
 		return visitor.VisitSourceTypeConfigWhatsApp(s.SourceTypeConfigWhatsApp)
 	}
+	if s.typ == "SourceTypeConfigReplicate" || s.SourceTypeConfigReplicate != nil {
+		return visitor.VisitSourceTypeConfigReplicate(s.SourceTypeConfigReplicate)
+	}
+	if s.typ == "SourceTypeConfigTikTok" || s.SourceTypeConfigTikTok != nil {
+		return visitor.VisitSourceTypeConfigTikTok(s.SourceTypeConfigTikTok)
+	}
+	if s.typ == "SourceTypeConfigAirwallex" || s.SourceTypeConfigAirwallex != nil {
+		return visitor.VisitSourceTypeConfigAirwallex(s.SourceTypeConfigAirwallex)
+	}
+	if s.typ == "SourceTypeConfigZendesk" || s.SourceTypeConfigZendesk != nil {
+		return visitor.VisitSourceTypeConfigZendesk(s.SourceTypeConfigZendesk)
+	}
 	if s.typ == "SourceTypeConfigUpollo" || s.SourceTypeConfigUpollo != nil {
 		return visitor.VisitSourceTypeConfigUpollo(s.SourceTypeConfigUpollo)
+	}
+	if s.typ == "SourceTypeConfigLinkedIn" || s.SourceTypeConfigLinkedIn != nil {
+		return visitor.VisitSourceTypeConfigLinkedIn(s.SourceTypeConfigLinkedIn)
 	}
 	return fmt.Errorf("type %T does not include a non-empty union type", s)
 }
 
-// The type config for Adyen. Requires type to be `ADYEN`.
-type SourceTypeConfigAdyen struct {
-	AllowedHttpMethods []SourceTypeConfigAdyenAllowedHttpMethodsItem `json:"allowed_http_methods,omitempty" url:"allowed_http_methods,omitempty"`
-	Auth               *SourceTypeConfigAdyenAuth                    `json:"auth,omitempty" url:"auth,omitempty"`
+// The type config for 3d Eye. Requires type to be `THREE_D_EYE`.
+type SourceTypeConfig3DEye struct {
+	Auth *SourceConfig3DEyeAuth `json:"auth,omitempty" url:"auth,omitempty"`
 
 	extraProperties map[string]interface{}
 	rawJSON         json.RawMessage
 }
 
-func (s *SourceTypeConfigAdyen) GetAllowedHttpMethods() []SourceTypeConfigAdyenAllowedHttpMethodsItem {
+func (s *SourceTypeConfig3DEye) GetAuth() *SourceConfig3DEyeAuth {
 	if s == nil {
 		return nil
 	}
-	return s.AllowedHttpMethods
+	return s.Auth
 }
 
-func (s *SourceTypeConfigAdyen) GetAuth() *SourceTypeConfigAdyenAuth {
+func (s *SourceTypeConfig3DEye) GetExtraProperties() map[string]interface{} {
+	return s.extraProperties
+}
+
+func (s *SourceTypeConfig3DEye) UnmarshalJSON(data []byte) error {
+	type unmarshaler SourceTypeConfig3DEye
+	var value unmarshaler
+	if err := json.Unmarshal(data, &value); err != nil {
+		return err
+	}
+	*s = SourceTypeConfig3DEye(value)
+	extraProperties, err := internal.ExtractExtraProperties(data, *s)
+	if err != nil {
+		return err
+	}
+	s.extraProperties = extraProperties
+	s.rawJSON = json.RawMessage(data)
+	return nil
+}
+
+func (s *SourceTypeConfig3DEye) String() string {
+	if len(s.rawJSON) > 0 {
+		if value, err := internal.StringifyJSON(s.rawJSON); err == nil {
+			return value
+		}
+	}
+	if value, err := internal.StringifyJSON(s); err == nil {
+		return value
+	}
+	return fmt.Sprintf("%#v", s)
+}
+
+// The type config for Adyen. Requires type to be `ADYEN`.
+type SourceTypeConfigAdyen struct {
+	Auth *SourceConfigAdyenAuth `json:"auth,omitempty" url:"auth,omitempty"`
+
+	extraProperties map[string]interface{}
+	rawJSON         json.RawMessage
+}
+
+func (s *SourceTypeConfigAdyen) GetAuth() *SourceConfigAdyenAuth {
 	if s == nil {
 		return nil
 	}
@@ -10122,62 +17154,32 @@ func (s *SourceTypeConfigAdyen) String() string {
 	return fmt.Sprintf("%#v", s)
 }
 
-type SourceTypeConfigAdyenAllowedHttpMethodsItem string
-
-const (
-	SourceTypeConfigAdyenAllowedHttpMethodsItemGet    SourceTypeConfigAdyenAllowedHttpMethodsItem = "GET"
-	SourceTypeConfigAdyenAllowedHttpMethodsItemPost   SourceTypeConfigAdyenAllowedHttpMethodsItem = "POST"
-	SourceTypeConfigAdyenAllowedHttpMethodsItemPut    SourceTypeConfigAdyenAllowedHttpMethodsItem = "PUT"
-	SourceTypeConfigAdyenAllowedHttpMethodsItemPatch  SourceTypeConfigAdyenAllowedHttpMethodsItem = "PATCH"
-	SourceTypeConfigAdyenAllowedHttpMethodsItemDelete SourceTypeConfigAdyenAllowedHttpMethodsItem = "DELETE"
-)
-
-func NewSourceTypeConfigAdyenAllowedHttpMethodsItemFromString(s string) (SourceTypeConfigAdyenAllowedHttpMethodsItem, error) {
-	switch s {
-	case "GET":
-		return SourceTypeConfigAdyenAllowedHttpMethodsItemGet, nil
-	case "POST":
-		return SourceTypeConfigAdyenAllowedHttpMethodsItemPost, nil
-	case "PUT":
-		return SourceTypeConfigAdyenAllowedHttpMethodsItemPut, nil
-	case "PATCH":
-		return SourceTypeConfigAdyenAllowedHttpMethodsItemPatch, nil
-	case "DELETE":
-		return SourceTypeConfigAdyenAllowedHttpMethodsItemDelete, nil
-	}
-	var t SourceTypeConfigAdyenAllowedHttpMethodsItem
-	return "", fmt.Errorf("%s is not a valid %T", s, t)
-}
-
-func (s SourceTypeConfigAdyenAllowedHttpMethodsItem) Ptr() *SourceTypeConfigAdyenAllowedHttpMethodsItem {
-	return &s
-}
-
-type SourceTypeConfigAdyenAuth struct {
-	WebhookSecretKey string `json:"webhook_secret_key" url:"webhook_secret_key"`
+// The type config for Airwallex. Requires type to be `AIRWALLEX`.
+type SourceTypeConfigAirwallex struct {
+	Auth *SourceConfigAirwallexAuth `json:"auth,omitempty" url:"auth,omitempty"`
 
 	extraProperties map[string]interface{}
 	rawJSON         json.RawMessage
 }
 
-func (s *SourceTypeConfigAdyenAuth) GetWebhookSecretKey() string {
+func (s *SourceTypeConfigAirwallex) GetAuth() *SourceConfigAirwallexAuth {
 	if s == nil {
-		return ""
+		return nil
 	}
-	return s.WebhookSecretKey
+	return s.Auth
 }
 
-func (s *SourceTypeConfigAdyenAuth) GetExtraProperties() map[string]interface{} {
+func (s *SourceTypeConfigAirwallex) GetExtraProperties() map[string]interface{} {
 	return s.extraProperties
 }
 
-func (s *SourceTypeConfigAdyenAuth) UnmarshalJSON(data []byte) error {
-	type unmarshaler SourceTypeConfigAdyenAuth
+func (s *SourceTypeConfigAirwallex) UnmarshalJSON(data []byte) error {
+	type unmarshaler SourceTypeConfigAirwallex
 	var value unmarshaler
 	if err := json.Unmarshal(data, &value); err != nil {
 		return err
 	}
-	*s = SourceTypeConfigAdyenAuth(value)
+	*s = SourceTypeConfigAirwallex(value)
 	extraProperties, err := internal.ExtractExtraProperties(data, *s)
 	if err != nil {
 		return err
@@ -10187,7 +17189,7 @@ func (s *SourceTypeConfigAdyenAuth) UnmarshalJSON(data []byte) error {
 	return nil
 }
 
-func (s *SourceTypeConfigAdyenAuth) String() string {
+func (s *SourceTypeConfigAirwallex) String() string {
 	if len(s.rawJSON) > 0 {
 		if value, err := internal.StringifyJSON(s.rawJSON); err == nil {
 			return value
@@ -10201,21 +17203,13 @@ func (s *SourceTypeConfigAdyenAuth) String() string {
 
 // The type config for Akeneo. Requires type to be `AKENEO`.
 type SourceTypeConfigAkeneo struct {
-	AllowedHttpMethods []SourceTypeConfigAkeneoAllowedHttpMethodsItem `json:"allowed_http_methods,omitempty" url:"allowed_http_methods,omitempty"`
-	Auth               *SourceTypeConfigAkeneoAuth                    `json:"auth,omitempty" url:"auth,omitempty"`
+	Auth *SourceConfigAkeneoAuth `json:"auth,omitempty" url:"auth,omitempty"`
 
 	extraProperties map[string]interface{}
 	rawJSON         json.RawMessage
 }
 
-func (s *SourceTypeConfigAkeneo) GetAllowedHttpMethods() []SourceTypeConfigAkeneoAllowedHttpMethodsItem {
-	if s == nil {
-		return nil
-	}
-	return s.AllowedHttpMethods
-}
-
-func (s *SourceTypeConfigAkeneo) GetAuth() *SourceTypeConfigAkeneoAuth {
+func (s *SourceTypeConfigAkeneo) GetAuth() *SourceConfigAkeneoAuth {
 	if s == nil {
 		return nil
 	}
@@ -10254,328 +17248,15 @@ func (s *SourceTypeConfigAkeneo) String() string {
 	return fmt.Sprintf("%#v", s)
 }
 
-type SourceTypeConfigAkeneoAllowedHttpMethodsItem string
-
-const (
-	SourceTypeConfigAkeneoAllowedHttpMethodsItemGet    SourceTypeConfigAkeneoAllowedHttpMethodsItem = "GET"
-	SourceTypeConfigAkeneoAllowedHttpMethodsItemPost   SourceTypeConfigAkeneoAllowedHttpMethodsItem = "POST"
-	SourceTypeConfigAkeneoAllowedHttpMethodsItemPut    SourceTypeConfigAkeneoAllowedHttpMethodsItem = "PUT"
-	SourceTypeConfigAkeneoAllowedHttpMethodsItemPatch  SourceTypeConfigAkeneoAllowedHttpMethodsItem = "PATCH"
-	SourceTypeConfigAkeneoAllowedHttpMethodsItemDelete SourceTypeConfigAkeneoAllowedHttpMethodsItem = "DELETE"
-)
-
-func NewSourceTypeConfigAkeneoAllowedHttpMethodsItemFromString(s string) (SourceTypeConfigAkeneoAllowedHttpMethodsItem, error) {
-	switch s {
-	case "GET":
-		return SourceTypeConfigAkeneoAllowedHttpMethodsItemGet, nil
-	case "POST":
-		return SourceTypeConfigAkeneoAllowedHttpMethodsItemPost, nil
-	case "PUT":
-		return SourceTypeConfigAkeneoAllowedHttpMethodsItemPut, nil
-	case "PATCH":
-		return SourceTypeConfigAkeneoAllowedHttpMethodsItemPatch, nil
-	case "DELETE":
-		return SourceTypeConfigAkeneoAllowedHttpMethodsItemDelete, nil
-	}
-	var t SourceTypeConfigAkeneoAllowedHttpMethodsItem
-	return "", fmt.Errorf("%s is not a valid %T", s, t)
-}
-
-func (s SourceTypeConfigAkeneoAllowedHttpMethodsItem) Ptr() *SourceTypeConfigAkeneoAllowedHttpMethodsItem {
-	return &s
-}
-
-type SourceTypeConfigAkeneoAuth struct {
-	WebhookSecretKey string `json:"webhook_secret_key" url:"webhook_secret_key"`
-
-	extraProperties map[string]interface{}
-	rawJSON         json.RawMessage
-}
-
-func (s *SourceTypeConfigAkeneoAuth) GetWebhookSecretKey() string {
-	if s == nil {
-		return ""
-	}
-	return s.WebhookSecretKey
-}
-
-func (s *SourceTypeConfigAkeneoAuth) GetExtraProperties() map[string]interface{} {
-	return s.extraProperties
-}
-
-func (s *SourceTypeConfigAkeneoAuth) UnmarshalJSON(data []byte) error {
-	type unmarshaler SourceTypeConfigAkeneoAuth
-	var value unmarshaler
-	if err := json.Unmarshal(data, &value); err != nil {
-		return err
-	}
-	*s = SourceTypeConfigAkeneoAuth(value)
-	extraProperties, err := internal.ExtractExtraProperties(data, *s)
-	if err != nil {
-		return err
-	}
-	s.extraProperties = extraProperties
-	s.rawJSON = json.RawMessage(data)
-	return nil
-}
-
-func (s *SourceTypeConfigAkeneoAuth) String() string {
-	if len(s.rawJSON) > 0 {
-		if value, err := internal.StringifyJSON(s.rawJSON); err == nil {
-			return value
-		}
-	}
-	if value, err := internal.StringifyJSON(s); err == nil {
-		return value
-	}
-	return fmt.Sprintf("%#v", s)
-}
-
-// The type config for API Key. Requires type to be `API_KEY`.
-type SourceTypeConfigApiKey struct {
-	Type               *string                                        `json:"type,omitempty" url:"type,omitempty"`
-	AllowedHttpMethods []SourceTypeConfigApiKeyAllowedHttpMethodsItem `json:"allowed_http_methods,omitempty" url:"allowed_http_methods,omitempty"`
-	CustomResponse     *SourceTypeConfigApiKeyCustomResponse          `json:"custom_response,omitempty" url:"custom_response,omitempty"`
-	Auth               *SourceTypeConfigApiKeyAuth                    `json:"auth,omitempty" url:"auth,omitempty"`
-
-	extraProperties map[string]interface{}
-	rawJSON         json.RawMessage
-}
-
-func (s *SourceTypeConfigApiKey) GetAllowedHttpMethods() []SourceTypeConfigApiKeyAllowedHttpMethodsItem {
-	if s == nil {
-		return nil
-	}
-	return s.AllowedHttpMethods
-}
-
-func (s *SourceTypeConfigApiKey) GetCustomResponse() *SourceTypeConfigApiKeyCustomResponse {
-	if s == nil {
-		return nil
-	}
-	return s.CustomResponse
-}
-
-func (s *SourceTypeConfigApiKey) GetAuth() *SourceTypeConfigApiKeyAuth {
-	if s == nil {
-		return nil
-	}
-	return s.Auth
-}
-
-func (s *SourceTypeConfigApiKey) GetExtraProperties() map[string]interface{} {
-	return s.extraProperties
-}
-
-func (s *SourceTypeConfigApiKey) UnmarshalJSON(data []byte) error {
-	type unmarshaler SourceTypeConfigApiKey
-	var value unmarshaler
-	if err := json.Unmarshal(data, &value); err != nil {
-		return err
-	}
-	*s = SourceTypeConfigApiKey(value)
-	extraProperties, err := internal.ExtractExtraProperties(data, *s)
-	if err != nil {
-		return err
-	}
-	s.extraProperties = extraProperties
-	s.rawJSON = json.RawMessage(data)
-	return nil
-}
-
-func (s *SourceTypeConfigApiKey) String() string {
-	if len(s.rawJSON) > 0 {
-		if value, err := internal.StringifyJSON(s.rawJSON); err == nil {
-			return value
-		}
-	}
-	if value, err := internal.StringifyJSON(s); err == nil {
-		return value
-	}
-	return fmt.Sprintf("%#v", s)
-}
-
-type SourceTypeConfigApiKeyAllowedHttpMethodsItem string
-
-const (
-	SourceTypeConfigApiKeyAllowedHttpMethodsItemGet    SourceTypeConfigApiKeyAllowedHttpMethodsItem = "GET"
-	SourceTypeConfigApiKeyAllowedHttpMethodsItemPost   SourceTypeConfigApiKeyAllowedHttpMethodsItem = "POST"
-	SourceTypeConfigApiKeyAllowedHttpMethodsItemPut    SourceTypeConfigApiKeyAllowedHttpMethodsItem = "PUT"
-	SourceTypeConfigApiKeyAllowedHttpMethodsItemPatch  SourceTypeConfigApiKeyAllowedHttpMethodsItem = "PATCH"
-	SourceTypeConfigApiKeyAllowedHttpMethodsItemDelete SourceTypeConfigApiKeyAllowedHttpMethodsItem = "DELETE"
-)
-
-func NewSourceTypeConfigApiKeyAllowedHttpMethodsItemFromString(s string) (SourceTypeConfigApiKeyAllowedHttpMethodsItem, error) {
-	switch s {
-	case "GET":
-		return SourceTypeConfigApiKeyAllowedHttpMethodsItemGet, nil
-	case "POST":
-		return SourceTypeConfigApiKeyAllowedHttpMethodsItemPost, nil
-	case "PUT":
-		return SourceTypeConfigApiKeyAllowedHttpMethodsItemPut, nil
-	case "PATCH":
-		return SourceTypeConfigApiKeyAllowedHttpMethodsItemPatch, nil
-	case "DELETE":
-		return SourceTypeConfigApiKeyAllowedHttpMethodsItemDelete, nil
-	}
-	var t SourceTypeConfigApiKeyAllowedHttpMethodsItem
-	return "", fmt.Errorf("%s is not a valid %T", s, t)
-}
-
-func (s SourceTypeConfigApiKeyAllowedHttpMethodsItem) Ptr() *SourceTypeConfigApiKeyAllowedHttpMethodsItem {
-	return &s
-}
-
-type SourceTypeConfigApiKeyAuth struct {
-	HeaderKey string `json:"header_key" url:"header_key"`
-	ApiKey    string `json:"api_key" url:"api_key"`
-
-	extraProperties map[string]interface{}
-	rawJSON         json.RawMessage
-}
-
-func (s *SourceTypeConfigApiKeyAuth) GetHeaderKey() string {
-	if s == nil {
-		return ""
-	}
-	return s.HeaderKey
-}
-
-func (s *SourceTypeConfigApiKeyAuth) GetApiKey() string {
-	if s == nil {
-		return ""
-	}
-	return s.ApiKey
-}
-
-func (s *SourceTypeConfigApiKeyAuth) GetExtraProperties() map[string]interface{} {
-	return s.extraProperties
-}
-
-func (s *SourceTypeConfigApiKeyAuth) UnmarshalJSON(data []byte) error {
-	type unmarshaler SourceTypeConfigApiKeyAuth
-	var value unmarshaler
-	if err := json.Unmarshal(data, &value); err != nil {
-		return err
-	}
-	*s = SourceTypeConfigApiKeyAuth(value)
-	extraProperties, err := internal.ExtractExtraProperties(data, *s)
-	if err != nil {
-		return err
-	}
-	s.extraProperties = extraProperties
-	s.rawJSON = json.RawMessage(data)
-	return nil
-}
-
-func (s *SourceTypeConfigApiKeyAuth) String() string {
-	if len(s.rawJSON) > 0 {
-		if value, err := internal.StringifyJSON(s.rawJSON); err == nil {
-			return value
-		}
-	}
-	if value, err := internal.StringifyJSON(s); err == nil {
-		return value
-	}
-	return fmt.Sprintf("%#v", s)
-}
-
-type SourceTypeConfigApiKeyCustomResponse struct {
-	ContentType *SourceTypeConfigApiKeyCustomResponseContentType `json:"content_type,omitempty" url:"content_type,omitempty"`
-	Body        string                                           `json:"body" url:"body"`
-
-	extraProperties map[string]interface{}
-	rawJSON         json.RawMessage
-}
-
-func (s *SourceTypeConfigApiKeyCustomResponse) GetContentType() *SourceTypeConfigApiKeyCustomResponseContentType {
-	if s == nil {
-		return nil
-	}
-	return s.ContentType
-}
-
-func (s *SourceTypeConfigApiKeyCustomResponse) GetBody() string {
-	if s == nil {
-		return ""
-	}
-	return s.Body
-}
-
-func (s *SourceTypeConfigApiKeyCustomResponse) GetExtraProperties() map[string]interface{} {
-	return s.extraProperties
-}
-
-func (s *SourceTypeConfigApiKeyCustomResponse) UnmarshalJSON(data []byte) error {
-	type unmarshaler SourceTypeConfigApiKeyCustomResponse
-	var value unmarshaler
-	if err := json.Unmarshal(data, &value); err != nil {
-		return err
-	}
-	*s = SourceTypeConfigApiKeyCustomResponse(value)
-	extraProperties, err := internal.ExtractExtraProperties(data, *s)
-	if err != nil {
-		return err
-	}
-	s.extraProperties = extraProperties
-	s.rawJSON = json.RawMessage(data)
-	return nil
-}
-
-func (s *SourceTypeConfigApiKeyCustomResponse) String() string {
-	if len(s.rawJSON) > 0 {
-		if value, err := internal.StringifyJSON(s.rawJSON); err == nil {
-			return value
-		}
-	}
-	if value, err := internal.StringifyJSON(s); err == nil {
-		return value
-	}
-	return fmt.Sprintf("%#v", s)
-}
-
-type SourceTypeConfigApiKeyCustomResponseContentType string
-
-const (
-	SourceTypeConfigApiKeyCustomResponseContentTypeJson SourceTypeConfigApiKeyCustomResponseContentType = "json"
-	SourceTypeConfigApiKeyCustomResponseContentTypeText SourceTypeConfigApiKeyCustomResponseContentType = "text"
-	SourceTypeConfigApiKeyCustomResponseContentTypeXml  SourceTypeConfigApiKeyCustomResponseContentType = "xml"
-)
-
-func NewSourceTypeConfigApiKeyCustomResponseContentTypeFromString(s string) (SourceTypeConfigApiKeyCustomResponseContentType, error) {
-	switch s {
-	case "json":
-		return SourceTypeConfigApiKeyCustomResponseContentTypeJson, nil
-	case "text":
-		return SourceTypeConfigApiKeyCustomResponseContentTypeText, nil
-	case "xml":
-		return SourceTypeConfigApiKeyCustomResponseContentTypeXml, nil
-	}
-	var t SourceTypeConfigApiKeyCustomResponseContentType
-	return "", fmt.Errorf("%s is not a valid %T", s, t)
-}
-
-func (s SourceTypeConfigApiKeyCustomResponseContentType) Ptr() *SourceTypeConfigApiKeyCustomResponseContentType {
-	return &s
-}
-
 // The type config for AWS SNS. Requires type to be `AWS_SNS`.
 type SourceTypeConfigAwssns struct {
-	AllowedHttpMethods []SourceTypeConfigAwssnsAllowedHttpMethodsItem `json:"allowed_http_methods,omitempty" url:"allowed_http_methods,omitempty"`
-	Auth               *SourceTypeConfigAwssnsAuth                    `json:"auth,omitempty" url:"auth,omitempty"`
+	Auth *SourceConfigAwssnsAuth `json:"auth,omitempty" url:"auth,omitempty"`
 
 	extraProperties map[string]interface{}
 	rawJSON         json.RawMessage
 }
 
-func (s *SourceTypeConfigAwssns) GetAllowedHttpMethods() []SourceTypeConfigAwssnsAllowedHttpMethodsItem {
-	if s == nil {
-		return nil
-	}
-	return s.AllowedHttpMethods
-}
-
-func (s *SourceTypeConfigAwssns) GetAuth() *SourceTypeConfigAwssnsAuth {
+func (s *SourceTypeConfigAwssns) GetAuth() *SourceConfigAwssnsAuth {
 	if s == nil {
 		return nil
 	}
@@ -10614,319 +17295,15 @@ func (s *SourceTypeConfigAwssns) String() string {
 	return fmt.Sprintf("%#v", s)
 }
 
-type SourceTypeConfigAwssnsAllowedHttpMethodsItem string
-
-const (
-	SourceTypeConfigAwssnsAllowedHttpMethodsItemGet    SourceTypeConfigAwssnsAllowedHttpMethodsItem = "GET"
-	SourceTypeConfigAwssnsAllowedHttpMethodsItemPost   SourceTypeConfigAwssnsAllowedHttpMethodsItem = "POST"
-	SourceTypeConfigAwssnsAllowedHttpMethodsItemPut    SourceTypeConfigAwssnsAllowedHttpMethodsItem = "PUT"
-	SourceTypeConfigAwssnsAllowedHttpMethodsItemPatch  SourceTypeConfigAwssnsAllowedHttpMethodsItem = "PATCH"
-	SourceTypeConfigAwssnsAllowedHttpMethodsItemDelete SourceTypeConfigAwssnsAllowedHttpMethodsItem = "DELETE"
-)
-
-func NewSourceTypeConfigAwssnsAllowedHttpMethodsItemFromString(s string) (SourceTypeConfigAwssnsAllowedHttpMethodsItem, error) {
-	switch s {
-	case "GET":
-		return SourceTypeConfigAwssnsAllowedHttpMethodsItemGet, nil
-	case "POST":
-		return SourceTypeConfigAwssnsAllowedHttpMethodsItemPost, nil
-	case "PUT":
-		return SourceTypeConfigAwssnsAllowedHttpMethodsItemPut, nil
-	case "PATCH":
-		return SourceTypeConfigAwssnsAllowedHttpMethodsItemPatch, nil
-	case "DELETE":
-		return SourceTypeConfigAwssnsAllowedHttpMethodsItemDelete, nil
-	}
-	var t SourceTypeConfigAwssnsAllowedHttpMethodsItem
-	return "", fmt.Errorf("%s is not a valid %T", s, t)
-}
-
-func (s SourceTypeConfigAwssnsAllowedHttpMethodsItem) Ptr() *SourceTypeConfigAwssnsAllowedHttpMethodsItem {
-	return &s
-}
-
-type SourceTypeConfigAwssnsAuth struct {
-	extraProperties map[string]interface{}
-	rawJSON         json.RawMessage
-}
-
-func (s *SourceTypeConfigAwssnsAuth) GetExtraProperties() map[string]interface{} {
-	return s.extraProperties
-}
-
-func (s *SourceTypeConfigAwssnsAuth) UnmarshalJSON(data []byte) error {
-	type unmarshaler SourceTypeConfigAwssnsAuth
-	var value unmarshaler
-	if err := json.Unmarshal(data, &value); err != nil {
-		return err
-	}
-	*s = SourceTypeConfigAwssnsAuth(value)
-	extraProperties, err := internal.ExtractExtraProperties(data, *s)
-	if err != nil {
-		return err
-	}
-	s.extraProperties = extraProperties
-	s.rawJSON = json.RawMessage(data)
-	return nil
-}
-
-func (s *SourceTypeConfigAwssnsAuth) String() string {
-	if len(s.rawJSON) > 0 {
-		if value, err := internal.StringifyJSON(s.rawJSON); err == nil {
-			return value
-		}
-	}
-	if value, err := internal.StringifyJSON(s); err == nil {
-		return value
-	}
-	return fmt.Sprintf("%#v", s)
-}
-
-// The type config for Basic Auth. Requires type to be `BASIC_AUTH`.
-type SourceTypeConfigBasicAuth struct {
-	Type               *string                                           `json:"type,omitempty" url:"type,omitempty"`
-	AllowedHttpMethods []SourceTypeConfigBasicAuthAllowedHttpMethodsItem `json:"allowed_http_methods,omitempty" url:"allowed_http_methods,omitempty"`
-	CustomResponse     *SourceTypeConfigBasicAuthCustomResponse          `json:"custom_response,omitempty" url:"custom_response,omitempty"`
-	Auth               *SourceTypeConfigBasicAuthAuth                    `json:"auth,omitempty" url:"auth,omitempty"`
-
-	extraProperties map[string]interface{}
-	rawJSON         json.RawMessage
-}
-
-func (s *SourceTypeConfigBasicAuth) GetAllowedHttpMethods() []SourceTypeConfigBasicAuthAllowedHttpMethodsItem {
-	if s == nil {
-		return nil
-	}
-	return s.AllowedHttpMethods
-}
-
-func (s *SourceTypeConfigBasicAuth) GetCustomResponse() *SourceTypeConfigBasicAuthCustomResponse {
-	if s == nil {
-		return nil
-	}
-	return s.CustomResponse
-}
-
-func (s *SourceTypeConfigBasicAuth) GetAuth() *SourceTypeConfigBasicAuthAuth {
-	if s == nil {
-		return nil
-	}
-	return s.Auth
-}
-
-func (s *SourceTypeConfigBasicAuth) GetExtraProperties() map[string]interface{} {
-	return s.extraProperties
-}
-
-func (s *SourceTypeConfigBasicAuth) UnmarshalJSON(data []byte) error {
-	type unmarshaler SourceTypeConfigBasicAuth
-	var value unmarshaler
-	if err := json.Unmarshal(data, &value); err != nil {
-		return err
-	}
-	*s = SourceTypeConfigBasicAuth(value)
-	extraProperties, err := internal.ExtractExtraProperties(data, *s)
-	if err != nil {
-		return err
-	}
-	s.extraProperties = extraProperties
-	s.rawJSON = json.RawMessage(data)
-	return nil
-}
-
-func (s *SourceTypeConfigBasicAuth) String() string {
-	if len(s.rawJSON) > 0 {
-		if value, err := internal.StringifyJSON(s.rawJSON); err == nil {
-			return value
-		}
-	}
-	if value, err := internal.StringifyJSON(s); err == nil {
-		return value
-	}
-	return fmt.Sprintf("%#v", s)
-}
-
-type SourceTypeConfigBasicAuthAllowedHttpMethodsItem string
-
-const (
-	SourceTypeConfigBasicAuthAllowedHttpMethodsItemGet    SourceTypeConfigBasicAuthAllowedHttpMethodsItem = "GET"
-	SourceTypeConfigBasicAuthAllowedHttpMethodsItemPost   SourceTypeConfigBasicAuthAllowedHttpMethodsItem = "POST"
-	SourceTypeConfigBasicAuthAllowedHttpMethodsItemPut    SourceTypeConfigBasicAuthAllowedHttpMethodsItem = "PUT"
-	SourceTypeConfigBasicAuthAllowedHttpMethodsItemPatch  SourceTypeConfigBasicAuthAllowedHttpMethodsItem = "PATCH"
-	SourceTypeConfigBasicAuthAllowedHttpMethodsItemDelete SourceTypeConfigBasicAuthAllowedHttpMethodsItem = "DELETE"
-)
-
-func NewSourceTypeConfigBasicAuthAllowedHttpMethodsItemFromString(s string) (SourceTypeConfigBasicAuthAllowedHttpMethodsItem, error) {
-	switch s {
-	case "GET":
-		return SourceTypeConfigBasicAuthAllowedHttpMethodsItemGet, nil
-	case "POST":
-		return SourceTypeConfigBasicAuthAllowedHttpMethodsItemPost, nil
-	case "PUT":
-		return SourceTypeConfigBasicAuthAllowedHttpMethodsItemPut, nil
-	case "PATCH":
-		return SourceTypeConfigBasicAuthAllowedHttpMethodsItemPatch, nil
-	case "DELETE":
-		return SourceTypeConfigBasicAuthAllowedHttpMethodsItemDelete, nil
-	}
-	var t SourceTypeConfigBasicAuthAllowedHttpMethodsItem
-	return "", fmt.Errorf("%s is not a valid %T", s, t)
-}
-
-func (s SourceTypeConfigBasicAuthAllowedHttpMethodsItem) Ptr() *SourceTypeConfigBasicAuthAllowedHttpMethodsItem {
-	return &s
-}
-
-type SourceTypeConfigBasicAuthAuth struct {
-	Username *string `json:"username,omitempty" url:"username,omitempty"`
-	Password *string `json:"password,omitempty" url:"password,omitempty"`
-
-	extraProperties map[string]interface{}
-	rawJSON         json.RawMessage
-}
-
-func (s *SourceTypeConfigBasicAuthAuth) GetUsername() *string {
-	if s == nil {
-		return nil
-	}
-	return s.Username
-}
-
-func (s *SourceTypeConfigBasicAuthAuth) GetPassword() *string {
-	if s == nil {
-		return nil
-	}
-	return s.Password
-}
-
-func (s *SourceTypeConfigBasicAuthAuth) GetExtraProperties() map[string]interface{} {
-	return s.extraProperties
-}
-
-func (s *SourceTypeConfigBasicAuthAuth) UnmarshalJSON(data []byte) error {
-	type unmarshaler SourceTypeConfigBasicAuthAuth
-	var value unmarshaler
-	if err := json.Unmarshal(data, &value); err != nil {
-		return err
-	}
-	*s = SourceTypeConfigBasicAuthAuth(value)
-	extraProperties, err := internal.ExtractExtraProperties(data, *s)
-	if err != nil {
-		return err
-	}
-	s.extraProperties = extraProperties
-	s.rawJSON = json.RawMessage(data)
-	return nil
-}
-
-func (s *SourceTypeConfigBasicAuthAuth) String() string {
-	if len(s.rawJSON) > 0 {
-		if value, err := internal.StringifyJSON(s.rawJSON); err == nil {
-			return value
-		}
-	}
-	if value, err := internal.StringifyJSON(s); err == nil {
-		return value
-	}
-	return fmt.Sprintf("%#v", s)
-}
-
-type SourceTypeConfigBasicAuthCustomResponse struct {
-	ContentType *SourceTypeConfigBasicAuthCustomResponseContentType `json:"content_type,omitempty" url:"content_type,omitempty"`
-	Body        string                                              `json:"body" url:"body"`
-
-	extraProperties map[string]interface{}
-	rawJSON         json.RawMessage
-}
-
-func (s *SourceTypeConfigBasicAuthCustomResponse) GetContentType() *SourceTypeConfigBasicAuthCustomResponseContentType {
-	if s == nil {
-		return nil
-	}
-	return s.ContentType
-}
-
-func (s *SourceTypeConfigBasicAuthCustomResponse) GetBody() string {
-	if s == nil {
-		return ""
-	}
-	return s.Body
-}
-
-func (s *SourceTypeConfigBasicAuthCustomResponse) GetExtraProperties() map[string]interface{} {
-	return s.extraProperties
-}
-
-func (s *SourceTypeConfigBasicAuthCustomResponse) UnmarshalJSON(data []byte) error {
-	type unmarshaler SourceTypeConfigBasicAuthCustomResponse
-	var value unmarshaler
-	if err := json.Unmarshal(data, &value); err != nil {
-		return err
-	}
-	*s = SourceTypeConfigBasicAuthCustomResponse(value)
-	extraProperties, err := internal.ExtractExtraProperties(data, *s)
-	if err != nil {
-		return err
-	}
-	s.extraProperties = extraProperties
-	s.rawJSON = json.RawMessage(data)
-	return nil
-}
-
-func (s *SourceTypeConfigBasicAuthCustomResponse) String() string {
-	if len(s.rawJSON) > 0 {
-		if value, err := internal.StringifyJSON(s.rawJSON); err == nil {
-			return value
-		}
-	}
-	if value, err := internal.StringifyJSON(s); err == nil {
-		return value
-	}
-	return fmt.Sprintf("%#v", s)
-}
-
-type SourceTypeConfigBasicAuthCustomResponseContentType string
-
-const (
-	SourceTypeConfigBasicAuthCustomResponseContentTypeJson SourceTypeConfigBasicAuthCustomResponseContentType = "json"
-	SourceTypeConfigBasicAuthCustomResponseContentTypeText SourceTypeConfigBasicAuthCustomResponseContentType = "text"
-	SourceTypeConfigBasicAuthCustomResponseContentTypeXml  SourceTypeConfigBasicAuthCustomResponseContentType = "xml"
-)
-
-func NewSourceTypeConfigBasicAuthCustomResponseContentTypeFromString(s string) (SourceTypeConfigBasicAuthCustomResponseContentType, error) {
-	switch s {
-	case "json":
-		return SourceTypeConfigBasicAuthCustomResponseContentTypeJson, nil
-	case "text":
-		return SourceTypeConfigBasicAuthCustomResponseContentTypeText, nil
-	case "xml":
-		return SourceTypeConfigBasicAuthCustomResponseContentTypeXml, nil
-	}
-	var t SourceTypeConfigBasicAuthCustomResponseContentType
-	return "", fmt.Errorf("%s is not a valid %T", s, t)
-}
-
-func (s SourceTypeConfigBasicAuthCustomResponseContentType) Ptr() *SourceTypeConfigBasicAuthCustomResponseContentType {
-	return &s
-}
-
 // The type config for Bondsmith. Requires type to be `BONDSMITH`.
 type SourceTypeConfigBondsmith struct {
-	AllowedHttpMethods []SourceTypeConfigBondsmithAllowedHttpMethodsItem `json:"allowed_http_methods,omitempty" url:"allowed_http_methods,omitempty"`
-	Auth               *SourceTypeConfigBondsmithAuth                    `json:"auth,omitempty" url:"auth,omitempty"`
+	Auth *SourceConfigBondsmithAuth `json:"auth,omitempty" url:"auth,omitempty"`
 
 	extraProperties map[string]interface{}
 	rawJSON         json.RawMessage
 }
 
-func (s *SourceTypeConfigBondsmith) GetAllowedHttpMethods() []SourceTypeConfigBondsmithAllowedHttpMethodsItem {
-	if s == nil {
-		return nil
-	}
-	return s.AllowedHttpMethods
-}
-
-func (s *SourceTypeConfigBondsmith) GetAuth() *SourceTypeConfigBondsmithAuth {
+func (s *SourceTypeConfigBondsmith) GetAuth() *SourceConfigBondsmithAuth {
 	if s == nil {
 		return nil
 	}
@@ -10965,100 +17342,15 @@ func (s *SourceTypeConfigBondsmith) String() string {
 	return fmt.Sprintf("%#v", s)
 }
 
-type SourceTypeConfigBondsmithAllowedHttpMethodsItem string
-
-const (
-	SourceTypeConfigBondsmithAllowedHttpMethodsItemGet    SourceTypeConfigBondsmithAllowedHttpMethodsItem = "GET"
-	SourceTypeConfigBondsmithAllowedHttpMethodsItemPost   SourceTypeConfigBondsmithAllowedHttpMethodsItem = "POST"
-	SourceTypeConfigBondsmithAllowedHttpMethodsItemPut    SourceTypeConfigBondsmithAllowedHttpMethodsItem = "PUT"
-	SourceTypeConfigBondsmithAllowedHttpMethodsItemPatch  SourceTypeConfigBondsmithAllowedHttpMethodsItem = "PATCH"
-	SourceTypeConfigBondsmithAllowedHttpMethodsItemDelete SourceTypeConfigBondsmithAllowedHttpMethodsItem = "DELETE"
-)
-
-func NewSourceTypeConfigBondsmithAllowedHttpMethodsItemFromString(s string) (SourceTypeConfigBondsmithAllowedHttpMethodsItem, error) {
-	switch s {
-	case "GET":
-		return SourceTypeConfigBondsmithAllowedHttpMethodsItemGet, nil
-	case "POST":
-		return SourceTypeConfigBondsmithAllowedHttpMethodsItemPost, nil
-	case "PUT":
-		return SourceTypeConfigBondsmithAllowedHttpMethodsItemPut, nil
-	case "PATCH":
-		return SourceTypeConfigBondsmithAllowedHttpMethodsItemPatch, nil
-	case "DELETE":
-		return SourceTypeConfigBondsmithAllowedHttpMethodsItemDelete, nil
-	}
-	var t SourceTypeConfigBondsmithAllowedHttpMethodsItem
-	return "", fmt.Errorf("%s is not a valid %T", s, t)
-}
-
-func (s SourceTypeConfigBondsmithAllowedHttpMethodsItem) Ptr() *SourceTypeConfigBondsmithAllowedHttpMethodsItem {
-	return &s
-}
-
-type SourceTypeConfigBondsmithAuth struct {
-	WebhookSecretKey string `json:"webhook_secret_key" url:"webhook_secret_key"`
-
-	extraProperties map[string]interface{}
-	rawJSON         json.RawMessage
-}
-
-func (s *SourceTypeConfigBondsmithAuth) GetWebhookSecretKey() string {
-	if s == nil {
-		return ""
-	}
-	return s.WebhookSecretKey
-}
-
-func (s *SourceTypeConfigBondsmithAuth) GetExtraProperties() map[string]interface{} {
-	return s.extraProperties
-}
-
-func (s *SourceTypeConfigBondsmithAuth) UnmarshalJSON(data []byte) error {
-	type unmarshaler SourceTypeConfigBondsmithAuth
-	var value unmarshaler
-	if err := json.Unmarshal(data, &value); err != nil {
-		return err
-	}
-	*s = SourceTypeConfigBondsmithAuth(value)
-	extraProperties, err := internal.ExtractExtraProperties(data, *s)
-	if err != nil {
-		return err
-	}
-	s.extraProperties = extraProperties
-	s.rawJSON = json.RawMessage(data)
-	return nil
-}
-
-func (s *SourceTypeConfigBondsmithAuth) String() string {
-	if len(s.rawJSON) > 0 {
-		if value, err := internal.StringifyJSON(s.rawJSON); err == nil {
-			return value
-		}
-	}
-	if value, err := internal.StringifyJSON(s); err == nil {
-		return value
-	}
-	return fmt.Sprintf("%#v", s)
-}
-
 // The type config for Bridge. Requires type to be `BRIDGE`.
 type SourceTypeConfigBridge struct {
-	AllowedHttpMethods []SourceTypeConfigBridgeAllowedHttpMethodsItem `json:"allowed_http_methods,omitempty" url:"allowed_http_methods,omitempty"`
-	Auth               *SourceTypeConfigBridgeAuth                    `json:"auth,omitempty" url:"auth,omitempty"`
+	Auth *SourceConfigBridgeAuth `json:"auth,omitempty" url:"auth,omitempty"`
 
 	extraProperties map[string]interface{}
 	rawJSON         json.RawMessage
 }
 
-func (s *SourceTypeConfigBridge) GetAllowedHttpMethods() []SourceTypeConfigBridgeAllowedHttpMethodsItem {
-	if s == nil {
-		return nil
-	}
-	return s.AllowedHttpMethods
-}
-
-func (s *SourceTypeConfigBridge) GetAuth() *SourceTypeConfigBridgeAuth {
+func (s *SourceTypeConfigBridge) GetAuth() *SourceConfigBridgeAuth {
 	if s == nil {
 		return nil
 	}
@@ -11097,100 +17389,15 @@ func (s *SourceTypeConfigBridge) String() string {
 	return fmt.Sprintf("%#v", s)
 }
 
-type SourceTypeConfigBridgeAllowedHttpMethodsItem string
-
-const (
-	SourceTypeConfigBridgeAllowedHttpMethodsItemGet    SourceTypeConfigBridgeAllowedHttpMethodsItem = "GET"
-	SourceTypeConfigBridgeAllowedHttpMethodsItemPost   SourceTypeConfigBridgeAllowedHttpMethodsItem = "POST"
-	SourceTypeConfigBridgeAllowedHttpMethodsItemPut    SourceTypeConfigBridgeAllowedHttpMethodsItem = "PUT"
-	SourceTypeConfigBridgeAllowedHttpMethodsItemPatch  SourceTypeConfigBridgeAllowedHttpMethodsItem = "PATCH"
-	SourceTypeConfigBridgeAllowedHttpMethodsItemDelete SourceTypeConfigBridgeAllowedHttpMethodsItem = "DELETE"
-)
-
-func NewSourceTypeConfigBridgeAllowedHttpMethodsItemFromString(s string) (SourceTypeConfigBridgeAllowedHttpMethodsItem, error) {
-	switch s {
-	case "GET":
-		return SourceTypeConfigBridgeAllowedHttpMethodsItemGet, nil
-	case "POST":
-		return SourceTypeConfigBridgeAllowedHttpMethodsItemPost, nil
-	case "PUT":
-		return SourceTypeConfigBridgeAllowedHttpMethodsItemPut, nil
-	case "PATCH":
-		return SourceTypeConfigBridgeAllowedHttpMethodsItemPatch, nil
-	case "DELETE":
-		return SourceTypeConfigBridgeAllowedHttpMethodsItemDelete, nil
-	}
-	var t SourceTypeConfigBridgeAllowedHttpMethodsItem
-	return "", fmt.Errorf("%s is not a valid %T", s, t)
-}
-
-func (s SourceTypeConfigBridgeAllowedHttpMethodsItem) Ptr() *SourceTypeConfigBridgeAllowedHttpMethodsItem {
-	return &s
-}
-
-type SourceTypeConfigBridgeAuth struct {
-	PublicKey string `json:"public_key" url:"public_key"`
-
-	extraProperties map[string]interface{}
-	rawJSON         json.RawMessage
-}
-
-func (s *SourceTypeConfigBridgeAuth) GetPublicKey() string {
-	if s == nil {
-		return ""
-	}
-	return s.PublicKey
-}
-
-func (s *SourceTypeConfigBridgeAuth) GetExtraProperties() map[string]interface{} {
-	return s.extraProperties
-}
-
-func (s *SourceTypeConfigBridgeAuth) UnmarshalJSON(data []byte) error {
-	type unmarshaler SourceTypeConfigBridgeAuth
-	var value unmarshaler
-	if err := json.Unmarshal(data, &value); err != nil {
-		return err
-	}
-	*s = SourceTypeConfigBridgeAuth(value)
-	extraProperties, err := internal.ExtractExtraProperties(data, *s)
-	if err != nil {
-		return err
-	}
-	s.extraProperties = extraProperties
-	s.rawJSON = json.RawMessage(data)
-	return nil
-}
-
-func (s *SourceTypeConfigBridgeAuth) String() string {
-	if len(s.rawJSON) > 0 {
-		if value, err := internal.StringifyJSON(s.rawJSON); err == nil {
-			return value
-		}
-	}
-	if value, err := internal.StringifyJSON(s); err == nil {
-		return value
-	}
-	return fmt.Sprintf("%#v", s)
-}
-
 // The type config for Cloud Signal. Requires type to be `CLOUDSIGNAL`.
 type SourceTypeConfigCloudSignal struct {
-	AllowedHttpMethods []SourceTypeConfigCloudSignalAllowedHttpMethodsItem `json:"allowed_http_methods,omitempty" url:"allowed_http_methods,omitempty"`
-	Auth               *SourceTypeConfigCloudSignalAuth                    `json:"auth,omitempty" url:"auth,omitempty"`
+	Auth *SourceConfigCloudSignalAuth `json:"auth,omitempty" url:"auth,omitempty"`
 
 	extraProperties map[string]interface{}
 	rawJSON         json.RawMessage
 }
 
-func (s *SourceTypeConfigCloudSignal) GetAllowedHttpMethods() []SourceTypeConfigCloudSignalAllowedHttpMethodsItem {
-	if s == nil {
-		return nil
-	}
-	return s.AllowedHttpMethods
-}
-
-func (s *SourceTypeConfigCloudSignal) GetAuth() *SourceTypeConfigCloudSignalAuth {
+func (s *SourceTypeConfigCloudSignal) GetAuth() *SourceConfigCloudSignalAuth {
 	if s == nil {
 		return nil
 	}
@@ -11229,100 +17436,15 @@ func (s *SourceTypeConfigCloudSignal) String() string {
 	return fmt.Sprintf("%#v", s)
 }
 
-type SourceTypeConfigCloudSignalAllowedHttpMethodsItem string
-
-const (
-	SourceTypeConfigCloudSignalAllowedHttpMethodsItemGet    SourceTypeConfigCloudSignalAllowedHttpMethodsItem = "GET"
-	SourceTypeConfigCloudSignalAllowedHttpMethodsItemPost   SourceTypeConfigCloudSignalAllowedHttpMethodsItem = "POST"
-	SourceTypeConfigCloudSignalAllowedHttpMethodsItemPut    SourceTypeConfigCloudSignalAllowedHttpMethodsItem = "PUT"
-	SourceTypeConfigCloudSignalAllowedHttpMethodsItemPatch  SourceTypeConfigCloudSignalAllowedHttpMethodsItem = "PATCH"
-	SourceTypeConfigCloudSignalAllowedHttpMethodsItemDelete SourceTypeConfigCloudSignalAllowedHttpMethodsItem = "DELETE"
-)
-
-func NewSourceTypeConfigCloudSignalAllowedHttpMethodsItemFromString(s string) (SourceTypeConfigCloudSignalAllowedHttpMethodsItem, error) {
-	switch s {
-	case "GET":
-		return SourceTypeConfigCloudSignalAllowedHttpMethodsItemGet, nil
-	case "POST":
-		return SourceTypeConfigCloudSignalAllowedHttpMethodsItemPost, nil
-	case "PUT":
-		return SourceTypeConfigCloudSignalAllowedHttpMethodsItemPut, nil
-	case "PATCH":
-		return SourceTypeConfigCloudSignalAllowedHttpMethodsItemPatch, nil
-	case "DELETE":
-		return SourceTypeConfigCloudSignalAllowedHttpMethodsItemDelete, nil
-	}
-	var t SourceTypeConfigCloudSignalAllowedHttpMethodsItem
-	return "", fmt.Errorf("%s is not a valid %T", s, t)
-}
-
-func (s SourceTypeConfigCloudSignalAllowedHttpMethodsItem) Ptr() *SourceTypeConfigCloudSignalAllowedHttpMethodsItem {
-	return &s
-}
-
-type SourceTypeConfigCloudSignalAuth struct {
-	ApiKey string `json:"api_key" url:"api_key"`
-
-	extraProperties map[string]interface{}
-	rawJSON         json.RawMessage
-}
-
-func (s *SourceTypeConfigCloudSignalAuth) GetApiKey() string {
-	if s == nil {
-		return ""
-	}
-	return s.ApiKey
-}
-
-func (s *SourceTypeConfigCloudSignalAuth) GetExtraProperties() map[string]interface{} {
-	return s.extraProperties
-}
-
-func (s *SourceTypeConfigCloudSignalAuth) UnmarshalJSON(data []byte) error {
-	type unmarshaler SourceTypeConfigCloudSignalAuth
-	var value unmarshaler
-	if err := json.Unmarshal(data, &value); err != nil {
-		return err
-	}
-	*s = SourceTypeConfigCloudSignalAuth(value)
-	extraProperties, err := internal.ExtractExtraProperties(data, *s)
-	if err != nil {
-		return err
-	}
-	s.extraProperties = extraProperties
-	s.rawJSON = json.RawMessage(data)
-	return nil
-}
-
-func (s *SourceTypeConfigCloudSignalAuth) String() string {
-	if len(s.rawJSON) > 0 {
-		if value, err := internal.StringifyJSON(s.rawJSON); err == nil {
-			return value
-		}
-	}
-	if value, err := internal.StringifyJSON(s); err == nil {
-		return value
-	}
-	return fmt.Sprintf("%#v", s)
-}
-
 // The type config for Commerce Layer. Requires type to be `COMMERCELAYER`.
 type SourceTypeConfigCommerceLayer struct {
-	AllowedHttpMethods []SourceTypeConfigCommerceLayerAllowedHttpMethodsItem `json:"allowed_http_methods,omitempty" url:"allowed_http_methods,omitempty"`
-	Auth               *SourceTypeConfigCommerceLayerAuth                    `json:"auth,omitempty" url:"auth,omitempty"`
+	Auth *SourceConfigCommerceLayerAuth `json:"auth,omitempty" url:"auth,omitempty"`
 
 	extraProperties map[string]interface{}
 	rawJSON         json.RawMessage
 }
 
-func (s *SourceTypeConfigCommerceLayer) GetAllowedHttpMethods() []SourceTypeConfigCommerceLayerAllowedHttpMethodsItem {
-	if s == nil {
-		return nil
-	}
-	return s.AllowedHttpMethods
-}
-
-func (s *SourceTypeConfigCommerceLayer) GetAuth() *SourceTypeConfigCommerceLayerAuth {
+func (s *SourceTypeConfigCommerceLayer) GetAuth() *SourceConfigCommerceLayerAuth {
 	if s == nil {
 		return nil
 	}
@@ -11361,100 +17483,15 @@ func (s *SourceTypeConfigCommerceLayer) String() string {
 	return fmt.Sprintf("%#v", s)
 }
 
-type SourceTypeConfigCommerceLayerAllowedHttpMethodsItem string
-
-const (
-	SourceTypeConfigCommerceLayerAllowedHttpMethodsItemGet    SourceTypeConfigCommerceLayerAllowedHttpMethodsItem = "GET"
-	SourceTypeConfigCommerceLayerAllowedHttpMethodsItemPost   SourceTypeConfigCommerceLayerAllowedHttpMethodsItem = "POST"
-	SourceTypeConfigCommerceLayerAllowedHttpMethodsItemPut    SourceTypeConfigCommerceLayerAllowedHttpMethodsItem = "PUT"
-	SourceTypeConfigCommerceLayerAllowedHttpMethodsItemPatch  SourceTypeConfigCommerceLayerAllowedHttpMethodsItem = "PATCH"
-	SourceTypeConfigCommerceLayerAllowedHttpMethodsItemDelete SourceTypeConfigCommerceLayerAllowedHttpMethodsItem = "DELETE"
-)
-
-func NewSourceTypeConfigCommerceLayerAllowedHttpMethodsItemFromString(s string) (SourceTypeConfigCommerceLayerAllowedHttpMethodsItem, error) {
-	switch s {
-	case "GET":
-		return SourceTypeConfigCommerceLayerAllowedHttpMethodsItemGet, nil
-	case "POST":
-		return SourceTypeConfigCommerceLayerAllowedHttpMethodsItemPost, nil
-	case "PUT":
-		return SourceTypeConfigCommerceLayerAllowedHttpMethodsItemPut, nil
-	case "PATCH":
-		return SourceTypeConfigCommerceLayerAllowedHttpMethodsItemPatch, nil
-	case "DELETE":
-		return SourceTypeConfigCommerceLayerAllowedHttpMethodsItemDelete, nil
-	}
-	var t SourceTypeConfigCommerceLayerAllowedHttpMethodsItem
-	return "", fmt.Errorf("%s is not a valid %T", s, t)
-}
-
-func (s SourceTypeConfigCommerceLayerAllowedHttpMethodsItem) Ptr() *SourceTypeConfigCommerceLayerAllowedHttpMethodsItem {
-	return &s
-}
-
-type SourceTypeConfigCommerceLayerAuth struct {
-	WebhookSecretKey string `json:"webhook_secret_key" url:"webhook_secret_key"`
-
-	extraProperties map[string]interface{}
-	rawJSON         json.RawMessage
-}
-
-func (s *SourceTypeConfigCommerceLayerAuth) GetWebhookSecretKey() string {
-	if s == nil {
-		return ""
-	}
-	return s.WebhookSecretKey
-}
-
-func (s *SourceTypeConfigCommerceLayerAuth) GetExtraProperties() map[string]interface{} {
-	return s.extraProperties
-}
-
-func (s *SourceTypeConfigCommerceLayerAuth) UnmarshalJSON(data []byte) error {
-	type unmarshaler SourceTypeConfigCommerceLayerAuth
-	var value unmarshaler
-	if err := json.Unmarshal(data, &value); err != nil {
-		return err
-	}
-	*s = SourceTypeConfigCommerceLayerAuth(value)
-	extraProperties, err := internal.ExtractExtraProperties(data, *s)
-	if err != nil {
-		return err
-	}
-	s.extraProperties = extraProperties
-	s.rawJSON = json.RawMessage(data)
-	return nil
-}
-
-func (s *SourceTypeConfigCommerceLayerAuth) String() string {
-	if len(s.rawJSON) > 0 {
-		if value, err := internal.StringifyJSON(s.rawJSON); err == nil {
-			return value
-		}
-	}
-	if value, err := internal.StringifyJSON(s); err == nil {
-		return value
-	}
-	return fmt.Sprintf("%#v", s)
-}
-
 // The type config for Courier. Requires type to be `COURIER`.
 type SourceTypeConfigCourier struct {
-	AllowedHttpMethods []SourceTypeConfigCourierAllowedHttpMethodsItem `json:"allowed_http_methods,omitempty" url:"allowed_http_methods,omitempty"`
-	Auth               *SourceTypeConfigCourierAuth                    `json:"auth,omitempty" url:"auth,omitempty"`
+	Auth *SourceConfigCourierAuth `json:"auth,omitempty" url:"auth,omitempty"`
 
 	extraProperties map[string]interface{}
 	rawJSON         json.RawMessage
 }
 
-func (s *SourceTypeConfigCourier) GetAllowedHttpMethods() []SourceTypeConfigCourierAllowedHttpMethodsItem {
-	if s == nil {
-		return nil
-	}
-	return s.AllowedHttpMethods
-}
-
-func (s *SourceTypeConfigCourier) GetAuth() *SourceTypeConfigCourierAuth {
+func (s *SourceTypeConfigCourier) GetAuth() *SourceConfigCourierAuth {
 	if s == nil {
 		return nil
 	}
@@ -11493,100 +17530,15 @@ func (s *SourceTypeConfigCourier) String() string {
 	return fmt.Sprintf("%#v", s)
 }
 
-type SourceTypeConfigCourierAllowedHttpMethodsItem string
-
-const (
-	SourceTypeConfigCourierAllowedHttpMethodsItemGet    SourceTypeConfigCourierAllowedHttpMethodsItem = "GET"
-	SourceTypeConfigCourierAllowedHttpMethodsItemPost   SourceTypeConfigCourierAllowedHttpMethodsItem = "POST"
-	SourceTypeConfigCourierAllowedHttpMethodsItemPut    SourceTypeConfigCourierAllowedHttpMethodsItem = "PUT"
-	SourceTypeConfigCourierAllowedHttpMethodsItemPatch  SourceTypeConfigCourierAllowedHttpMethodsItem = "PATCH"
-	SourceTypeConfigCourierAllowedHttpMethodsItemDelete SourceTypeConfigCourierAllowedHttpMethodsItem = "DELETE"
-)
-
-func NewSourceTypeConfigCourierAllowedHttpMethodsItemFromString(s string) (SourceTypeConfigCourierAllowedHttpMethodsItem, error) {
-	switch s {
-	case "GET":
-		return SourceTypeConfigCourierAllowedHttpMethodsItemGet, nil
-	case "POST":
-		return SourceTypeConfigCourierAllowedHttpMethodsItemPost, nil
-	case "PUT":
-		return SourceTypeConfigCourierAllowedHttpMethodsItemPut, nil
-	case "PATCH":
-		return SourceTypeConfigCourierAllowedHttpMethodsItemPatch, nil
-	case "DELETE":
-		return SourceTypeConfigCourierAllowedHttpMethodsItemDelete, nil
-	}
-	var t SourceTypeConfigCourierAllowedHttpMethodsItem
-	return "", fmt.Errorf("%s is not a valid %T", s, t)
-}
-
-func (s SourceTypeConfigCourierAllowedHttpMethodsItem) Ptr() *SourceTypeConfigCourierAllowedHttpMethodsItem {
-	return &s
-}
-
-type SourceTypeConfigCourierAuth struct {
-	WebhookSecretKey string `json:"webhook_secret_key" url:"webhook_secret_key"`
-
-	extraProperties map[string]interface{}
-	rawJSON         json.RawMessage
-}
-
-func (s *SourceTypeConfigCourierAuth) GetWebhookSecretKey() string {
-	if s == nil {
-		return ""
-	}
-	return s.WebhookSecretKey
-}
-
-func (s *SourceTypeConfigCourierAuth) GetExtraProperties() map[string]interface{} {
-	return s.extraProperties
-}
-
-func (s *SourceTypeConfigCourierAuth) UnmarshalJSON(data []byte) error {
-	type unmarshaler SourceTypeConfigCourierAuth
-	var value unmarshaler
-	if err := json.Unmarshal(data, &value); err != nil {
-		return err
-	}
-	*s = SourceTypeConfigCourierAuth(value)
-	extraProperties, err := internal.ExtractExtraProperties(data, *s)
-	if err != nil {
-		return err
-	}
-	s.extraProperties = extraProperties
-	s.rawJSON = json.RawMessage(data)
-	return nil
-}
-
-func (s *SourceTypeConfigCourierAuth) String() string {
-	if len(s.rawJSON) > 0 {
-		if value, err := internal.StringifyJSON(s.rawJSON); err == nil {
-			return value
-		}
-	}
-	if value, err := internal.StringifyJSON(s); err == nil {
-		return value
-	}
-	return fmt.Sprintf("%#v", s)
-}
-
 // The type config for Customer.IO. Requires type to be `CUSTOMERIO`.
 type SourceTypeConfigCustomerIo struct {
-	AllowedHttpMethods []SourceTypeConfigCustomerIoAllowedHttpMethodsItem `json:"allowed_http_methods,omitempty" url:"allowed_http_methods,omitempty"`
-	Auth               *SourceTypeConfigCustomerIoAuth                    `json:"auth,omitempty" url:"auth,omitempty"`
+	Auth *SourceConfigCustomerIoAuth `json:"auth,omitempty" url:"auth,omitempty"`
 
 	extraProperties map[string]interface{}
 	rawJSON         json.RawMessage
 }
 
-func (s *SourceTypeConfigCustomerIo) GetAllowedHttpMethods() []SourceTypeConfigCustomerIoAllowedHttpMethodsItem {
-	if s == nil {
-		return nil
-	}
-	return s.AllowedHttpMethods
-}
-
-func (s *SourceTypeConfigCustomerIo) GetAuth() *SourceTypeConfigCustomerIoAuth {
+func (s *SourceTypeConfigCustomerIo) GetAuth() *SourceConfigCustomerIoAuth {
 	if s == nil {
 		return nil
 	}
@@ -11625,100 +17577,15 @@ func (s *SourceTypeConfigCustomerIo) String() string {
 	return fmt.Sprintf("%#v", s)
 }
 
-type SourceTypeConfigCustomerIoAllowedHttpMethodsItem string
-
-const (
-	SourceTypeConfigCustomerIoAllowedHttpMethodsItemGet    SourceTypeConfigCustomerIoAllowedHttpMethodsItem = "GET"
-	SourceTypeConfigCustomerIoAllowedHttpMethodsItemPost   SourceTypeConfigCustomerIoAllowedHttpMethodsItem = "POST"
-	SourceTypeConfigCustomerIoAllowedHttpMethodsItemPut    SourceTypeConfigCustomerIoAllowedHttpMethodsItem = "PUT"
-	SourceTypeConfigCustomerIoAllowedHttpMethodsItemPatch  SourceTypeConfigCustomerIoAllowedHttpMethodsItem = "PATCH"
-	SourceTypeConfigCustomerIoAllowedHttpMethodsItemDelete SourceTypeConfigCustomerIoAllowedHttpMethodsItem = "DELETE"
-)
-
-func NewSourceTypeConfigCustomerIoAllowedHttpMethodsItemFromString(s string) (SourceTypeConfigCustomerIoAllowedHttpMethodsItem, error) {
-	switch s {
-	case "GET":
-		return SourceTypeConfigCustomerIoAllowedHttpMethodsItemGet, nil
-	case "POST":
-		return SourceTypeConfigCustomerIoAllowedHttpMethodsItemPost, nil
-	case "PUT":
-		return SourceTypeConfigCustomerIoAllowedHttpMethodsItemPut, nil
-	case "PATCH":
-		return SourceTypeConfigCustomerIoAllowedHttpMethodsItemPatch, nil
-	case "DELETE":
-		return SourceTypeConfigCustomerIoAllowedHttpMethodsItemDelete, nil
-	}
-	var t SourceTypeConfigCustomerIoAllowedHttpMethodsItem
-	return "", fmt.Errorf("%s is not a valid %T", s, t)
-}
-
-func (s SourceTypeConfigCustomerIoAllowedHttpMethodsItem) Ptr() *SourceTypeConfigCustomerIoAllowedHttpMethodsItem {
-	return &s
-}
-
-type SourceTypeConfigCustomerIoAuth struct {
-	WebhookSecretKey string `json:"webhook_secret_key" url:"webhook_secret_key"`
-
-	extraProperties map[string]interface{}
-	rawJSON         json.RawMessage
-}
-
-func (s *SourceTypeConfigCustomerIoAuth) GetWebhookSecretKey() string {
-	if s == nil {
-		return ""
-	}
-	return s.WebhookSecretKey
-}
-
-func (s *SourceTypeConfigCustomerIoAuth) GetExtraProperties() map[string]interface{} {
-	return s.extraProperties
-}
-
-func (s *SourceTypeConfigCustomerIoAuth) UnmarshalJSON(data []byte) error {
-	type unmarshaler SourceTypeConfigCustomerIoAuth
-	var value unmarshaler
-	if err := json.Unmarshal(data, &value); err != nil {
-		return err
-	}
-	*s = SourceTypeConfigCustomerIoAuth(value)
-	extraProperties, err := internal.ExtractExtraProperties(data, *s)
-	if err != nil {
-		return err
-	}
-	s.extraProperties = extraProperties
-	s.rawJSON = json.RawMessage(data)
-	return nil
-}
-
-func (s *SourceTypeConfigCustomerIoAuth) String() string {
-	if len(s.rawJSON) > 0 {
-		if value, err := internal.StringifyJSON(s.rawJSON); err == nil {
-			return value
-		}
-	}
-	if value, err := internal.StringifyJSON(s); err == nil {
-		return value
-	}
-	return fmt.Sprintf("%#v", s)
-}
-
 // The type config for Discord. Requires type to be `DISCORD`.
 type SourceTypeConfigDiscord struct {
-	AllowedHttpMethods []SourceTypeConfigDiscordAllowedHttpMethodsItem `json:"allowed_http_methods,omitempty" url:"allowed_http_methods,omitempty"`
-	Auth               *SourceTypeConfigDiscordAuth                    `json:"auth,omitempty" url:"auth,omitempty"`
+	Auth *SourceConfigDiscordAuth `json:"auth,omitempty" url:"auth,omitempty"`
 
 	extraProperties map[string]interface{}
 	rawJSON         json.RawMessage
 }
 
-func (s *SourceTypeConfigDiscord) GetAllowedHttpMethods() []SourceTypeConfigDiscordAllowedHttpMethodsItem {
-	if s == nil {
-		return nil
-	}
-	return s.AllowedHttpMethods
-}
-
-func (s *SourceTypeConfigDiscord) GetAuth() *SourceTypeConfigDiscordAuth {
+func (s *SourceTypeConfigDiscord) GetAuth() *SourceConfigDiscordAuth {
 	if s == nil {
 		return nil
 	}
@@ -11757,100 +17624,15 @@ func (s *SourceTypeConfigDiscord) String() string {
 	return fmt.Sprintf("%#v", s)
 }
 
-type SourceTypeConfigDiscordAllowedHttpMethodsItem string
-
-const (
-	SourceTypeConfigDiscordAllowedHttpMethodsItemGet    SourceTypeConfigDiscordAllowedHttpMethodsItem = "GET"
-	SourceTypeConfigDiscordAllowedHttpMethodsItemPost   SourceTypeConfigDiscordAllowedHttpMethodsItem = "POST"
-	SourceTypeConfigDiscordAllowedHttpMethodsItemPut    SourceTypeConfigDiscordAllowedHttpMethodsItem = "PUT"
-	SourceTypeConfigDiscordAllowedHttpMethodsItemPatch  SourceTypeConfigDiscordAllowedHttpMethodsItem = "PATCH"
-	SourceTypeConfigDiscordAllowedHttpMethodsItemDelete SourceTypeConfigDiscordAllowedHttpMethodsItem = "DELETE"
-)
-
-func NewSourceTypeConfigDiscordAllowedHttpMethodsItemFromString(s string) (SourceTypeConfigDiscordAllowedHttpMethodsItem, error) {
-	switch s {
-	case "GET":
-		return SourceTypeConfigDiscordAllowedHttpMethodsItemGet, nil
-	case "POST":
-		return SourceTypeConfigDiscordAllowedHttpMethodsItemPost, nil
-	case "PUT":
-		return SourceTypeConfigDiscordAllowedHttpMethodsItemPut, nil
-	case "PATCH":
-		return SourceTypeConfigDiscordAllowedHttpMethodsItemPatch, nil
-	case "DELETE":
-		return SourceTypeConfigDiscordAllowedHttpMethodsItemDelete, nil
-	}
-	var t SourceTypeConfigDiscordAllowedHttpMethodsItem
-	return "", fmt.Errorf("%s is not a valid %T", s, t)
-}
-
-func (s SourceTypeConfigDiscordAllowedHttpMethodsItem) Ptr() *SourceTypeConfigDiscordAllowedHttpMethodsItem {
-	return &s
-}
-
-type SourceTypeConfigDiscordAuth struct {
-	PublicKey string `json:"public_key" url:"public_key"`
-
-	extraProperties map[string]interface{}
-	rawJSON         json.RawMessage
-}
-
-func (s *SourceTypeConfigDiscordAuth) GetPublicKey() string {
-	if s == nil {
-		return ""
-	}
-	return s.PublicKey
-}
-
-func (s *SourceTypeConfigDiscordAuth) GetExtraProperties() map[string]interface{} {
-	return s.extraProperties
-}
-
-func (s *SourceTypeConfigDiscordAuth) UnmarshalJSON(data []byte) error {
-	type unmarshaler SourceTypeConfigDiscordAuth
-	var value unmarshaler
-	if err := json.Unmarshal(data, &value); err != nil {
-		return err
-	}
-	*s = SourceTypeConfigDiscordAuth(value)
-	extraProperties, err := internal.ExtractExtraProperties(data, *s)
-	if err != nil {
-		return err
-	}
-	s.extraProperties = extraProperties
-	s.rawJSON = json.RawMessage(data)
-	return nil
-}
-
-func (s *SourceTypeConfigDiscordAuth) String() string {
-	if len(s.rawJSON) > 0 {
-		if value, err := internal.StringifyJSON(s.rawJSON); err == nil {
-			return value
-		}
-	}
-	if value, err := internal.StringifyJSON(s); err == nil {
-		return value
-	}
-	return fmt.Sprintf("%#v", s)
-}
-
 // The type config for Ebay. Requires type to be `EBAY`.
 type SourceTypeConfigEbay struct {
-	AllowedHttpMethods []SourceTypeConfigEbayAllowedHttpMethodsItem `json:"allowed_http_methods,omitempty" url:"allowed_http_methods,omitempty"`
-	Auth               *SourceTypeConfigEbayAuth                    `json:"auth,omitempty" url:"auth,omitempty"`
+	Auth *SourceConfigEbayAuth `json:"auth,omitempty" url:"auth,omitempty"`
 
 	extraProperties map[string]interface{}
 	rawJSON         json.RawMessage
 }
 
-func (s *SourceTypeConfigEbay) GetAllowedHttpMethods() []SourceTypeConfigEbayAllowedHttpMethodsItem {
-	if s == nil {
-		return nil
-	}
-	return s.AllowedHttpMethods
-}
-
-func (s *SourceTypeConfigEbay) GetAuth() *SourceTypeConfigEbayAuth {
+func (s *SourceTypeConfigEbay) GetAuth() *SourceConfigEbayAuth {
 	if s == nil {
 		return nil
 	}
@@ -11889,154 +17671,15 @@ func (s *SourceTypeConfigEbay) String() string {
 	return fmt.Sprintf("%#v", s)
 }
 
-type SourceTypeConfigEbayAllowedHttpMethodsItem string
-
-const (
-	SourceTypeConfigEbayAllowedHttpMethodsItemGet    SourceTypeConfigEbayAllowedHttpMethodsItem = "GET"
-	SourceTypeConfigEbayAllowedHttpMethodsItemPost   SourceTypeConfigEbayAllowedHttpMethodsItem = "POST"
-	SourceTypeConfigEbayAllowedHttpMethodsItemPut    SourceTypeConfigEbayAllowedHttpMethodsItem = "PUT"
-	SourceTypeConfigEbayAllowedHttpMethodsItemPatch  SourceTypeConfigEbayAllowedHttpMethodsItem = "PATCH"
-	SourceTypeConfigEbayAllowedHttpMethodsItemDelete SourceTypeConfigEbayAllowedHttpMethodsItem = "DELETE"
-)
-
-func NewSourceTypeConfigEbayAllowedHttpMethodsItemFromString(s string) (SourceTypeConfigEbayAllowedHttpMethodsItem, error) {
-	switch s {
-	case "GET":
-		return SourceTypeConfigEbayAllowedHttpMethodsItemGet, nil
-	case "POST":
-		return SourceTypeConfigEbayAllowedHttpMethodsItemPost, nil
-	case "PUT":
-		return SourceTypeConfigEbayAllowedHttpMethodsItemPut, nil
-	case "PATCH":
-		return SourceTypeConfigEbayAllowedHttpMethodsItemPatch, nil
-	case "DELETE":
-		return SourceTypeConfigEbayAllowedHttpMethodsItemDelete, nil
-	}
-	var t SourceTypeConfigEbayAllowedHttpMethodsItem
-	return "", fmt.Errorf("%s is not a valid %T", s, t)
-}
-
-func (s SourceTypeConfigEbayAllowedHttpMethodsItem) Ptr() *SourceTypeConfigEbayAllowedHttpMethodsItem {
-	return &s
-}
-
-type SourceTypeConfigEbayAuth struct {
-	Environment       SourceTypeConfigEbayAuthEnvironment `json:"environment" url:"environment"`
-	DevId             string                              `json:"dev_id" url:"dev_id"`
-	ClientId          string                              `json:"client_id" url:"client_id"`
-	ClientSecret      string                              `json:"client_secret" url:"client_secret"`
-	VerificationToken string                              `json:"verification_token" url:"verification_token"`
-
-	extraProperties map[string]interface{}
-	rawJSON         json.RawMessage
-}
-
-func (s *SourceTypeConfigEbayAuth) GetEnvironment() SourceTypeConfigEbayAuthEnvironment {
-	if s == nil {
-		return ""
-	}
-	return s.Environment
-}
-
-func (s *SourceTypeConfigEbayAuth) GetDevId() string {
-	if s == nil {
-		return ""
-	}
-	return s.DevId
-}
-
-func (s *SourceTypeConfigEbayAuth) GetClientId() string {
-	if s == nil {
-		return ""
-	}
-	return s.ClientId
-}
-
-func (s *SourceTypeConfigEbayAuth) GetClientSecret() string {
-	if s == nil {
-		return ""
-	}
-	return s.ClientSecret
-}
-
-func (s *SourceTypeConfigEbayAuth) GetVerificationToken() string {
-	if s == nil {
-		return ""
-	}
-	return s.VerificationToken
-}
-
-func (s *SourceTypeConfigEbayAuth) GetExtraProperties() map[string]interface{} {
-	return s.extraProperties
-}
-
-func (s *SourceTypeConfigEbayAuth) UnmarshalJSON(data []byte) error {
-	type unmarshaler SourceTypeConfigEbayAuth
-	var value unmarshaler
-	if err := json.Unmarshal(data, &value); err != nil {
-		return err
-	}
-	*s = SourceTypeConfigEbayAuth(value)
-	extraProperties, err := internal.ExtractExtraProperties(data, *s)
-	if err != nil {
-		return err
-	}
-	s.extraProperties = extraProperties
-	s.rawJSON = json.RawMessage(data)
-	return nil
-}
-
-func (s *SourceTypeConfigEbayAuth) String() string {
-	if len(s.rawJSON) > 0 {
-		if value, err := internal.StringifyJSON(s.rawJSON); err == nil {
-			return value
-		}
-	}
-	if value, err := internal.StringifyJSON(s); err == nil {
-		return value
-	}
-	return fmt.Sprintf("%#v", s)
-}
-
-type SourceTypeConfigEbayAuthEnvironment string
-
-const (
-	SourceTypeConfigEbayAuthEnvironmentProduction SourceTypeConfigEbayAuthEnvironment = "PRODUCTION"
-	SourceTypeConfigEbayAuthEnvironmentSandbox    SourceTypeConfigEbayAuthEnvironment = "SANDBOX"
-)
-
-func NewSourceTypeConfigEbayAuthEnvironmentFromString(s string) (SourceTypeConfigEbayAuthEnvironment, error) {
-	switch s {
-	case "PRODUCTION":
-		return SourceTypeConfigEbayAuthEnvironmentProduction, nil
-	case "SANDBOX":
-		return SourceTypeConfigEbayAuthEnvironmentSandbox, nil
-	}
-	var t SourceTypeConfigEbayAuthEnvironment
-	return "", fmt.Errorf("%s is not a valid %T", s, t)
-}
-
-func (s SourceTypeConfigEbayAuthEnvironment) Ptr() *SourceTypeConfigEbayAuthEnvironment {
-	return &s
-}
-
 // The type config for Enode. Requires type to be `ENODE`.
 type SourceTypeConfigEnode struct {
-	AllowedHttpMethods []SourceTypeConfigEnodeAllowedHttpMethodsItem `json:"allowed_http_methods,omitempty" url:"allowed_http_methods,omitempty"`
-	Auth               *SourceTypeConfigEnodeAuth                    `json:"auth,omitempty" url:"auth,omitempty"`
+	Auth *SourceConfigEnodeAuth `json:"auth,omitempty" url:"auth,omitempty"`
 
 	extraProperties map[string]interface{}
 	rawJSON         json.RawMessage
 }
 
-func (s *SourceTypeConfigEnode) GetAllowedHttpMethods() []SourceTypeConfigEnodeAllowedHttpMethodsItem {
-	if s == nil {
-		return nil
-	}
-	return s.AllowedHttpMethods
-}
-
-func (s *SourceTypeConfigEnode) GetAuth() *SourceTypeConfigEnodeAuth {
+func (s *SourceTypeConfigEnode) GetAuth() *SourceConfigEnodeAuth {
 	if s == nil {
 		return nil
 	}
@@ -12075,100 +17718,15 @@ func (s *SourceTypeConfigEnode) String() string {
 	return fmt.Sprintf("%#v", s)
 }
 
-type SourceTypeConfigEnodeAllowedHttpMethodsItem string
-
-const (
-	SourceTypeConfigEnodeAllowedHttpMethodsItemGet    SourceTypeConfigEnodeAllowedHttpMethodsItem = "GET"
-	SourceTypeConfigEnodeAllowedHttpMethodsItemPost   SourceTypeConfigEnodeAllowedHttpMethodsItem = "POST"
-	SourceTypeConfigEnodeAllowedHttpMethodsItemPut    SourceTypeConfigEnodeAllowedHttpMethodsItem = "PUT"
-	SourceTypeConfigEnodeAllowedHttpMethodsItemPatch  SourceTypeConfigEnodeAllowedHttpMethodsItem = "PATCH"
-	SourceTypeConfigEnodeAllowedHttpMethodsItemDelete SourceTypeConfigEnodeAllowedHttpMethodsItem = "DELETE"
-)
-
-func NewSourceTypeConfigEnodeAllowedHttpMethodsItemFromString(s string) (SourceTypeConfigEnodeAllowedHttpMethodsItem, error) {
-	switch s {
-	case "GET":
-		return SourceTypeConfigEnodeAllowedHttpMethodsItemGet, nil
-	case "POST":
-		return SourceTypeConfigEnodeAllowedHttpMethodsItemPost, nil
-	case "PUT":
-		return SourceTypeConfigEnodeAllowedHttpMethodsItemPut, nil
-	case "PATCH":
-		return SourceTypeConfigEnodeAllowedHttpMethodsItemPatch, nil
-	case "DELETE":
-		return SourceTypeConfigEnodeAllowedHttpMethodsItemDelete, nil
-	}
-	var t SourceTypeConfigEnodeAllowedHttpMethodsItem
-	return "", fmt.Errorf("%s is not a valid %T", s, t)
-}
-
-func (s SourceTypeConfigEnodeAllowedHttpMethodsItem) Ptr() *SourceTypeConfigEnodeAllowedHttpMethodsItem {
-	return &s
-}
-
-type SourceTypeConfigEnodeAuth struct {
-	WebhookSecretKey string `json:"webhook_secret_key" url:"webhook_secret_key"`
-
-	extraProperties map[string]interface{}
-	rawJSON         json.RawMessage
-}
-
-func (s *SourceTypeConfigEnodeAuth) GetWebhookSecretKey() string {
-	if s == nil {
-		return ""
-	}
-	return s.WebhookSecretKey
-}
-
-func (s *SourceTypeConfigEnodeAuth) GetExtraProperties() map[string]interface{} {
-	return s.extraProperties
-}
-
-func (s *SourceTypeConfigEnodeAuth) UnmarshalJSON(data []byte) error {
-	type unmarshaler SourceTypeConfigEnodeAuth
-	var value unmarshaler
-	if err := json.Unmarshal(data, &value); err != nil {
-		return err
-	}
-	*s = SourceTypeConfigEnodeAuth(value)
-	extraProperties, err := internal.ExtractExtraProperties(data, *s)
-	if err != nil {
-		return err
-	}
-	s.extraProperties = extraProperties
-	s.rawJSON = json.RawMessage(data)
-	return nil
-}
-
-func (s *SourceTypeConfigEnodeAuth) String() string {
-	if len(s.rawJSON) > 0 {
-		if value, err := internal.StringifyJSON(s.rawJSON); err == nil {
-			return value
-		}
-	}
-	if value, err := internal.StringifyJSON(s); err == nil {
-		return value
-	}
-	return fmt.Sprintf("%#v", s)
-}
-
 // The type config for Facebook. Requires type to be `FACEBOOK`.
 type SourceTypeConfigFacebook struct {
-	AllowedHttpMethods []SourceTypeConfigFacebookAllowedHttpMethodsItem `json:"allowed_http_methods,omitempty" url:"allowed_http_methods,omitempty"`
-	Auth               *SourceTypeConfigFacebookAuth                    `json:"auth,omitempty" url:"auth,omitempty"`
+	Auth *SourceConfigFacebookAuth `json:"auth,omitempty" url:"auth,omitempty"`
 
 	extraProperties map[string]interface{}
 	rawJSON         json.RawMessage
 }
 
-func (s *SourceTypeConfigFacebook) GetAllowedHttpMethods() []SourceTypeConfigFacebookAllowedHttpMethodsItem {
-	if s == nil {
-		return nil
-	}
-	return s.AllowedHttpMethods
-}
-
-func (s *SourceTypeConfigFacebook) GetAuth() *SourceTypeConfigFacebookAuth {
+func (s *SourceTypeConfigFacebook) GetAuth() *SourceConfigFacebookAuth {
 	if s == nil {
 		return nil
 	}
@@ -12207,100 +17765,15 @@ func (s *SourceTypeConfigFacebook) String() string {
 	return fmt.Sprintf("%#v", s)
 }
 
-type SourceTypeConfigFacebookAllowedHttpMethodsItem string
-
-const (
-	SourceTypeConfigFacebookAllowedHttpMethodsItemGet    SourceTypeConfigFacebookAllowedHttpMethodsItem = "GET"
-	SourceTypeConfigFacebookAllowedHttpMethodsItemPost   SourceTypeConfigFacebookAllowedHttpMethodsItem = "POST"
-	SourceTypeConfigFacebookAllowedHttpMethodsItemPut    SourceTypeConfigFacebookAllowedHttpMethodsItem = "PUT"
-	SourceTypeConfigFacebookAllowedHttpMethodsItemPatch  SourceTypeConfigFacebookAllowedHttpMethodsItem = "PATCH"
-	SourceTypeConfigFacebookAllowedHttpMethodsItemDelete SourceTypeConfigFacebookAllowedHttpMethodsItem = "DELETE"
-)
-
-func NewSourceTypeConfigFacebookAllowedHttpMethodsItemFromString(s string) (SourceTypeConfigFacebookAllowedHttpMethodsItem, error) {
-	switch s {
-	case "GET":
-		return SourceTypeConfigFacebookAllowedHttpMethodsItemGet, nil
-	case "POST":
-		return SourceTypeConfigFacebookAllowedHttpMethodsItemPost, nil
-	case "PUT":
-		return SourceTypeConfigFacebookAllowedHttpMethodsItemPut, nil
-	case "PATCH":
-		return SourceTypeConfigFacebookAllowedHttpMethodsItemPatch, nil
-	case "DELETE":
-		return SourceTypeConfigFacebookAllowedHttpMethodsItemDelete, nil
-	}
-	var t SourceTypeConfigFacebookAllowedHttpMethodsItem
-	return "", fmt.Errorf("%s is not a valid %T", s, t)
-}
-
-func (s SourceTypeConfigFacebookAllowedHttpMethodsItem) Ptr() *SourceTypeConfigFacebookAllowedHttpMethodsItem {
-	return &s
-}
-
-type SourceTypeConfigFacebookAuth struct {
-	WebhookSecretKey string `json:"webhook_secret_key" url:"webhook_secret_key"`
-
-	extraProperties map[string]interface{}
-	rawJSON         json.RawMessage
-}
-
-func (s *SourceTypeConfigFacebookAuth) GetWebhookSecretKey() string {
-	if s == nil {
-		return ""
-	}
-	return s.WebhookSecretKey
-}
-
-func (s *SourceTypeConfigFacebookAuth) GetExtraProperties() map[string]interface{} {
-	return s.extraProperties
-}
-
-func (s *SourceTypeConfigFacebookAuth) UnmarshalJSON(data []byte) error {
-	type unmarshaler SourceTypeConfigFacebookAuth
-	var value unmarshaler
-	if err := json.Unmarshal(data, &value); err != nil {
-		return err
-	}
-	*s = SourceTypeConfigFacebookAuth(value)
-	extraProperties, err := internal.ExtractExtraProperties(data, *s)
-	if err != nil {
-		return err
-	}
-	s.extraProperties = extraProperties
-	s.rawJSON = json.RawMessage(data)
-	return nil
-}
-
-func (s *SourceTypeConfigFacebookAuth) String() string {
-	if len(s.rawJSON) > 0 {
-		if value, err := internal.StringifyJSON(s.rawJSON); err == nil {
-			return value
-		}
-	}
-	if value, err := internal.StringifyJSON(s); err == nil {
-		return value
-	}
-	return fmt.Sprintf("%#v", s)
-}
-
 // The type config for Favro. Requires type to be `FAVRO`.
 type SourceTypeConfigFavro struct {
-	AllowedHttpMethods []SourceTypeConfigFavroAllowedHttpMethodsItem `json:"allowed_http_methods,omitempty" url:"allowed_http_methods,omitempty"`
-	Auth               *SourceTypeConfigFavroAuth                    `json:"auth,omitempty" url:"auth,omitempty"`
+	Auth *SourceConfigFavroAuth `json:"auth,omitempty" url:"auth,omitempty"`
 
 	extraProperties map[string]interface{}
 	rawJSON         json.RawMessage
 }
 
-func (s *SourceTypeConfigFavro) GetAllowedHttpMethods() []SourceTypeConfigFavroAllowedHttpMethodsItem {
-	if s == nil {
-		return nil
-	}
-	return s.AllowedHttpMethods
-}
-
-func (s *SourceTypeConfigFavro) GetAuth() *SourceTypeConfigFavroAuth {
+func (s *SourceTypeConfigFavro) GetAuth() *SourceConfigFavroAuth {
 	if s == nil {
 		return nil
 	}
@@ -12339,100 +17812,15 @@ func (s *SourceTypeConfigFavro) String() string {
 	return fmt.Sprintf("%#v", s)
 }
 
-type SourceTypeConfigFavroAllowedHttpMethodsItem string
-
-const (
-	SourceTypeConfigFavroAllowedHttpMethodsItemGet    SourceTypeConfigFavroAllowedHttpMethodsItem = "GET"
-	SourceTypeConfigFavroAllowedHttpMethodsItemPost   SourceTypeConfigFavroAllowedHttpMethodsItem = "POST"
-	SourceTypeConfigFavroAllowedHttpMethodsItemPut    SourceTypeConfigFavroAllowedHttpMethodsItem = "PUT"
-	SourceTypeConfigFavroAllowedHttpMethodsItemPatch  SourceTypeConfigFavroAllowedHttpMethodsItem = "PATCH"
-	SourceTypeConfigFavroAllowedHttpMethodsItemDelete SourceTypeConfigFavroAllowedHttpMethodsItem = "DELETE"
-)
-
-func NewSourceTypeConfigFavroAllowedHttpMethodsItemFromString(s string) (SourceTypeConfigFavroAllowedHttpMethodsItem, error) {
-	switch s {
-	case "GET":
-		return SourceTypeConfigFavroAllowedHttpMethodsItemGet, nil
-	case "POST":
-		return SourceTypeConfigFavroAllowedHttpMethodsItemPost, nil
-	case "PUT":
-		return SourceTypeConfigFavroAllowedHttpMethodsItemPut, nil
-	case "PATCH":
-		return SourceTypeConfigFavroAllowedHttpMethodsItemPatch, nil
-	case "DELETE":
-		return SourceTypeConfigFavroAllowedHttpMethodsItemDelete, nil
-	}
-	var t SourceTypeConfigFavroAllowedHttpMethodsItem
-	return "", fmt.Errorf("%s is not a valid %T", s, t)
-}
-
-func (s SourceTypeConfigFavroAllowedHttpMethodsItem) Ptr() *SourceTypeConfigFavroAllowedHttpMethodsItem {
-	return &s
-}
-
-type SourceTypeConfigFavroAuth struct {
-	WebhookSecretKey string `json:"webhook_secret_key" url:"webhook_secret_key"`
-
-	extraProperties map[string]interface{}
-	rawJSON         json.RawMessage
-}
-
-func (s *SourceTypeConfigFavroAuth) GetWebhookSecretKey() string {
-	if s == nil {
-		return ""
-	}
-	return s.WebhookSecretKey
-}
-
-func (s *SourceTypeConfigFavroAuth) GetExtraProperties() map[string]interface{} {
-	return s.extraProperties
-}
-
-func (s *SourceTypeConfigFavroAuth) UnmarshalJSON(data []byte) error {
-	type unmarshaler SourceTypeConfigFavroAuth
-	var value unmarshaler
-	if err := json.Unmarshal(data, &value); err != nil {
-		return err
-	}
-	*s = SourceTypeConfigFavroAuth(value)
-	extraProperties, err := internal.ExtractExtraProperties(data, *s)
-	if err != nil {
-		return err
-	}
-	s.extraProperties = extraProperties
-	s.rawJSON = json.RawMessage(data)
-	return nil
-}
-
-func (s *SourceTypeConfigFavroAuth) String() string {
-	if len(s.rawJSON) > 0 {
-		if value, err := internal.StringifyJSON(s.rawJSON); err == nil {
-			return value
-		}
-	}
-	if value, err := internal.StringifyJSON(s); err == nil {
-		return value
-	}
-	return fmt.Sprintf("%#v", s)
-}
-
 // The type config for Fiserv. Requires type to be `FISERV`.
 type SourceTypeConfigFiserv struct {
-	AllowedHttpMethods []SourceTypeConfigFiservAllowedHttpMethodsItem `json:"allowed_http_methods,omitempty" url:"allowed_http_methods,omitempty"`
-	Auth               *SourceTypeConfigFiservAuth                    `json:"auth,omitempty" url:"auth,omitempty"`
+	Auth *SourceConfigFiservAuth `json:"auth,omitempty" url:"auth,omitempty"`
 
 	extraProperties map[string]interface{}
 	rawJSON         json.RawMessage
 }
 
-func (s *SourceTypeConfigFiserv) GetAllowedHttpMethods() []SourceTypeConfigFiservAllowedHttpMethodsItem {
-	if s == nil {
-		return nil
-	}
-	return s.AllowedHttpMethods
-}
-
-func (s *SourceTypeConfigFiserv) GetAuth() *SourceTypeConfigFiservAuth {
+func (s *SourceTypeConfigFiserv) GetAuth() *SourceConfigFiservAuth {
 	if s == nil {
 		return nil
 	}
@@ -12471,108 +17859,15 @@ func (s *SourceTypeConfigFiserv) String() string {
 	return fmt.Sprintf("%#v", s)
 }
 
-type SourceTypeConfigFiservAllowedHttpMethodsItem string
-
-const (
-	SourceTypeConfigFiservAllowedHttpMethodsItemGet    SourceTypeConfigFiservAllowedHttpMethodsItem = "GET"
-	SourceTypeConfigFiservAllowedHttpMethodsItemPost   SourceTypeConfigFiservAllowedHttpMethodsItem = "POST"
-	SourceTypeConfigFiservAllowedHttpMethodsItemPut    SourceTypeConfigFiservAllowedHttpMethodsItem = "PUT"
-	SourceTypeConfigFiservAllowedHttpMethodsItemPatch  SourceTypeConfigFiservAllowedHttpMethodsItem = "PATCH"
-	SourceTypeConfigFiservAllowedHttpMethodsItemDelete SourceTypeConfigFiservAllowedHttpMethodsItem = "DELETE"
-)
-
-func NewSourceTypeConfigFiservAllowedHttpMethodsItemFromString(s string) (SourceTypeConfigFiservAllowedHttpMethodsItem, error) {
-	switch s {
-	case "GET":
-		return SourceTypeConfigFiservAllowedHttpMethodsItemGet, nil
-	case "POST":
-		return SourceTypeConfigFiservAllowedHttpMethodsItemPost, nil
-	case "PUT":
-		return SourceTypeConfigFiservAllowedHttpMethodsItemPut, nil
-	case "PATCH":
-		return SourceTypeConfigFiservAllowedHttpMethodsItemPatch, nil
-	case "DELETE":
-		return SourceTypeConfigFiservAllowedHttpMethodsItemDelete, nil
-	}
-	var t SourceTypeConfigFiservAllowedHttpMethodsItem
-	return "", fmt.Errorf("%s is not a valid %T", s, t)
-}
-
-func (s SourceTypeConfigFiservAllowedHttpMethodsItem) Ptr() *SourceTypeConfigFiservAllowedHttpMethodsItem {
-	return &s
-}
-
-type SourceTypeConfigFiservAuth struct {
-	WebhookSecretKey string  `json:"webhook_secret_key" url:"webhook_secret_key"`
-	StoreName        *string `json:"store_name,omitempty" url:"store_name,omitempty"`
-
-	extraProperties map[string]interface{}
-	rawJSON         json.RawMessage
-}
-
-func (s *SourceTypeConfigFiservAuth) GetWebhookSecretKey() string {
-	if s == nil {
-		return ""
-	}
-	return s.WebhookSecretKey
-}
-
-func (s *SourceTypeConfigFiservAuth) GetStoreName() *string {
-	if s == nil {
-		return nil
-	}
-	return s.StoreName
-}
-
-func (s *SourceTypeConfigFiservAuth) GetExtraProperties() map[string]interface{} {
-	return s.extraProperties
-}
-
-func (s *SourceTypeConfigFiservAuth) UnmarshalJSON(data []byte) error {
-	type unmarshaler SourceTypeConfigFiservAuth
-	var value unmarshaler
-	if err := json.Unmarshal(data, &value); err != nil {
-		return err
-	}
-	*s = SourceTypeConfigFiservAuth(value)
-	extraProperties, err := internal.ExtractExtraProperties(data, *s)
-	if err != nil {
-		return err
-	}
-	s.extraProperties = extraProperties
-	s.rawJSON = json.RawMessage(data)
-	return nil
-}
-
-func (s *SourceTypeConfigFiservAuth) String() string {
-	if len(s.rawJSON) > 0 {
-		if value, err := internal.StringifyJSON(s.rawJSON); err == nil {
-			return value
-		}
-	}
-	if value, err := internal.StringifyJSON(s); err == nil {
-		return value
-	}
-	return fmt.Sprintf("%#v", s)
-}
-
 // The type config for FrontApp. Requires type to be `FRONTAPP`.
 type SourceTypeConfigFrontApp struct {
-	AllowedHttpMethods []SourceTypeConfigFrontAppAllowedHttpMethodsItem `json:"allowed_http_methods,omitempty" url:"allowed_http_methods,omitempty"`
-	Auth               *SourceTypeConfigFrontAppAuth                    `json:"auth,omitempty" url:"auth,omitempty"`
+	Auth *SourceConfigFrontAppAuth `json:"auth,omitempty" url:"auth,omitempty"`
 
 	extraProperties map[string]interface{}
 	rawJSON         json.RawMessage
 }
 
-func (s *SourceTypeConfigFrontApp) GetAllowedHttpMethods() []SourceTypeConfigFrontAppAllowedHttpMethodsItem {
-	if s == nil {
-		return nil
-	}
-	return s.AllowedHttpMethods
-}
-
-func (s *SourceTypeConfigFrontApp) GetAuth() *SourceTypeConfigFrontAppAuth {
+func (s *SourceTypeConfigFrontApp) GetAuth() *SourceConfigFrontAppAuth {
 	if s == nil {
 		return nil
 	}
@@ -12611,100 +17906,15 @@ func (s *SourceTypeConfigFrontApp) String() string {
 	return fmt.Sprintf("%#v", s)
 }
 
-type SourceTypeConfigFrontAppAllowedHttpMethodsItem string
-
-const (
-	SourceTypeConfigFrontAppAllowedHttpMethodsItemGet    SourceTypeConfigFrontAppAllowedHttpMethodsItem = "GET"
-	SourceTypeConfigFrontAppAllowedHttpMethodsItemPost   SourceTypeConfigFrontAppAllowedHttpMethodsItem = "POST"
-	SourceTypeConfigFrontAppAllowedHttpMethodsItemPut    SourceTypeConfigFrontAppAllowedHttpMethodsItem = "PUT"
-	SourceTypeConfigFrontAppAllowedHttpMethodsItemPatch  SourceTypeConfigFrontAppAllowedHttpMethodsItem = "PATCH"
-	SourceTypeConfigFrontAppAllowedHttpMethodsItemDelete SourceTypeConfigFrontAppAllowedHttpMethodsItem = "DELETE"
-)
-
-func NewSourceTypeConfigFrontAppAllowedHttpMethodsItemFromString(s string) (SourceTypeConfigFrontAppAllowedHttpMethodsItem, error) {
-	switch s {
-	case "GET":
-		return SourceTypeConfigFrontAppAllowedHttpMethodsItemGet, nil
-	case "POST":
-		return SourceTypeConfigFrontAppAllowedHttpMethodsItemPost, nil
-	case "PUT":
-		return SourceTypeConfigFrontAppAllowedHttpMethodsItemPut, nil
-	case "PATCH":
-		return SourceTypeConfigFrontAppAllowedHttpMethodsItemPatch, nil
-	case "DELETE":
-		return SourceTypeConfigFrontAppAllowedHttpMethodsItemDelete, nil
-	}
-	var t SourceTypeConfigFrontAppAllowedHttpMethodsItem
-	return "", fmt.Errorf("%s is not a valid %T", s, t)
-}
-
-func (s SourceTypeConfigFrontAppAllowedHttpMethodsItem) Ptr() *SourceTypeConfigFrontAppAllowedHttpMethodsItem {
-	return &s
-}
-
-type SourceTypeConfigFrontAppAuth struct {
-	WebhookSecretKey string `json:"webhook_secret_key" url:"webhook_secret_key"`
-
-	extraProperties map[string]interface{}
-	rawJSON         json.RawMessage
-}
-
-func (s *SourceTypeConfigFrontAppAuth) GetWebhookSecretKey() string {
-	if s == nil {
-		return ""
-	}
-	return s.WebhookSecretKey
-}
-
-func (s *SourceTypeConfigFrontAppAuth) GetExtraProperties() map[string]interface{} {
-	return s.extraProperties
-}
-
-func (s *SourceTypeConfigFrontAppAuth) UnmarshalJSON(data []byte) error {
-	type unmarshaler SourceTypeConfigFrontAppAuth
-	var value unmarshaler
-	if err := json.Unmarshal(data, &value); err != nil {
-		return err
-	}
-	*s = SourceTypeConfigFrontAppAuth(value)
-	extraProperties, err := internal.ExtractExtraProperties(data, *s)
-	if err != nil {
-		return err
-	}
-	s.extraProperties = extraProperties
-	s.rawJSON = json.RawMessage(data)
-	return nil
-}
-
-func (s *SourceTypeConfigFrontAppAuth) String() string {
-	if len(s.rawJSON) > 0 {
-		if value, err := internal.StringifyJSON(s.rawJSON); err == nil {
-			return value
-		}
-	}
-	if value, err := internal.StringifyJSON(s); err == nil {
-		return value
-	}
-	return fmt.Sprintf("%#v", s)
-}
-
 // The type config for GitHub. Requires type to be `GITHUB`.
 type SourceTypeConfigGitHub struct {
-	AllowedHttpMethods []SourceTypeConfigGitHubAllowedHttpMethodsItem `json:"allowed_http_methods,omitempty" url:"allowed_http_methods,omitempty"`
-	Auth               *SourceTypeConfigGitHubAuth                    `json:"auth,omitempty" url:"auth,omitempty"`
+	Auth *SourceConfigGitHubAuth `json:"auth,omitempty" url:"auth,omitempty"`
 
 	extraProperties map[string]interface{}
 	rawJSON         json.RawMessage
 }
 
-func (s *SourceTypeConfigGitHub) GetAllowedHttpMethods() []SourceTypeConfigGitHubAllowedHttpMethodsItem {
-	if s == nil {
-		return nil
-	}
-	return s.AllowedHttpMethods
-}
-
-func (s *SourceTypeConfigGitHub) GetAuth() *SourceTypeConfigGitHubAuth {
+func (s *SourceTypeConfigGitHub) GetAuth() *SourceConfigGitHubAuth {
 	if s == nil {
 		return nil
 	}
@@ -12743,100 +17953,15 @@ func (s *SourceTypeConfigGitHub) String() string {
 	return fmt.Sprintf("%#v", s)
 }
 
-type SourceTypeConfigGitHubAllowedHttpMethodsItem string
-
-const (
-	SourceTypeConfigGitHubAllowedHttpMethodsItemGet    SourceTypeConfigGitHubAllowedHttpMethodsItem = "GET"
-	SourceTypeConfigGitHubAllowedHttpMethodsItemPost   SourceTypeConfigGitHubAllowedHttpMethodsItem = "POST"
-	SourceTypeConfigGitHubAllowedHttpMethodsItemPut    SourceTypeConfigGitHubAllowedHttpMethodsItem = "PUT"
-	SourceTypeConfigGitHubAllowedHttpMethodsItemPatch  SourceTypeConfigGitHubAllowedHttpMethodsItem = "PATCH"
-	SourceTypeConfigGitHubAllowedHttpMethodsItemDelete SourceTypeConfigGitHubAllowedHttpMethodsItem = "DELETE"
-)
-
-func NewSourceTypeConfigGitHubAllowedHttpMethodsItemFromString(s string) (SourceTypeConfigGitHubAllowedHttpMethodsItem, error) {
-	switch s {
-	case "GET":
-		return SourceTypeConfigGitHubAllowedHttpMethodsItemGet, nil
-	case "POST":
-		return SourceTypeConfigGitHubAllowedHttpMethodsItemPost, nil
-	case "PUT":
-		return SourceTypeConfigGitHubAllowedHttpMethodsItemPut, nil
-	case "PATCH":
-		return SourceTypeConfigGitHubAllowedHttpMethodsItemPatch, nil
-	case "DELETE":
-		return SourceTypeConfigGitHubAllowedHttpMethodsItemDelete, nil
-	}
-	var t SourceTypeConfigGitHubAllowedHttpMethodsItem
-	return "", fmt.Errorf("%s is not a valid %T", s, t)
-}
-
-func (s SourceTypeConfigGitHubAllowedHttpMethodsItem) Ptr() *SourceTypeConfigGitHubAllowedHttpMethodsItem {
-	return &s
-}
-
-type SourceTypeConfigGitHubAuth struct {
-	WebhookSecretKey string `json:"webhook_secret_key" url:"webhook_secret_key"`
-
-	extraProperties map[string]interface{}
-	rawJSON         json.RawMessage
-}
-
-func (s *SourceTypeConfigGitHubAuth) GetWebhookSecretKey() string {
-	if s == nil {
-		return ""
-	}
-	return s.WebhookSecretKey
-}
-
-func (s *SourceTypeConfigGitHubAuth) GetExtraProperties() map[string]interface{} {
-	return s.extraProperties
-}
-
-func (s *SourceTypeConfigGitHubAuth) UnmarshalJSON(data []byte) error {
-	type unmarshaler SourceTypeConfigGitHubAuth
-	var value unmarshaler
-	if err := json.Unmarshal(data, &value); err != nil {
-		return err
-	}
-	*s = SourceTypeConfigGitHubAuth(value)
-	extraProperties, err := internal.ExtractExtraProperties(data, *s)
-	if err != nil {
-		return err
-	}
-	s.extraProperties = extraProperties
-	s.rawJSON = json.RawMessage(data)
-	return nil
-}
-
-func (s *SourceTypeConfigGitHubAuth) String() string {
-	if len(s.rawJSON) > 0 {
-		if value, err := internal.StringifyJSON(s.rawJSON); err == nil {
-			return value
-		}
-	}
-	if value, err := internal.StringifyJSON(s); err == nil {
-		return value
-	}
-	return fmt.Sprintf("%#v", s)
-}
-
 // The type config for GitLab. Requires type to be `GITLAB`.
 type SourceTypeConfigGitLab struct {
-	AllowedHttpMethods []SourceTypeConfigGitLabAllowedHttpMethodsItem `json:"allowed_http_methods,omitempty" url:"allowed_http_methods,omitempty"`
-	Auth               *SourceTypeConfigGitLabAuth                    `json:"auth,omitempty" url:"auth,omitempty"`
+	Auth *SourceConfigGitLabAuth `json:"auth,omitempty" url:"auth,omitempty"`
 
 	extraProperties map[string]interface{}
 	rawJSON         json.RawMessage
 }
 
-func (s *SourceTypeConfigGitLab) GetAllowedHttpMethods() []SourceTypeConfigGitLabAllowedHttpMethodsItem {
-	if s == nil {
-		return nil
-	}
-	return s.AllowedHttpMethods
-}
-
-func (s *SourceTypeConfigGitLab) GetAuth() *SourceTypeConfigGitLabAuth {
+func (s *SourceTypeConfigGitLab) GetAuth() *SourceConfigGitLabAuth {
 	if s == nil {
 		return nil
 	}
@@ -12875,385 +18000,11 @@ func (s *SourceTypeConfigGitLab) String() string {
 	return fmt.Sprintf("%#v", s)
 }
 
-type SourceTypeConfigGitLabAllowedHttpMethodsItem string
-
-const (
-	SourceTypeConfigGitLabAllowedHttpMethodsItemGet    SourceTypeConfigGitLabAllowedHttpMethodsItem = "GET"
-	SourceTypeConfigGitLabAllowedHttpMethodsItemPost   SourceTypeConfigGitLabAllowedHttpMethodsItem = "POST"
-	SourceTypeConfigGitLabAllowedHttpMethodsItemPut    SourceTypeConfigGitLabAllowedHttpMethodsItem = "PUT"
-	SourceTypeConfigGitLabAllowedHttpMethodsItemPatch  SourceTypeConfigGitLabAllowedHttpMethodsItem = "PATCH"
-	SourceTypeConfigGitLabAllowedHttpMethodsItemDelete SourceTypeConfigGitLabAllowedHttpMethodsItem = "DELETE"
-)
-
-func NewSourceTypeConfigGitLabAllowedHttpMethodsItemFromString(s string) (SourceTypeConfigGitLabAllowedHttpMethodsItem, error) {
-	switch s {
-	case "GET":
-		return SourceTypeConfigGitLabAllowedHttpMethodsItemGet, nil
-	case "POST":
-		return SourceTypeConfigGitLabAllowedHttpMethodsItemPost, nil
-	case "PUT":
-		return SourceTypeConfigGitLabAllowedHttpMethodsItemPut, nil
-	case "PATCH":
-		return SourceTypeConfigGitLabAllowedHttpMethodsItemPatch, nil
-	case "DELETE":
-		return SourceTypeConfigGitLabAllowedHttpMethodsItemDelete, nil
-	}
-	var t SourceTypeConfigGitLabAllowedHttpMethodsItem
-	return "", fmt.Errorf("%s is not a valid %T", s, t)
-}
-
-func (s SourceTypeConfigGitLabAllowedHttpMethodsItem) Ptr() *SourceTypeConfigGitLabAllowedHttpMethodsItem {
-	return &s
-}
-
-type SourceTypeConfigGitLabAuth struct {
-	ApiKey string `json:"api_key" url:"api_key"`
-
-	extraProperties map[string]interface{}
-	rawJSON         json.RawMessage
-}
-
-func (s *SourceTypeConfigGitLabAuth) GetApiKey() string {
-	if s == nil {
-		return ""
-	}
-	return s.ApiKey
-}
-
-func (s *SourceTypeConfigGitLabAuth) GetExtraProperties() map[string]interface{} {
-	return s.extraProperties
-}
-
-func (s *SourceTypeConfigGitLabAuth) UnmarshalJSON(data []byte) error {
-	type unmarshaler SourceTypeConfigGitLabAuth
-	var value unmarshaler
-	if err := json.Unmarshal(data, &value); err != nil {
-		return err
-	}
-	*s = SourceTypeConfigGitLabAuth(value)
-	extraProperties, err := internal.ExtractExtraProperties(data, *s)
-	if err != nil {
-		return err
-	}
-	s.extraProperties = extraProperties
-	s.rawJSON = json.RawMessage(data)
-	return nil
-}
-
-func (s *SourceTypeConfigGitLabAuth) String() string {
-	if len(s.rawJSON) > 0 {
-		if value, err := internal.StringifyJSON(s.rawJSON); err == nil {
-			return value
-		}
-	}
-	if value, err := internal.StringifyJSON(s); err == nil {
-		return value
-	}
-	return fmt.Sprintf("%#v", s)
-}
-
-// The type config for HMAC. Requires type to be `HMAC`.
-type SourceTypeConfigHmac struct {
-	Type               *string                                      `json:"type,omitempty" url:"type,omitempty"`
-	AllowedHttpMethods []SourceTypeConfigHmacAllowedHttpMethodsItem `json:"allowed_http_methods,omitempty" url:"allowed_http_methods,omitempty"`
-	CustomResponse     *SourceTypeConfigHmacCustomResponse          `json:"custom_response,omitempty" url:"custom_response,omitempty"`
-	Auth               *SourceTypeConfigHmacAuth                    `json:"auth,omitempty" url:"auth,omitempty"`
-
-	extraProperties map[string]interface{}
-	rawJSON         json.RawMessage
-}
-
-func (s *SourceTypeConfigHmac) GetAllowedHttpMethods() []SourceTypeConfigHmacAllowedHttpMethodsItem {
-	if s == nil {
-		return nil
-	}
-	return s.AllowedHttpMethods
-}
-
-func (s *SourceTypeConfigHmac) GetCustomResponse() *SourceTypeConfigHmacCustomResponse {
-	if s == nil {
-		return nil
-	}
-	return s.CustomResponse
-}
-
-func (s *SourceTypeConfigHmac) GetAuth() *SourceTypeConfigHmacAuth {
-	if s == nil {
-		return nil
-	}
-	return s.Auth
-}
-
-func (s *SourceTypeConfigHmac) GetExtraProperties() map[string]interface{} {
-	return s.extraProperties
-}
-
-func (s *SourceTypeConfigHmac) UnmarshalJSON(data []byte) error {
-	type unmarshaler SourceTypeConfigHmac
-	var value unmarshaler
-	if err := json.Unmarshal(data, &value); err != nil {
-		return err
-	}
-	*s = SourceTypeConfigHmac(value)
-	extraProperties, err := internal.ExtractExtraProperties(data, *s)
-	if err != nil {
-		return err
-	}
-	s.extraProperties = extraProperties
-	s.rawJSON = json.RawMessage(data)
-	return nil
-}
-
-func (s *SourceTypeConfigHmac) String() string {
-	if len(s.rawJSON) > 0 {
-		if value, err := internal.StringifyJSON(s.rawJSON); err == nil {
-			return value
-		}
-	}
-	if value, err := internal.StringifyJSON(s); err == nil {
-		return value
-	}
-	return fmt.Sprintf("%#v", s)
-}
-
-type SourceTypeConfigHmacAllowedHttpMethodsItem string
-
-const (
-	SourceTypeConfigHmacAllowedHttpMethodsItemGet    SourceTypeConfigHmacAllowedHttpMethodsItem = "GET"
-	SourceTypeConfigHmacAllowedHttpMethodsItemPost   SourceTypeConfigHmacAllowedHttpMethodsItem = "POST"
-	SourceTypeConfigHmacAllowedHttpMethodsItemPut    SourceTypeConfigHmacAllowedHttpMethodsItem = "PUT"
-	SourceTypeConfigHmacAllowedHttpMethodsItemPatch  SourceTypeConfigHmacAllowedHttpMethodsItem = "PATCH"
-	SourceTypeConfigHmacAllowedHttpMethodsItemDelete SourceTypeConfigHmacAllowedHttpMethodsItem = "DELETE"
-)
-
-func NewSourceTypeConfigHmacAllowedHttpMethodsItemFromString(s string) (SourceTypeConfigHmacAllowedHttpMethodsItem, error) {
-	switch s {
-	case "GET":
-		return SourceTypeConfigHmacAllowedHttpMethodsItemGet, nil
-	case "POST":
-		return SourceTypeConfigHmacAllowedHttpMethodsItemPost, nil
-	case "PUT":
-		return SourceTypeConfigHmacAllowedHttpMethodsItemPut, nil
-	case "PATCH":
-		return SourceTypeConfigHmacAllowedHttpMethodsItemPatch, nil
-	case "DELETE":
-		return SourceTypeConfigHmacAllowedHttpMethodsItemDelete, nil
-	}
-	var t SourceTypeConfigHmacAllowedHttpMethodsItem
-	return "", fmt.Errorf("%s is not a valid %T", s, t)
-}
-
-func (s SourceTypeConfigHmacAllowedHttpMethodsItem) Ptr() *SourceTypeConfigHmacAllowedHttpMethodsItem {
-	return &s
-}
-
-type SourceTypeConfigHmacAuth struct {
-	Algorithm        SourceTypeConfigHmacAuthAlgorithm `json:"algorithm" url:"algorithm"`
-	Encoding         SourceTypeConfigHmacAuthEncoding  `json:"encoding" url:"encoding"`
-	HeaderKey        string                            `json:"header_key" url:"header_key"`
-	WebhookSecretKey string                            `json:"webhook_secret_key" url:"webhook_secret_key"`
-
-	extraProperties map[string]interface{}
-	rawJSON         json.RawMessage
-}
-
-func (s *SourceTypeConfigHmacAuth) GetAlgorithm() SourceTypeConfigHmacAuthAlgorithm {
-	if s == nil {
-		return ""
-	}
-	return s.Algorithm
-}
-
-func (s *SourceTypeConfigHmacAuth) GetEncoding() SourceTypeConfigHmacAuthEncoding {
-	if s == nil {
-		return ""
-	}
-	return s.Encoding
-}
-
-func (s *SourceTypeConfigHmacAuth) GetHeaderKey() string {
-	if s == nil {
-		return ""
-	}
-	return s.HeaderKey
-}
-
-func (s *SourceTypeConfigHmacAuth) GetWebhookSecretKey() string {
-	if s == nil {
-		return ""
-	}
-	return s.WebhookSecretKey
-}
-
-func (s *SourceTypeConfigHmacAuth) GetExtraProperties() map[string]interface{} {
-	return s.extraProperties
-}
-
-func (s *SourceTypeConfigHmacAuth) UnmarshalJSON(data []byte) error {
-	type unmarshaler SourceTypeConfigHmacAuth
-	var value unmarshaler
-	if err := json.Unmarshal(data, &value); err != nil {
-		return err
-	}
-	*s = SourceTypeConfigHmacAuth(value)
-	extraProperties, err := internal.ExtractExtraProperties(data, *s)
-	if err != nil {
-		return err
-	}
-	s.extraProperties = extraProperties
-	s.rawJSON = json.RawMessage(data)
-	return nil
-}
-
-func (s *SourceTypeConfigHmacAuth) String() string {
-	if len(s.rawJSON) > 0 {
-		if value, err := internal.StringifyJSON(s.rawJSON); err == nil {
-			return value
-		}
-	}
-	if value, err := internal.StringifyJSON(s); err == nil {
-		return value
-	}
-	return fmt.Sprintf("%#v", s)
-}
-
-type SourceTypeConfigHmacAuthAlgorithm string
-
-const (
-	SourceTypeConfigHmacAuthAlgorithmSha1   SourceTypeConfigHmacAuthAlgorithm = "sha1"
-	SourceTypeConfigHmacAuthAlgorithmSha256 SourceTypeConfigHmacAuthAlgorithm = "sha256"
-	SourceTypeConfigHmacAuthAlgorithmSha512 SourceTypeConfigHmacAuthAlgorithm = "sha512"
-	SourceTypeConfigHmacAuthAlgorithmMd5    SourceTypeConfigHmacAuthAlgorithm = "md5"
-)
-
-func NewSourceTypeConfigHmacAuthAlgorithmFromString(s string) (SourceTypeConfigHmacAuthAlgorithm, error) {
-	switch s {
-	case "sha1":
-		return SourceTypeConfigHmacAuthAlgorithmSha1, nil
-	case "sha256":
-		return SourceTypeConfigHmacAuthAlgorithmSha256, nil
-	case "sha512":
-		return SourceTypeConfigHmacAuthAlgorithmSha512, nil
-	case "md5":
-		return SourceTypeConfigHmacAuthAlgorithmMd5, nil
-	}
-	var t SourceTypeConfigHmacAuthAlgorithm
-	return "", fmt.Errorf("%s is not a valid %T", s, t)
-}
-
-func (s SourceTypeConfigHmacAuthAlgorithm) Ptr() *SourceTypeConfigHmacAuthAlgorithm {
-	return &s
-}
-
-type SourceTypeConfigHmacAuthEncoding string
-
-const (
-	SourceTypeConfigHmacAuthEncodingBase64    SourceTypeConfigHmacAuthEncoding = "base64"
-	SourceTypeConfigHmacAuthEncodingBase64Url SourceTypeConfigHmacAuthEncoding = "base64url"
-	SourceTypeConfigHmacAuthEncodingHex       SourceTypeConfigHmacAuthEncoding = "hex"
-)
-
-func NewSourceTypeConfigHmacAuthEncodingFromString(s string) (SourceTypeConfigHmacAuthEncoding, error) {
-	switch s {
-	case "base64":
-		return SourceTypeConfigHmacAuthEncodingBase64, nil
-	case "base64url":
-		return SourceTypeConfigHmacAuthEncodingBase64Url, nil
-	case "hex":
-		return SourceTypeConfigHmacAuthEncodingHex, nil
-	}
-	var t SourceTypeConfigHmacAuthEncoding
-	return "", fmt.Errorf("%s is not a valid %T", s, t)
-}
-
-func (s SourceTypeConfigHmacAuthEncoding) Ptr() *SourceTypeConfigHmacAuthEncoding {
-	return &s
-}
-
-type SourceTypeConfigHmacCustomResponse struct {
-	ContentType *SourceTypeConfigHmacCustomResponseContentType `json:"content_type,omitempty" url:"content_type,omitempty"`
-	Body        string                                         `json:"body" url:"body"`
-
-	extraProperties map[string]interface{}
-	rawJSON         json.RawMessage
-}
-
-func (s *SourceTypeConfigHmacCustomResponse) GetContentType() *SourceTypeConfigHmacCustomResponseContentType {
-	if s == nil {
-		return nil
-	}
-	return s.ContentType
-}
-
-func (s *SourceTypeConfigHmacCustomResponse) GetBody() string {
-	if s == nil {
-		return ""
-	}
-	return s.Body
-}
-
-func (s *SourceTypeConfigHmacCustomResponse) GetExtraProperties() map[string]interface{} {
-	return s.extraProperties
-}
-
-func (s *SourceTypeConfigHmacCustomResponse) UnmarshalJSON(data []byte) error {
-	type unmarshaler SourceTypeConfigHmacCustomResponse
-	var value unmarshaler
-	if err := json.Unmarshal(data, &value); err != nil {
-		return err
-	}
-	*s = SourceTypeConfigHmacCustomResponse(value)
-	extraProperties, err := internal.ExtractExtraProperties(data, *s)
-	if err != nil {
-		return err
-	}
-	s.extraProperties = extraProperties
-	s.rawJSON = json.RawMessage(data)
-	return nil
-}
-
-func (s *SourceTypeConfigHmacCustomResponse) String() string {
-	if len(s.rawJSON) > 0 {
-		if value, err := internal.StringifyJSON(s.rawJSON); err == nil {
-			return value
-		}
-	}
-	if value, err := internal.StringifyJSON(s); err == nil {
-		return value
-	}
-	return fmt.Sprintf("%#v", s)
-}
-
-type SourceTypeConfigHmacCustomResponseContentType string
-
-const (
-	SourceTypeConfigHmacCustomResponseContentTypeJson SourceTypeConfigHmacCustomResponseContentType = "json"
-	SourceTypeConfigHmacCustomResponseContentTypeText SourceTypeConfigHmacCustomResponseContentType = "text"
-	SourceTypeConfigHmacCustomResponseContentTypeXml  SourceTypeConfigHmacCustomResponseContentType = "xml"
-)
-
-func NewSourceTypeConfigHmacCustomResponseContentTypeFromString(s string) (SourceTypeConfigHmacCustomResponseContentType, error) {
-	switch s {
-	case "json":
-		return SourceTypeConfigHmacCustomResponseContentTypeJson, nil
-	case "text":
-		return SourceTypeConfigHmacCustomResponseContentTypeText, nil
-	case "xml":
-		return SourceTypeConfigHmacCustomResponseContentTypeXml, nil
-	}
-	var t SourceTypeConfigHmacCustomResponseContentType
-	return "", fmt.Errorf("%s is not a valid %T", s, t)
-}
-
-func (s SourceTypeConfigHmacCustomResponseContentType) Ptr() *SourceTypeConfigHmacCustomResponseContentType {
-	return &s
-}
-
 // The type config for HTTP. Requires type to be `HTTP`.
 type SourceTypeConfigHttp struct {
 	AllowedHttpMethods []SourceTypeConfigHttpAllowedHttpMethodsItem `json:"allowed_http_methods,omitempty" url:"allowed_http_methods,omitempty"`
 	CustomResponse     *SourceTypeConfigHttpCustomResponse          `json:"custom_response,omitempty" url:"custom_response,omitempty"`
-	Type               *SourceTypeConfigHttpType                    `json:"type,omitempty" url:"type,omitempty"`
+	AuthType           *SourceTypeConfigHttpAuthType                `json:"auth_type,omitempty" url:"auth_type,omitempty"`
 	Auth               *SourceTypeConfigHttpAuth                    `json:"auth,omitempty" url:"auth,omitempty"`
 
 	extraProperties map[string]interface{}
@@ -13274,11 +18025,11 @@ func (s *SourceTypeConfigHttp) GetCustomResponse() *SourceTypeConfigHttpCustomRe
 	return s.CustomResponse
 }
 
-func (s *SourceTypeConfigHttp) GetType() *SourceTypeConfigHttpType {
+func (s *SourceTypeConfigHttp) GetAuthType() *SourceTypeConfigHttpAuthType {
 	if s == nil {
 		return nil
 	}
-	return s.Type
+	return s.AuthType
 }
 
 func (s *SourceTypeConfigHttp) GetAuth() *SourceTypeConfigHttpAuth {
@@ -13677,17 +18428,42 @@ func (s *SourceTypeConfigHttpAuthPassword) String() string {
 	return fmt.Sprintf("%#v", s)
 }
 
+type SourceTypeConfigHttpAuthType string
+
+const (
+	SourceTypeConfigHttpAuthTypeHmac      SourceTypeConfigHttpAuthType = "HMAC"
+	SourceTypeConfigHttpAuthTypeBasicAuth SourceTypeConfigHttpAuthType = "BASIC_AUTH"
+	SourceTypeConfigHttpAuthTypeApiKey    SourceTypeConfigHttpAuthType = "API_KEY"
+)
+
+func NewSourceTypeConfigHttpAuthTypeFromString(s string) (SourceTypeConfigHttpAuthType, error) {
+	switch s {
+	case "HMAC":
+		return SourceTypeConfigHttpAuthTypeHmac, nil
+	case "BASIC_AUTH":
+		return SourceTypeConfigHttpAuthTypeBasicAuth, nil
+	case "API_KEY":
+		return SourceTypeConfigHttpAuthTypeApiKey, nil
+	}
+	var t SourceTypeConfigHttpAuthType
+	return "", fmt.Errorf("%s is not a valid %T", s, t)
+}
+
+func (s SourceTypeConfigHttpAuthType) Ptr() *SourceTypeConfigHttpAuthType {
+	return &s
+}
+
 type SourceTypeConfigHttpCustomResponse struct {
-	ContentType *SourceTypeConfigHttpCustomResponseContentType `json:"content_type,omitempty" url:"content_type,omitempty"`
-	Body        string                                         `json:"body" url:"body"`
+	ContentType SourceTypeConfigHttpCustomResponseContentType `json:"content_type" url:"content_type"`
+	Body        string                                        `json:"body" url:"body"`
 
 	extraProperties map[string]interface{}
 	rawJSON         json.RawMessage
 }
 
-func (s *SourceTypeConfigHttpCustomResponse) GetContentType() *SourceTypeConfigHttpCustomResponseContentType {
+func (s *SourceTypeConfigHttpCustomResponse) GetContentType() SourceTypeConfigHttpCustomResponseContentType {
 	if s == nil {
-		return nil
+		return ""
 	}
 	return s.ContentType
 }
@@ -13756,48 +18532,15 @@ func (s SourceTypeConfigHttpCustomResponseContentType) Ptr() *SourceTypeConfigHt
 	return &s
 }
 
-type SourceTypeConfigHttpType string
-
-const (
-	SourceTypeConfigHttpTypeHmac      SourceTypeConfigHttpType = "HMAC"
-	SourceTypeConfigHttpTypeBasicAuth SourceTypeConfigHttpType = "BASIC_AUTH"
-	SourceTypeConfigHttpTypeApiKey    SourceTypeConfigHttpType = "API_KEY"
-)
-
-func NewSourceTypeConfigHttpTypeFromString(s string) (SourceTypeConfigHttpType, error) {
-	switch s {
-	case "HMAC":
-		return SourceTypeConfigHttpTypeHmac, nil
-	case "BASIC_AUTH":
-		return SourceTypeConfigHttpTypeBasicAuth, nil
-	case "API_KEY":
-		return SourceTypeConfigHttpTypeApiKey, nil
-	}
-	var t SourceTypeConfigHttpType
-	return "", fmt.Errorf("%s is not a valid %T", s, t)
-}
-
-func (s SourceTypeConfigHttpType) Ptr() *SourceTypeConfigHttpType {
-	return &s
-}
-
 // The type config for Hubspot. Requires type to be `HUBSPOT`.
 type SourceTypeConfigHubspot struct {
-	AllowedHttpMethods []SourceTypeConfigHubspotAllowedHttpMethodsItem `json:"allowed_http_methods,omitempty" url:"allowed_http_methods,omitempty"`
-	Auth               *SourceTypeConfigHubspotAuth                    `json:"auth,omitempty" url:"auth,omitempty"`
+	Auth *SourceConfigHubspotAuth `json:"auth,omitempty" url:"auth,omitempty"`
 
 	extraProperties map[string]interface{}
 	rawJSON         json.RawMessage
 }
 
-func (s *SourceTypeConfigHubspot) GetAllowedHttpMethods() []SourceTypeConfigHubspotAllowedHttpMethodsItem {
-	if s == nil {
-		return nil
-	}
-	return s.AllowedHttpMethods
-}
-
-func (s *SourceTypeConfigHubspot) GetAuth() *SourceTypeConfigHubspotAuth {
+func (s *SourceTypeConfigHubspot) GetAuth() *SourceConfigHubspotAuth {
 	if s == nil {
 		return nil
 	}
@@ -13836,100 +18579,15 @@ func (s *SourceTypeConfigHubspot) String() string {
 	return fmt.Sprintf("%#v", s)
 }
 
-type SourceTypeConfigHubspotAllowedHttpMethodsItem string
-
-const (
-	SourceTypeConfigHubspotAllowedHttpMethodsItemGet    SourceTypeConfigHubspotAllowedHttpMethodsItem = "GET"
-	SourceTypeConfigHubspotAllowedHttpMethodsItemPost   SourceTypeConfigHubspotAllowedHttpMethodsItem = "POST"
-	SourceTypeConfigHubspotAllowedHttpMethodsItemPut    SourceTypeConfigHubspotAllowedHttpMethodsItem = "PUT"
-	SourceTypeConfigHubspotAllowedHttpMethodsItemPatch  SourceTypeConfigHubspotAllowedHttpMethodsItem = "PATCH"
-	SourceTypeConfigHubspotAllowedHttpMethodsItemDelete SourceTypeConfigHubspotAllowedHttpMethodsItem = "DELETE"
-)
-
-func NewSourceTypeConfigHubspotAllowedHttpMethodsItemFromString(s string) (SourceTypeConfigHubspotAllowedHttpMethodsItem, error) {
-	switch s {
-	case "GET":
-		return SourceTypeConfigHubspotAllowedHttpMethodsItemGet, nil
-	case "POST":
-		return SourceTypeConfigHubspotAllowedHttpMethodsItemPost, nil
-	case "PUT":
-		return SourceTypeConfigHubspotAllowedHttpMethodsItemPut, nil
-	case "PATCH":
-		return SourceTypeConfigHubspotAllowedHttpMethodsItemPatch, nil
-	case "DELETE":
-		return SourceTypeConfigHubspotAllowedHttpMethodsItemDelete, nil
-	}
-	var t SourceTypeConfigHubspotAllowedHttpMethodsItem
-	return "", fmt.Errorf("%s is not a valid %T", s, t)
-}
-
-func (s SourceTypeConfigHubspotAllowedHttpMethodsItem) Ptr() *SourceTypeConfigHubspotAllowedHttpMethodsItem {
-	return &s
-}
-
-type SourceTypeConfigHubspotAuth struct {
-	WebhookSecretKey string `json:"webhook_secret_key" url:"webhook_secret_key"`
-
-	extraProperties map[string]interface{}
-	rawJSON         json.RawMessage
-}
-
-func (s *SourceTypeConfigHubspotAuth) GetWebhookSecretKey() string {
-	if s == nil {
-		return ""
-	}
-	return s.WebhookSecretKey
-}
-
-func (s *SourceTypeConfigHubspotAuth) GetExtraProperties() map[string]interface{} {
-	return s.extraProperties
-}
-
-func (s *SourceTypeConfigHubspotAuth) UnmarshalJSON(data []byte) error {
-	type unmarshaler SourceTypeConfigHubspotAuth
-	var value unmarshaler
-	if err := json.Unmarshal(data, &value); err != nil {
-		return err
-	}
-	*s = SourceTypeConfigHubspotAuth(value)
-	extraProperties, err := internal.ExtractExtraProperties(data, *s)
-	if err != nil {
-		return err
-	}
-	s.extraProperties = extraProperties
-	s.rawJSON = json.RawMessage(data)
-	return nil
-}
-
-func (s *SourceTypeConfigHubspotAuth) String() string {
-	if len(s.rawJSON) > 0 {
-		if value, err := internal.StringifyJSON(s.rawJSON); err == nil {
-			return value
-		}
-	}
-	if value, err := internal.StringifyJSON(s); err == nil {
-		return value
-	}
-	return fmt.Sprintf("%#v", s)
-}
-
 // The type config for Linear. Requires type to be `LINEAR`.
 type SourceTypeConfigLinear struct {
-	AllowedHttpMethods []SourceTypeConfigLinearAllowedHttpMethodsItem `json:"allowed_http_methods,omitempty" url:"allowed_http_methods,omitempty"`
-	Auth               *SourceTypeConfigLinearAuth                    `json:"auth,omitempty" url:"auth,omitempty"`
+	Auth *SourceConfigLinearAuth `json:"auth,omitempty" url:"auth,omitempty"`
 
 	extraProperties map[string]interface{}
 	rawJSON         json.RawMessage
 }
 
-func (s *SourceTypeConfigLinear) GetAllowedHttpMethods() []SourceTypeConfigLinearAllowedHttpMethodsItem {
-	if s == nil {
-		return nil
-	}
-	return s.AllowedHttpMethods
-}
-
-func (s *SourceTypeConfigLinear) GetAuth() *SourceTypeConfigLinearAuth {
+func (s *SourceTypeConfigLinear) GetAuth() *SourceConfigLinearAuth {
 	if s == nil {
 		return nil
 	}
@@ -13968,62 +18626,32 @@ func (s *SourceTypeConfigLinear) String() string {
 	return fmt.Sprintf("%#v", s)
 }
 
-type SourceTypeConfigLinearAllowedHttpMethodsItem string
-
-const (
-	SourceTypeConfigLinearAllowedHttpMethodsItemGet    SourceTypeConfigLinearAllowedHttpMethodsItem = "GET"
-	SourceTypeConfigLinearAllowedHttpMethodsItemPost   SourceTypeConfigLinearAllowedHttpMethodsItem = "POST"
-	SourceTypeConfigLinearAllowedHttpMethodsItemPut    SourceTypeConfigLinearAllowedHttpMethodsItem = "PUT"
-	SourceTypeConfigLinearAllowedHttpMethodsItemPatch  SourceTypeConfigLinearAllowedHttpMethodsItem = "PATCH"
-	SourceTypeConfigLinearAllowedHttpMethodsItemDelete SourceTypeConfigLinearAllowedHttpMethodsItem = "DELETE"
-)
-
-func NewSourceTypeConfigLinearAllowedHttpMethodsItemFromString(s string) (SourceTypeConfigLinearAllowedHttpMethodsItem, error) {
-	switch s {
-	case "GET":
-		return SourceTypeConfigLinearAllowedHttpMethodsItemGet, nil
-	case "POST":
-		return SourceTypeConfigLinearAllowedHttpMethodsItemPost, nil
-	case "PUT":
-		return SourceTypeConfigLinearAllowedHttpMethodsItemPut, nil
-	case "PATCH":
-		return SourceTypeConfigLinearAllowedHttpMethodsItemPatch, nil
-	case "DELETE":
-		return SourceTypeConfigLinearAllowedHttpMethodsItemDelete, nil
-	}
-	var t SourceTypeConfigLinearAllowedHttpMethodsItem
-	return "", fmt.Errorf("%s is not a valid %T", s, t)
-}
-
-func (s SourceTypeConfigLinearAllowedHttpMethodsItem) Ptr() *SourceTypeConfigLinearAllowedHttpMethodsItem {
-	return &s
-}
-
-type SourceTypeConfigLinearAuth struct {
-	WebhookSecretKey string `json:"webhook_secret_key" url:"webhook_secret_key"`
+// The type config for LinkedIn. Requires type to be `LINKEDIN`.
+type SourceTypeConfigLinkedIn struct {
+	Auth *SourceConfigLinkedInAuth `json:"auth,omitempty" url:"auth,omitempty"`
 
 	extraProperties map[string]interface{}
 	rawJSON         json.RawMessage
 }
 
-func (s *SourceTypeConfigLinearAuth) GetWebhookSecretKey() string {
+func (s *SourceTypeConfigLinkedIn) GetAuth() *SourceConfigLinkedInAuth {
 	if s == nil {
-		return ""
+		return nil
 	}
-	return s.WebhookSecretKey
+	return s.Auth
 }
 
-func (s *SourceTypeConfigLinearAuth) GetExtraProperties() map[string]interface{} {
+func (s *SourceTypeConfigLinkedIn) GetExtraProperties() map[string]interface{} {
 	return s.extraProperties
 }
 
-func (s *SourceTypeConfigLinearAuth) UnmarshalJSON(data []byte) error {
-	type unmarshaler SourceTypeConfigLinearAuth
+func (s *SourceTypeConfigLinkedIn) UnmarshalJSON(data []byte) error {
+	type unmarshaler SourceTypeConfigLinkedIn
 	var value unmarshaler
 	if err := json.Unmarshal(data, &value); err != nil {
 		return err
 	}
-	*s = SourceTypeConfigLinearAuth(value)
+	*s = SourceTypeConfigLinkedIn(value)
 	extraProperties, err := internal.ExtractExtraProperties(data, *s)
 	if err != nil {
 		return err
@@ -14033,7 +18661,7 @@ func (s *SourceTypeConfigLinearAuth) UnmarshalJSON(data []byte) error {
 	return nil
 }
 
-func (s *SourceTypeConfigLinearAuth) String() string {
+func (s *SourceTypeConfigLinkedIn) String() string {
 	if len(s.rawJSON) > 0 {
 		if value, err := internal.StringifyJSON(s.rawJSON); err == nil {
 			return value
@@ -14047,21 +18675,13 @@ func (s *SourceTypeConfigLinearAuth) String() string {
 
 // The type config for Mailchimp. Requires type to be `MAILCHIMP`.
 type SourceTypeConfigMailchimp struct {
-	AllowedHttpMethods []SourceTypeConfigMailchimpAllowedHttpMethodsItem `json:"allowed_http_methods,omitempty" url:"allowed_http_methods,omitempty"`
-	Auth               *SourceTypeConfigMailchimpAuth                    `json:"auth,omitempty" url:"auth,omitempty"`
+	Auth *SourceConfigMailchimpAuth `json:"auth,omitempty" url:"auth,omitempty"`
 
 	extraProperties map[string]interface{}
 	rawJSON         json.RawMessage
 }
 
-func (s *SourceTypeConfigMailchimp) GetAllowedHttpMethods() []SourceTypeConfigMailchimpAllowedHttpMethodsItem {
-	if s == nil {
-		return nil
-	}
-	return s.AllowedHttpMethods
-}
-
-func (s *SourceTypeConfigMailchimp) GetAuth() *SourceTypeConfigMailchimpAuth {
+func (s *SourceTypeConfigMailchimp) GetAuth() *SourceConfigMailchimpAuth {
 	if s == nil {
 		return nil
 	}
@@ -14100,100 +18720,15 @@ func (s *SourceTypeConfigMailchimp) String() string {
 	return fmt.Sprintf("%#v", s)
 }
 
-type SourceTypeConfigMailchimpAllowedHttpMethodsItem string
-
-const (
-	SourceTypeConfigMailchimpAllowedHttpMethodsItemGet    SourceTypeConfigMailchimpAllowedHttpMethodsItem = "GET"
-	SourceTypeConfigMailchimpAllowedHttpMethodsItemPost   SourceTypeConfigMailchimpAllowedHttpMethodsItem = "POST"
-	SourceTypeConfigMailchimpAllowedHttpMethodsItemPut    SourceTypeConfigMailchimpAllowedHttpMethodsItem = "PUT"
-	SourceTypeConfigMailchimpAllowedHttpMethodsItemPatch  SourceTypeConfigMailchimpAllowedHttpMethodsItem = "PATCH"
-	SourceTypeConfigMailchimpAllowedHttpMethodsItemDelete SourceTypeConfigMailchimpAllowedHttpMethodsItem = "DELETE"
-)
-
-func NewSourceTypeConfigMailchimpAllowedHttpMethodsItemFromString(s string) (SourceTypeConfigMailchimpAllowedHttpMethodsItem, error) {
-	switch s {
-	case "GET":
-		return SourceTypeConfigMailchimpAllowedHttpMethodsItemGet, nil
-	case "POST":
-		return SourceTypeConfigMailchimpAllowedHttpMethodsItemPost, nil
-	case "PUT":
-		return SourceTypeConfigMailchimpAllowedHttpMethodsItemPut, nil
-	case "PATCH":
-		return SourceTypeConfigMailchimpAllowedHttpMethodsItemPatch, nil
-	case "DELETE":
-		return SourceTypeConfigMailchimpAllowedHttpMethodsItemDelete, nil
-	}
-	var t SourceTypeConfigMailchimpAllowedHttpMethodsItem
-	return "", fmt.Errorf("%s is not a valid %T", s, t)
-}
-
-func (s SourceTypeConfigMailchimpAllowedHttpMethodsItem) Ptr() *SourceTypeConfigMailchimpAllowedHttpMethodsItem {
-	return &s
-}
-
-type SourceTypeConfigMailchimpAuth struct {
-	WebhookSecretKey string `json:"webhook_secret_key" url:"webhook_secret_key"`
-
-	extraProperties map[string]interface{}
-	rawJSON         json.RawMessage
-}
-
-func (s *SourceTypeConfigMailchimpAuth) GetWebhookSecretKey() string {
-	if s == nil {
-		return ""
-	}
-	return s.WebhookSecretKey
-}
-
-func (s *SourceTypeConfigMailchimpAuth) GetExtraProperties() map[string]interface{} {
-	return s.extraProperties
-}
-
-func (s *SourceTypeConfigMailchimpAuth) UnmarshalJSON(data []byte) error {
-	type unmarshaler SourceTypeConfigMailchimpAuth
-	var value unmarshaler
-	if err := json.Unmarshal(data, &value); err != nil {
-		return err
-	}
-	*s = SourceTypeConfigMailchimpAuth(value)
-	extraProperties, err := internal.ExtractExtraProperties(data, *s)
-	if err != nil {
-		return err
-	}
-	s.extraProperties = extraProperties
-	s.rawJSON = json.RawMessage(data)
-	return nil
-}
-
-func (s *SourceTypeConfigMailchimpAuth) String() string {
-	if len(s.rawJSON) > 0 {
-		if value, err := internal.StringifyJSON(s.rawJSON); err == nil {
-			return value
-		}
-	}
-	if value, err := internal.StringifyJSON(s); err == nil {
-		return value
-	}
-	return fmt.Sprintf("%#v", s)
-}
-
 // The type config for Mailgun. Requires type to be `MAILGUN`.
 type SourceTypeConfigMailgun struct {
-	AllowedHttpMethods []SourceTypeConfigMailgunAllowedHttpMethodsItem `json:"allowed_http_methods,omitempty" url:"allowed_http_methods,omitempty"`
-	Auth               *SourceTypeConfigMailgunAuth                    `json:"auth,omitempty" url:"auth,omitempty"`
+	Auth *SourceConfigMailgunAuth `json:"auth,omitempty" url:"auth,omitempty"`
 
 	extraProperties map[string]interface{}
 	rawJSON         json.RawMessage
 }
 
-func (s *SourceTypeConfigMailgun) GetAllowedHttpMethods() []SourceTypeConfigMailgunAllowedHttpMethodsItem {
-	if s == nil {
-		return nil
-	}
-	return s.AllowedHttpMethods
-}
-
-func (s *SourceTypeConfigMailgun) GetAuth() *SourceTypeConfigMailgunAuth {
+func (s *SourceTypeConfigMailgun) GetAuth() *SourceConfigMailgunAuth {
 	if s == nil {
 		return nil
 	}
@@ -14232,62 +18767,31 @@ func (s *SourceTypeConfigMailgun) String() string {
 	return fmt.Sprintf("%#v", s)
 }
 
-type SourceTypeConfigMailgunAllowedHttpMethodsItem string
-
-const (
-	SourceTypeConfigMailgunAllowedHttpMethodsItemGet    SourceTypeConfigMailgunAllowedHttpMethodsItem = "GET"
-	SourceTypeConfigMailgunAllowedHttpMethodsItemPost   SourceTypeConfigMailgunAllowedHttpMethodsItem = "POST"
-	SourceTypeConfigMailgunAllowedHttpMethodsItemPut    SourceTypeConfigMailgunAllowedHttpMethodsItem = "PUT"
-	SourceTypeConfigMailgunAllowedHttpMethodsItemPatch  SourceTypeConfigMailgunAllowedHttpMethodsItem = "PATCH"
-	SourceTypeConfigMailgunAllowedHttpMethodsItemDelete SourceTypeConfigMailgunAllowedHttpMethodsItem = "DELETE"
-)
-
-func NewSourceTypeConfigMailgunAllowedHttpMethodsItemFromString(s string) (SourceTypeConfigMailgunAllowedHttpMethodsItem, error) {
-	switch s {
-	case "GET":
-		return SourceTypeConfigMailgunAllowedHttpMethodsItemGet, nil
-	case "POST":
-		return SourceTypeConfigMailgunAllowedHttpMethodsItemPost, nil
-	case "PUT":
-		return SourceTypeConfigMailgunAllowedHttpMethodsItemPut, nil
-	case "PATCH":
-		return SourceTypeConfigMailgunAllowedHttpMethodsItemPatch, nil
-	case "DELETE":
-		return SourceTypeConfigMailgunAllowedHttpMethodsItemDelete, nil
-	}
-	var t SourceTypeConfigMailgunAllowedHttpMethodsItem
-	return "", fmt.Errorf("%s is not a valid %T", s, t)
-}
-
-func (s SourceTypeConfigMailgunAllowedHttpMethodsItem) Ptr() *SourceTypeConfigMailgunAllowedHttpMethodsItem {
-	return &s
-}
-
-type SourceTypeConfigMailgunAuth struct {
-	WebhookSecretKey string `json:"webhook_secret_key" url:"webhook_secret_key"`
+type SourceTypeConfigManaged struct {
+	Auth *SourceTypeConfigManagedAuth `json:"auth,omitempty" url:"auth,omitempty"`
 
 	extraProperties map[string]interface{}
 	rawJSON         json.RawMessage
 }
 
-func (s *SourceTypeConfigMailgunAuth) GetWebhookSecretKey() string {
+func (s *SourceTypeConfigManaged) GetAuth() *SourceTypeConfigManagedAuth {
 	if s == nil {
-		return ""
+		return nil
 	}
-	return s.WebhookSecretKey
+	return s.Auth
 }
 
-func (s *SourceTypeConfigMailgunAuth) GetExtraProperties() map[string]interface{} {
+func (s *SourceTypeConfigManaged) GetExtraProperties() map[string]interface{} {
 	return s.extraProperties
 }
 
-func (s *SourceTypeConfigMailgunAuth) UnmarshalJSON(data []byte) error {
-	type unmarshaler SourceTypeConfigMailgunAuth
+func (s *SourceTypeConfigManaged) UnmarshalJSON(data []byte) error {
+	type unmarshaler SourceTypeConfigManaged
 	var value unmarshaler
 	if err := json.Unmarshal(data, &value); err != nil {
 		return err
 	}
-	*s = SourceTypeConfigMailgunAuth(value)
+	*s = SourceTypeConfigManaged(value)
 	extraProperties, err := internal.ExtractExtraProperties(data, *s)
 	if err != nil {
 		return err
@@ -14297,7 +18801,53 @@ func (s *SourceTypeConfigMailgunAuth) UnmarshalJSON(data []byte) error {
 	return nil
 }
 
-func (s *SourceTypeConfigMailgunAuth) String() string {
+func (s *SourceTypeConfigManaged) String() string {
+	if len(s.rawJSON) > 0 {
+		if value, err := internal.StringifyJSON(s.rawJSON); err == nil {
+			return value
+		}
+	}
+	if value, err := internal.StringifyJSON(s); err == nil {
+		return value
+	}
+	return fmt.Sprintf("%#v", s)
+}
+
+type SourceTypeConfigManagedAuth struct {
+	Token string `json:"token" url:"token"`
+
+	extraProperties map[string]interface{}
+	rawJSON         json.RawMessage
+}
+
+func (s *SourceTypeConfigManagedAuth) GetToken() string {
+	if s == nil {
+		return ""
+	}
+	return s.Token
+}
+
+func (s *SourceTypeConfigManagedAuth) GetExtraProperties() map[string]interface{} {
+	return s.extraProperties
+}
+
+func (s *SourceTypeConfigManagedAuth) UnmarshalJSON(data []byte) error {
+	type unmarshaler SourceTypeConfigManagedAuth
+	var value unmarshaler
+	if err := json.Unmarshal(data, &value); err != nil {
+		return err
+	}
+	*s = SourceTypeConfigManagedAuth(value)
+	extraProperties, err := internal.ExtractExtraProperties(data, *s)
+	if err != nil {
+		return err
+	}
+	s.extraProperties = extraProperties
+	s.rawJSON = json.RawMessage(data)
+	return nil
+}
+
+func (s *SourceTypeConfigManagedAuth) String() string {
 	if len(s.rawJSON) > 0 {
 		if value, err := internal.StringifyJSON(s.rawJSON); err == nil {
 			return value
@@ -14311,21 +18861,13 @@ func (s *SourceTypeConfigMailgunAuth) String() string {
 
 // The type config for NMI Payment Gateway. Requires type to be `NMI`.
 type SourceTypeConfigNmiPaymentGateway struct {
-	AllowedHttpMethods []SourceTypeConfigNmiPaymentGatewayAllowedHttpMethodsItem `json:"allowed_http_methods,omitempty" url:"allowed_http_methods,omitempty"`
-	Auth               *SourceTypeConfigNmiPaymentGatewayAuth                    `json:"auth,omitempty" url:"auth,omitempty"`
+	Auth *SourceConfigNmiPaymentGatewayAuth `json:"auth,omitempty" url:"auth,omitempty"`
 
 	extraProperties map[string]interface{}
 	rawJSON         json.RawMessage
 }
 
-func (s *SourceTypeConfigNmiPaymentGateway) GetAllowedHttpMethods() []SourceTypeConfigNmiPaymentGatewayAllowedHttpMethodsItem {
-	if s == nil {
-		return nil
-	}
-	return s.AllowedHttpMethods
-}
-
-func (s *SourceTypeConfigNmiPaymentGateway) GetAuth() *SourceTypeConfigNmiPaymentGatewayAuth {
+func (s *SourceTypeConfigNmiPaymentGateway) GetAuth() *SourceConfigNmiPaymentGatewayAuth {
 	if s == nil {
 		return nil
 	}
@@ -14364,100 +18906,15 @@ func (s *SourceTypeConfigNmiPaymentGateway) String() string {
 	return fmt.Sprintf("%#v", s)
 }
 
-type SourceTypeConfigNmiPaymentGatewayAllowedHttpMethodsItem string
-
-const (
-	SourceTypeConfigNmiPaymentGatewayAllowedHttpMethodsItemGet    SourceTypeConfigNmiPaymentGatewayAllowedHttpMethodsItem = "GET"
-	SourceTypeConfigNmiPaymentGatewayAllowedHttpMethodsItemPost   SourceTypeConfigNmiPaymentGatewayAllowedHttpMethodsItem = "POST"
-	SourceTypeConfigNmiPaymentGatewayAllowedHttpMethodsItemPut    SourceTypeConfigNmiPaymentGatewayAllowedHttpMethodsItem = "PUT"
-	SourceTypeConfigNmiPaymentGatewayAllowedHttpMethodsItemPatch  SourceTypeConfigNmiPaymentGatewayAllowedHttpMethodsItem = "PATCH"
-	SourceTypeConfigNmiPaymentGatewayAllowedHttpMethodsItemDelete SourceTypeConfigNmiPaymentGatewayAllowedHttpMethodsItem = "DELETE"
-)
-
-func NewSourceTypeConfigNmiPaymentGatewayAllowedHttpMethodsItemFromString(s string) (SourceTypeConfigNmiPaymentGatewayAllowedHttpMethodsItem, error) {
-	switch s {
-	case "GET":
-		return SourceTypeConfigNmiPaymentGatewayAllowedHttpMethodsItemGet, nil
-	case "POST":
-		return SourceTypeConfigNmiPaymentGatewayAllowedHttpMethodsItemPost, nil
-	case "PUT":
-		return SourceTypeConfigNmiPaymentGatewayAllowedHttpMethodsItemPut, nil
-	case "PATCH":
-		return SourceTypeConfigNmiPaymentGatewayAllowedHttpMethodsItemPatch, nil
-	case "DELETE":
-		return SourceTypeConfigNmiPaymentGatewayAllowedHttpMethodsItemDelete, nil
-	}
-	var t SourceTypeConfigNmiPaymentGatewayAllowedHttpMethodsItem
-	return "", fmt.Errorf("%s is not a valid %T", s, t)
-}
-
-func (s SourceTypeConfigNmiPaymentGatewayAllowedHttpMethodsItem) Ptr() *SourceTypeConfigNmiPaymentGatewayAllowedHttpMethodsItem {
-	return &s
-}
-
-type SourceTypeConfigNmiPaymentGatewayAuth struct {
-	WebhookSecretKey string `json:"webhook_secret_key" url:"webhook_secret_key"`
-
-	extraProperties map[string]interface{}
-	rawJSON         json.RawMessage
-}
-
-func (s *SourceTypeConfigNmiPaymentGatewayAuth) GetWebhookSecretKey() string {
-	if s == nil {
-		return ""
-	}
-	return s.WebhookSecretKey
-}
-
-func (s *SourceTypeConfigNmiPaymentGatewayAuth) GetExtraProperties() map[string]interface{} {
-	return s.extraProperties
-}
-
-func (s *SourceTypeConfigNmiPaymentGatewayAuth) UnmarshalJSON(data []byte) error {
-	type unmarshaler SourceTypeConfigNmiPaymentGatewayAuth
-	var value unmarshaler
-	if err := json.Unmarshal(data, &value); err != nil {
-		return err
-	}
-	*s = SourceTypeConfigNmiPaymentGatewayAuth(value)
-	extraProperties, err := internal.ExtractExtraProperties(data, *s)
-	if err != nil {
-		return err
-	}
-	s.extraProperties = extraProperties
-	s.rawJSON = json.RawMessage(data)
-	return nil
-}
-
-func (s *SourceTypeConfigNmiPaymentGatewayAuth) String() string {
-	if len(s.rawJSON) > 0 {
-		if value, err := internal.StringifyJSON(s.rawJSON); err == nil {
-			return value
-		}
-	}
-	if value, err := internal.StringifyJSON(s); err == nil {
-		return value
-	}
-	return fmt.Sprintf("%#v", s)
-}
-
 // The type config for Orb. Requires type to be `ORB`.
 type SourceTypeConfigOrb struct {
-	AllowedHttpMethods []SourceTypeConfigOrbAllowedHttpMethodsItem `json:"allowed_http_methods,omitempty" url:"allowed_http_methods,omitempty"`
-	Auth               *SourceTypeConfigOrbAuth                    `json:"auth,omitempty" url:"auth,omitempty"`
+	Auth *SourceConfigOrbAuth `json:"auth,omitempty" url:"auth,omitempty"`
 
 	extraProperties map[string]interface{}
 	rawJSON         json.RawMessage
 }
 
-func (s *SourceTypeConfigOrb) GetAllowedHttpMethods() []SourceTypeConfigOrbAllowedHttpMethodsItem {
-	if s == nil {
-		return nil
-	}
-	return s.AllowedHttpMethods
-}
-
-func (s *SourceTypeConfigOrb) GetAuth() *SourceTypeConfigOrbAuth {
+func (s *SourceTypeConfigOrb) GetAuth() *SourceConfigOrbAuth {
 	if s == nil {
 		return nil
 	}
@@ -14496,100 +18953,15 @@ func (s *SourceTypeConfigOrb) String() string {
 	return fmt.Sprintf("%#v", s)
 }
 
-type SourceTypeConfigOrbAllowedHttpMethodsItem string
-
-const (
-	SourceTypeConfigOrbAllowedHttpMethodsItemGet    SourceTypeConfigOrbAllowedHttpMethodsItem = "GET"
-	SourceTypeConfigOrbAllowedHttpMethodsItemPost   SourceTypeConfigOrbAllowedHttpMethodsItem = "POST"
-	SourceTypeConfigOrbAllowedHttpMethodsItemPut    SourceTypeConfigOrbAllowedHttpMethodsItem = "PUT"
-	SourceTypeConfigOrbAllowedHttpMethodsItemPatch  SourceTypeConfigOrbAllowedHttpMethodsItem = "PATCH"
-	SourceTypeConfigOrbAllowedHttpMethodsItemDelete SourceTypeConfigOrbAllowedHttpMethodsItem = "DELETE"
-)
-
-func NewSourceTypeConfigOrbAllowedHttpMethodsItemFromString(s string) (SourceTypeConfigOrbAllowedHttpMethodsItem, error) {
-	switch s {
-	case "GET":
-		return SourceTypeConfigOrbAllowedHttpMethodsItemGet, nil
-	case "POST":
-		return SourceTypeConfigOrbAllowedHttpMethodsItemPost, nil
-	case "PUT":
-		return SourceTypeConfigOrbAllowedHttpMethodsItemPut, nil
-	case "PATCH":
-		return SourceTypeConfigOrbAllowedHttpMethodsItemPatch, nil
-	case "DELETE":
-		return SourceTypeConfigOrbAllowedHttpMethodsItemDelete, nil
-	}
-	var t SourceTypeConfigOrbAllowedHttpMethodsItem
-	return "", fmt.Errorf("%s is not a valid %T", s, t)
-}
-
-func (s SourceTypeConfigOrbAllowedHttpMethodsItem) Ptr() *SourceTypeConfigOrbAllowedHttpMethodsItem {
-	return &s
-}
-
-type SourceTypeConfigOrbAuth struct {
-	WebhookSecretKey string `json:"webhook_secret_key" url:"webhook_secret_key"`
-
-	extraProperties map[string]interface{}
-	rawJSON         json.RawMessage
-}
-
-func (s *SourceTypeConfigOrbAuth) GetWebhookSecretKey() string {
-	if s == nil {
-		return ""
-	}
-	return s.WebhookSecretKey
-}
-
-func (s *SourceTypeConfigOrbAuth) GetExtraProperties() map[string]interface{} {
-	return s.extraProperties
-}
-
-func (s *SourceTypeConfigOrbAuth) UnmarshalJSON(data []byte) error {
-	type unmarshaler SourceTypeConfigOrbAuth
-	var value unmarshaler
-	if err := json.Unmarshal(data, &value); err != nil {
-		return err
-	}
-	*s = SourceTypeConfigOrbAuth(value)
-	extraProperties, err := internal.ExtractExtraProperties(data, *s)
-	if err != nil {
-		return err
-	}
-	s.extraProperties = extraProperties
-	s.rawJSON = json.RawMessage(data)
-	return nil
-}
-
-func (s *SourceTypeConfigOrbAuth) String() string {
-	if len(s.rawJSON) > 0 {
-		if value, err := internal.StringifyJSON(s.rawJSON); err == nil {
-			return value
-		}
-	}
-	if value, err := internal.StringifyJSON(s); err == nil {
-		return value
-	}
-	return fmt.Sprintf("%#v", s)
-}
-
 // The type config for Oura. Requires type to be `OURA`.
 type SourceTypeConfigOura struct {
-	AllowedHttpMethods []SourceTypeConfigOuraAllowedHttpMethodsItem `json:"allowed_http_methods,omitempty" url:"allowed_http_methods,omitempty"`
-	Auth               *SourceTypeConfigOuraAuth                    `json:"auth,omitempty" url:"auth,omitempty"`
+	Auth *SourceConfigOuraAuth `json:"auth,omitempty" url:"auth,omitempty"`
 
 	extraProperties map[string]interface{}
 	rawJSON         json.RawMessage
 }
 
-func (s *SourceTypeConfigOura) GetAllowedHttpMethods() []SourceTypeConfigOuraAllowedHttpMethodsItem {
-	if s == nil {
-		return nil
-	}
-	return s.AllowedHttpMethods
-}
-
-func (s *SourceTypeConfigOura) GetAuth() *SourceTypeConfigOuraAuth {
+func (s *SourceTypeConfigOura) GetAuth() *SourceConfigOuraAuth {
 	if s == nil {
 		return nil
 	}
@@ -14628,100 +19000,15 @@ func (s *SourceTypeConfigOura) String() string {
 	return fmt.Sprintf("%#v", s)
 }
 
-type SourceTypeConfigOuraAllowedHttpMethodsItem string
-
-const (
-	SourceTypeConfigOuraAllowedHttpMethodsItemGet    SourceTypeConfigOuraAllowedHttpMethodsItem = "GET"
-	SourceTypeConfigOuraAllowedHttpMethodsItemPost   SourceTypeConfigOuraAllowedHttpMethodsItem = "POST"
-	SourceTypeConfigOuraAllowedHttpMethodsItemPut    SourceTypeConfigOuraAllowedHttpMethodsItem = "PUT"
-	SourceTypeConfigOuraAllowedHttpMethodsItemPatch  SourceTypeConfigOuraAllowedHttpMethodsItem = "PATCH"
-	SourceTypeConfigOuraAllowedHttpMethodsItemDelete SourceTypeConfigOuraAllowedHttpMethodsItem = "DELETE"
-)
-
-func NewSourceTypeConfigOuraAllowedHttpMethodsItemFromString(s string) (SourceTypeConfigOuraAllowedHttpMethodsItem, error) {
-	switch s {
-	case "GET":
-		return SourceTypeConfigOuraAllowedHttpMethodsItemGet, nil
-	case "POST":
-		return SourceTypeConfigOuraAllowedHttpMethodsItemPost, nil
-	case "PUT":
-		return SourceTypeConfigOuraAllowedHttpMethodsItemPut, nil
-	case "PATCH":
-		return SourceTypeConfigOuraAllowedHttpMethodsItemPatch, nil
-	case "DELETE":
-		return SourceTypeConfigOuraAllowedHttpMethodsItemDelete, nil
-	}
-	var t SourceTypeConfigOuraAllowedHttpMethodsItem
-	return "", fmt.Errorf("%s is not a valid %T", s, t)
-}
-
-func (s SourceTypeConfigOuraAllowedHttpMethodsItem) Ptr() *SourceTypeConfigOuraAllowedHttpMethodsItem {
-	return &s
-}
-
-type SourceTypeConfigOuraAuth struct {
-	WebhookSecretKey string `json:"webhook_secret_key" url:"webhook_secret_key"`
-
-	extraProperties map[string]interface{}
-	rawJSON         json.RawMessage
-}
-
-func (s *SourceTypeConfigOuraAuth) GetWebhookSecretKey() string {
-	if s == nil {
-		return ""
-	}
-	return s.WebhookSecretKey
-}
-
-func (s *SourceTypeConfigOuraAuth) GetExtraProperties() map[string]interface{} {
-	return s.extraProperties
-}
-
-func (s *SourceTypeConfigOuraAuth) UnmarshalJSON(data []byte) error {
-	type unmarshaler SourceTypeConfigOuraAuth
-	var value unmarshaler
-	if err := json.Unmarshal(data, &value); err != nil {
-		return err
-	}
-	*s = SourceTypeConfigOuraAuth(value)
-	extraProperties, err := internal.ExtractExtraProperties(data, *s)
-	if err != nil {
-		return err
-	}
-	s.extraProperties = extraProperties
-	s.rawJSON = json.RawMessage(data)
-	return nil
-}
-
-func (s *SourceTypeConfigOuraAuth) String() string {
-	if len(s.rawJSON) > 0 {
-		if value, err := internal.StringifyJSON(s.rawJSON); err == nil {
-			return value
-		}
-	}
-	if value, err := internal.StringifyJSON(s); err == nil {
-		return value
-	}
-	return fmt.Sprintf("%#v", s)
-}
-
 // The type config for Paddle. Requires type to be `PADDLE`.
 type SourceTypeConfigPaddle struct {
-	AllowedHttpMethods []SourceTypeConfigPaddleAllowedHttpMethodsItem `json:"allowed_http_methods,omitempty" url:"allowed_http_methods,omitempty"`
-	Auth               *SourceTypeConfigPaddleAuth                    `json:"auth,omitempty" url:"auth,omitempty"`
+	Auth *SourceConfigPaddleAuth `json:"auth,omitempty" url:"auth,omitempty"`
 
 	extraProperties map[string]interface{}
 	rawJSON         json.RawMessage
 }
 
-func (s *SourceTypeConfigPaddle) GetAllowedHttpMethods() []SourceTypeConfigPaddleAllowedHttpMethodsItem {
-	if s == nil {
-		return nil
-	}
-	return s.AllowedHttpMethods
-}
-
-func (s *SourceTypeConfigPaddle) GetAuth() *SourceTypeConfigPaddleAuth {
+func (s *SourceTypeConfigPaddle) GetAuth() *SourceConfigPaddleAuth {
 	if s == nil {
 		return nil
 	}
@@ -14760,100 +19047,15 @@ func (s *SourceTypeConfigPaddle) String() string {
 	return fmt.Sprintf("%#v", s)
 }
 
-type SourceTypeConfigPaddleAllowedHttpMethodsItem string
-
-const (
-	SourceTypeConfigPaddleAllowedHttpMethodsItemGet    SourceTypeConfigPaddleAllowedHttpMethodsItem = "GET"
-	SourceTypeConfigPaddleAllowedHttpMethodsItemPost   SourceTypeConfigPaddleAllowedHttpMethodsItem = "POST"
-	SourceTypeConfigPaddleAllowedHttpMethodsItemPut    SourceTypeConfigPaddleAllowedHttpMethodsItem = "PUT"
-	SourceTypeConfigPaddleAllowedHttpMethodsItemPatch  SourceTypeConfigPaddleAllowedHttpMethodsItem = "PATCH"
-	SourceTypeConfigPaddleAllowedHttpMethodsItemDelete SourceTypeConfigPaddleAllowedHttpMethodsItem = "DELETE"
-)
-
-func NewSourceTypeConfigPaddleAllowedHttpMethodsItemFromString(s string) (SourceTypeConfigPaddleAllowedHttpMethodsItem, error) {
-	switch s {
-	case "GET":
-		return SourceTypeConfigPaddleAllowedHttpMethodsItemGet, nil
-	case "POST":
-		return SourceTypeConfigPaddleAllowedHttpMethodsItemPost, nil
-	case "PUT":
-		return SourceTypeConfigPaddleAllowedHttpMethodsItemPut, nil
-	case "PATCH":
-		return SourceTypeConfigPaddleAllowedHttpMethodsItemPatch, nil
-	case "DELETE":
-		return SourceTypeConfigPaddleAllowedHttpMethodsItemDelete, nil
-	}
-	var t SourceTypeConfigPaddleAllowedHttpMethodsItem
-	return "", fmt.Errorf("%s is not a valid %T", s, t)
-}
-
-func (s SourceTypeConfigPaddleAllowedHttpMethodsItem) Ptr() *SourceTypeConfigPaddleAllowedHttpMethodsItem {
-	return &s
-}
-
-type SourceTypeConfigPaddleAuth struct {
-	WebhookSecretKey string `json:"webhook_secret_key" url:"webhook_secret_key"`
-
-	extraProperties map[string]interface{}
-	rawJSON         json.RawMessage
-}
-
-func (s *SourceTypeConfigPaddleAuth) GetWebhookSecretKey() string {
-	if s == nil {
-		return ""
-	}
-	return s.WebhookSecretKey
-}
-
-func (s *SourceTypeConfigPaddleAuth) GetExtraProperties() map[string]interface{} {
-	return s.extraProperties
-}
-
-func (s *SourceTypeConfigPaddleAuth) UnmarshalJSON(data []byte) error {
-	type unmarshaler SourceTypeConfigPaddleAuth
-	var value unmarshaler
-	if err := json.Unmarshal(data, &value); err != nil {
-		return err
-	}
-	*s = SourceTypeConfigPaddleAuth(value)
-	extraProperties, err := internal.ExtractExtraProperties(data, *s)
-	if err != nil {
-		return err
-	}
-	s.extraProperties = extraProperties
-	s.rawJSON = json.RawMessage(data)
-	return nil
-}
-
-func (s *SourceTypeConfigPaddleAuth) String() string {
-	if len(s.rawJSON) > 0 {
-		if value, err := internal.StringifyJSON(s.rawJSON); err == nil {
-			return value
-		}
-	}
-	if value, err := internal.StringifyJSON(s); err == nil {
-		return value
-	}
-	return fmt.Sprintf("%#v", s)
-}
-
 // The type config for Paypal. Requires type to be `PAYPAL`.
 type SourceTypeConfigPaypal struct {
-	AllowedHttpMethods []SourceTypeConfigPaypalAllowedHttpMethodsItem `json:"allowed_http_methods,omitempty" url:"allowed_http_methods,omitempty"`
-	Auth               *SourceTypeConfigPaypalAuth                    `json:"auth,omitempty" url:"auth,omitempty"`
+	Auth *SourceConfigPaypalAuth `json:"auth,omitempty" url:"auth,omitempty"`
 
 	extraProperties map[string]interface{}
 	rawJSON         json.RawMessage
 }
 
-func (s *SourceTypeConfigPaypal) GetAllowedHttpMethods() []SourceTypeConfigPaypalAllowedHttpMethodsItem {
-	if s == nil {
-		return nil
-	}
-	return s.AllowedHttpMethods
-}
-
-func (s *SourceTypeConfigPaypal) GetAuth() *SourceTypeConfigPaypalAuth {
+func (s *SourceTypeConfigPaypal) GetAuth() *SourceConfigPaypalAuth {
 	if s == nil {
 		return nil
 	}
@@ -14892,100 +19094,15 @@ func (s *SourceTypeConfigPaypal) String() string {
 	return fmt.Sprintf("%#v", s)
 }
 
-type SourceTypeConfigPaypalAllowedHttpMethodsItem string
-
-const (
-	SourceTypeConfigPaypalAllowedHttpMethodsItemGet    SourceTypeConfigPaypalAllowedHttpMethodsItem = "GET"
-	SourceTypeConfigPaypalAllowedHttpMethodsItemPost   SourceTypeConfigPaypalAllowedHttpMethodsItem = "POST"
-	SourceTypeConfigPaypalAllowedHttpMethodsItemPut    SourceTypeConfigPaypalAllowedHttpMethodsItem = "PUT"
-	SourceTypeConfigPaypalAllowedHttpMethodsItemPatch  SourceTypeConfigPaypalAllowedHttpMethodsItem = "PATCH"
-	SourceTypeConfigPaypalAllowedHttpMethodsItemDelete SourceTypeConfigPaypalAllowedHttpMethodsItem = "DELETE"
-)
-
-func NewSourceTypeConfigPaypalAllowedHttpMethodsItemFromString(s string) (SourceTypeConfigPaypalAllowedHttpMethodsItem, error) {
-	switch s {
-	case "GET":
-		return SourceTypeConfigPaypalAllowedHttpMethodsItemGet, nil
-	case "POST":
-		return SourceTypeConfigPaypalAllowedHttpMethodsItemPost, nil
-	case "PUT":
-		return SourceTypeConfigPaypalAllowedHttpMethodsItemPut, nil
-	case "PATCH":
-		return SourceTypeConfigPaypalAllowedHttpMethodsItemPatch, nil
-	case "DELETE":
-		return SourceTypeConfigPaypalAllowedHttpMethodsItemDelete, nil
-	}
-	var t SourceTypeConfigPaypalAllowedHttpMethodsItem
-	return "", fmt.Errorf("%s is not a valid %T", s, t)
-}
-
-func (s SourceTypeConfigPaypalAllowedHttpMethodsItem) Ptr() *SourceTypeConfigPaypalAllowedHttpMethodsItem {
-	return &s
-}
-
-type SourceTypeConfigPaypalAuth struct {
-	WebhookId string `json:"webhook_id" url:"webhook_id"`
-
-	extraProperties map[string]interface{}
-	rawJSON         json.RawMessage
-}
-
-func (s *SourceTypeConfigPaypalAuth) GetWebhookId() string {
-	if s == nil {
-		return ""
-	}
-	return s.WebhookId
-}
-
-func (s *SourceTypeConfigPaypalAuth) GetExtraProperties() map[string]interface{} {
-	return s.extraProperties
-}
-
-func (s *SourceTypeConfigPaypalAuth) UnmarshalJSON(data []byte) error {
-	type unmarshaler SourceTypeConfigPaypalAuth
-	var value unmarshaler
-	if err := json.Unmarshal(data, &value); err != nil {
-		return err
-	}
-	*s = SourceTypeConfigPaypalAuth(value)
-	extraProperties, err := internal.ExtractExtraProperties(data, *s)
-	if err != nil {
-		return err
-	}
-	s.extraProperties = extraProperties
-	s.rawJSON = json.RawMessage(data)
-	return nil
-}
-
-func (s *SourceTypeConfigPaypalAuth) String() string {
-	if len(s.rawJSON) > 0 {
-		if value, err := internal.StringifyJSON(s.rawJSON); err == nil {
-			return value
-		}
-	}
-	if value, err := internal.StringifyJSON(s); err == nil {
-		return value
-	}
-	return fmt.Sprintf("%#v", s)
-}
-
 // The type config for Persona. Requires type to be `PERSONA`.
 type SourceTypeConfigPersona struct {
-	AllowedHttpMethods []SourceTypeConfigPersonaAllowedHttpMethodsItem `json:"allowed_http_methods,omitempty" url:"allowed_http_methods,omitempty"`
-	Auth               *SourceTypeConfigPersonaAuth                    `json:"auth,omitempty" url:"auth,omitempty"`
+	Auth *SourceConfigPersonaAuth `json:"auth,omitempty" url:"auth,omitempty"`
 
 	extraProperties map[string]interface{}
 	rawJSON         json.RawMessage
 }
 
-func (s *SourceTypeConfigPersona) GetAllowedHttpMethods() []SourceTypeConfigPersonaAllowedHttpMethodsItem {
-	if s == nil {
-		return nil
-	}
-	return s.AllowedHttpMethods
-}
-
-func (s *SourceTypeConfigPersona) GetAuth() *SourceTypeConfigPersonaAuth {
+func (s *SourceTypeConfigPersona) GetAuth() *SourceConfigPersonaAuth {
 	if s == nil {
 		return nil
 	}
@@ -15024,100 +19141,15 @@ func (s *SourceTypeConfigPersona) String() string {
 	return fmt.Sprintf("%#v", s)
 }
 
-type SourceTypeConfigPersonaAllowedHttpMethodsItem string
-
-const (
-	SourceTypeConfigPersonaAllowedHttpMethodsItemGet    SourceTypeConfigPersonaAllowedHttpMethodsItem = "GET"
-	SourceTypeConfigPersonaAllowedHttpMethodsItemPost   SourceTypeConfigPersonaAllowedHttpMethodsItem = "POST"
-	SourceTypeConfigPersonaAllowedHttpMethodsItemPut    SourceTypeConfigPersonaAllowedHttpMethodsItem = "PUT"
-	SourceTypeConfigPersonaAllowedHttpMethodsItemPatch  SourceTypeConfigPersonaAllowedHttpMethodsItem = "PATCH"
-	SourceTypeConfigPersonaAllowedHttpMethodsItemDelete SourceTypeConfigPersonaAllowedHttpMethodsItem = "DELETE"
-)
-
-func NewSourceTypeConfigPersonaAllowedHttpMethodsItemFromString(s string) (SourceTypeConfigPersonaAllowedHttpMethodsItem, error) {
-	switch s {
-	case "GET":
-		return SourceTypeConfigPersonaAllowedHttpMethodsItemGet, nil
-	case "POST":
-		return SourceTypeConfigPersonaAllowedHttpMethodsItemPost, nil
-	case "PUT":
-		return SourceTypeConfigPersonaAllowedHttpMethodsItemPut, nil
-	case "PATCH":
-		return SourceTypeConfigPersonaAllowedHttpMethodsItemPatch, nil
-	case "DELETE":
-		return SourceTypeConfigPersonaAllowedHttpMethodsItemDelete, nil
-	}
-	var t SourceTypeConfigPersonaAllowedHttpMethodsItem
-	return "", fmt.Errorf("%s is not a valid %T", s, t)
-}
-
-func (s SourceTypeConfigPersonaAllowedHttpMethodsItem) Ptr() *SourceTypeConfigPersonaAllowedHttpMethodsItem {
-	return &s
-}
-
-type SourceTypeConfigPersonaAuth struct {
-	WebhookSecretKey string `json:"webhook_secret_key" url:"webhook_secret_key"`
-
-	extraProperties map[string]interface{}
-	rawJSON         json.RawMessage
-}
-
-func (s *SourceTypeConfigPersonaAuth) GetWebhookSecretKey() string {
-	if s == nil {
-		return ""
-	}
-	return s.WebhookSecretKey
-}
-
-func (s *SourceTypeConfigPersonaAuth) GetExtraProperties() map[string]interface{} {
-	return s.extraProperties
-}
-
-func (s *SourceTypeConfigPersonaAuth) UnmarshalJSON(data []byte) error {
-	type unmarshaler SourceTypeConfigPersonaAuth
-	var value unmarshaler
-	if err := json.Unmarshal(data, &value); err != nil {
-		return err
-	}
-	*s = SourceTypeConfigPersonaAuth(value)
-	extraProperties, err := internal.ExtractExtraProperties(data, *s)
-	if err != nil {
-		return err
-	}
-	s.extraProperties = extraProperties
-	s.rawJSON = json.RawMessage(data)
-	return nil
-}
-
-func (s *SourceTypeConfigPersonaAuth) String() string {
-	if len(s.rawJSON) > 0 {
-		if value, err := internal.StringifyJSON(s.rawJSON); err == nil {
-			return value
-		}
-	}
-	if value, err := internal.StringifyJSON(s); err == nil {
-		return value
-	}
-	return fmt.Sprintf("%#v", s)
-}
-
 // The type config for Pipedrive. Requires type to be `PIPEDRIVE`.
 type SourceTypeConfigPipedrive struct {
-	AllowedHttpMethods []SourceTypeConfigPipedriveAllowedHttpMethodsItem `json:"allowed_http_methods,omitempty" url:"allowed_http_methods,omitempty"`
-	Auth               *SourceTypeConfigPipedriveAuth                    `json:"auth,omitempty" url:"auth,omitempty"`
+	Auth *SourceConfigPipedriveAuth `json:"auth,omitempty" url:"auth,omitempty"`
 
 	extraProperties map[string]interface{}
 	rawJSON         json.RawMessage
 }
 
-func (s *SourceTypeConfigPipedrive) GetAllowedHttpMethods() []SourceTypeConfigPipedriveAllowedHttpMethodsItem {
-	if s == nil {
-		return nil
-	}
-	return s.AllowedHttpMethods
-}
-
-func (s *SourceTypeConfigPipedrive) GetAuth() *SourceTypeConfigPipedriveAuth {
+func (s *SourceTypeConfigPipedrive) GetAuth() *SourceConfigPipedriveAuth {
 	if s == nil {
 		return nil
 	}
@@ -15156,108 +19188,15 @@ func (s *SourceTypeConfigPipedrive) String() string {
 	return fmt.Sprintf("%#v", s)
 }
 
-type SourceTypeConfigPipedriveAllowedHttpMethodsItem string
-
-const (
-	SourceTypeConfigPipedriveAllowedHttpMethodsItemGet    SourceTypeConfigPipedriveAllowedHttpMethodsItem = "GET"
-	SourceTypeConfigPipedriveAllowedHttpMethodsItemPost   SourceTypeConfigPipedriveAllowedHttpMethodsItem = "POST"
-	SourceTypeConfigPipedriveAllowedHttpMethodsItemPut    SourceTypeConfigPipedriveAllowedHttpMethodsItem = "PUT"
-	SourceTypeConfigPipedriveAllowedHttpMethodsItemPatch  SourceTypeConfigPipedriveAllowedHttpMethodsItem = "PATCH"
-	SourceTypeConfigPipedriveAllowedHttpMethodsItemDelete SourceTypeConfigPipedriveAllowedHttpMethodsItem = "DELETE"
-)
-
-func NewSourceTypeConfigPipedriveAllowedHttpMethodsItemFromString(s string) (SourceTypeConfigPipedriveAllowedHttpMethodsItem, error) {
-	switch s {
-	case "GET":
-		return SourceTypeConfigPipedriveAllowedHttpMethodsItemGet, nil
-	case "POST":
-		return SourceTypeConfigPipedriveAllowedHttpMethodsItemPost, nil
-	case "PUT":
-		return SourceTypeConfigPipedriveAllowedHttpMethodsItemPut, nil
-	case "PATCH":
-		return SourceTypeConfigPipedriveAllowedHttpMethodsItemPatch, nil
-	case "DELETE":
-		return SourceTypeConfigPipedriveAllowedHttpMethodsItemDelete, nil
-	}
-	var t SourceTypeConfigPipedriveAllowedHttpMethodsItem
-	return "", fmt.Errorf("%s is not a valid %T", s, t)
-}
-
-func (s SourceTypeConfigPipedriveAllowedHttpMethodsItem) Ptr() *SourceTypeConfigPipedriveAllowedHttpMethodsItem {
-	return &s
-}
-
-type SourceTypeConfigPipedriveAuth struct {
-	Username *string `json:"username,omitempty" url:"username,omitempty"`
-	Password *string `json:"password,omitempty" url:"password,omitempty"`
-
-	extraProperties map[string]interface{}
-	rawJSON         json.RawMessage
-}
-
-func (s *SourceTypeConfigPipedriveAuth) GetUsername() *string {
-	if s == nil {
-		return nil
-	}
-	return s.Username
-}
-
-func (s *SourceTypeConfigPipedriveAuth) GetPassword() *string {
-	if s == nil {
-		return nil
-	}
-	return s.Password
-}
-
-func (s *SourceTypeConfigPipedriveAuth) GetExtraProperties() map[string]interface{} {
-	return s.extraProperties
-}
-
-func (s *SourceTypeConfigPipedriveAuth) UnmarshalJSON(data []byte) error {
-	type unmarshaler SourceTypeConfigPipedriveAuth
-	var value unmarshaler
-	if err := json.Unmarshal(data, &value); err != nil {
-		return err
-	}
-	*s = SourceTypeConfigPipedriveAuth(value)
-	extraProperties, err := internal.ExtractExtraProperties(data, *s)
-	if err != nil {
-		return err
-	}
-	s.extraProperties = extraProperties
-	s.rawJSON = json.RawMessage(data)
-	return nil
-}
-
-func (s *SourceTypeConfigPipedriveAuth) String() string {
-	if len(s.rawJSON) > 0 {
-		if value, err := internal.StringifyJSON(s.rawJSON); err == nil {
-			return value
-		}
-	}
-	if value, err := internal.StringifyJSON(s); err == nil {
-		return value
-	}
-	return fmt.Sprintf("%#v", s)
-}
-
 // The type config for Postmark. Requires type to be `POSTMARK`.
 type SourceTypeConfigPostmark struct {
-	AllowedHttpMethods []SourceTypeConfigPostmarkAllowedHttpMethodsItem `json:"allowed_http_methods,omitempty" url:"allowed_http_methods,omitempty"`
-	Auth               *SourceTypeConfigPostmarkAuth                    `json:"auth,omitempty" url:"auth,omitempty"`
+	Auth *SourceConfigPostmarkAuth `json:"auth,omitempty" url:"auth,omitempty"`
 
 	extraProperties map[string]interface{}
 	rawJSON         json.RawMessage
 }
 
-func (s *SourceTypeConfigPostmark) GetAllowedHttpMethods() []SourceTypeConfigPostmarkAllowedHttpMethodsItem {
-	if s == nil {
-		return nil
-	}
-	return s.AllowedHttpMethods
-}
-
-func (s *SourceTypeConfigPostmark) GetAuth() *SourceTypeConfigPostmarkAuth {
+func (s *SourceTypeConfigPostmark) GetAuth() *SourceConfigPostmarkAuth {
 	if s == nil {
 		return nil
 	}
@@ -15296,108 +19235,15 @@ func (s *SourceTypeConfigPostmark) String() string {
 	return fmt.Sprintf("%#v", s)
 }
 
-type SourceTypeConfigPostmarkAllowedHttpMethodsItem string
-
-const (
-	SourceTypeConfigPostmarkAllowedHttpMethodsItemGet    SourceTypeConfigPostmarkAllowedHttpMethodsItem = "GET"
-	SourceTypeConfigPostmarkAllowedHttpMethodsItemPost   SourceTypeConfigPostmarkAllowedHttpMethodsItem = "POST"
-	SourceTypeConfigPostmarkAllowedHttpMethodsItemPut    SourceTypeConfigPostmarkAllowedHttpMethodsItem = "PUT"
-	SourceTypeConfigPostmarkAllowedHttpMethodsItemPatch  SourceTypeConfigPostmarkAllowedHttpMethodsItem = "PATCH"
-	SourceTypeConfigPostmarkAllowedHttpMethodsItemDelete SourceTypeConfigPostmarkAllowedHttpMethodsItem = "DELETE"
-)
-
-func NewSourceTypeConfigPostmarkAllowedHttpMethodsItemFromString(s string) (SourceTypeConfigPostmarkAllowedHttpMethodsItem, error) {
-	switch s {
-	case "GET":
-		return SourceTypeConfigPostmarkAllowedHttpMethodsItemGet, nil
-	case "POST":
-		return SourceTypeConfigPostmarkAllowedHttpMethodsItemPost, nil
-	case "PUT":
-		return SourceTypeConfigPostmarkAllowedHttpMethodsItemPut, nil
-	case "PATCH":
-		return SourceTypeConfigPostmarkAllowedHttpMethodsItemPatch, nil
-	case "DELETE":
-		return SourceTypeConfigPostmarkAllowedHttpMethodsItemDelete, nil
-	}
-	var t SourceTypeConfigPostmarkAllowedHttpMethodsItem
-	return "", fmt.Errorf("%s is not a valid %T", s, t)
-}
-
-func (s SourceTypeConfigPostmarkAllowedHttpMethodsItem) Ptr() *SourceTypeConfigPostmarkAllowedHttpMethodsItem {
-	return &s
-}
-
-type SourceTypeConfigPostmarkAuth struct {
-	Username *string `json:"username,omitempty" url:"username,omitempty"`
-	Password *string `json:"password,omitempty" url:"password,omitempty"`
-
-	extraProperties map[string]interface{}
-	rawJSON         json.RawMessage
-}
-
-func (s *SourceTypeConfigPostmarkAuth) GetUsername() *string {
-	if s == nil {
-		return nil
-	}
-	return s.Username
-}
-
-func (s *SourceTypeConfigPostmarkAuth) GetPassword() *string {
-	if s == nil {
-		return nil
-	}
-	return s.Password
-}
-
-func (s *SourceTypeConfigPostmarkAuth) GetExtraProperties() map[string]interface{} {
-	return s.extraProperties
-}
-
-func (s *SourceTypeConfigPostmarkAuth) UnmarshalJSON(data []byte) error {
-	type unmarshaler SourceTypeConfigPostmarkAuth
-	var value unmarshaler
-	if err := json.Unmarshal(data, &value); err != nil {
-		return err
-	}
-	*s = SourceTypeConfigPostmarkAuth(value)
-	extraProperties, err := internal.ExtractExtraProperties(data, *s)
-	if err != nil {
-		return err
-	}
-	s.extraProperties = extraProperties
-	s.rawJSON = json.RawMessage(data)
-	return nil
-}
-
-func (s *SourceTypeConfigPostmarkAuth) String() string {
-	if len(s.rawJSON) > 0 {
-		if value, err := internal.StringifyJSON(s.rawJSON); err == nil {
-			return value
-		}
-	}
-	if value, err := internal.StringifyJSON(s); err == nil {
-		return value
-	}
-	return fmt.Sprintf("%#v", s)
-}
-
 // The type config for Praxis. Requires type to be `PRAXIS`.
 type SourceTypeConfigPraxis struct {
-	AllowedHttpMethods []SourceTypeConfigPraxisAllowedHttpMethodsItem `json:"allowed_http_methods,omitempty" url:"allowed_http_methods,omitempty"`
-	Auth               *SourceTypeConfigPraxisAuth                    `json:"auth,omitempty" url:"auth,omitempty"`
+	Auth *SourceConfigPraxisAuth `json:"auth,omitempty" url:"auth,omitempty"`
 
 	extraProperties map[string]interface{}
 	rawJSON         json.RawMessage
 }
 
-func (s *SourceTypeConfigPraxis) GetAllowedHttpMethods() []SourceTypeConfigPraxisAllowedHttpMethodsItem {
-	if s == nil {
-		return nil
-	}
-	return s.AllowedHttpMethods
-}
-
-func (s *SourceTypeConfigPraxis) GetAuth() *SourceTypeConfigPraxisAuth {
+func (s *SourceTypeConfigPraxis) GetAuth() *SourceConfigPraxisAuth {
 	if s == nil {
 		return nil
 	}
@@ -15436,100 +19282,15 @@ func (s *SourceTypeConfigPraxis) String() string {
 	return fmt.Sprintf("%#v", s)
 }
 
-type SourceTypeConfigPraxisAllowedHttpMethodsItem string
-
-const (
-	SourceTypeConfigPraxisAllowedHttpMethodsItemGet    SourceTypeConfigPraxisAllowedHttpMethodsItem = "GET"
-	SourceTypeConfigPraxisAllowedHttpMethodsItemPost   SourceTypeConfigPraxisAllowedHttpMethodsItem = "POST"
-	SourceTypeConfigPraxisAllowedHttpMethodsItemPut    SourceTypeConfigPraxisAllowedHttpMethodsItem = "PUT"
-	SourceTypeConfigPraxisAllowedHttpMethodsItemPatch  SourceTypeConfigPraxisAllowedHttpMethodsItem = "PATCH"
-	SourceTypeConfigPraxisAllowedHttpMethodsItemDelete SourceTypeConfigPraxisAllowedHttpMethodsItem = "DELETE"
-)
-
-func NewSourceTypeConfigPraxisAllowedHttpMethodsItemFromString(s string) (SourceTypeConfigPraxisAllowedHttpMethodsItem, error) {
-	switch s {
-	case "GET":
-		return SourceTypeConfigPraxisAllowedHttpMethodsItemGet, nil
-	case "POST":
-		return SourceTypeConfigPraxisAllowedHttpMethodsItemPost, nil
-	case "PUT":
-		return SourceTypeConfigPraxisAllowedHttpMethodsItemPut, nil
-	case "PATCH":
-		return SourceTypeConfigPraxisAllowedHttpMethodsItemPatch, nil
-	case "DELETE":
-		return SourceTypeConfigPraxisAllowedHttpMethodsItemDelete, nil
-	}
-	var t SourceTypeConfigPraxisAllowedHttpMethodsItem
-	return "", fmt.Errorf("%s is not a valid %T", s, t)
-}
-
-func (s SourceTypeConfigPraxisAllowedHttpMethodsItem) Ptr() *SourceTypeConfigPraxisAllowedHttpMethodsItem {
-	return &s
-}
-
-type SourceTypeConfigPraxisAuth struct {
-	WebhookSecretKey string `json:"webhook_secret_key" url:"webhook_secret_key"`
-
-	extraProperties map[string]interface{}
-	rawJSON         json.RawMessage
-}
-
-func (s *SourceTypeConfigPraxisAuth) GetWebhookSecretKey() string {
-	if s == nil {
-		return ""
-	}
-	return s.WebhookSecretKey
-}
-
-func (s *SourceTypeConfigPraxisAuth) GetExtraProperties() map[string]interface{} {
-	return s.extraProperties
-}
-
-func (s *SourceTypeConfigPraxisAuth) UnmarshalJSON(data []byte) error {
-	type unmarshaler SourceTypeConfigPraxisAuth
-	var value unmarshaler
-	if err := json.Unmarshal(data, &value); err != nil {
-		return err
-	}
-	*s = SourceTypeConfigPraxisAuth(value)
-	extraProperties, err := internal.ExtractExtraProperties(data, *s)
-	if err != nil {
-		return err
-	}
-	s.extraProperties = extraProperties
-	s.rawJSON = json.RawMessage(data)
-	return nil
-}
-
-func (s *SourceTypeConfigPraxisAuth) String() string {
-	if len(s.rawJSON) > 0 {
-		if value, err := internal.StringifyJSON(s.rawJSON); err == nil {
-			return value
-		}
-	}
-	if value, err := internal.StringifyJSON(s); err == nil {
-		return value
-	}
-	return fmt.Sprintf("%#v", s)
-}
-
 // The type config for Property Finder. Requires type to be `PROPERTY-FINDER`.
 type SourceTypeConfigPropertyFinder struct {
-	AllowedHttpMethods []SourceTypeConfigPropertyFinderAllowedHttpMethodsItem `json:"allowed_http_methods,omitempty" url:"allowed_http_methods,omitempty"`
-	Auth               *SourceTypeConfigPropertyFinderAuth                    `json:"auth,omitempty" url:"auth,omitempty"`
+	Auth *SourceConfigPropertyFinderAuth `json:"auth,omitempty" url:"auth,omitempty"`
 
 	extraProperties map[string]interface{}
 	rawJSON         json.RawMessage
 }
 
-func (s *SourceTypeConfigPropertyFinder) GetAllowedHttpMethods() []SourceTypeConfigPropertyFinderAllowedHttpMethodsItem {
-	if s == nil {
-		return nil
-	}
-	return s.AllowedHttpMethods
-}
-
-func (s *SourceTypeConfigPropertyFinder) GetAuth() *SourceTypeConfigPropertyFinderAuth {
+func (s *SourceTypeConfigPropertyFinder) GetAuth() *SourceConfigPropertyFinderAuth {
 	if s == nil {
 		return nil
 	}
@@ -15568,100 +19329,15 @@ func (s *SourceTypeConfigPropertyFinder) String() string {
 	return fmt.Sprintf("%#v", s)
 }
 
-type SourceTypeConfigPropertyFinderAllowedHttpMethodsItem string
-
-const (
-	SourceTypeConfigPropertyFinderAllowedHttpMethodsItemGet    SourceTypeConfigPropertyFinderAllowedHttpMethodsItem = "GET"
-	SourceTypeConfigPropertyFinderAllowedHttpMethodsItemPost   SourceTypeConfigPropertyFinderAllowedHttpMethodsItem = "POST"
-	SourceTypeConfigPropertyFinderAllowedHttpMethodsItemPut    SourceTypeConfigPropertyFinderAllowedHttpMethodsItem = "PUT"
-	SourceTypeConfigPropertyFinderAllowedHttpMethodsItemPatch  SourceTypeConfigPropertyFinderAllowedHttpMethodsItem = "PATCH"
-	SourceTypeConfigPropertyFinderAllowedHttpMethodsItemDelete SourceTypeConfigPropertyFinderAllowedHttpMethodsItem = "DELETE"
-)
-
-func NewSourceTypeConfigPropertyFinderAllowedHttpMethodsItemFromString(s string) (SourceTypeConfigPropertyFinderAllowedHttpMethodsItem, error) {
-	switch s {
-	case "GET":
-		return SourceTypeConfigPropertyFinderAllowedHttpMethodsItemGet, nil
-	case "POST":
-		return SourceTypeConfigPropertyFinderAllowedHttpMethodsItemPost, nil
-	case "PUT":
-		return SourceTypeConfigPropertyFinderAllowedHttpMethodsItemPut, nil
-	case "PATCH":
-		return SourceTypeConfigPropertyFinderAllowedHttpMethodsItemPatch, nil
-	case "DELETE":
-		return SourceTypeConfigPropertyFinderAllowedHttpMethodsItemDelete, nil
-	}
-	var t SourceTypeConfigPropertyFinderAllowedHttpMethodsItem
-	return "", fmt.Errorf("%s is not a valid %T", s, t)
-}
-
-func (s SourceTypeConfigPropertyFinderAllowedHttpMethodsItem) Ptr() *SourceTypeConfigPropertyFinderAllowedHttpMethodsItem {
-	return &s
-}
-
-type SourceTypeConfigPropertyFinderAuth struct {
-	WebhookSecretKey string `json:"webhook_secret_key" url:"webhook_secret_key"`
-
-	extraProperties map[string]interface{}
-	rawJSON         json.RawMessage
-}
-
-func (s *SourceTypeConfigPropertyFinderAuth) GetWebhookSecretKey() string {
-	if s == nil {
-		return ""
-	}
-	return s.WebhookSecretKey
-}
-
-func (s *SourceTypeConfigPropertyFinderAuth) GetExtraProperties() map[string]interface{} {
-	return s.extraProperties
-}
-
-func (s *SourceTypeConfigPropertyFinderAuth) UnmarshalJSON(data []byte) error {
-	type unmarshaler SourceTypeConfigPropertyFinderAuth
-	var value unmarshaler
-	if err := json.Unmarshal(data, &value); err != nil {
-		return err
-	}
-	*s = SourceTypeConfigPropertyFinderAuth(value)
-	extraProperties, err := internal.ExtractExtraProperties(data, *s)
-	if err != nil {
-		return err
-	}
-	s.extraProperties = extraProperties
-	s.rawJSON = json.RawMessage(data)
-	return nil
-}
-
-func (s *SourceTypeConfigPropertyFinderAuth) String() string {
-	if len(s.rawJSON) > 0 {
-		if value, err := internal.StringifyJSON(s.rawJSON); err == nil {
-			return value
-		}
-	}
-	if value, err := internal.StringifyJSON(s); err == nil {
-		return value
-	}
-	return fmt.Sprintf("%#v", s)
-}
-
 // The type config for Pylon. Requires type to be `PYLON`.
 type SourceTypeConfigPylon struct {
-	AllowedHttpMethods []SourceTypeConfigPylonAllowedHttpMethodsItem `json:"allowed_http_methods,omitempty" url:"allowed_http_methods,omitempty"`
-	Auth               *SourceTypeConfigPylonAuth                    `json:"auth,omitempty" url:"auth,omitempty"`
+	Auth *SourceConfigPylonAuth `json:"auth,omitempty" url:"auth,omitempty"`
 
 	extraProperties map[string]interface{}
 	rawJSON         json.RawMessage
 }
 
-func (s *SourceTypeConfigPylon) GetAllowedHttpMethods() []SourceTypeConfigPylonAllowedHttpMethodsItem {
-	if s == nil {
-		return nil
-	}
-	return s.AllowedHttpMethods
-}
-
-func (s *SourceTypeConfigPylon) GetAuth() *SourceTypeConfigPylonAuth {
+func (s *SourceTypeConfigPylon) GetAuth() *SourceConfigPylonAuth {
 	if s == nil {
 		return nil
 	}
@@ -15700,100 +19376,15 @@ func (s *SourceTypeConfigPylon) String() string {
 	return fmt.Sprintf("%#v", s)
 }
 
-type SourceTypeConfigPylonAllowedHttpMethodsItem string
-
-const (
-	SourceTypeConfigPylonAllowedHttpMethodsItemGet    SourceTypeConfigPylonAllowedHttpMethodsItem = "GET"
-	SourceTypeConfigPylonAllowedHttpMethodsItemPost   SourceTypeConfigPylonAllowedHttpMethodsItem = "POST"
-	SourceTypeConfigPylonAllowedHttpMethodsItemPut    SourceTypeConfigPylonAllowedHttpMethodsItem = "PUT"
-	SourceTypeConfigPylonAllowedHttpMethodsItemPatch  SourceTypeConfigPylonAllowedHttpMethodsItem = "PATCH"
-	SourceTypeConfigPylonAllowedHttpMethodsItemDelete SourceTypeConfigPylonAllowedHttpMethodsItem = "DELETE"
-)
-
-func NewSourceTypeConfigPylonAllowedHttpMethodsItemFromString(s string) (SourceTypeConfigPylonAllowedHttpMethodsItem, error) {
-	switch s {
-	case "GET":
-		return SourceTypeConfigPylonAllowedHttpMethodsItemGet, nil
-	case "POST":
-		return SourceTypeConfigPylonAllowedHttpMethodsItemPost, nil
-	case "PUT":
-		return SourceTypeConfigPylonAllowedHttpMethodsItemPut, nil
-	case "PATCH":
-		return SourceTypeConfigPylonAllowedHttpMethodsItemPatch, nil
-	case "DELETE":
-		return SourceTypeConfigPylonAllowedHttpMethodsItemDelete, nil
-	}
-	var t SourceTypeConfigPylonAllowedHttpMethodsItem
-	return "", fmt.Errorf("%s is not a valid %T", s, t)
-}
-
-func (s SourceTypeConfigPylonAllowedHttpMethodsItem) Ptr() *SourceTypeConfigPylonAllowedHttpMethodsItem {
-	return &s
-}
-
-type SourceTypeConfigPylonAuth struct {
-	WebhookSecretKey string `json:"webhook_secret_key" url:"webhook_secret_key"`
-
-	extraProperties map[string]interface{}
-	rawJSON         json.RawMessage
-}
-
-func (s *SourceTypeConfigPylonAuth) GetWebhookSecretKey() string {
-	if s == nil {
-		return ""
-	}
-	return s.WebhookSecretKey
-}
-
-func (s *SourceTypeConfigPylonAuth) GetExtraProperties() map[string]interface{} {
-	return s.extraProperties
-}
-
-func (s *SourceTypeConfigPylonAuth) UnmarshalJSON(data []byte) error {
-	type unmarshaler SourceTypeConfigPylonAuth
-	var value unmarshaler
-	if err := json.Unmarshal(data, &value); err != nil {
-		return err
-	}
-	*s = SourceTypeConfigPylonAuth(value)
-	extraProperties, err := internal.ExtractExtraProperties(data, *s)
-	if err != nil {
-		return err
-	}
-	s.extraProperties = extraProperties
-	s.rawJSON = json.RawMessage(data)
-	return nil
-}
-
-func (s *SourceTypeConfigPylonAuth) String() string {
-	if len(s.rawJSON) > 0 {
-		if value, err := internal.StringifyJSON(s.rawJSON); err == nil {
-			return value
-		}
-	}
-	if value, err := internal.StringifyJSON(s); err == nil {
-		return value
-	}
-	return fmt.Sprintf("%#v", s)
-}
-
 // The type config for Razorpay. Requires type to be `RAZORPAY`.
 type SourceTypeConfigRazorpay struct {
-	AllowedHttpMethods []SourceTypeConfigRazorpayAllowedHttpMethodsItem `json:"allowed_http_methods,omitempty" url:"allowed_http_methods,omitempty"`
-	Auth               *SourceTypeConfigRazorpayAuth                    `json:"auth,omitempty" url:"auth,omitempty"`
+	Auth *SourceConfigRazorpayAuth `json:"auth,omitempty" url:"auth,omitempty"`
 
 	extraProperties map[string]interface{}
 	rawJSON         json.RawMessage
 }
 
-func (s *SourceTypeConfigRazorpay) GetAllowedHttpMethods() []SourceTypeConfigRazorpayAllowedHttpMethodsItem {
-	if s == nil {
-		return nil
-	}
-	return s.AllowedHttpMethods
-}
-
-func (s *SourceTypeConfigRazorpay) GetAuth() *SourceTypeConfigRazorpayAuth {
+func (s *SourceTypeConfigRazorpay) GetAuth() *SourceConfigRazorpayAuth {
 	if s == nil {
 		return nil
 	}
@@ -15832,62 +19423,32 @@ func (s *SourceTypeConfigRazorpay) String() string {
 	return fmt.Sprintf("%#v", s)
 }
 
-type SourceTypeConfigRazorpayAllowedHttpMethodsItem string
-
-const (
-	SourceTypeConfigRazorpayAllowedHttpMethodsItemGet    SourceTypeConfigRazorpayAllowedHttpMethodsItem = "GET"
-	SourceTypeConfigRazorpayAllowedHttpMethodsItemPost   SourceTypeConfigRazorpayAllowedHttpMethodsItem = "POST"
-	SourceTypeConfigRazorpayAllowedHttpMethodsItemPut    SourceTypeConfigRazorpayAllowedHttpMethodsItem = "PUT"
-	SourceTypeConfigRazorpayAllowedHttpMethodsItemPatch  SourceTypeConfigRazorpayAllowedHttpMethodsItem = "PATCH"
-	SourceTypeConfigRazorpayAllowedHttpMethodsItemDelete SourceTypeConfigRazorpayAllowedHttpMethodsItem = "DELETE"
-)
-
-func NewSourceTypeConfigRazorpayAllowedHttpMethodsItemFromString(s string) (SourceTypeConfigRazorpayAllowedHttpMethodsItem, error) {
-	switch s {
-	case "GET":
-		return SourceTypeConfigRazorpayAllowedHttpMethodsItemGet, nil
-	case "POST":
-		return SourceTypeConfigRazorpayAllowedHttpMethodsItemPost, nil
-	case "PUT":
-		return SourceTypeConfigRazorpayAllowedHttpMethodsItemPut, nil
-	case "PATCH":
-		return SourceTypeConfigRazorpayAllowedHttpMethodsItemPatch, nil
-	case "DELETE":
-		return SourceTypeConfigRazorpayAllowedHttpMethodsItemDelete, nil
-	}
-	var t SourceTypeConfigRazorpayAllowedHttpMethodsItem
-	return "", fmt.Errorf("%s is not a valid %T", s, t)
-}
-
-func (s SourceTypeConfigRazorpayAllowedHttpMethodsItem) Ptr() *SourceTypeConfigRazorpayAllowedHttpMethodsItem {
-	return &s
-}
-
-type SourceTypeConfigRazorpayAuth struct {
-	WebhookSecretKey string `json:"webhook_secret_key" url:"webhook_secret_key"`
+// The type config for Recharge. Requires type to be `RECHARGE`.
+type SourceTypeConfigRecharge struct {
+	Auth *SourceConfigRechargeAuth `json:"auth,omitempty" url:"auth,omitempty"`
 
 	extraProperties map[string]interface{}
 	rawJSON         json.RawMessage
 }
 
-func (s *SourceTypeConfigRazorpayAuth) GetWebhookSecretKey() string {
+func (s *SourceTypeConfigRecharge) GetAuth() *SourceConfigRechargeAuth {
 	if s == nil {
-		return ""
+		return nil
 	}
-	return s.WebhookSecretKey
+	return s.Auth
 }
 
-func (s *SourceTypeConfigRazorpayAuth) GetExtraProperties() map[string]interface{} {
+func (s *SourceTypeConfigRecharge) GetExtraProperties() map[string]interface{} {
 	return s.extraProperties
 }
 
-func (s *SourceTypeConfigRazorpayAuth) UnmarshalJSON(data []byte) error {
-	type unmarshaler SourceTypeConfigRazorpayAuth
+func (s *SourceTypeConfigRecharge) UnmarshalJSON(data []byte) error {
+	type unmarshaler SourceTypeConfigRecharge
 	var value unmarshaler
 	if err := json.Unmarshal(data, &value); err != nil {
 		return err
 	}
-	*s = SourceTypeConfigRazorpayAuth(value)
+	*s = SourceTypeConfigRecharge(value)
 	extraProperties, err := internal.ExtractExtraProperties(data, *s)
 	if err != nil {
 		return err
@@ -15897,7 +19458,101 @@ func (s *SourceTypeConfigRazorpayAuth) UnmarshalJSON(data []byte) error {
 	return nil
 }
 
-func (s *SourceTypeConfigRazorpayAuth) String() string {
+func (s *SourceTypeConfigRecharge) String() string {
+	if len(s.rawJSON) > 0 {
+		if value, err := internal.StringifyJSON(s.rawJSON); err == nil {
+			return value
+		}
+	}
+	if value, err := internal.StringifyJSON(s); err == nil {
+		return value
+	}
+	return fmt.Sprintf("%#v", s)
+}
+
+// The type config for Repay. Requires type to be `REPAY`.
+type SourceTypeConfigRepay struct {
+	Auth *SourceConfigRepayAuth `json:"auth,omitempty" url:"auth,omitempty"`
+
+	extraProperties map[string]interface{}
+	rawJSON         json.RawMessage
+}
+
+func (s *SourceTypeConfigRepay) GetAuth() *SourceConfigRepayAuth {
+	if s == nil {
+		return nil
+	}
+	return s.Auth
+}
+
+func (s *SourceTypeConfigRepay) GetExtraProperties() map[string]interface{} {
+	return s.extraProperties
+}
+
+func (s *SourceTypeConfigRepay) UnmarshalJSON(data []byte) error {
+	type unmarshaler SourceTypeConfigRepay
+	var value unmarshaler
+	if err := json.Unmarshal(data, &value); err != nil {
+		return err
+	}
+	*s = SourceTypeConfigRepay(value)
+	extraProperties, err := internal.ExtractExtraProperties(data, *s)
+	if err != nil {
+		return err
+	}
+	s.extraProperties = extraProperties
+	s.rawJSON = json.RawMessage(data)
+	return nil
+}
+
+func (s *SourceTypeConfigRepay) String() string {
+	if len(s.rawJSON) > 0 {
+		if value, err := internal.StringifyJSON(s.rawJSON); err == nil {
+			return value
+		}
+	}
+	if value, err := internal.StringifyJSON(s); err == nil {
+		return value
+	}
+	return fmt.Sprintf("%#v", s)
+}
+
+// The type config for Replicate. Requires type to be `REPLICATE`.
+type SourceTypeConfigReplicate struct {
+	Auth *SourceConfigReplicateAuth `json:"auth,omitempty" url:"auth,omitempty"`
+
+	extraProperties map[string]interface{}
+	rawJSON         json.RawMessage
+}
+
+func (s *SourceTypeConfigReplicate) GetAuth() *SourceConfigReplicateAuth {
+	if s == nil {
+		return nil
+	}
+	return s.Auth
+}
+
+func (s *SourceTypeConfigReplicate) GetExtraProperties() map[string]interface{} {
+	return s.extraProperties
+}
+
+func (s *SourceTypeConfigReplicate) UnmarshalJSON(data []byte) error {
+	type unmarshaler SourceTypeConfigReplicate
+	var value unmarshaler
+	if err := json.Unmarshal(data, &value); err != nil {
+		return err
+	}
+	*s = SourceTypeConfigReplicate(value)
+	extraProperties, err := internal.ExtractExtraProperties(data, *s)
+	if err != nil {
+		return err
+	}
+	s.extraProperties = extraProperties
+	s.rawJSON = json.RawMessage(data)
+	return nil
+}
+
+func (s *SourceTypeConfigReplicate) String() string {
 	if len(s.rawJSON) > 0 {
 		if value, err := internal.StringifyJSON(s.rawJSON); err == nil {
 			return value
@@ -15911,21 +19566,13 @@ func (s *SourceTypeConfigRazorpayAuth) String() string {
 
 // The type config for Sanity. Requires type to be `SANITY`.
 type SourceTypeConfigSanity struct {
-	AllowedHttpMethods []SourceTypeConfigSanityAllowedHttpMethodsItem `json:"allowed_http_methods,omitempty" url:"allowed_http_methods,omitempty"`
-	Auth               *SourceTypeConfigSanityAuth                    `json:"auth,omitempty" url:"auth,omitempty"`
+	Auth *SourceConfigSanityAuth `json:"auth,omitempty" url:"auth,omitempty"`
 
 	extraProperties map[string]interface{}
 	rawJSON         json.RawMessage
 }
 
-func (s *SourceTypeConfigSanity) GetAllowedHttpMethods() []SourceTypeConfigSanityAllowedHttpMethodsItem {
-	if s == nil {
-		return nil
-	}
-	return s.AllowedHttpMethods
-}
-
-func (s *SourceTypeConfigSanity) GetAuth() *SourceTypeConfigSanityAuth {
+func (s *SourceTypeConfigSanity) GetAuth() *SourceConfigSanityAuth {
 	if s == nil {
 		return nil
 	}
@@ -15964,100 +19611,15 @@ func (s *SourceTypeConfigSanity) String() string {
 	return fmt.Sprintf("%#v", s)
 }
 
-type SourceTypeConfigSanityAllowedHttpMethodsItem string
-
-const (
-	SourceTypeConfigSanityAllowedHttpMethodsItemGet    SourceTypeConfigSanityAllowedHttpMethodsItem = "GET"
-	SourceTypeConfigSanityAllowedHttpMethodsItemPost   SourceTypeConfigSanityAllowedHttpMethodsItem = "POST"
-	SourceTypeConfigSanityAllowedHttpMethodsItemPut    SourceTypeConfigSanityAllowedHttpMethodsItem = "PUT"
-	SourceTypeConfigSanityAllowedHttpMethodsItemPatch  SourceTypeConfigSanityAllowedHttpMethodsItem = "PATCH"
-	SourceTypeConfigSanityAllowedHttpMethodsItemDelete SourceTypeConfigSanityAllowedHttpMethodsItem = "DELETE"
-)
-
-func NewSourceTypeConfigSanityAllowedHttpMethodsItemFromString(s string) (SourceTypeConfigSanityAllowedHttpMethodsItem, error) {
-	switch s {
-	case "GET":
-		return SourceTypeConfigSanityAllowedHttpMethodsItemGet, nil
-	case "POST":
-		return SourceTypeConfigSanityAllowedHttpMethodsItemPost, nil
-	case "PUT":
-		return SourceTypeConfigSanityAllowedHttpMethodsItemPut, nil
-	case "PATCH":
-		return SourceTypeConfigSanityAllowedHttpMethodsItemPatch, nil
-	case "DELETE":
-		return SourceTypeConfigSanityAllowedHttpMethodsItemDelete, nil
-	}
-	var t SourceTypeConfigSanityAllowedHttpMethodsItem
-	return "", fmt.Errorf("%s is not a valid %T", s, t)
-}
-
-func (s SourceTypeConfigSanityAllowedHttpMethodsItem) Ptr() *SourceTypeConfigSanityAllowedHttpMethodsItem {
-	return &s
-}
-
-type SourceTypeConfigSanityAuth struct {
-	WebhookSecretKey string `json:"webhook_secret_key" url:"webhook_secret_key"`
-
-	extraProperties map[string]interface{}
-	rawJSON         json.RawMessage
-}
-
-func (s *SourceTypeConfigSanityAuth) GetWebhookSecretKey() string {
-	if s == nil {
-		return ""
-	}
-	return s.WebhookSecretKey
-}
-
-func (s *SourceTypeConfigSanityAuth) GetExtraProperties() map[string]interface{} {
-	return s.extraProperties
-}
-
-func (s *SourceTypeConfigSanityAuth) UnmarshalJSON(data []byte) error {
-	type unmarshaler SourceTypeConfigSanityAuth
-	var value unmarshaler
-	if err := json.Unmarshal(data, &value); err != nil {
-		return err
-	}
-	*s = SourceTypeConfigSanityAuth(value)
-	extraProperties, err := internal.ExtractExtraProperties(data, *s)
-	if err != nil {
-		return err
-	}
-	s.extraProperties = extraProperties
-	s.rawJSON = json.RawMessage(data)
-	return nil
-}
-
-func (s *SourceTypeConfigSanityAuth) String() string {
-	if len(s.rawJSON) > 0 {
-		if value, err := internal.StringifyJSON(s.rawJSON); err == nil {
-			return value
-		}
-	}
-	if value, err := internal.StringifyJSON(s); err == nil {
-		return value
-	}
-	return fmt.Sprintf("%#v", s)
-}
-
 // The type config for Sendgrid. Requires type to be `SENDGRID`.
 type SourceTypeConfigSendgrid struct {
-	AllowedHttpMethods []SourceTypeConfigSendgridAllowedHttpMethodsItem `json:"allowed_http_methods,omitempty" url:"allowed_http_methods,omitempty"`
-	Auth               *SourceTypeConfigSendgridAuth                    `json:"auth,omitempty" url:"auth,omitempty"`
+	Auth *SourceConfigSendgridAuth `json:"auth,omitempty" url:"auth,omitempty"`
 
 	extraProperties map[string]interface{}
 	rawJSON         json.RawMessage
 }
 
-func (s *SourceTypeConfigSendgrid) GetAllowedHttpMethods() []SourceTypeConfigSendgridAllowedHttpMethodsItem {
-	if s == nil {
-		return nil
-	}
-	return s.AllowedHttpMethods
-}
-
-func (s *SourceTypeConfigSendgrid) GetAuth() *SourceTypeConfigSendgridAuth {
+func (s *SourceTypeConfigSendgrid) GetAuth() *SourceConfigSendgridAuth {
 	if s == nil {
 		return nil
 	}
@@ -16096,100 +19658,15 @@ func (s *SourceTypeConfigSendgrid) String() string {
 	return fmt.Sprintf("%#v", s)
 }
 
-type SourceTypeConfigSendgridAllowedHttpMethodsItem string
-
-const (
-	SourceTypeConfigSendgridAllowedHttpMethodsItemGet    SourceTypeConfigSendgridAllowedHttpMethodsItem = "GET"
-	SourceTypeConfigSendgridAllowedHttpMethodsItemPost   SourceTypeConfigSendgridAllowedHttpMethodsItem = "POST"
-	SourceTypeConfigSendgridAllowedHttpMethodsItemPut    SourceTypeConfigSendgridAllowedHttpMethodsItem = "PUT"
-	SourceTypeConfigSendgridAllowedHttpMethodsItemPatch  SourceTypeConfigSendgridAllowedHttpMethodsItem = "PATCH"
-	SourceTypeConfigSendgridAllowedHttpMethodsItemDelete SourceTypeConfigSendgridAllowedHttpMethodsItem = "DELETE"
-)
-
-func NewSourceTypeConfigSendgridAllowedHttpMethodsItemFromString(s string) (SourceTypeConfigSendgridAllowedHttpMethodsItem, error) {
-	switch s {
-	case "GET":
-		return SourceTypeConfigSendgridAllowedHttpMethodsItemGet, nil
-	case "POST":
-		return SourceTypeConfigSendgridAllowedHttpMethodsItemPost, nil
-	case "PUT":
-		return SourceTypeConfigSendgridAllowedHttpMethodsItemPut, nil
-	case "PATCH":
-		return SourceTypeConfigSendgridAllowedHttpMethodsItemPatch, nil
-	case "DELETE":
-		return SourceTypeConfigSendgridAllowedHttpMethodsItemDelete, nil
-	}
-	var t SourceTypeConfigSendgridAllowedHttpMethodsItem
-	return "", fmt.Errorf("%s is not a valid %T", s, t)
-}
-
-func (s SourceTypeConfigSendgridAllowedHttpMethodsItem) Ptr() *SourceTypeConfigSendgridAllowedHttpMethodsItem {
-	return &s
-}
-
-type SourceTypeConfigSendgridAuth struct {
-	WebhookSecretKey string `json:"webhook_secret_key" url:"webhook_secret_key"`
-
-	extraProperties map[string]interface{}
-	rawJSON         json.RawMessage
-}
-
-func (s *SourceTypeConfigSendgridAuth) GetWebhookSecretKey() string {
-	if s == nil {
-		return ""
-	}
-	return s.WebhookSecretKey
-}
-
-func (s *SourceTypeConfigSendgridAuth) GetExtraProperties() map[string]interface{} {
-	return s.extraProperties
-}
-
-func (s *SourceTypeConfigSendgridAuth) UnmarshalJSON(data []byte) error {
-	type unmarshaler SourceTypeConfigSendgridAuth
-	var value unmarshaler
-	if err := json.Unmarshal(data, &value); err != nil {
-		return err
-	}
-	*s = SourceTypeConfigSendgridAuth(value)
-	extraProperties, err := internal.ExtractExtraProperties(data, *s)
-	if err != nil {
-		return err
-	}
-	s.extraProperties = extraProperties
-	s.rawJSON = json.RawMessage(data)
-	return nil
-}
-
-func (s *SourceTypeConfigSendgridAuth) String() string {
-	if len(s.rawJSON) > 0 {
-		if value, err := internal.StringifyJSON(s.rawJSON); err == nil {
-			return value
-		}
-	}
-	if value, err := internal.StringifyJSON(s); err == nil {
-		return value
-	}
-	return fmt.Sprintf("%#v", s)
-}
-
 // The type config for Shopify. Requires type to be `SHOPIFY`.
 type SourceTypeConfigShopify struct {
-	AllowedHttpMethods []SourceTypeConfigShopifyAllowedHttpMethodsItem `json:"allowed_http_methods,omitempty" url:"allowed_http_methods,omitempty"`
-	Auth               *SourceTypeConfigShopifyAuth                    `json:"auth,omitempty" url:"auth,omitempty"`
+	Auth *SourceConfigShopifyAuth `json:"auth,omitempty" url:"auth,omitempty"`
 
 	extraProperties map[string]interface{}
 	rawJSON         json.RawMessage
 }
 
-func (s *SourceTypeConfigShopify) GetAllowedHttpMethods() []SourceTypeConfigShopifyAllowedHttpMethodsItem {
-	if s == nil {
-		return nil
-	}
-	return s.AllowedHttpMethods
-}
-
-func (s *SourceTypeConfigShopify) GetAuth() *SourceTypeConfigShopifyAuth {
+func (s *SourceTypeConfigShopify) GetAuth() *SourceConfigShopifyAuth {
 	if s == nil {
 		return nil
 	}
@@ -16228,100 +19705,15 @@ func (s *SourceTypeConfigShopify) String() string {
 	return fmt.Sprintf("%#v", s)
 }
 
-type SourceTypeConfigShopifyAllowedHttpMethodsItem string
-
-const (
-	SourceTypeConfigShopifyAllowedHttpMethodsItemGet    SourceTypeConfigShopifyAllowedHttpMethodsItem = "GET"
-	SourceTypeConfigShopifyAllowedHttpMethodsItemPost   SourceTypeConfigShopifyAllowedHttpMethodsItem = "POST"
-	SourceTypeConfigShopifyAllowedHttpMethodsItemPut    SourceTypeConfigShopifyAllowedHttpMethodsItem = "PUT"
-	SourceTypeConfigShopifyAllowedHttpMethodsItemPatch  SourceTypeConfigShopifyAllowedHttpMethodsItem = "PATCH"
-	SourceTypeConfigShopifyAllowedHttpMethodsItemDelete SourceTypeConfigShopifyAllowedHttpMethodsItem = "DELETE"
-)
-
-func NewSourceTypeConfigShopifyAllowedHttpMethodsItemFromString(s string) (SourceTypeConfigShopifyAllowedHttpMethodsItem, error) {
-	switch s {
-	case "GET":
-		return SourceTypeConfigShopifyAllowedHttpMethodsItemGet, nil
-	case "POST":
-		return SourceTypeConfigShopifyAllowedHttpMethodsItemPost, nil
-	case "PUT":
-		return SourceTypeConfigShopifyAllowedHttpMethodsItemPut, nil
-	case "PATCH":
-		return SourceTypeConfigShopifyAllowedHttpMethodsItemPatch, nil
-	case "DELETE":
-		return SourceTypeConfigShopifyAllowedHttpMethodsItemDelete, nil
-	}
-	var t SourceTypeConfigShopifyAllowedHttpMethodsItem
-	return "", fmt.Errorf("%s is not a valid %T", s, t)
-}
-
-func (s SourceTypeConfigShopifyAllowedHttpMethodsItem) Ptr() *SourceTypeConfigShopifyAllowedHttpMethodsItem {
-	return &s
-}
-
-type SourceTypeConfigShopifyAuth struct {
-	WebhookSecretKey string `json:"webhook_secret_key" url:"webhook_secret_key"`
-
-	extraProperties map[string]interface{}
-	rawJSON         json.RawMessage
-}
-
-func (s *SourceTypeConfigShopifyAuth) GetWebhookSecretKey() string {
-	if s == nil {
-		return ""
-	}
-	return s.WebhookSecretKey
-}
-
-func (s *SourceTypeConfigShopifyAuth) GetExtraProperties() map[string]interface{} {
-	return s.extraProperties
-}
-
-func (s *SourceTypeConfigShopifyAuth) UnmarshalJSON(data []byte) error {
-	type unmarshaler SourceTypeConfigShopifyAuth
-	var value unmarshaler
-	if err := json.Unmarshal(data, &value); err != nil {
-		return err
-	}
-	*s = SourceTypeConfigShopifyAuth(value)
-	extraProperties, err := internal.ExtractExtraProperties(data, *s)
-	if err != nil {
-		return err
-	}
-	s.extraProperties = extraProperties
-	s.rawJSON = json.RawMessage(data)
-	return nil
-}
-
-func (s *SourceTypeConfigShopifyAuth) String() string {
-	if len(s.rawJSON) > 0 {
-		if value, err := internal.StringifyJSON(s.rawJSON); err == nil {
-			return value
-		}
-	}
-	if value, err := internal.StringifyJSON(s); err == nil {
-		return value
-	}
-	return fmt.Sprintf("%#v", s)
-}
-
 // The type config for Shopline. Requires type to be `SHOPLINE`.
 type SourceTypeConfigShopline struct {
-	AllowedHttpMethods []SourceTypeConfigShoplineAllowedHttpMethodsItem `json:"allowed_http_methods,omitempty" url:"allowed_http_methods,omitempty"`
-	Auth               *SourceTypeConfigShoplineAuth                    `json:"auth,omitempty" url:"auth,omitempty"`
+	Auth *SourceConfigShoplineAuth `json:"auth,omitempty" url:"auth,omitempty"`
 
 	extraProperties map[string]interface{}
 	rawJSON         json.RawMessage
 }
 
-func (s *SourceTypeConfigShopline) GetAllowedHttpMethods() []SourceTypeConfigShoplineAllowedHttpMethodsItem {
-	if s == nil {
-		return nil
-	}
-	return s.AllowedHttpMethods
-}
-
-func (s *SourceTypeConfigShopline) GetAuth() *SourceTypeConfigShoplineAuth {
+func (s *SourceTypeConfigShopline) GetAuth() *SourceConfigShoplineAuth {
 	if s == nil {
 		return nil
 	}
@@ -16360,100 +19752,15 @@ func (s *SourceTypeConfigShopline) String() string {
 	return fmt.Sprintf("%#v", s)
 }
 
-type SourceTypeConfigShoplineAllowedHttpMethodsItem string
-
-const (
-	SourceTypeConfigShoplineAllowedHttpMethodsItemGet    SourceTypeConfigShoplineAllowedHttpMethodsItem = "GET"
-	SourceTypeConfigShoplineAllowedHttpMethodsItemPost   SourceTypeConfigShoplineAllowedHttpMethodsItem = "POST"
-	SourceTypeConfigShoplineAllowedHttpMethodsItemPut    SourceTypeConfigShoplineAllowedHttpMethodsItem = "PUT"
-	SourceTypeConfigShoplineAllowedHttpMethodsItemPatch  SourceTypeConfigShoplineAllowedHttpMethodsItem = "PATCH"
-	SourceTypeConfigShoplineAllowedHttpMethodsItemDelete SourceTypeConfigShoplineAllowedHttpMethodsItem = "DELETE"
-)
-
-func NewSourceTypeConfigShoplineAllowedHttpMethodsItemFromString(s string) (SourceTypeConfigShoplineAllowedHttpMethodsItem, error) {
-	switch s {
-	case "GET":
-		return SourceTypeConfigShoplineAllowedHttpMethodsItemGet, nil
-	case "POST":
-		return SourceTypeConfigShoplineAllowedHttpMethodsItemPost, nil
-	case "PUT":
-		return SourceTypeConfigShoplineAllowedHttpMethodsItemPut, nil
-	case "PATCH":
-		return SourceTypeConfigShoplineAllowedHttpMethodsItemPatch, nil
-	case "DELETE":
-		return SourceTypeConfigShoplineAllowedHttpMethodsItemDelete, nil
-	}
-	var t SourceTypeConfigShoplineAllowedHttpMethodsItem
-	return "", fmt.Errorf("%s is not a valid %T", s, t)
-}
-
-func (s SourceTypeConfigShoplineAllowedHttpMethodsItem) Ptr() *SourceTypeConfigShoplineAllowedHttpMethodsItem {
-	return &s
-}
-
-type SourceTypeConfigShoplineAuth struct {
-	WebhookSecretKey string `json:"webhook_secret_key" url:"webhook_secret_key"`
-
-	extraProperties map[string]interface{}
-	rawJSON         json.RawMessage
-}
-
-func (s *SourceTypeConfigShoplineAuth) GetWebhookSecretKey() string {
-	if s == nil {
-		return ""
-	}
-	return s.WebhookSecretKey
-}
-
-func (s *SourceTypeConfigShoplineAuth) GetExtraProperties() map[string]interface{} {
-	return s.extraProperties
-}
-
-func (s *SourceTypeConfigShoplineAuth) UnmarshalJSON(data []byte) error {
-	type unmarshaler SourceTypeConfigShoplineAuth
-	var value unmarshaler
-	if err := json.Unmarshal(data, &value); err != nil {
-		return err
-	}
-	*s = SourceTypeConfigShoplineAuth(value)
-	extraProperties, err := internal.ExtractExtraProperties(data, *s)
-	if err != nil {
-		return err
-	}
-	s.extraProperties = extraProperties
-	s.rawJSON = json.RawMessage(data)
-	return nil
-}
-
-func (s *SourceTypeConfigShoplineAuth) String() string {
-	if len(s.rawJSON) > 0 {
-		if value, err := internal.StringifyJSON(s.rawJSON); err == nil {
-			return value
-		}
-	}
-	if value, err := internal.StringifyJSON(s); err == nil {
-		return value
-	}
-	return fmt.Sprintf("%#v", s)
-}
-
 // The type config for Slack. Requires type to be `SLACK`.
 type SourceTypeConfigSlack struct {
-	AllowedHttpMethods []SourceTypeConfigSlackAllowedHttpMethodsItem `json:"allowed_http_methods,omitempty" url:"allowed_http_methods,omitempty"`
-	Auth               *SourceTypeConfigSlackAuth                    `json:"auth,omitempty" url:"auth,omitempty"`
+	Auth *SourceConfigSlackAuth `json:"auth,omitempty" url:"auth,omitempty"`
 
 	extraProperties map[string]interface{}
 	rawJSON         json.RawMessage
 }
 
-func (s *SourceTypeConfigSlack) GetAllowedHttpMethods() []SourceTypeConfigSlackAllowedHttpMethodsItem {
-	if s == nil {
-		return nil
-	}
-	return s.AllowedHttpMethods
-}
-
-func (s *SourceTypeConfigSlack) GetAuth() *SourceTypeConfigSlackAuth {
+func (s *SourceTypeConfigSlack) GetAuth() *SourceConfigSlackAuth {
 	if s == nil {
 		return nil
 	}
@@ -16492,100 +19799,15 @@ func (s *SourceTypeConfigSlack) String() string {
 	return fmt.Sprintf("%#v", s)
 }
 
-type SourceTypeConfigSlackAllowedHttpMethodsItem string
-
-const (
-	SourceTypeConfigSlackAllowedHttpMethodsItemGet    SourceTypeConfigSlackAllowedHttpMethodsItem = "GET"
-	SourceTypeConfigSlackAllowedHttpMethodsItemPost   SourceTypeConfigSlackAllowedHttpMethodsItem = "POST"
-	SourceTypeConfigSlackAllowedHttpMethodsItemPut    SourceTypeConfigSlackAllowedHttpMethodsItem = "PUT"
-	SourceTypeConfigSlackAllowedHttpMethodsItemPatch  SourceTypeConfigSlackAllowedHttpMethodsItem = "PATCH"
-	SourceTypeConfigSlackAllowedHttpMethodsItemDelete SourceTypeConfigSlackAllowedHttpMethodsItem = "DELETE"
-)
-
-func NewSourceTypeConfigSlackAllowedHttpMethodsItemFromString(s string) (SourceTypeConfigSlackAllowedHttpMethodsItem, error) {
-	switch s {
-	case "GET":
-		return SourceTypeConfigSlackAllowedHttpMethodsItemGet, nil
-	case "POST":
-		return SourceTypeConfigSlackAllowedHttpMethodsItemPost, nil
-	case "PUT":
-		return SourceTypeConfigSlackAllowedHttpMethodsItemPut, nil
-	case "PATCH":
-		return SourceTypeConfigSlackAllowedHttpMethodsItemPatch, nil
-	case "DELETE":
-		return SourceTypeConfigSlackAllowedHttpMethodsItemDelete, nil
-	}
-	var t SourceTypeConfigSlackAllowedHttpMethodsItem
-	return "", fmt.Errorf("%s is not a valid %T", s, t)
-}
-
-func (s SourceTypeConfigSlackAllowedHttpMethodsItem) Ptr() *SourceTypeConfigSlackAllowedHttpMethodsItem {
-	return &s
-}
-
-type SourceTypeConfigSlackAuth struct {
-	WebhookSecretKey string `json:"webhook_secret_key" url:"webhook_secret_key"`
-
-	extraProperties map[string]interface{}
-	rawJSON         json.RawMessage
-}
-
-func (s *SourceTypeConfigSlackAuth) GetWebhookSecretKey() string {
-	if s == nil {
-		return ""
-	}
-	return s.WebhookSecretKey
-}
-
-func (s *SourceTypeConfigSlackAuth) GetExtraProperties() map[string]interface{} {
-	return s.extraProperties
-}
-
-func (s *SourceTypeConfigSlackAuth) UnmarshalJSON(data []byte) error {
-	type unmarshaler SourceTypeConfigSlackAuth
-	var value unmarshaler
-	if err := json.Unmarshal(data, &value); err != nil {
-		return err
-	}
-	*s = SourceTypeConfigSlackAuth(value)
-	extraProperties, err := internal.ExtractExtraProperties(data, *s)
-	if err != nil {
-		return err
-	}
-	s.extraProperties = extraProperties
-	s.rawJSON = json.RawMessage(data)
-	return nil
-}
-
-func (s *SourceTypeConfigSlackAuth) String() string {
-	if len(s.rawJSON) > 0 {
-		if value, err := internal.StringifyJSON(s.rawJSON); err == nil {
-			return value
-		}
-	}
-	if value, err := internal.StringifyJSON(s); err == nil {
-		return value
-	}
-	return fmt.Sprintf("%#v", s)
-}
-
 // The type config for Solidgate. Requires type to be `SOLIDGATE`.
 type SourceTypeConfigSolidgate struct {
-	AllowedHttpMethods []SourceTypeConfigSolidgateAllowedHttpMethodsItem `json:"allowed_http_methods,omitempty" url:"allowed_http_methods,omitempty"`
-	Auth               *SourceTypeConfigSolidgateAuth                    `json:"auth,omitempty" url:"auth,omitempty"`
+	Auth *SourceConfigSolidgateAuth `json:"auth,omitempty" url:"auth,omitempty"`
 
 	extraProperties map[string]interface{}
 	rawJSON         json.RawMessage
 }
 
-func (s *SourceTypeConfigSolidgate) GetAllowedHttpMethods() []SourceTypeConfigSolidgateAllowedHttpMethodsItem {
-	if s == nil {
-		return nil
-	}
-	return s.AllowedHttpMethods
-}
-
-func (s *SourceTypeConfigSolidgate) GetAuth() *SourceTypeConfigSolidgateAuth {
+func (s *SourceTypeConfigSolidgate) GetAuth() *SourceConfigSolidgateAuth {
 	if s == nil {
 		return nil
 	}
@@ -16624,100 +19846,15 @@ func (s *SourceTypeConfigSolidgate) String() string {
 	return fmt.Sprintf("%#v", s)
 }
 
-type SourceTypeConfigSolidgateAllowedHttpMethodsItem string
-
-const (
-	SourceTypeConfigSolidgateAllowedHttpMethodsItemGet    SourceTypeConfigSolidgateAllowedHttpMethodsItem = "GET"
-	SourceTypeConfigSolidgateAllowedHttpMethodsItemPost   SourceTypeConfigSolidgateAllowedHttpMethodsItem = "POST"
-	SourceTypeConfigSolidgateAllowedHttpMethodsItemPut    SourceTypeConfigSolidgateAllowedHttpMethodsItem = "PUT"
-	SourceTypeConfigSolidgateAllowedHttpMethodsItemPatch  SourceTypeConfigSolidgateAllowedHttpMethodsItem = "PATCH"
-	SourceTypeConfigSolidgateAllowedHttpMethodsItemDelete SourceTypeConfigSolidgateAllowedHttpMethodsItem = "DELETE"
-)
-
-func NewSourceTypeConfigSolidgateAllowedHttpMethodsItemFromString(s string) (SourceTypeConfigSolidgateAllowedHttpMethodsItem, error) {
-	switch s {
-	case "GET":
-		return SourceTypeConfigSolidgateAllowedHttpMethodsItemGet, nil
-	case "POST":
-		return SourceTypeConfigSolidgateAllowedHttpMethodsItemPost, nil
-	case "PUT":
-		return SourceTypeConfigSolidgateAllowedHttpMethodsItemPut, nil
-	case "PATCH":
-		return SourceTypeConfigSolidgateAllowedHttpMethodsItemPatch, nil
-	case "DELETE":
-		return SourceTypeConfigSolidgateAllowedHttpMethodsItemDelete, nil
-	}
-	var t SourceTypeConfigSolidgateAllowedHttpMethodsItem
-	return "", fmt.Errorf("%s is not a valid %T", s, t)
-}
-
-func (s SourceTypeConfigSolidgateAllowedHttpMethodsItem) Ptr() *SourceTypeConfigSolidgateAllowedHttpMethodsItem {
-	return &s
-}
-
-type SourceTypeConfigSolidgateAuth struct {
-	WebhookSecretKey string `json:"webhook_secret_key" url:"webhook_secret_key"`
-
-	extraProperties map[string]interface{}
-	rawJSON         json.RawMessage
-}
-
-func (s *SourceTypeConfigSolidgateAuth) GetWebhookSecretKey() string {
-	if s == nil {
-		return ""
-	}
-	return s.WebhookSecretKey
-}
-
-func (s *SourceTypeConfigSolidgateAuth) GetExtraProperties() map[string]interface{} {
-	return s.extraProperties
-}
-
-func (s *SourceTypeConfigSolidgateAuth) UnmarshalJSON(data []byte) error {
-	type unmarshaler SourceTypeConfigSolidgateAuth
-	var value unmarshaler
-	if err := json.Unmarshal(data, &value); err != nil {
-		return err
-	}
-	*s = SourceTypeConfigSolidgateAuth(value)
-	extraProperties, err := internal.ExtractExtraProperties(data, *s)
-	if err != nil {
-		return err
-	}
-	s.extraProperties = extraProperties
-	s.rawJSON = json.RawMessage(data)
-	return nil
-}
-
-func (s *SourceTypeConfigSolidgateAuth) String() string {
-	if len(s.rawJSON) > 0 {
-		if value, err := internal.StringifyJSON(s.rawJSON); err == nil {
-			return value
-		}
-	}
-	if value, err := internal.StringifyJSON(s); err == nil {
-		return value
-	}
-	return fmt.Sprintf("%#v", s)
-}
-
 // The type config for Square. Requires type to be `SQUARE`.
 type SourceTypeConfigSquare struct {
-	AllowedHttpMethods []SourceTypeConfigSquareAllowedHttpMethodsItem `json:"allowed_http_methods,omitempty" url:"allowed_http_methods,omitempty"`
-	Auth               *SourceTypeConfigSquareAuth                    `json:"auth,omitempty" url:"auth,omitempty"`
+	Auth *SourceConfigSquareAuth `json:"auth,omitempty" url:"auth,omitempty"`
 
 	extraProperties map[string]interface{}
 	rawJSON         json.RawMessage
 }
 
-func (s *SourceTypeConfigSquare) GetAllowedHttpMethods() []SourceTypeConfigSquareAllowedHttpMethodsItem {
-	if s == nil {
-		return nil
-	}
-	return s.AllowedHttpMethods
-}
-
-func (s *SourceTypeConfigSquare) GetAuth() *SourceTypeConfigSquareAuth {
+func (s *SourceTypeConfigSquare) GetAuth() *SourceConfigSquareAuth {
 	if s == nil {
 		return nil
 	}
@@ -16756,100 +19893,15 @@ func (s *SourceTypeConfigSquare) String() string {
 	return fmt.Sprintf("%#v", s)
 }
 
-type SourceTypeConfigSquareAllowedHttpMethodsItem string
-
-const (
-	SourceTypeConfigSquareAllowedHttpMethodsItemGet    SourceTypeConfigSquareAllowedHttpMethodsItem = "GET"
-	SourceTypeConfigSquareAllowedHttpMethodsItemPost   SourceTypeConfigSquareAllowedHttpMethodsItem = "POST"
-	SourceTypeConfigSquareAllowedHttpMethodsItemPut    SourceTypeConfigSquareAllowedHttpMethodsItem = "PUT"
-	SourceTypeConfigSquareAllowedHttpMethodsItemPatch  SourceTypeConfigSquareAllowedHttpMethodsItem = "PATCH"
-	SourceTypeConfigSquareAllowedHttpMethodsItemDelete SourceTypeConfigSquareAllowedHttpMethodsItem = "DELETE"
-)
-
-func NewSourceTypeConfigSquareAllowedHttpMethodsItemFromString(s string) (SourceTypeConfigSquareAllowedHttpMethodsItem, error) {
-	switch s {
-	case "GET":
-		return SourceTypeConfigSquareAllowedHttpMethodsItemGet, nil
-	case "POST":
-		return SourceTypeConfigSquareAllowedHttpMethodsItemPost, nil
-	case "PUT":
-		return SourceTypeConfigSquareAllowedHttpMethodsItemPut, nil
-	case "PATCH":
-		return SourceTypeConfigSquareAllowedHttpMethodsItemPatch, nil
-	case "DELETE":
-		return SourceTypeConfigSquareAllowedHttpMethodsItemDelete, nil
-	}
-	var t SourceTypeConfigSquareAllowedHttpMethodsItem
-	return "", fmt.Errorf("%s is not a valid %T", s, t)
-}
-
-func (s SourceTypeConfigSquareAllowedHttpMethodsItem) Ptr() *SourceTypeConfigSquareAllowedHttpMethodsItem {
-	return &s
-}
-
-type SourceTypeConfigSquareAuth struct {
-	WebhookSecretKey string `json:"webhook_secret_key" url:"webhook_secret_key"`
-
-	extraProperties map[string]interface{}
-	rawJSON         json.RawMessage
-}
-
-func (s *SourceTypeConfigSquareAuth) GetWebhookSecretKey() string {
-	if s == nil {
-		return ""
-	}
-	return s.WebhookSecretKey
-}
-
-func (s *SourceTypeConfigSquareAuth) GetExtraProperties() map[string]interface{} {
-	return s.extraProperties
-}
-
-func (s *SourceTypeConfigSquareAuth) UnmarshalJSON(data []byte) error {
-	type unmarshaler SourceTypeConfigSquareAuth
-	var value unmarshaler
-	if err := json.Unmarshal(data, &value); err != nil {
-		return err
-	}
-	*s = SourceTypeConfigSquareAuth(value)
-	extraProperties, err := internal.ExtractExtraProperties(data, *s)
-	if err != nil {
-		return err
-	}
-	s.extraProperties = extraProperties
-	s.rawJSON = json.RawMessage(data)
-	return nil
-}
-
-func (s *SourceTypeConfigSquareAuth) String() string {
-	if len(s.rawJSON) > 0 {
-		if value, err := internal.StringifyJSON(s.rawJSON); err == nil {
-			return value
-		}
-	}
-	if value, err := internal.StringifyJSON(s); err == nil {
-		return value
-	}
-	return fmt.Sprintf("%#v", s)
-}
-
 // The type config for Stripe. Requires type to be `STRIPE`.
 type SourceTypeConfigStripe struct {
-	AllowedHttpMethods []SourceTypeConfigStripeAllowedHttpMethodsItem `json:"allowed_http_methods,omitempty" url:"allowed_http_methods,omitempty"`
-	Auth               *SourceTypeConfigStripeAuth                    `json:"auth,omitempty" url:"auth,omitempty"`
+	Auth *SourceConfigStripeAuth `json:"auth,omitempty" url:"auth,omitempty"`
 
 	extraProperties map[string]interface{}
 	rawJSON         json.RawMessage
 }
 
-func (s *SourceTypeConfigStripe) GetAllowedHttpMethods() []SourceTypeConfigStripeAllowedHttpMethodsItem {
-	if s == nil {
-		return nil
-	}
-	return s.AllowedHttpMethods
-}
-
-func (s *SourceTypeConfigStripe) GetAuth() *SourceTypeConfigStripeAuth {
+func (s *SourceTypeConfigStripe) GetAuth() *SourceConfigStripeAuth {
 	if s == nil {
 		return nil
 	}
@@ -16888,100 +19940,15 @@ func (s *SourceTypeConfigStripe) String() string {
 	return fmt.Sprintf("%#v", s)
 }
 
-type SourceTypeConfigStripeAllowedHttpMethodsItem string
-
-const (
-	SourceTypeConfigStripeAllowedHttpMethodsItemGet    SourceTypeConfigStripeAllowedHttpMethodsItem = "GET"
-	SourceTypeConfigStripeAllowedHttpMethodsItemPost   SourceTypeConfigStripeAllowedHttpMethodsItem = "POST"
-	SourceTypeConfigStripeAllowedHttpMethodsItemPut    SourceTypeConfigStripeAllowedHttpMethodsItem = "PUT"
-	SourceTypeConfigStripeAllowedHttpMethodsItemPatch  SourceTypeConfigStripeAllowedHttpMethodsItem = "PATCH"
-	SourceTypeConfigStripeAllowedHttpMethodsItemDelete SourceTypeConfigStripeAllowedHttpMethodsItem = "DELETE"
-)
-
-func NewSourceTypeConfigStripeAllowedHttpMethodsItemFromString(s string) (SourceTypeConfigStripeAllowedHttpMethodsItem, error) {
-	switch s {
-	case "GET":
-		return SourceTypeConfigStripeAllowedHttpMethodsItemGet, nil
-	case "POST":
-		return SourceTypeConfigStripeAllowedHttpMethodsItemPost, nil
-	case "PUT":
-		return SourceTypeConfigStripeAllowedHttpMethodsItemPut, nil
-	case "PATCH":
-		return SourceTypeConfigStripeAllowedHttpMethodsItemPatch, nil
-	case "DELETE":
-		return SourceTypeConfigStripeAllowedHttpMethodsItemDelete, nil
-	}
-	var t SourceTypeConfigStripeAllowedHttpMethodsItem
-	return "", fmt.Errorf("%s is not a valid %T", s, t)
-}
-
-func (s SourceTypeConfigStripeAllowedHttpMethodsItem) Ptr() *SourceTypeConfigStripeAllowedHttpMethodsItem {
-	return &s
-}
-
-type SourceTypeConfigStripeAuth struct {
-	WebhookSecretKey string `json:"webhook_secret_key" url:"webhook_secret_key"`
-
-	extraProperties map[string]interface{}
-	rawJSON         json.RawMessage
-}
-
-func (s *SourceTypeConfigStripeAuth) GetWebhookSecretKey() string {
-	if s == nil {
-		return ""
-	}
-	return s.WebhookSecretKey
-}
-
-func (s *SourceTypeConfigStripeAuth) GetExtraProperties() map[string]interface{} {
-	return s.extraProperties
-}
-
-func (s *SourceTypeConfigStripeAuth) UnmarshalJSON(data []byte) error {
-	type unmarshaler SourceTypeConfigStripeAuth
-	var value unmarshaler
-	if err := json.Unmarshal(data, &value); err != nil {
-		return err
-	}
-	*s = SourceTypeConfigStripeAuth(value)
-	extraProperties, err := internal.ExtractExtraProperties(data, *s)
-	if err != nil {
-		return err
-	}
-	s.extraProperties = extraProperties
-	s.rawJSON = json.RawMessage(data)
-	return nil
-}
-
-func (s *SourceTypeConfigStripeAuth) String() string {
-	if len(s.rawJSON) > 0 {
-		if value, err := internal.StringifyJSON(s.rawJSON); err == nil {
-			return value
-		}
-	}
-	if value, err := internal.StringifyJSON(s); err == nil {
-		return value
-	}
-	return fmt.Sprintf("%#v", s)
-}
-
 // The type config for Svix. Requires type to be `SVIX`.
 type SourceTypeConfigSvix struct {
-	AllowedHttpMethods []SourceTypeConfigSvixAllowedHttpMethodsItem `json:"allowed_http_methods,omitempty" url:"allowed_http_methods,omitempty"`
-	Auth               *SourceTypeConfigSvixAuth                    `json:"auth,omitempty" url:"auth,omitempty"`
+	Auth *SourceConfigSvixAuth `json:"auth,omitempty" url:"auth,omitempty"`
 
 	extraProperties map[string]interface{}
 	rawJSON         json.RawMessage
 }
 
-func (s *SourceTypeConfigSvix) GetAllowedHttpMethods() []SourceTypeConfigSvixAllowedHttpMethodsItem {
-	if s == nil {
-		return nil
-	}
-	return s.AllowedHttpMethods
-}
-
-func (s *SourceTypeConfigSvix) GetAuth() *SourceTypeConfigSvixAuth {
+func (s *SourceTypeConfigSvix) GetAuth() *SourceConfigSvixAuth {
 	if s == nil {
 		return nil
 	}
@@ -17020,100 +19987,15 @@ func (s *SourceTypeConfigSvix) String() string {
 	return fmt.Sprintf("%#v", s)
 }
 
-type SourceTypeConfigSvixAllowedHttpMethodsItem string
-
-const (
-	SourceTypeConfigSvixAllowedHttpMethodsItemGet    SourceTypeConfigSvixAllowedHttpMethodsItem = "GET"
-	SourceTypeConfigSvixAllowedHttpMethodsItemPost   SourceTypeConfigSvixAllowedHttpMethodsItem = "POST"
-	SourceTypeConfigSvixAllowedHttpMethodsItemPut    SourceTypeConfigSvixAllowedHttpMethodsItem = "PUT"
-	SourceTypeConfigSvixAllowedHttpMethodsItemPatch  SourceTypeConfigSvixAllowedHttpMethodsItem = "PATCH"
-	SourceTypeConfigSvixAllowedHttpMethodsItemDelete SourceTypeConfigSvixAllowedHttpMethodsItem = "DELETE"
-)
-
-func NewSourceTypeConfigSvixAllowedHttpMethodsItemFromString(s string) (SourceTypeConfigSvixAllowedHttpMethodsItem, error) {
-	switch s {
-	case "GET":
-		return SourceTypeConfigSvixAllowedHttpMethodsItemGet, nil
-	case "POST":
-		return SourceTypeConfigSvixAllowedHttpMethodsItemPost, nil
-	case "PUT":
-		return SourceTypeConfigSvixAllowedHttpMethodsItemPut, nil
-	case "PATCH":
-		return SourceTypeConfigSvixAllowedHttpMethodsItemPatch, nil
-	case "DELETE":
-		return SourceTypeConfigSvixAllowedHttpMethodsItemDelete, nil
-	}
-	var t SourceTypeConfigSvixAllowedHttpMethodsItem
-	return "", fmt.Errorf("%s is not a valid %T", s, t)
-}
-
-func (s SourceTypeConfigSvixAllowedHttpMethodsItem) Ptr() *SourceTypeConfigSvixAllowedHttpMethodsItem {
-	return &s
-}
-
-type SourceTypeConfigSvixAuth struct {
-	WebhookSecretKey string `json:"webhook_secret_key" url:"webhook_secret_key"`
-
-	extraProperties map[string]interface{}
-	rawJSON         json.RawMessage
-}
-
-func (s *SourceTypeConfigSvixAuth) GetWebhookSecretKey() string {
-	if s == nil {
-		return ""
-	}
-	return s.WebhookSecretKey
-}
-
-func (s *SourceTypeConfigSvixAuth) GetExtraProperties() map[string]interface{} {
-	return s.extraProperties
-}
-
-func (s *SourceTypeConfigSvixAuth) UnmarshalJSON(data []byte) error {
-	type unmarshaler SourceTypeConfigSvixAuth
-	var value unmarshaler
-	if err := json.Unmarshal(data, &value); err != nil {
-		return err
-	}
-	*s = SourceTypeConfigSvixAuth(value)
-	extraProperties, err := internal.ExtractExtraProperties(data, *s)
-	if err != nil {
-		return err
-	}
-	s.extraProperties = extraProperties
-	s.rawJSON = json.RawMessage(data)
-	return nil
-}
-
-func (s *SourceTypeConfigSvixAuth) String() string {
-	if len(s.rawJSON) > 0 {
-		if value, err := internal.StringifyJSON(s.rawJSON); err == nil {
-			return value
-		}
-	}
-	if value, err := internal.StringifyJSON(s); err == nil {
-		return value
-	}
-	return fmt.Sprintf("%#v", s)
-}
-
 // The type config for Synctera. Requires type to be `SYNCTERA`.
 type SourceTypeConfigSynctera struct {
-	AllowedHttpMethods []SourceTypeConfigSyncteraAllowedHttpMethodsItem `json:"allowed_http_methods,omitempty" url:"allowed_http_methods,omitempty"`
-	Auth               *SourceTypeConfigSyncteraAuth                    `json:"auth,omitempty" url:"auth,omitempty"`
+	Auth *SourceConfigSyncteraAuth `json:"auth,omitempty" url:"auth,omitempty"`
 
 	extraProperties map[string]interface{}
 	rawJSON         json.RawMessage
 }
 
-func (s *SourceTypeConfigSynctera) GetAllowedHttpMethods() []SourceTypeConfigSyncteraAllowedHttpMethodsItem {
-	if s == nil {
-		return nil
-	}
-	return s.AllowedHttpMethods
-}
-
-func (s *SourceTypeConfigSynctera) GetAuth() *SourceTypeConfigSyncteraAuth {
+func (s *SourceTypeConfigSynctera) GetAuth() *SourceConfigSyncteraAuth {
 	if s == nil {
 		return nil
 	}
@@ -17152,62 +20034,32 @@ func (s *SourceTypeConfigSynctera) String() string {
 	return fmt.Sprintf("%#v", s)
 }
 
-type SourceTypeConfigSyncteraAllowedHttpMethodsItem string
-
-const (
-	SourceTypeConfigSyncteraAllowedHttpMethodsItemGet    SourceTypeConfigSyncteraAllowedHttpMethodsItem = "GET"
-	SourceTypeConfigSyncteraAllowedHttpMethodsItemPost   SourceTypeConfigSyncteraAllowedHttpMethodsItem = "POST"
-	SourceTypeConfigSyncteraAllowedHttpMethodsItemPut    SourceTypeConfigSyncteraAllowedHttpMethodsItem = "PUT"
-	SourceTypeConfigSyncteraAllowedHttpMethodsItemPatch  SourceTypeConfigSyncteraAllowedHttpMethodsItem = "PATCH"
-	SourceTypeConfigSyncteraAllowedHttpMethodsItemDelete SourceTypeConfigSyncteraAllowedHttpMethodsItem = "DELETE"
-)
-
-func NewSourceTypeConfigSyncteraAllowedHttpMethodsItemFromString(s string) (SourceTypeConfigSyncteraAllowedHttpMethodsItem, error) {
-	switch s {
-	case "GET":
-		return SourceTypeConfigSyncteraAllowedHttpMethodsItemGet, nil
-	case "POST":
-		return SourceTypeConfigSyncteraAllowedHttpMethodsItemPost, nil
-	case "PUT":
-		return SourceTypeConfigSyncteraAllowedHttpMethodsItemPut, nil
-	case "PATCH":
-		return SourceTypeConfigSyncteraAllowedHttpMethodsItemPatch, nil
-	case "DELETE":
-		return SourceTypeConfigSyncteraAllowedHttpMethodsItemDelete, nil
-	}
-	var t SourceTypeConfigSyncteraAllowedHttpMethodsItem
-	return "", fmt.Errorf("%s is not a valid %T", s, t)
-}
-
-func (s SourceTypeConfigSyncteraAllowedHttpMethodsItem) Ptr() *SourceTypeConfigSyncteraAllowedHttpMethodsItem {
-	return &s
-}
-
-type SourceTypeConfigSyncteraAuth struct {
-	WebhookSecretKey string `json:"webhook_secret_key" url:"webhook_secret_key"`
+// The type config for Tebex. Requires type to be `TEBEX`.
+type SourceTypeConfigTebex struct {
+	Auth *SourceConfigTebexAuth `json:"auth,omitempty" url:"auth,omitempty"`
 
 	extraProperties map[string]interface{}
 	rawJSON         json.RawMessage
 }
 
-func (s *SourceTypeConfigSyncteraAuth) GetWebhookSecretKey() string {
+func (s *SourceTypeConfigTebex) GetAuth() *SourceConfigTebexAuth {
 	if s == nil {
-		return ""
+		return nil
 	}
-	return s.WebhookSecretKey
+	return s.Auth
 }
 
-func (s *SourceTypeConfigSyncteraAuth) GetExtraProperties() map[string]interface{} {
+func (s *SourceTypeConfigTebex) GetExtraProperties() map[string]interface{} {
 	return s.extraProperties
 }
 
-func (s *SourceTypeConfigSyncteraAuth) UnmarshalJSON(data []byte) error {
-	type unmarshaler SourceTypeConfigSyncteraAuth
+func (s *SourceTypeConfigTebex) UnmarshalJSON(data []byte) error {
+	type unmarshaler SourceTypeConfigTebex
 	var value unmarshaler
 	if err := json.Unmarshal(data, &value); err != nil {
 		return err
 	}
-	*s = SourceTypeConfigSyncteraAuth(value)
+	*s = SourceTypeConfigTebex(value)
 	extraProperties, err := internal.ExtractExtraProperties(data, *s)
 	if err != nil {
 		return err
@@ -17217,7 +20069,7 @@ func (s *SourceTypeConfigSyncteraAuth) UnmarshalJSON(data []byte) error {
 	return nil
 }
 
-func (s *SourceTypeConfigSyncteraAuth) String() string {
+func (s *SourceTypeConfigTebex) String() string {
 	if len(s.rawJSON) > 0 {
 		if value, err := internal.StringifyJSON(s.rawJSON); err == nil {
 			return value
@@ -17231,21 +20083,13 @@ func (s *SourceTypeConfigSyncteraAuth) String() string {
 
 // The type config for Telnyx. Requires type to be `TELNYX`.
 type SourceTypeConfigTelnyx struct {
-	AllowedHttpMethods []SourceTypeConfigTelnyxAllowedHttpMethodsItem `json:"allowed_http_methods,omitempty" url:"allowed_http_methods,omitempty"`
-	Auth               *SourceTypeConfigTelnyxAuth                    `json:"auth,omitempty" url:"auth,omitempty"`
+	Auth *SourceConfigTelnyxAuth `json:"auth,omitempty" url:"auth,omitempty"`
 
 	extraProperties map[string]interface{}
 	rawJSON         json.RawMessage
 }
 
-func (s *SourceTypeConfigTelnyx) GetAllowedHttpMethods() []SourceTypeConfigTelnyxAllowedHttpMethodsItem {
-	if s == nil {
-		return nil
-	}
-	return s.AllowedHttpMethods
-}
-
-func (s *SourceTypeConfigTelnyx) GetAuth() *SourceTypeConfigTelnyxAuth {
+func (s *SourceTypeConfigTelnyx) GetAuth() *SourceConfigTelnyxAuth {
 	if s == nil {
 		return nil
 	}
@@ -17284,62 +20128,32 @@ func (s *SourceTypeConfigTelnyx) String() string {
 	return fmt.Sprintf("%#v", s)
 }
 
-type SourceTypeConfigTelnyxAllowedHttpMethodsItem string
-
-const (
-	SourceTypeConfigTelnyxAllowedHttpMethodsItemGet    SourceTypeConfigTelnyxAllowedHttpMethodsItem = "GET"
-	SourceTypeConfigTelnyxAllowedHttpMethodsItemPost   SourceTypeConfigTelnyxAllowedHttpMethodsItem = "POST"
-	SourceTypeConfigTelnyxAllowedHttpMethodsItemPut    SourceTypeConfigTelnyxAllowedHttpMethodsItem = "PUT"
-	SourceTypeConfigTelnyxAllowedHttpMethodsItemPatch  SourceTypeConfigTelnyxAllowedHttpMethodsItem = "PATCH"
-	SourceTypeConfigTelnyxAllowedHttpMethodsItemDelete SourceTypeConfigTelnyxAllowedHttpMethodsItem = "DELETE"
-)
-
-func NewSourceTypeConfigTelnyxAllowedHttpMethodsItemFromString(s string) (SourceTypeConfigTelnyxAllowedHttpMethodsItem, error) {
-	switch s {
-	case "GET":
-		return SourceTypeConfigTelnyxAllowedHttpMethodsItemGet, nil
-	case "POST":
-		return SourceTypeConfigTelnyxAllowedHttpMethodsItemPost, nil
-	case "PUT":
-		return SourceTypeConfigTelnyxAllowedHttpMethodsItemPut, nil
-	case "PATCH":
-		return SourceTypeConfigTelnyxAllowedHttpMethodsItemPatch, nil
-	case "DELETE":
-		return SourceTypeConfigTelnyxAllowedHttpMethodsItemDelete, nil
-	}
-	var t SourceTypeConfigTelnyxAllowedHttpMethodsItem
-	return "", fmt.Errorf("%s is not a valid %T", s, t)
-}
-
-func (s SourceTypeConfigTelnyxAllowedHttpMethodsItem) Ptr() *SourceTypeConfigTelnyxAllowedHttpMethodsItem {
-	return &s
-}
-
-type SourceTypeConfigTelnyxAuth struct {
-	PublicKey string `json:"public_key" url:"public_key"`
+// The type config for TikTok. Requires type to be `TIKTOK`.
+type SourceTypeConfigTikTok struct {
+	Auth *SourceConfigTikTokAuth `json:"auth,omitempty" url:"auth,omitempty"`
 
 	extraProperties map[string]interface{}
 	rawJSON         json.RawMessage
 }
 
-func (s *SourceTypeConfigTelnyxAuth) GetPublicKey() string {
+func (s *SourceTypeConfigTikTok) GetAuth() *SourceConfigTikTokAuth {
 	if s == nil {
-		return ""
+		return nil
 	}
-	return s.PublicKey
+	return s.Auth
 }
 
-func (s *SourceTypeConfigTelnyxAuth) GetExtraProperties() map[string]interface{} {
+func (s *SourceTypeConfigTikTok) GetExtraProperties() map[string]interface{} {
 	return s.extraProperties
 }
 
-func (s *SourceTypeConfigTelnyxAuth) UnmarshalJSON(data []byte) error {
-	type unmarshaler SourceTypeConfigTelnyxAuth
+func (s *SourceTypeConfigTikTok) UnmarshalJSON(data []byte) error {
+	type unmarshaler SourceTypeConfigTikTok
 	var value unmarshaler
 	if err := json.Unmarshal(data, &value); err != nil {
 		return err
 	}
-	*s = SourceTypeConfigTelnyxAuth(value)
+	*s = SourceTypeConfigTikTok(value)
 	extraProperties, err := internal.ExtractExtraProperties(data, *s)
 	if err != nil {
 		return err
@@ -17349,7 +20163,7 @@ func (s *SourceTypeConfigTelnyxAuth) UnmarshalJSON(data []byte) error {
 	return nil
 }
 
-func (s *SourceTypeConfigTelnyxAuth) String() string {
+func (s *SourceTypeConfigTikTok) String() string {
 	if len(s.rawJSON) > 0 {
 		if value, err := internal.StringifyJSON(s.rawJSON); err == nil {
 			return value
@@ -17363,21 +20177,13 @@ func (s *SourceTypeConfigTelnyxAuth) String() string {
 
 // The type config for TokenIO. Requires type to be `TOKENIO`.
 type SourceTypeConfigTokenIo struct {
-	AllowedHttpMethods []SourceTypeConfigTokenIoAllowedHttpMethodsItem `json:"allowed_http_methods,omitempty" url:"allowed_http_methods,omitempty"`
-	Auth               *SourceTypeConfigTokenIoAuth                    `json:"auth,omitempty" url:"auth,omitempty"`
+	Auth *SourceConfigTokenIoAuth `json:"auth,omitempty" url:"auth,omitempty"`
 
 	extraProperties map[string]interface{}
 	rawJSON         json.RawMessage
 }
 
-func (s *SourceTypeConfigTokenIo) GetAllowedHttpMethods() []SourceTypeConfigTokenIoAllowedHttpMethodsItem {
-	if s == nil {
-		return nil
-	}
-	return s.AllowedHttpMethods
-}
-
-func (s *SourceTypeConfigTokenIo) GetAuth() *SourceTypeConfigTokenIoAuth {
+func (s *SourceTypeConfigTokenIo) GetAuth() *SourceConfigTokenIoAuth {
 	if s == nil {
 		return nil
 	}
@@ -17416,100 +20222,15 @@ func (s *SourceTypeConfigTokenIo) String() string {
 	return fmt.Sprintf("%#v", s)
 }
 
-type SourceTypeConfigTokenIoAllowedHttpMethodsItem string
-
-const (
-	SourceTypeConfigTokenIoAllowedHttpMethodsItemGet    SourceTypeConfigTokenIoAllowedHttpMethodsItem = "GET"
-	SourceTypeConfigTokenIoAllowedHttpMethodsItemPost   SourceTypeConfigTokenIoAllowedHttpMethodsItem = "POST"
-	SourceTypeConfigTokenIoAllowedHttpMethodsItemPut    SourceTypeConfigTokenIoAllowedHttpMethodsItem = "PUT"
-	SourceTypeConfigTokenIoAllowedHttpMethodsItemPatch  SourceTypeConfigTokenIoAllowedHttpMethodsItem = "PATCH"
-	SourceTypeConfigTokenIoAllowedHttpMethodsItemDelete SourceTypeConfigTokenIoAllowedHttpMethodsItem = "DELETE"
-)
-
-func NewSourceTypeConfigTokenIoAllowedHttpMethodsItemFromString(s string) (SourceTypeConfigTokenIoAllowedHttpMethodsItem, error) {
-	switch s {
-	case "GET":
-		return SourceTypeConfigTokenIoAllowedHttpMethodsItemGet, nil
-	case "POST":
-		return SourceTypeConfigTokenIoAllowedHttpMethodsItemPost, nil
-	case "PUT":
-		return SourceTypeConfigTokenIoAllowedHttpMethodsItemPut, nil
-	case "PATCH":
-		return SourceTypeConfigTokenIoAllowedHttpMethodsItemPatch, nil
-	case "DELETE":
-		return SourceTypeConfigTokenIoAllowedHttpMethodsItemDelete, nil
-	}
-	var t SourceTypeConfigTokenIoAllowedHttpMethodsItem
-	return "", fmt.Errorf("%s is not a valid %T", s, t)
-}
-
-func (s SourceTypeConfigTokenIoAllowedHttpMethodsItem) Ptr() *SourceTypeConfigTokenIoAllowedHttpMethodsItem {
-	return &s
-}
-
-type SourceTypeConfigTokenIoAuth struct {
-	PublicKey string `json:"public_key" url:"public_key"`
-
-	extraProperties map[string]interface{}
-	rawJSON         json.RawMessage
-}
-
-func (s *SourceTypeConfigTokenIoAuth) GetPublicKey() string {
-	if s == nil {
-		return ""
-	}
-	return s.PublicKey
-}
-
-func (s *SourceTypeConfigTokenIoAuth) GetExtraProperties() map[string]interface{} {
-	return s.extraProperties
-}
-
-func (s *SourceTypeConfigTokenIoAuth) UnmarshalJSON(data []byte) error {
-	type unmarshaler SourceTypeConfigTokenIoAuth
-	var value unmarshaler
-	if err := json.Unmarshal(data, &value); err != nil {
-		return err
-	}
-	*s = SourceTypeConfigTokenIoAuth(value)
-	extraProperties, err := internal.ExtractExtraProperties(data, *s)
-	if err != nil {
-		return err
-	}
-	s.extraProperties = extraProperties
-	s.rawJSON = json.RawMessage(data)
-	return nil
-}
-
-func (s *SourceTypeConfigTokenIoAuth) String() string {
-	if len(s.rawJSON) > 0 {
-		if value, err := internal.StringifyJSON(s.rawJSON); err == nil {
-			return value
-		}
-	}
-	if value, err := internal.StringifyJSON(s); err == nil {
-		return value
-	}
-	return fmt.Sprintf("%#v", s)
-}
-
 // The type config for Treezor. Requires type to be `TREEZOR`.
 type SourceTypeConfigTreezor struct {
-	AllowedHttpMethods []SourceTypeConfigTreezorAllowedHttpMethodsItem `json:"allowed_http_methods,omitempty" url:"allowed_http_methods,omitempty"`
-	Auth               *SourceTypeConfigTreezorAuth                    `json:"auth,omitempty" url:"auth,omitempty"`
+	Auth *SourceConfigTreezorAuth `json:"auth,omitempty" url:"auth,omitempty"`
 
 	extraProperties map[string]interface{}
 	rawJSON         json.RawMessage
 }
 
-func (s *SourceTypeConfigTreezor) GetAllowedHttpMethods() []SourceTypeConfigTreezorAllowedHttpMethodsItem {
-	if s == nil {
-		return nil
-	}
-	return s.AllowedHttpMethods
-}
-
-func (s *SourceTypeConfigTreezor) GetAuth() *SourceTypeConfigTreezorAuth {
+func (s *SourceTypeConfigTreezor) GetAuth() *SourceConfigTreezorAuth {
 	if s == nil {
 		return nil
 	}
@@ -17548,100 +20269,15 @@ func (s *SourceTypeConfigTreezor) String() string {
 	return fmt.Sprintf("%#v", s)
 }
 
-type SourceTypeConfigTreezorAllowedHttpMethodsItem string
-
-const (
-	SourceTypeConfigTreezorAllowedHttpMethodsItemGet    SourceTypeConfigTreezorAllowedHttpMethodsItem = "GET"
-	SourceTypeConfigTreezorAllowedHttpMethodsItemPost   SourceTypeConfigTreezorAllowedHttpMethodsItem = "POST"
-	SourceTypeConfigTreezorAllowedHttpMethodsItemPut    SourceTypeConfigTreezorAllowedHttpMethodsItem = "PUT"
-	SourceTypeConfigTreezorAllowedHttpMethodsItemPatch  SourceTypeConfigTreezorAllowedHttpMethodsItem = "PATCH"
-	SourceTypeConfigTreezorAllowedHttpMethodsItemDelete SourceTypeConfigTreezorAllowedHttpMethodsItem = "DELETE"
-)
-
-func NewSourceTypeConfigTreezorAllowedHttpMethodsItemFromString(s string) (SourceTypeConfigTreezorAllowedHttpMethodsItem, error) {
-	switch s {
-	case "GET":
-		return SourceTypeConfigTreezorAllowedHttpMethodsItemGet, nil
-	case "POST":
-		return SourceTypeConfigTreezorAllowedHttpMethodsItemPost, nil
-	case "PUT":
-		return SourceTypeConfigTreezorAllowedHttpMethodsItemPut, nil
-	case "PATCH":
-		return SourceTypeConfigTreezorAllowedHttpMethodsItemPatch, nil
-	case "DELETE":
-		return SourceTypeConfigTreezorAllowedHttpMethodsItemDelete, nil
-	}
-	var t SourceTypeConfigTreezorAllowedHttpMethodsItem
-	return "", fmt.Errorf("%s is not a valid %T", s, t)
-}
-
-func (s SourceTypeConfigTreezorAllowedHttpMethodsItem) Ptr() *SourceTypeConfigTreezorAllowedHttpMethodsItem {
-	return &s
-}
-
-type SourceTypeConfigTreezorAuth struct {
-	WebhookSecretKey string `json:"webhook_secret_key" url:"webhook_secret_key"`
-
-	extraProperties map[string]interface{}
-	rawJSON         json.RawMessage
-}
-
-func (s *SourceTypeConfigTreezorAuth) GetWebhookSecretKey() string {
-	if s == nil {
-		return ""
-	}
-	return s.WebhookSecretKey
-}
-
-func (s *SourceTypeConfigTreezorAuth) GetExtraProperties() map[string]interface{} {
-	return s.extraProperties
-}
-
-func (s *SourceTypeConfigTreezorAuth) UnmarshalJSON(data []byte) error {
-	type unmarshaler SourceTypeConfigTreezorAuth
-	var value unmarshaler
-	if err := json.Unmarshal(data, &value); err != nil {
-		return err
-	}
-	*s = SourceTypeConfigTreezorAuth(value)
-	extraProperties, err := internal.ExtractExtraProperties(data, *s)
-	if err != nil {
-		return err
-	}
-	s.extraProperties = extraProperties
-	s.rawJSON = json.RawMessage(data)
-	return nil
-}
-
-func (s *SourceTypeConfigTreezorAuth) String() string {
-	if len(s.rawJSON) > 0 {
-		if value, err := internal.StringifyJSON(s.rawJSON); err == nil {
-			return value
-		}
-	}
-	if value, err := internal.StringifyJSON(s); err == nil {
-		return value
-	}
-	return fmt.Sprintf("%#v", s)
-}
-
 // The type config for Trello. Requires type to be `TRELLO`.
 type SourceTypeConfigTrello struct {
-	AllowedHttpMethods []SourceTypeConfigTrelloAllowedHttpMethodsItem `json:"allowed_http_methods,omitempty" url:"allowed_http_methods,omitempty"`
-	Auth               *SourceTypeConfigTrelloAuth                    `json:"auth,omitempty" url:"auth,omitempty"`
+	Auth *SourceConfigTrelloAuth `json:"auth,omitempty" url:"auth,omitempty"`
 
 	extraProperties map[string]interface{}
 	rawJSON         json.RawMessage
 }
 
-func (s *SourceTypeConfigTrello) GetAllowedHttpMethods() []SourceTypeConfigTrelloAllowedHttpMethodsItem {
-	if s == nil {
-		return nil
-	}
-	return s.AllowedHttpMethods
-}
-
-func (s *SourceTypeConfigTrello) GetAuth() *SourceTypeConfigTrelloAuth {
+func (s *SourceTypeConfigTrello) GetAuth() *SourceConfigTrelloAuth {
 	if s == nil {
 		return nil
 	}
@@ -17680,100 +20316,15 @@ func (s *SourceTypeConfigTrello) String() string {
 	return fmt.Sprintf("%#v", s)
 }
 
-type SourceTypeConfigTrelloAllowedHttpMethodsItem string
-
-const (
-	SourceTypeConfigTrelloAllowedHttpMethodsItemGet    SourceTypeConfigTrelloAllowedHttpMethodsItem = "GET"
-	SourceTypeConfigTrelloAllowedHttpMethodsItemPost   SourceTypeConfigTrelloAllowedHttpMethodsItem = "POST"
-	SourceTypeConfigTrelloAllowedHttpMethodsItemPut    SourceTypeConfigTrelloAllowedHttpMethodsItem = "PUT"
-	SourceTypeConfigTrelloAllowedHttpMethodsItemPatch  SourceTypeConfigTrelloAllowedHttpMethodsItem = "PATCH"
-	SourceTypeConfigTrelloAllowedHttpMethodsItemDelete SourceTypeConfigTrelloAllowedHttpMethodsItem = "DELETE"
-)
-
-func NewSourceTypeConfigTrelloAllowedHttpMethodsItemFromString(s string) (SourceTypeConfigTrelloAllowedHttpMethodsItem, error) {
-	switch s {
-	case "GET":
-		return SourceTypeConfigTrelloAllowedHttpMethodsItemGet, nil
-	case "POST":
-		return SourceTypeConfigTrelloAllowedHttpMethodsItemPost, nil
-	case "PUT":
-		return SourceTypeConfigTrelloAllowedHttpMethodsItemPut, nil
-	case "PATCH":
-		return SourceTypeConfigTrelloAllowedHttpMethodsItemPatch, nil
-	case "DELETE":
-		return SourceTypeConfigTrelloAllowedHttpMethodsItemDelete, nil
-	}
-	var t SourceTypeConfigTrelloAllowedHttpMethodsItem
-	return "", fmt.Errorf("%s is not a valid %T", s, t)
-}
-
-func (s SourceTypeConfigTrelloAllowedHttpMethodsItem) Ptr() *SourceTypeConfigTrelloAllowedHttpMethodsItem {
-	return &s
-}
-
-type SourceTypeConfigTrelloAuth struct {
-	WebhookSecretKey string `json:"webhook_secret_key" url:"webhook_secret_key"`
-
-	extraProperties map[string]interface{}
-	rawJSON         json.RawMessage
-}
-
-func (s *SourceTypeConfigTrelloAuth) GetWebhookSecretKey() string {
-	if s == nil {
-		return ""
-	}
-	return s.WebhookSecretKey
-}
-
-func (s *SourceTypeConfigTrelloAuth) GetExtraProperties() map[string]interface{} {
-	return s.extraProperties
-}
-
-func (s *SourceTypeConfigTrelloAuth) UnmarshalJSON(data []byte) error {
-	type unmarshaler SourceTypeConfigTrelloAuth
-	var value unmarshaler
-	if err := json.Unmarshal(data, &value); err != nil {
-		return err
-	}
-	*s = SourceTypeConfigTrelloAuth(value)
-	extraProperties, err := internal.ExtractExtraProperties(data, *s)
-	if err != nil {
-		return err
-	}
-	s.extraProperties = extraProperties
-	s.rawJSON = json.RawMessage(data)
-	return nil
-}
-
-func (s *SourceTypeConfigTrelloAuth) String() string {
-	if len(s.rawJSON) > 0 {
-		if value, err := internal.StringifyJSON(s.rawJSON); err == nil {
-			return value
-		}
-	}
-	if value, err := internal.StringifyJSON(s); err == nil {
-		return value
-	}
-	return fmt.Sprintf("%#v", s)
-}
-
 // The type config for Twilio. Requires type to be `TWILIO`.
 type SourceTypeConfigTwilio struct {
-	AllowedHttpMethods []SourceTypeConfigTwilioAllowedHttpMethodsItem `json:"allowed_http_methods,omitempty" url:"allowed_http_methods,omitempty"`
-	Auth               *SourceTypeConfigTwilioAuth                    `json:"auth,omitempty" url:"auth,omitempty"`
+	Auth *SourceConfigTwilioAuth `json:"auth,omitempty" url:"auth,omitempty"`
 
 	extraProperties map[string]interface{}
 	rawJSON         json.RawMessage
 }
 
-func (s *SourceTypeConfigTwilio) GetAllowedHttpMethods() []SourceTypeConfigTwilioAllowedHttpMethodsItem {
-	if s == nil {
-		return nil
-	}
-	return s.AllowedHttpMethods
-}
-
-func (s *SourceTypeConfigTwilio) GetAuth() *SourceTypeConfigTwilioAuth {
+func (s *SourceTypeConfigTwilio) GetAuth() *SourceConfigTwilioAuth {
 	if s == nil {
 		return nil
 	}
@@ -17812,100 +20363,15 @@ func (s *SourceTypeConfigTwilio) String() string {
 	return fmt.Sprintf("%#v", s)
 }
 
-type SourceTypeConfigTwilioAllowedHttpMethodsItem string
-
-const (
-	SourceTypeConfigTwilioAllowedHttpMethodsItemGet    SourceTypeConfigTwilioAllowedHttpMethodsItem = "GET"
-	SourceTypeConfigTwilioAllowedHttpMethodsItemPost   SourceTypeConfigTwilioAllowedHttpMethodsItem = "POST"
-	SourceTypeConfigTwilioAllowedHttpMethodsItemPut    SourceTypeConfigTwilioAllowedHttpMethodsItem = "PUT"
-	SourceTypeConfigTwilioAllowedHttpMethodsItemPatch  SourceTypeConfigTwilioAllowedHttpMethodsItem = "PATCH"
-	SourceTypeConfigTwilioAllowedHttpMethodsItemDelete SourceTypeConfigTwilioAllowedHttpMethodsItem = "DELETE"
-)
-
-func NewSourceTypeConfigTwilioAllowedHttpMethodsItemFromString(s string) (SourceTypeConfigTwilioAllowedHttpMethodsItem, error) {
-	switch s {
-	case "GET":
-		return SourceTypeConfigTwilioAllowedHttpMethodsItemGet, nil
-	case "POST":
-		return SourceTypeConfigTwilioAllowedHttpMethodsItemPost, nil
-	case "PUT":
-		return SourceTypeConfigTwilioAllowedHttpMethodsItemPut, nil
-	case "PATCH":
-		return SourceTypeConfigTwilioAllowedHttpMethodsItemPatch, nil
-	case "DELETE":
-		return SourceTypeConfigTwilioAllowedHttpMethodsItemDelete, nil
-	}
-	var t SourceTypeConfigTwilioAllowedHttpMethodsItem
-	return "", fmt.Errorf("%s is not a valid %T", s, t)
-}
-
-func (s SourceTypeConfigTwilioAllowedHttpMethodsItem) Ptr() *SourceTypeConfigTwilioAllowedHttpMethodsItem {
-	return &s
-}
-
-type SourceTypeConfigTwilioAuth struct {
-	WebhookSecretKey string `json:"webhook_secret_key" url:"webhook_secret_key"`
-
-	extraProperties map[string]interface{}
-	rawJSON         json.RawMessage
-}
-
-func (s *SourceTypeConfigTwilioAuth) GetWebhookSecretKey() string {
-	if s == nil {
-		return ""
-	}
-	return s.WebhookSecretKey
-}
-
-func (s *SourceTypeConfigTwilioAuth) GetExtraProperties() map[string]interface{} {
-	return s.extraProperties
-}
-
-func (s *SourceTypeConfigTwilioAuth) UnmarshalJSON(data []byte) error {
-	type unmarshaler SourceTypeConfigTwilioAuth
-	var value unmarshaler
-	if err := json.Unmarshal(data, &value); err != nil {
-		return err
-	}
-	*s = SourceTypeConfigTwilioAuth(value)
-	extraProperties, err := internal.ExtractExtraProperties(data, *s)
-	if err != nil {
-		return err
-	}
-	s.extraProperties = extraProperties
-	s.rawJSON = json.RawMessage(data)
-	return nil
-}
-
-func (s *SourceTypeConfigTwilioAuth) String() string {
-	if len(s.rawJSON) > 0 {
-		if value, err := internal.StringifyJSON(s.rawJSON); err == nil {
-			return value
-		}
-	}
-	if value, err := internal.StringifyJSON(s); err == nil {
-		return value
-	}
-	return fmt.Sprintf("%#v", s)
-}
-
 // The type config for Twitch. Requires type to be `TWITCH`.
 type SourceTypeConfigTwitch struct {
-	AllowedHttpMethods []SourceTypeConfigTwitchAllowedHttpMethodsItem `json:"allowed_http_methods,omitempty" url:"allowed_http_methods,omitempty"`
-	Auth               *SourceTypeConfigTwitchAuth                    `json:"auth,omitempty" url:"auth,omitempty"`
+	Auth *SourceConfigTwitchAuth `json:"auth,omitempty" url:"auth,omitempty"`
 
 	extraProperties map[string]interface{}
 	rawJSON         json.RawMessage
 }
 
-func (s *SourceTypeConfigTwitch) GetAllowedHttpMethods() []SourceTypeConfigTwitchAllowedHttpMethodsItem {
-	if s == nil {
-		return nil
-	}
-	return s.AllowedHttpMethods
-}
-
-func (s *SourceTypeConfigTwitch) GetAuth() *SourceTypeConfigTwitchAuth {
+func (s *SourceTypeConfigTwitch) GetAuth() *SourceConfigTwitchAuth {
 	if s == nil {
 		return nil
 	}
@@ -17944,100 +20410,15 @@ func (s *SourceTypeConfigTwitch) String() string {
 	return fmt.Sprintf("%#v", s)
 }
 
-type SourceTypeConfigTwitchAllowedHttpMethodsItem string
-
-const (
-	SourceTypeConfigTwitchAllowedHttpMethodsItemGet    SourceTypeConfigTwitchAllowedHttpMethodsItem = "GET"
-	SourceTypeConfigTwitchAllowedHttpMethodsItemPost   SourceTypeConfigTwitchAllowedHttpMethodsItem = "POST"
-	SourceTypeConfigTwitchAllowedHttpMethodsItemPut    SourceTypeConfigTwitchAllowedHttpMethodsItem = "PUT"
-	SourceTypeConfigTwitchAllowedHttpMethodsItemPatch  SourceTypeConfigTwitchAllowedHttpMethodsItem = "PATCH"
-	SourceTypeConfigTwitchAllowedHttpMethodsItemDelete SourceTypeConfigTwitchAllowedHttpMethodsItem = "DELETE"
-)
-
-func NewSourceTypeConfigTwitchAllowedHttpMethodsItemFromString(s string) (SourceTypeConfigTwitchAllowedHttpMethodsItem, error) {
-	switch s {
-	case "GET":
-		return SourceTypeConfigTwitchAllowedHttpMethodsItemGet, nil
-	case "POST":
-		return SourceTypeConfigTwitchAllowedHttpMethodsItemPost, nil
-	case "PUT":
-		return SourceTypeConfigTwitchAllowedHttpMethodsItemPut, nil
-	case "PATCH":
-		return SourceTypeConfigTwitchAllowedHttpMethodsItemPatch, nil
-	case "DELETE":
-		return SourceTypeConfigTwitchAllowedHttpMethodsItemDelete, nil
-	}
-	var t SourceTypeConfigTwitchAllowedHttpMethodsItem
-	return "", fmt.Errorf("%s is not a valid %T", s, t)
-}
-
-func (s SourceTypeConfigTwitchAllowedHttpMethodsItem) Ptr() *SourceTypeConfigTwitchAllowedHttpMethodsItem {
-	return &s
-}
-
-type SourceTypeConfigTwitchAuth struct {
-	WebhookSecretKey string `json:"webhook_secret_key" url:"webhook_secret_key"`
-
-	extraProperties map[string]interface{}
-	rawJSON         json.RawMessage
-}
-
-func (s *SourceTypeConfigTwitchAuth) GetWebhookSecretKey() string {
-	if s == nil {
-		return ""
-	}
-	return s.WebhookSecretKey
-}
-
-func (s *SourceTypeConfigTwitchAuth) GetExtraProperties() map[string]interface{} {
-	return s.extraProperties
-}
-
-func (s *SourceTypeConfigTwitchAuth) UnmarshalJSON(data []byte) error {
-	type unmarshaler SourceTypeConfigTwitchAuth
-	var value unmarshaler
-	if err := json.Unmarshal(data, &value); err != nil {
-		return err
-	}
-	*s = SourceTypeConfigTwitchAuth(value)
-	extraProperties, err := internal.ExtractExtraProperties(data, *s)
-	if err != nil {
-		return err
-	}
-	s.extraProperties = extraProperties
-	s.rawJSON = json.RawMessage(data)
-	return nil
-}
-
-func (s *SourceTypeConfigTwitchAuth) String() string {
-	if len(s.rawJSON) > 0 {
-		if value, err := internal.StringifyJSON(s.rawJSON); err == nil {
-			return value
-		}
-	}
-	if value, err := internal.StringifyJSON(s); err == nil {
-		return value
-	}
-	return fmt.Sprintf("%#v", s)
-}
-
 // The type config for Twitter. Requires type to be `TWITTER`.
 type SourceTypeConfigTwitter struct {
-	AllowedHttpMethods []SourceTypeConfigTwitterAllowedHttpMethodsItem `json:"allowed_http_methods,omitempty" url:"allowed_http_methods,omitempty"`
-	Auth               *SourceTypeConfigTwitterAuth                    `json:"auth,omitempty" url:"auth,omitempty"`
+	Auth *SourceConfigTwitterAuth `json:"auth,omitempty" url:"auth,omitempty"`
 
 	extraProperties map[string]interface{}
 	rawJSON         json.RawMessage
 }
 
-func (s *SourceTypeConfigTwitter) GetAllowedHttpMethods() []SourceTypeConfigTwitterAllowedHttpMethodsItem {
-	if s == nil {
-		return nil
-	}
-	return s.AllowedHttpMethods
-}
-
-func (s *SourceTypeConfigTwitter) GetAuth() *SourceTypeConfigTwitterAuth {
+func (s *SourceTypeConfigTwitter) GetAuth() *SourceConfigTwitterAuth {
 	if s == nil {
 		return nil
 	}
@@ -18076,100 +20457,15 @@ func (s *SourceTypeConfigTwitter) String() string {
 	return fmt.Sprintf("%#v", s)
 }
 
-type SourceTypeConfigTwitterAllowedHttpMethodsItem string
-
-const (
-	SourceTypeConfigTwitterAllowedHttpMethodsItemGet    SourceTypeConfigTwitterAllowedHttpMethodsItem = "GET"
-	SourceTypeConfigTwitterAllowedHttpMethodsItemPost   SourceTypeConfigTwitterAllowedHttpMethodsItem = "POST"
-	SourceTypeConfigTwitterAllowedHttpMethodsItemPut    SourceTypeConfigTwitterAllowedHttpMethodsItem = "PUT"
-	SourceTypeConfigTwitterAllowedHttpMethodsItemPatch  SourceTypeConfigTwitterAllowedHttpMethodsItem = "PATCH"
-	SourceTypeConfigTwitterAllowedHttpMethodsItemDelete SourceTypeConfigTwitterAllowedHttpMethodsItem = "DELETE"
-)
-
-func NewSourceTypeConfigTwitterAllowedHttpMethodsItemFromString(s string) (SourceTypeConfigTwitterAllowedHttpMethodsItem, error) {
-	switch s {
-	case "GET":
-		return SourceTypeConfigTwitterAllowedHttpMethodsItemGet, nil
-	case "POST":
-		return SourceTypeConfigTwitterAllowedHttpMethodsItemPost, nil
-	case "PUT":
-		return SourceTypeConfigTwitterAllowedHttpMethodsItemPut, nil
-	case "PATCH":
-		return SourceTypeConfigTwitterAllowedHttpMethodsItemPatch, nil
-	case "DELETE":
-		return SourceTypeConfigTwitterAllowedHttpMethodsItemDelete, nil
-	}
-	var t SourceTypeConfigTwitterAllowedHttpMethodsItem
-	return "", fmt.Errorf("%s is not a valid %T", s, t)
-}
-
-func (s SourceTypeConfigTwitterAllowedHttpMethodsItem) Ptr() *SourceTypeConfigTwitterAllowedHttpMethodsItem {
-	return &s
-}
-
-type SourceTypeConfigTwitterAuth struct {
-	ApiKey string `json:"api_key" url:"api_key"`
-
-	extraProperties map[string]interface{}
-	rawJSON         json.RawMessage
-}
-
-func (s *SourceTypeConfigTwitterAuth) GetApiKey() string {
-	if s == nil {
-		return ""
-	}
-	return s.ApiKey
-}
-
-func (s *SourceTypeConfigTwitterAuth) GetExtraProperties() map[string]interface{} {
-	return s.extraProperties
-}
-
-func (s *SourceTypeConfigTwitterAuth) UnmarshalJSON(data []byte) error {
-	type unmarshaler SourceTypeConfigTwitterAuth
-	var value unmarshaler
-	if err := json.Unmarshal(data, &value); err != nil {
-		return err
-	}
-	*s = SourceTypeConfigTwitterAuth(value)
-	extraProperties, err := internal.ExtractExtraProperties(data, *s)
-	if err != nil {
-		return err
-	}
-	s.extraProperties = extraProperties
-	s.rawJSON = json.RawMessage(data)
-	return nil
-}
-
-func (s *SourceTypeConfigTwitterAuth) String() string {
-	if len(s.rawJSON) > 0 {
-		if value, err := internal.StringifyJSON(s.rawJSON); err == nil {
-			return value
-		}
-	}
-	if value, err := internal.StringifyJSON(s); err == nil {
-		return value
-	}
-	return fmt.Sprintf("%#v", s)
-}
-
 // The type config for Typeform. Requires type to be `TYPEFORM`.
 type SourceTypeConfigTypeform struct {
-	AllowedHttpMethods []SourceTypeConfigTypeformAllowedHttpMethodsItem `json:"allowed_http_methods,omitempty" url:"allowed_http_methods,omitempty"`
-	Auth               *SourceTypeConfigTypeformAuth                    `json:"auth,omitempty" url:"auth,omitempty"`
+	Auth *SourceConfigTypeformAuth `json:"auth,omitempty" url:"auth,omitempty"`
 
 	extraProperties map[string]interface{}
 	rawJSON         json.RawMessage
 }
 
-func (s *SourceTypeConfigTypeform) GetAllowedHttpMethods() []SourceTypeConfigTypeformAllowedHttpMethodsItem {
-	if s == nil {
-		return nil
-	}
-	return s.AllowedHttpMethods
-}
-
-func (s *SourceTypeConfigTypeform) GetAuth() *SourceTypeConfigTypeformAuth {
+func (s *SourceTypeConfigTypeform) GetAuth() *SourceConfigTypeformAuth {
 	if s == nil {
 		return nil
 	}
@@ -18208,100 +20504,15 @@ func (s *SourceTypeConfigTypeform) String() string {
 	return fmt.Sprintf("%#v", s)
 }
 
-type SourceTypeConfigTypeformAllowedHttpMethodsItem string
-
-const (
-	SourceTypeConfigTypeformAllowedHttpMethodsItemGet    SourceTypeConfigTypeformAllowedHttpMethodsItem = "GET"
-	SourceTypeConfigTypeformAllowedHttpMethodsItemPost   SourceTypeConfigTypeformAllowedHttpMethodsItem = "POST"
-	SourceTypeConfigTypeformAllowedHttpMethodsItemPut    SourceTypeConfigTypeformAllowedHttpMethodsItem = "PUT"
-	SourceTypeConfigTypeformAllowedHttpMethodsItemPatch  SourceTypeConfigTypeformAllowedHttpMethodsItem = "PATCH"
-	SourceTypeConfigTypeformAllowedHttpMethodsItemDelete SourceTypeConfigTypeformAllowedHttpMethodsItem = "DELETE"
-)
-
-func NewSourceTypeConfigTypeformAllowedHttpMethodsItemFromString(s string) (SourceTypeConfigTypeformAllowedHttpMethodsItem, error) {
-	switch s {
-	case "GET":
-		return SourceTypeConfigTypeformAllowedHttpMethodsItemGet, nil
-	case "POST":
-		return SourceTypeConfigTypeformAllowedHttpMethodsItemPost, nil
-	case "PUT":
-		return SourceTypeConfigTypeformAllowedHttpMethodsItemPut, nil
-	case "PATCH":
-		return SourceTypeConfigTypeformAllowedHttpMethodsItemPatch, nil
-	case "DELETE":
-		return SourceTypeConfigTypeformAllowedHttpMethodsItemDelete, nil
-	}
-	var t SourceTypeConfigTypeformAllowedHttpMethodsItem
-	return "", fmt.Errorf("%s is not a valid %T", s, t)
-}
-
-func (s SourceTypeConfigTypeformAllowedHttpMethodsItem) Ptr() *SourceTypeConfigTypeformAllowedHttpMethodsItem {
-	return &s
-}
-
-type SourceTypeConfigTypeformAuth struct {
-	WebhookSecretKey string `json:"webhook_secret_key" url:"webhook_secret_key"`
-
-	extraProperties map[string]interface{}
-	rawJSON         json.RawMessage
-}
-
-func (s *SourceTypeConfigTypeformAuth) GetWebhookSecretKey() string {
-	if s == nil {
-		return ""
-	}
-	return s.WebhookSecretKey
-}
-
-func (s *SourceTypeConfigTypeformAuth) GetExtraProperties() map[string]interface{} {
-	return s.extraProperties
-}
-
-func (s *SourceTypeConfigTypeformAuth) UnmarshalJSON(data []byte) error {
-	type unmarshaler SourceTypeConfigTypeformAuth
-	var value unmarshaler
-	if err := json.Unmarshal(data, &value); err != nil {
-		return err
-	}
-	*s = SourceTypeConfigTypeformAuth(value)
-	extraProperties, err := internal.ExtractExtraProperties(data, *s)
-	if err != nil {
-		return err
-	}
-	s.extraProperties = extraProperties
-	s.rawJSON = json.RawMessage(data)
-	return nil
-}
-
-func (s *SourceTypeConfigTypeformAuth) String() string {
-	if len(s.rawJSON) > 0 {
-		if value, err := internal.StringifyJSON(s.rawJSON); err == nil {
-			return value
-		}
-	}
-	if value, err := internal.StringifyJSON(s); err == nil {
-		return value
-	}
-	return fmt.Sprintf("%#v", s)
-}
-
 // The type config for Upollo. Requires type to be `UPOLLO`.
 type SourceTypeConfigUpollo struct {
-	AllowedHttpMethods []SourceTypeConfigUpolloAllowedHttpMethodsItem `json:"allowed_http_methods,omitempty" url:"allowed_http_methods,omitempty"`
-	Auth               *SourceTypeConfigUpolloAuth                    `json:"auth,omitempty" url:"auth,omitempty"`
+	Auth *SourceConfigUpolloAuth `json:"auth,omitempty" url:"auth,omitempty"`
 
 	extraProperties map[string]interface{}
 	rawJSON         json.RawMessage
 }
 
-func (s *SourceTypeConfigUpollo) GetAllowedHttpMethods() []SourceTypeConfigUpolloAllowedHttpMethodsItem {
-	if s == nil {
-		return nil
-	}
-	return s.AllowedHttpMethods
-}
-
-func (s *SourceTypeConfigUpollo) GetAuth() *SourceTypeConfigUpolloAuth {
+func (s *SourceTypeConfigUpollo) GetAuth() *SourceConfigUpolloAuth {
 	if s == nil {
 		return nil
 	}
@@ -18340,88 +20551,10 @@ func (s *SourceTypeConfigUpollo) String() string {
 	return fmt.Sprintf("%#v", s)
 }
 
-type SourceTypeConfigUpolloAllowedHttpMethodsItem string
-
-const (
-	SourceTypeConfigUpolloAllowedHttpMethodsItemGet    SourceTypeConfigUpolloAllowedHttpMethodsItem = "GET"
-	SourceTypeConfigUpolloAllowedHttpMethodsItemPost   SourceTypeConfigUpolloAllowedHttpMethodsItem = "POST"
-	SourceTypeConfigUpolloAllowedHttpMethodsItemPut    SourceTypeConfigUpolloAllowedHttpMethodsItem = "PUT"
-	SourceTypeConfigUpolloAllowedHttpMethodsItemPatch  SourceTypeConfigUpolloAllowedHttpMethodsItem = "PATCH"
-	SourceTypeConfigUpolloAllowedHttpMethodsItemDelete SourceTypeConfigUpolloAllowedHttpMethodsItem = "DELETE"
-)
-
-func NewSourceTypeConfigUpolloAllowedHttpMethodsItemFromString(s string) (SourceTypeConfigUpolloAllowedHttpMethodsItem, error) {
-	switch s {
-	case "GET":
-		return SourceTypeConfigUpolloAllowedHttpMethodsItemGet, nil
-	case "POST":
-		return SourceTypeConfigUpolloAllowedHttpMethodsItemPost, nil
-	case "PUT":
-		return SourceTypeConfigUpolloAllowedHttpMethodsItemPut, nil
-	case "PATCH":
-		return SourceTypeConfigUpolloAllowedHttpMethodsItemPatch, nil
-	case "DELETE":
-		return SourceTypeConfigUpolloAllowedHttpMethodsItemDelete, nil
-	}
-	var t SourceTypeConfigUpolloAllowedHttpMethodsItem
-	return "", fmt.Errorf("%s is not a valid %T", s, t)
-}
-
-func (s SourceTypeConfigUpolloAllowedHttpMethodsItem) Ptr() *SourceTypeConfigUpolloAllowedHttpMethodsItem {
-	return &s
-}
-
-type SourceTypeConfigUpolloAuth struct {
-	WebhookSecretKey string `json:"webhook_secret_key" url:"webhook_secret_key"`
-
-	extraProperties map[string]interface{}
-	rawJSON         json.RawMessage
-}
-
-func (s *SourceTypeConfigUpolloAuth) GetWebhookSecretKey() string {
-	if s == nil {
-		return ""
-	}
-	return s.WebhookSecretKey
-}
-
-func (s *SourceTypeConfigUpolloAuth) GetExtraProperties() map[string]interface{} {
-	return s.extraProperties
-}
-
-func (s *SourceTypeConfigUpolloAuth) UnmarshalJSON(data []byte) error {
-	type unmarshaler SourceTypeConfigUpolloAuth
-	var value unmarshaler
-	if err := json.Unmarshal(data, &value); err != nil {
-		return err
-	}
-	*s = SourceTypeConfigUpolloAuth(value)
-	extraProperties, err := internal.ExtractExtraProperties(data, *s)
-	if err != nil {
-		return err
-	}
-	s.extraProperties = extraProperties
-	s.rawJSON = json.RawMessage(data)
-	return nil
-}
-
-func (s *SourceTypeConfigUpolloAuth) String() string {
-	if len(s.rawJSON) > 0 {
-		if value, err := internal.StringifyJSON(s.rawJSON); err == nil {
-			return value
-		}
-	}
-	if value, err := internal.StringifyJSON(s); err == nil {
-		return value
-	}
-	return fmt.Sprintf("%#v", s)
-}
-
 // The type config for Vercel Log Drains. Requires type to be `VERCEL_LOG_DRAINS`.
 type SourceTypeConfigVercelLogDrains struct {
-	VercelLogDrainsSecret *string                                                 `json:"vercel_log_drains_secret,omitempty" url:"vercel_log_drains_secret,omitempty"`
-	AllowedHttpMethods    []SourceTypeConfigVercelLogDrainsAllowedHttpMethodsItem `json:"allowed_http_methods,omitempty" url:"allowed_http_methods,omitempty"`
-	Auth                  *SourceTypeConfigVercelLogDrainsAuth                    `json:"auth,omitempty" url:"auth,omitempty"`
+	VercelLogDrainsSecret *string                          `json:"vercel_log_drains_secret,omitempty" url:"vercel_log_drains_secret,omitempty"`
+	Auth                  *SourceConfigVercelLogDrainsAuth `json:"auth,omitempty" url:"auth,omitempty"`
 
 	extraProperties map[string]interface{}
 	rawJSON         json.RawMessage
@@ -18434,14 +20567,7 @@ func (s *SourceTypeConfigVercelLogDrains) GetVercelLogDrainsSecret() *string {
 	return s.VercelLogDrainsSecret
 }
 
-func (s *SourceTypeConfigVercelLogDrains) GetAllowedHttpMethods() []SourceTypeConfigVercelLogDrainsAllowedHttpMethodsItem {
-	if s == nil {
-		return nil
-	}
-	return s.AllowedHttpMethods
-}
-
-func (s *SourceTypeConfigVercelLogDrains) GetAuth() *SourceTypeConfigVercelLogDrainsAuth {
+func (s *SourceTypeConfigVercelLogDrains) GetAuth() *SourceConfigVercelLogDrainsAuth {
 	if s == nil {
 		return nil
 	}
@@ -18480,100 +20606,15 @@ func (s *SourceTypeConfigVercelLogDrains) String() string {
 	return fmt.Sprintf("%#v", s)
 }
 
-type SourceTypeConfigVercelLogDrainsAllowedHttpMethodsItem string
-
-const (
-	SourceTypeConfigVercelLogDrainsAllowedHttpMethodsItemGet    SourceTypeConfigVercelLogDrainsAllowedHttpMethodsItem = "GET"
-	SourceTypeConfigVercelLogDrainsAllowedHttpMethodsItemPost   SourceTypeConfigVercelLogDrainsAllowedHttpMethodsItem = "POST"
-	SourceTypeConfigVercelLogDrainsAllowedHttpMethodsItemPut    SourceTypeConfigVercelLogDrainsAllowedHttpMethodsItem = "PUT"
-	SourceTypeConfigVercelLogDrainsAllowedHttpMethodsItemPatch  SourceTypeConfigVercelLogDrainsAllowedHttpMethodsItem = "PATCH"
-	SourceTypeConfigVercelLogDrainsAllowedHttpMethodsItemDelete SourceTypeConfigVercelLogDrainsAllowedHttpMethodsItem = "DELETE"
-)
-
-func NewSourceTypeConfigVercelLogDrainsAllowedHttpMethodsItemFromString(s string) (SourceTypeConfigVercelLogDrainsAllowedHttpMethodsItem, error) {
-	switch s {
-	case "GET":
-		return SourceTypeConfigVercelLogDrainsAllowedHttpMethodsItemGet, nil
-	case "POST":
-		return SourceTypeConfigVercelLogDrainsAllowedHttpMethodsItemPost, nil
-	case "PUT":
-		return SourceTypeConfigVercelLogDrainsAllowedHttpMethodsItemPut, nil
-	case "PATCH":
-		return SourceTypeConfigVercelLogDrainsAllowedHttpMethodsItemPatch, nil
-	case "DELETE":
-		return SourceTypeConfigVercelLogDrainsAllowedHttpMethodsItemDelete, nil
-	}
-	var t SourceTypeConfigVercelLogDrainsAllowedHttpMethodsItem
-	return "", fmt.Errorf("%s is not a valid %T", s, t)
-}
-
-func (s SourceTypeConfigVercelLogDrainsAllowedHttpMethodsItem) Ptr() *SourceTypeConfigVercelLogDrainsAllowedHttpMethodsItem {
-	return &s
-}
-
-type SourceTypeConfigVercelLogDrainsAuth struct {
-	WebhookSecretKey *string `json:"webhook_secret_key,omitempty" url:"webhook_secret_key,omitempty"`
-
-	extraProperties map[string]interface{}
-	rawJSON         json.RawMessage
-}
-
-func (s *SourceTypeConfigVercelLogDrainsAuth) GetWebhookSecretKey() *string {
-	if s == nil {
-		return nil
-	}
-	return s.WebhookSecretKey
-}
-
-func (s *SourceTypeConfigVercelLogDrainsAuth) GetExtraProperties() map[string]interface{} {
-	return s.extraProperties
-}
-
-func (s *SourceTypeConfigVercelLogDrainsAuth) UnmarshalJSON(data []byte) error {
-	type unmarshaler SourceTypeConfigVercelLogDrainsAuth
-	var value unmarshaler
-	if err := json.Unmarshal(data, &value); err != nil {
-		return err
-	}
-	*s = SourceTypeConfigVercelLogDrainsAuth(value)
-	extraProperties, err := internal.ExtractExtraProperties(data, *s)
-	if err != nil {
-		return err
-	}
-	s.extraProperties = extraProperties
-	s.rawJSON = json.RawMessage(data)
-	return nil
-}
-
-func (s *SourceTypeConfigVercelLogDrainsAuth) String() string {
-	if len(s.rawJSON) > 0 {
-		if value, err := internal.StringifyJSON(s.rawJSON); err == nil {
-			return value
-		}
-	}
-	if value, err := internal.StringifyJSON(s); err == nil {
-		return value
-	}
-	return fmt.Sprintf("%#v", s)
-}
-
 // The type config for Vercel Webhooks. Requires type to be `VERCEL`.
 type SourceTypeConfigVercelWebhooks struct {
-	AllowedHttpMethods []SourceTypeConfigVercelWebhooksAllowedHttpMethodsItem `json:"allowed_http_methods,omitempty" url:"allowed_http_methods,omitempty"`
-	Auth               *SourceTypeConfigVercelWebhooksAuth                    `json:"auth,omitempty" url:"auth,omitempty"`
+	Auth *SourceConfigVercelWebhooksAuth `json:"auth,omitempty" url:"auth,omitempty"`
 
 	extraProperties map[string]interface{}
 	rawJSON         json.RawMessage
 }
 
-func (s *SourceTypeConfigVercelWebhooks) GetAllowedHttpMethods() []SourceTypeConfigVercelWebhooksAllowedHttpMethodsItem {
-	if s == nil {
-		return nil
-	}
-	return s.AllowedHttpMethods
-}
-
-func (s *SourceTypeConfigVercelWebhooks) GetAuth() *SourceTypeConfigVercelWebhooksAuth {
+func (s *SourceTypeConfigVercelWebhooks) GetAuth() *SourceConfigVercelWebhooksAuth {
 	if s == nil {
 		return nil
 	}
@@ -18612,88 +20653,11 @@ func (s *SourceTypeConfigVercelWebhooks) String() string {
 	return fmt.Sprintf("%#v", s)
 }
 
-type SourceTypeConfigVercelWebhooksAllowedHttpMethodsItem string
-
-const (
-	SourceTypeConfigVercelWebhooksAllowedHttpMethodsItemGet    SourceTypeConfigVercelWebhooksAllowedHttpMethodsItem = "GET"
-	SourceTypeConfigVercelWebhooksAllowedHttpMethodsItemPost   SourceTypeConfigVercelWebhooksAllowedHttpMethodsItem = "POST"
-	SourceTypeConfigVercelWebhooksAllowedHttpMethodsItemPut    SourceTypeConfigVercelWebhooksAllowedHttpMethodsItem = "PUT"
-	SourceTypeConfigVercelWebhooksAllowedHttpMethodsItemPatch  SourceTypeConfigVercelWebhooksAllowedHttpMethodsItem = "PATCH"
-	SourceTypeConfigVercelWebhooksAllowedHttpMethodsItemDelete SourceTypeConfigVercelWebhooksAllowedHttpMethodsItem = "DELETE"
-)
-
-func NewSourceTypeConfigVercelWebhooksAllowedHttpMethodsItemFromString(s string) (SourceTypeConfigVercelWebhooksAllowedHttpMethodsItem, error) {
-	switch s {
-	case "GET":
-		return SourceTypeConfigVercelWebhooksAllowedHttpMethodsItemGet, nil
-	case "POST":
-		return SourceTypeConfigVercelWebhooksAllowedHttpMethodsItemPost, nil
-	case "PUT":
-		return SourceTypeConfigVercelWebhooksAllowedHttpMethodsItemPut, nil
-	case "PATCH":
-		return SourceTypeConfigVercelWebhooksAllowedHttpMethodsItemPatch, nil
-	case "DELETE":
-		return SourceTypeConfigVercelWebhooksAllowedHttpMethodsItemDelete, nil
-	}
-	var t SourceTypeConfigVercelWebhooksAllowedHttpMethodsItem
-	return "", fmt.Errorf("%s is not a valid %T", s, t)
-}
-
-func (s SourceTypeConfigVercelWebhooksAllowedHttpMethodsItem) Ptr() *SourceTypeConfigVercelWebhooksAllowedHttpMethodsItem {
-	return &s
-}
-
-type SourceTypeConfigVercelWebhooksAuth struct {
-	WebhookSecretKey string `json:"webhook_secret_key" url:"webhook_secret_key"`
-
-	extraProperties map[string]interface{}
-	rawJSON         json.RawMessage
-}
-
-func (s *SourceTypeConfigVercelWebhooksAuth) GetWebhookSecretKey() string {
-	if s == nil {
-		return ""
-	}
-	return s.WebhookSecretKey
-}
-
-func (s *SourceTypeConfigVercelWebhooksAuth) GetExtraProperties() map[string]interface{} {
-	return s.extraProperties
-}
-
-func (s *SourceTypeConfigVercelWebhooksAuth) UnmarshalJSON(data []byte) error {
-	type unmarshaler SourceTypeConfigVercelWebhooksAuth
-	var value unmarshaler
-	if err := json.Unmarshal(data, &value); err != nil {
-		return err
-	}
-	*s = SourceTypeConfigVercelWebhooksAuth(value)
-	extraProperties, err := internal.ExtractExtraProperties(data, *s)
-	if err != nil {
-		return err
-	}
-	s.extraProperties = extraProperties
-	s.rawJSON = json.RawMessage(data)
-	return nil
-}
-
-func (s *SourceTypeConfigVercelWebhooksAuth) String() string {
-	if len(s.rawJSON) > 0 {
-		if value, err := internal.StringifyJSON(s.rawJSON); err == nil {
-			return value
-		}
-	}
-	if value, err := internal.StringifyJSON(s); err == nil {
-		return value
-	}
-	return fmt.Sprintf("%#v", s)
-}
-
 // The type config for Webhook. Requires type to be `WEBHOOK`.
 type SourceTypeConfigWebhook struct {
 	AllowedHttpMethods []SourceTypeConfigWebhookAllowedHttpMethodsItem `json:"allowed_http_methods,omitempty" url:"allowed_http_methods,omitempty"`
 	CustomResponse     *SourceTypeConfigWebhookCustomResponse          `json:"custom_response,omitempty" url:"custom_response,omitempty"`
-	Type               *SourceTypeConfigWebhookType                    `json:"type,omitempty" url:"type,omitempty"`
+	AuthType           *SourceTypeConfigWebhookAuthType                `json:"auth_type,omitempty" url:"auth_type,omitempty"`
 	Auth               *SourceTypeConfigWebhookAuth                    `json:"auth,omitempty" url:"auth,omitempty"`
 
 	extraProperties map[string]interface{}
@@ -18714,11 +20678,11 @@ func (s *SourceTypeConfigWebhook) GetCustomResponse() *SourceTypeConfigWebhookCu
 	return s.CustomResponse
 }
 
-func (s *SourceTypeConfigWebhook) GetType() *SourceTypeConfigWebhookType {
+func (s *SourceTypeConfigWebhook) GetAuthType() *SourceTypeConfigWebhookAuthType {
 	if s == nil {
 		return nil
 	}
-	return s.Type
+	return s.AuthType
 }
 
 func (s *SourceTypeConfigWebhook) GetAuth() *SourceTypeConfigWebhookAuth {
@@ -18792,342 +20756,2105 @@ func (s SourceTypeConfigWebhookAllowedHttpMethodsItem) Ptr() *SourceTypeConfigWe
 }
 
 type SourceTypeConfigWebhookAuth struct {
-	SourceTypeConfigWebhookAuthAlgorithm *SourceTypeConfigWebhookAuthAlgorithm
-	SourceTypeConfigWebhookAuthPassword  *SourceTypeConfigWebhookAuthPassword
-	SourceTypeConfigWebhookAuthApiKey    *SourceTypeConfigWebhookAuthApiKey
+	SourceConfigWebhookAuthHmac              *SourceConfigWebhookAuthHmac
+	SourceConfigWebhookAuthBasicAuth         *SourceConfigWebhookAuthBasicAuth
+	SourceConfigWebhookAuthApiKey            *SourceConfigWebhookAuthApiKey
+	SourceConfigWebhookAuthSanity            *SourceConfigWebhookAuthSanity
+	SourceConfigWebhookAuthBridge            *SourceConfigWebhookAuthBridge
+	SourceConfigWebhookAuthCloudSignal       *SourceConfigWebhookAuthCloudSignal
+	SourceConfigWebhookAuthCourier           *SourceConfigWebhookAuthCourier
+	SourceConfigWebhookAuthFrontApp          *SourceConfigWebhookAuthFrontApp
+	SourceConfigWebhookAuthZoom              *SourceConfigWebhookAuthZoom
+	SourceConfigWebhookAuthTwitter           *SourceConfigWebhookAuthTwitter
+	SourceConfigWebhookAuthRecharge          *SourceConfigWebhookAuthRecharge
+	SourceConfigWebhookAuthStripe            *SourceConfigWebhookAuthStripe
+	SourceConfigWebhookAuthPropertyFinder    *SourceConfigWebhookAuthPropertyFinder
+	SourceConfigWebhookAuthShopify           *SourceConfigWebhookAuthShopify
+	SourceConfigWebhookAuthTwilio            *SourceConfigWebhookAuthTwilio
+	SourceConfigWebhookAuthGitHub            *SourceConfigWebhookAuthGitHub
+	SourceConfigWebhookAuthPostmark          *SourceConfigWebhookAuthPostmark
+	SourceConfigWebhookAuthTypeform          *SourceConfigWebhookAuthTypeform
+	SourceConfigWebhookAuthXero              *SourceConfigWebhookAuthXero
+	SourceConfigWebhookAuthSvix              *SourceConfigWebhookAuthSvix
+	SourceConfigWebhookAuthAdyen             *SourceConfigWebhookAuthAdyen
+	SourceConfigWebhookAuthAkeneo            *SourceConfigWebhookAuthAkeneo
+	SourceConfigWebhookAuthGitLab            *SourceConfigWebhookAuthGitLab
+	SourceConfigWebhookAuthWooCommerce       *SourceConfigWebhookAuthWooCommerce
+	SourceConfigWebhookAuthOura              *SourceConfigWebhookAuthOura
+	SourceConfigWebhookAuthCommerceLayer     *SourceConfigWebhookAuthCommerceLayer
+	SourceConfigWebhookAuthHubspot           *SourceConfigWebhookAuthHubspot
+	SourceConfigWebhookAuthMailgun           *SourceConfigWebhookAuthMailgun
+	SourceConfigWebhookAuthPersona           *SourceConfigWebhookAuthPersona
+	SourceConfigWebhookAuthPipedrive         *SourceConfigWebhookAuthPipedrive
+	SourceConfigWebhookAuthSendgrid          *SourceConfigWebhookAuthSendgrid
+	SourceConfigWebhookAuthWorkOs            *SourceConfigWebhookAuthWorkOs
+	SourceConfigWebhookAuthSynctera          *SourceConfigWebhookAuthSynctera
+	SourceConfigWebhookAuthAwssns            *SourceConfigWebhookAuthAwssns
+	SourceConfigWebhookAuth3DEye             *SourceConfigWebhookAuth3DEye
+	SourceConfigWebhookAuthTwitch            *SourceConfigWebhookAuthTwitch
+	SourceConfigWebhookAuthEnode             *SourceConfigWebhookAuthEnode
+	SourceConfigWebhookAuthFavro             *SourceConfigWebhookAuthFavro
+	SourceConfigWebhookAuthLinear            *SourceConfigWebhookAuthLinear
+	SourceConfigWebhookAuthShopline          *SourceConfigWebhookAuthShopline
+	SourceConfigWebhookAuthWix               *SourceConfigWebhookAuthWix
+	SourceConfigWebhookAuthNmiPaymentGateway *SourceConfigWebhookAuthNmiPaymentGateway
+	SourceConfigWebhookAuthOrb               *SourceConfigWebhookAuthOrb
+	SourceConfigWebhookAuthPylon             *SourceConfigWebhookAuthPylon
+	SourceConfigWebhookAuthRazorpay          *SourceConfigWebhookAuthRazorpay
+	SourceConfigWebhookAuthRepay             *SourceConfigWebhookAuthRepay
+	SourceConfigWebhookAuthSquare            *SourceConfigWebhookAuthSquare
+	SourceConfigWebhookAuthSolidgate         *SourceConfigWebhookAuthSolidgate
+	SourceConfigWebhookAuthTrello            *SourceConfigWebhookAuthTrello
+	SourceConfigWebhookAuthEbay              *SourceConfigWebhookAuthEbay
+	SourceConfigWebhookAuthTelnyx            *SourceConfigWebhookAuthTelnyx
+	SourceConfigWebhookAuthDiscord           *SourceConfigWebhookAuthDiscord
+	SourceConfigWebhookAuthTokenIo           *SourceConfigWebhookAuthTokenIo
+	SourceConfigWebhookAuthFiserv            *SourceConfigWebhookAuthFiserv
+	SourceConfigWebhookAuthBondsmith         *SourceConfigWebhookAuthBondsmith
+	SourceConfigWebhookAuthVercelLogDrains   *SourceConfigWebhookAuthVercelLogDrains
+	SourceConfigWebhookAuthVercelWebhooks    *SourceConfigWebhookAuthVercelWebhooks
+	SourceConfigWebhookAuthTebex             *SourceConfigWebhookAuthTebex
+	SourceConfigWebhookAuthSlack             *SourceConfigWebhookAuthSlack
+	SourceConfigWebhookAuthMailchimp         *SourceConfigWebhookAuthMailchimp
+	SourceConfigWebhookAuthPaddle            *SourceConfigWebhookAuthPaddle
+	SourceConfigWebhookAuthPaypal            *SourceConfigWebhookAuthPaypal
+	SourceConfigWebhookAuthTreezor           *SourceConfigWebhookAuthTreezor
+	SourceConfigWebhookAuthPraxis            *SourceConfigWebhookAuthPraxis
+	SourceConfigWebhookAuthCustomerIo        *SourceConfigWebhookAuthCustomerIo
+	SourceConfigWebhookAuthFacebook          *SourceConfigWebhookAuthFacebook
+	SourceConfigWebhookAuthWhatsApp          *SourceConfigWebhookAuthWhatsApp
+	SourceConfigWebhookAuthReplicate         *SourceConfigWebhookAuthReplicate
+	SourceConfigWebhookAuthTikTok            *SourceConfigWebhookAuthTikTok
+	SourceConfigWebhookAuthAirwallex         *SourceConfigWebhookAuthAirwallex
+	SourceConfigWebhookAuthZendesk           *SourceConfigWebhookAuthZendesk
+	SourceConfigWebhookAuthUpollo            *SourceConfigWebhookAuthUpollo
+	SourceConfigWebhookAuthLinkedIn          *SourceConfigWebhookAuthLinkedIn
 
 	typ string
 }
 
-func NewSourceTypeConfigWebhookAuthFromSourceTypeConfigWebhookAuthAlgorithm(value *SourceTypeConfigWebhookAuthAlgorithm) *SourceTypeConfigWebhookAuth {
-	return &SourceTypeConfigWebhookAuth{typ: "SourceTypeConfigWebhookAuthAlgorithm", SourceTypeConfigWebhookAuthAlgorithm: value}
+func NewSourceTypeConfigWebhookAuthFromSourceConfigWebhookAuthHmac(value *SourceConfigWebhookAuthHmac) *SourceTypeConfigWebhookAuth {
+	return &SourceTypeConfigWebhookAuth{typ: "SourceConfigWebhookAuthHmac", SourceConfigWebhookAuthHmac: value}
 }
 
-func NewSourceTypeConfigWebhookAuthFromSourceTypeConfigWebhookAuthPassword(value *SourceTypeConfigWebhookAuthPassword) *SourceTypeConfigWebhookAuth {
-	return &SourceTypeConfigWebhookAuth{typ: "SourceTypeConfigWebhookAuthPassword", SourceTypeConfigWebhookAuthPassword: value}
+func NewSourceTypeConfigWebhookAuthFromSourceConfigWebhookAuthBasicAuth(value *SourceConfigWebhookAuthBasicAuth) *SourceTypeConfigWebhookAuth {
+	return &SourceTypeConfigWebhookAuth{typ: "SourceConfigWebhookAuthBasicAuth", SourceConfigWebhookAuthBasicAuth: value}
 }
 
-func NewSourceTypeConfigWebhookAuthFromSourceTypeConfigWebhookAuthApiKey(value *SourceTypeConfigWebhookAuthApiKey) *SourceTypeConfigWebhookAuth {
-	return &SourceTypeConfigWebhookAuth{typ: "SourceTypeConfigWebhookAuthApiKey", SourceTypeConfigWebhookAuthApiKey: value}
+func NewSourceTypeConfigWebhookAuthFromSourceConfigWebhookAuthApiKey(value *SourceConfigWebhookAuthApiKey) *SourceTypeConfigWebhookAuth {
+	return &SourceTypeConfigWebhookAuth{typ: "SourceConfigWebhookAuthApiKey", SourceConfigWebhookAuthApiKey: value}
 }
 
-func (s *SourceTypeConfigWebhookAuth) GetSourceTypeConfigWebhookAuthAlgorithm() *SourceTypeConfigWebhookAuthAlgorithm {
+func NewSourceTypeConfigWebhookAuthFromSourceConfigWebhookAuthSanity(value *SourceConfigWebhookAuthSanity) *SourceTypeConfigWebhookAuth {
+	return &SourceTypeConfigWebhookAuth{typ: "SourceConfigWebhookAuthSanity", SourceConfigWebhookAuthSanity: value}
+}
+
+func NewSourceTypeConfigWebhookAuthFromSourceConfigWebhookAuthBridge(value *SourceConfigWebhookAuthBridge) *SourceTypeConfigWebhookAuth {
+	return &SourceTypeConfigWebhookAuth{typ: "SourceConfigWebhookAuthBridge", SourceConfigWebhookAuthBridge: value}
+}
+
+func NewSourceTypeConfigWebhookAuthFromSourceConfigWebhookAuthCloudSignal(value *SourceConfigWebhookAuthCloudSignal) *SourceTypeConfigWebhookAuth {
+	return &SourceTypeConfigWebhookAuth{typ: "SourceConfigWebhookAuthCloudSignal", SourceConfigWebhookAuthCloudSignal: value}
+}
+
+func NewSourceTypeConfigWebhookAuthFromSourceConfigWebhookAuthCourier(value *SourceConfigWebhookAuthCourier) *SourceTypeConfigWebhookAuth {
+	return &SourceTypeConfigWebhookAuth{typ: "SourceConfigWebhookAuthCourier", SourceConfigWebhookAuthCourier: value}
+}
+
+func NewSourceTypeConfigWebhookAuthFromSourceConfigWebhookAuthFrontApp(value *SourceConfigWebhookAuthFrontApp) *SourceTypeConfigWebhookAuth {
+	return &SourceTypeConfigWebhookAuth{typ: "SourceConfigWebhookAuthFrontApp", SourceConfigWebhookAuthFrontApp: value}
+}
+
+func NewSourceTypeConfigWebhookAuthFromSourceConfigWebhookAuthZoom(value *SourceConfigWebhookAuthZoom) *SourceTypeConfigWebhookAuth {
+	return &SourceTypeConfigWebhookAuth{typ: "SourceConfigWebhookAuthZoom", SourceConfigWebhookAuthZoom: value}
+}
+
+func NewSourceTypeConfigWebhookAuthFromSourceConfigWebhookAuthTwitter(value *SourceConfigWebhookAuthTwitter) *SourceTypeConfigWebhookAuth {
+	return &SourceTypeConfigWebhookAuth{typ: "SourceConfigWebhookAuthTwitter", SourceConfigWebhookAuthTwitter: value}
+}
+
+func NewSourceTypeConfigWebhookAuthFromSourceConfigWebhookAuthRecharge(value *SourceConfigWebhookAuthRecharge) *SourceTypeConfigWebhookAuth {
+	return &SourceTypeConfigWebhookAuth{typ: "SourceConfigWebhookAuthRecharge", SourceConfigWebhookAuthRecharge: value}
+}
+
+func NewSourceTypeConfigWebhookAuthFromSourceConfigWebhookAuthStripe(value *SourceConfigWebhookAuthStripe) *SourceTypeConfigWebhookAuth {
+	return &SourceTypeConfigWebhookAuth{typ: "SourceConfigWebhookAuthStripe", SourceConfigWebhookAuthStripe: value}
+}
+
+func NewSourceTypeConfigWebhookAuthFromSourceConfigWebhookAuthPropertyFinder(value *SourceConfigWebhookAuthPropertyFinder) *SourceTypeConfigWebhookAuth {
+	return &SourceTypeConfigWebhookAuth{typ: "SourceConfigWebhookAuthPropertyFinder", SourceConfigWebhookAuthPropertyFinder: value}
+}
+
+func NewSourceTypeConfigWebhookAuthFromSourceConfigWebhookAuthShopify(value *SourceConfigWebhookAuthShopify) *SourceTypeConfigWebhookAuth {
+	return &SourceTypeConfigWebhookAuth{typ: "SourceConfigWebhookAuthShopify", SourceConfigWebhookAuthShopify: value}
+}
+
+func NewSourceTypeConfigWebhookAuthFromSourceConfigWebhookAuthTwilio(value *SourceConfigWebhookAuthTwilio) *SourceTypeConfigWebhookAuth {
+	return &SourceTypeConfigWebhookAuth{typ: "SourceConfigWebhookAuthTwilio", SourceConfigWebhookAuthTwilio: value}
+}
+
+func NewSourceTypeConfigWebhookAuthFromSourceConfigWebhookAuthGitHub(value *SourceConfigWebhookAuthGitHub) *SourceTypeConfigWebhookAuth {
+	return &SourceTypeConfigWebhookAuth{typ: "SourceConfigWebhookAuthGitHub", SourceConfigWebhookAuthGitHub: value}
+}
+
+func NewSourceTypeConfigWebhookAuthFromSourceConfigWebhookAuthPostmark(value *SourceConfigWebhookAuthPostmark) *SourceTypeConfigWebhookAuth {
+	return &SourceTypeConfigWebhookAuth{typ: "SourceConfigWebhookAuthPostmark", SourceConfigWebhookAuthPostmark: value}
+}
+
+func NewSourceTypeConfigWebhookAuthFromSourceConfigWebhookAuthTypeform(value *SourceConfigWebhookAuthTypeform) *SourceTypeConfigWebhookAuth {
+	return &SourceTypeConfigWebhookAuth{typ: "SourceConfigWebhookAuthTypeform", SourceConfigWebhookAuthTypeform: value}
+}
+
+func NewSourceTypeConfigWebhookAuthFromSourceConfigWebhookAuthXero(value *SourceConfigWebhookAuthXero) *SourceTypeConfigWebhookAuth {
+	return &SourceTypeConfigWebhookAuth{typ: "SourceConfigWebhookAuthXero", SourceConfigWebhookAuthXero: value}
+}
+
+func NewSourceTypeConfigWebhookAuthFromSourceConfigWebhookAuthSvix(value *SourceConfigWebhookAuthSvix) *SourceTypeConfigWebhookAuth {
+	return &SourceTypeConfigWebhookAuth{typ: "SourceConfigWebhookAuthSvix", SourceConfigWebhookAuthSvix: value}
+}
+
+func NewSourceTypeConfigWebhookAuthFromSourceConfigWebhookAuthAdyen(value *SourceConfigWebhookAuthAdyen) *SourceTypeConfigWebhookAuth {
+	return &SourceTypeConfigWebhookAuth{typ: "SourceConfigWebhookAuthAdyen", SourceConfigWebhookAuthAdyen: value}
+}
+
+func NewSourceTypeConfigWebhookAuthFromSourceConfigWebhookAuthAkeneo(value *SourceConfigWebhookAuthAkeneo) *SourceTypeConfigWebhookAuth {
+	return &SourceTypeConfigWebhookAuth{typ: "SourceConfigWebhookAuthAkeneo", SourceConfigWebhookAuthAkeneo: value}
+}
+
+func NewSourceTypeConfigWebhookAuthFromSourceConfigWebhookAuthGitLab(value *SourceConfigWebhookAuthGitLab) *SourceTypeConfigWebhookAuth {
+	return &SourceTypeConfigWebhookAuth{typ: "SourceConfigWebhookAuthGitLab", SourceConfigWebhookAuthGitLab: value}
+}
+
+func NewSourceTypeConfigWebhookAuthFromSourceConfigWebhookAuthWooCommerce(value *SourceConfigWebhookAuthWooCommerce) *SourceTypeConfigWebhookAuth {
+	return &SourceTypeConfigWebhookAuth{typ: "SourceConfigWebhookAuthWooCommerce", SourceConfigWebhookAuthWooCommerce: value}
+}
+
+func NewSourceTypeConfigWebhookAuthFromSourceConfigWebhookAuthOura(value *SourceConfigWebhookAuthOura) *SourceTypeConfigWebhookAuth {
+	return &SourceTypeConfigWebhookAuth{typ: "SourceConfigWebhookAuthOura", SourceConfigWebhookAuthOura: value}
+}
+
+func NewSourceTypeConfigWebhookAuthFromSourceConfigWebhookAuthCommerceLayer(value *SourceConfigWebhookAuthCommerceLayer) *SourceTypeConfigWebhookAuth {
+	return &SourceTypeConfigWebhookAuth{typ: "SourceConfigWebhookAuthCommerceLayer", SourceConfigWebhookAuthCommerceLayer: value}
+}
+
+func NewSourceTypeConfigWebhookAuthFromSourceConfigWebhookAuthHubspot(value *SourceConfigWebhookAuthHubspot) *SourceTypeConfigWebhookAuth {
+	return &SourceTypeConfigWebhookAuth{typ: "SourceConfigWebhookAuthHubspot", SourceConfigWebhookAuthHubspot: value}
+}
+
+func NewSourceTypeConfigWebhookAuthFromSourceConfigWebhookAuthMailgun(value *SourceConfigWebhookAuthMailgun) *SourceTypeConfigWebhookAuth {
+	return &SourceTypeConfigWebhookAuth{typ: "SourceConfigWebhookAuthMailgun", SourceConfigWebhookAuthMailgun: value}
+}
+
+func NewSourceTypeConfigWebhookAuthFromSourceConfigWebhookAuthPersona(value *SourceConfigWebhookAuthPersona) *SourceTypeConfigWebhookAuth {
+	return &SourceTypeConfigWebhookAuth{typ: "SourceConfigWebhookAuthPersona", SourceConfigWebhookAuthPersona: value}
+}
+
+func NewSourceTypeConfigWebhookAuthFromSourceConfigWebhookAuthPipedrive(value *SourceConfigWebhookAuthPipedrive) *SourceTypeConfigWebhookAuth {
+	return &SourceTypeConfigWebhookAuth{typ: "SourceConfigWebhookAuthPipedrive", SourceConfigWebhookAuthPipedrive: value}
+}
+
+func NewSourceTypeConfigWebhookAuthFromSourceConfigWebhookAuthSendgrid(value *SourceConfigWebhookAuthSendgrid) *SourceTypeConfigWebhookAuth {
+	return &SourceTypeConfigWebhookAuth{typ: "SourceConfigWebhookAuthSendgrid", SourceConfigWebhookAuthSendgrid: value}
+}
+
+func NewSourceTypeConfigWebhookAuthFromSourceConfigWebhookAuthWorkOs(value *SourceConfigWebhookAuthWorkOs) *SourceTypeConfigWebhookAuth {
+	return &SourceTypeConfigWebhookAuth{typ: "SourceConfigWebhookAuthWorkOs", SourceConfigWebhookAuthWorkOs: value}
+}
+
+func NewSourceTypeConfigWebhookAuthFromSourceConfigWebhookAuthSynctera(value *SourceConfigWebhookAuthSynctera) *SourceTypeConfigWebhookAuth {
+	return &SourceTypeConfigWebhookAuth{typ: "SourceConfigWebhookAuthSynctera", SourceConfigWebhookAuthSynctera: value}
+}
+
+func NewSourceTypeConfigWebhookAuthFromSourceConfigWebhookAuthAwssns(value *SourceConfigWebhookAuthAwssns) *SourceTypeConfigWebhookAuth {
+	return &SourceTypeConfigWebhookAuth{typ: "SourceConfigWebhookAuthAwssns", SourceConfigWebhookAuthAwssns: value}
+}
+
+func NewSourceTypeConfigWebhookAuthFromSourceConfigWebhookAuth3DEye(value *SourceConfigWebhookAuth3DEye) *SourceTypeConfigWebhookAuth {
+	return &SourceTypeConfigWebhookAuth{typ: "SourceConfigWebhookAuth3DEye", SourceConfigWebhookAuth3DEye: value}
+}
+
+func NewSourceTypeConfigWebhookAuthFromSourceConfigWebhookAuthTwitch(value *SourceConfigWebhookAuthTwitch) *SourceTypeConfigWebhookAuth {
+	return &SourceTypeConfigWebhookAuth{typ: "SourceConfigWebhookAuthTwitch", SourceConfigWebhookAuthTwitch: value}
+}
+
+func NewSourceTypeConfigWebhookAuthFromSourceConfigWebhookAuthEnode(value *SourceConfigWebhookAuthEnode) *SourceTypeConfigWebhookAuth {
+	return &SourceTypeConfigWebhookAuth{typ: "SourceConfigWebhookAuthEnode", SourceConfigWebhookAuthEnode: value}
+}
+
+func NewSourceTypeConfigWebhookAuthFromSourceConfigWebhookAuthFavro(value *SourceConfigWebhookAuthFavro) *SourceTypeConfigWebhookAuth {
+	return &SourceTypeConfigWebhookAuth{typ: "SourceConfigWebhookAuthFavro", SourceConfigWebhookAuthFavro: value}
+}
+
+func NewSourceTypeConfigWebhookAuthFromSourceConfigWebhookAuthLinear(value *SourceConfigWebhookAuthLinear) *SourceTypeConfigWebhookAuth {
+	return &SourceTypeConfigWebhookAuth{typ: "SourceConfigWebhookAuthLinear", SourceConfigWebhookAuthLinear: value}
+}
+
+func NewSourceTypeConfigWebhookAuthFromSourceConfigWebhookAuthShopline(value *SourceConfigWebhookAuthShopline) *SourceTypeConfigWebhookAuth {
+	return &SourceTypeConfigWebhookAuth{typ: "SourceConfigWebhookAuthShopline", SourceConfigWebhookAuthShopline: value}
+}
+
+func NewSourceTypeConfigWebhookAuthFromSourceConfigWebhookAuthWix(value *SourceConfigWebhookAuthWix) *SourceTypeConfigWebhookAuth {
+	return &SourceTypeConfigWebhookAuth{typ: "SourceConfigWebhookAuthWix", SourceConfigWebhookAuthWix: value}
+}
+
+func NewSourceTypeConfigWebhookAuthFromSourceConfigWebhookAuthNmiPaymentGateway(value *SourceConfigWebhookAuthNmiPaymentGateway) *SourceTypeConfigWebhookAuth {
+	return &SourceTypeConfigWebhookAuth{typ: "SourceConfigWebhookAuthNmiPaymentGateway", SourceConfigWebhookAuthNmiPaymentGateway: value}
+}
+
+func NewSourceTypeConfigWebhookAuthFromSourceConfigWebhookAuthOrb(value *SourceConfigWebhookAuthOrb) *SourceTypeConfigWebhookAuth {
+	return &SourceTypeConfigWebhookAuth{typ: "SourceConfigWebhookAuthOrb", SourceConfigWebhookAuthOrb: value}
+}
+
+func NewSourceTypeConfigWebhookAuthFromSourceConfigWebhookAuthPylon(value *SourceConfigWebhookAuthPylon) *SourceTypeConfigWebhookAuth {
+	return &SourceTypeConfigWebhookAuth{typ: "SourceConfigWebhookAuthPylon", SourceConfigWebhookAuthPylon: value}
+}
+
+func NewSourceTypeConfigWebhookAuthFromSourceConfigWebhookAuthRazorpay(value *SourceConfigWebhookAuthRazorpay) *SourceTypeConfigWebhookAuth {
+	return &SourceTypeConfigWebhookAuth{typ: "SourceConfigWebhookAuthRazorpay", SourceConfigWebhookAuthRazorpay: value}
+}
+
+func NewSourceTypeConfigWebhookAuthFromSourceConfigWebhookAuthRepay(value *SourceConfigWebhookAuthRepay) *SourceTypeConfigWebhookAuth {
+	return &SourceTypeConfigWebhookAuth{typ: "SourceConfigWebhookAuthRepay", SourceConfigWebhookAuthRepay: value}
+}
+
+func NewSourceTypeConfigWebhookAuthFromSourceConfigWebhookAuthSquare(value *SourceConfigWebhookAuthSquare) *SourceTypeConfigWebhookAuth {
+	return &SourceTypeConfigWebhookAuth{typ: "SourceConfigWebhookAuthSquare", SourceConfigWebhookAuthSquare: value}
+}
+
+func NewSourceTypeConfigWebhookAuthFromSourceConfigWebhookAuthSolidgate(value *SourceConfigWebhookAuthSolidgate) *SourceTypeConfigWebhookAuth {
+	return &SourceTypeConfigWebhookAuth{typ: "SourceConfigWebhookAuthSolidgate", SourceConfigWebhookAuthSolidgate: value}
+}
+
+func NewSourceTypeConfigWebhookAuthFromSourceConfigWebhookAuthTrello(value *SourceConfigWebhookAuthTrello) *SourceTypeConfigWebhookAuth {
+	return &SourceTypeConfigWebhookAuth{typ: "SourceConfigWebhookAuthTrello", SourceConfigWebhookAuthTrello: value}
+}
+
+func NewSourceTypeConfigWebhookAuthFromSourceConfigWebhookAuthEbay(value *SourceConfigWebhookAuthEbay) *SourceTypeConfigWebhookAuth {
+	return &SourceTypeConfigWebhookAuth{typ: "SourceConfigWebhookAuthEbay", SourceConfigWebhookAuthEbay: value}
+}
+
+func NewSourceTypeConfigWebhookAuthFromSourceConfigWebhookAuthTelnyx(value *SourceConfigWebhookAuthTelnyx) *SourceTypeConfigWebhookAuth {
+	return &SourceTypeConfigWebhookAuth{typ: "SourceConfigWebhookAuthTelnyx", SourceConfigWebhookAuthTelnyx: value}
+}
+
+func NewSourceTypeConfigWebhookAuthFromSourceConfigWebhookAuthDiscord(value *SourceConfigWebhookAuthDiscord) *SourceTypeConfigWebhookAuth {
+	return &SourceTypeConfigWebhookAuth{typ: "SourceConfigWebhookAuthDiscord", SourceConfigWebhookAuthDiscord: value}
+}
+
+func NewSourceTypeConfigWebhookAuthFromSourceConfigWebhookAuthTokenIo(value *SourceConfigWebhookAuthTokenIo) *SourceTypeConfigWebhookAuth {
+	return &SourceTypeConfigWebhookAuth{typ: "SourceConfigWebhookAuthTokenIo", SourceConfigWebhookAuthTokenIo: value}
+}
+
+func NewSourceTypeConfigWebhookAuthFromSourceConfigWebhookAuthFiserv(value *SourceConfigWebhookAuthFiserv) *SourceTypeConfigWebhookAuth {
+	return &SourceTypeConfigWebhookAuth{typ: "SourceConfigWebhookAuthFiserv", SourceConfigWebhookAuthFiserv: value}
+}
+
+func NewSourceTypeConfigWebhookAuthFromSourceConfigWebhookAuthBondsmith(value *SourceConfigWebhookAuthBondsmith) *SourceTypeConfigWebhookAuth {
+	return &SourceTypeConfigWebhookAuth{typ: "SourceConfigWebhookAuthBondsmith", SourceConfigWebhookAuthBondsmith: value}
+}
+
+func NewSourceTypeConfigWebhookAuthFromSourceConfigWebhookAuthVercelLogDrains(value *SourceConfigWebhookAuthVercelLogDrains) *SourceTypeConfigWebhookAuth {
+	return &SourceTypeConfigWebhookAuth{typ: "SourceConfigWebhookAuthVercelLogDrains", SourceConfigWebhookAuthVercelLogDrains: value}
+}
+
+func NewSourceTypeConfigWebhookAuthFromSourceConfigWebhookAuthVercelWebhooks(value *SourceConfigWebhookAuthVercelWebhooks) *SourceTypeConfigWebhookAuth {
+	return &SourceTypeConfigWebhookAuth{typ: "SourceConfigWebhookAuthVercelWebhooks", SourceConfigWebhookAuthVercelWebhooks: value}
+}
+
+func NewSourceTypeConfigWebhookAuthFromSourceConfigWebhookAuthTebex(value *SourceConfigWebhookAuthTebex) *SourceTypeConfigWebhookAuth {
+	return &SourceTypeConfigWebhookAuth{typ: "SourceConfigWebhookAuthTebex", SourceConfigWebhookAuthTebex: value}
+}
+
+func NewSourceTypeConfigWebhookAuthFromSourceConfigWebhookAuthSlack(value *SourceConfigWebhookAuthSlack) *SourceTypeConfigWebhookAuth {
+	return &SourceTypeConfigWebhookAuth{typ: "SourceConfigWebhookAuthSlack", SourceConfigWebhookAuthSlack: value}
+}
+
+func NewSourceTypeConfigWebhookAuthFromSourceConfigWebhookAuthMailchimp(value *SourceConfigWebhookAuthMailchimp) *SourceTypeConfigWebhookAuth {
+	return &SourceTypeConfigWebhookAuth{typ: "SourceConfigWebhookAuthMailchimp", SourceConfigWebhookAuthMailchimp: value}
+}
+
+func NewSourceTypeConfigWebhookAuthFromSourceConfigWebhookAuthPaddle(value *SourceConfigWebhookAuthPaddle) *SourceTypeConfigWebhookAuth {
+	return &SourceTypeConfigWebhookAuth{typ: "SourceConfigWebhookAuthPaddle", SourceConfigWebhookAuthPaddle: value}
+}
+
+func NewSourceTypeConfigWebhookAuthFromSourceConfigWebhookAuthPaypal(value *SourceConfigWebhookAuthPaypal) *SourceTypeConfigWebhookAuth {
+	return &SourceTypeConfigWebhookAuth{typ: "SourceConfigWebhookAuthPaypal", SourceConfigWebhookAuthPaypal: value}
+}
+
+func NewSourceTypeConfigWebhookAuthFromSourceConfigWebhookAuthTreezor(value *SourceConfigWebhookAuthTreezor) *SourceTypeConfigWebhookAuth {
+	return &SourceTypeConfigWebhookAuth{typ: "SourceConfigWebhookAuthTreezor", SourceConfigWebhookAuthTreezor: value}
+}
+
+func NewSourceTypeConfigWebhookAuthFromSourceConfigWebhookAuthPraxis(value *SourceConfigWebhookAuthPraxis) *SourceTypeConfigWebhookAuth {
+	return &SourceTypeConfigWebhookAuth{typ: "SourceConfigWebhookAuthPraxis", SourceConfigWebhookAuthPraxis: value}
+}
+
+func NewSourceTypeConfigWebhookAuthFromSourceConfigWebhookAuthCustomerIo(value *SourceConfigWebhookAuthCustomerIo) *SourceTypeConfigWebhookAuth {
+	return &SourceTypeConfigWebhookAuth{typ: "SourceConfigWebhookAuthCustomerIo", SourceConfigWebhookAuthCustomerIo: value}
+}
+
+func NewSourceTypeConfigWebhookAuthFromSourceConfigWebhookAuthFacebook(value *SourceConfigWebhookAuthFacebook) *SourceTypeConfigWebhookAuth {
+	return &SourceTypeConfigWebhookAuth{typ: "SourceConfigWebhookAuthFacebook", SourceConfigWebhookAuthFacebook: value}
+}
+
+func NewSourceTypeConfigWebhookAuthFromSourceConfigWebhookAuthWhatsApp(value *SourceConfigWebhookAuthWhatsApp) *SourceTypeConfigWebhookAuth {
+	return &SourceTypeConfigWebhookAuth{typ: "SourceConfigWebhookAuthWhatsApp", SourceConfigWebhookAuthWhatsApp: value}
+}
+
+func NewSourceTypeConfigWebhookAuthFromSourceConfigWebhookAuthReplicate(value *SourceConfigWebhookAuthReplicate) *SourceTypeConfigWebhookAuth {
+	return &SourceTypeConfigWebhookAuth{typ: "SourceConfigWebhookAuthReplicate", SourceConfigWebhookAuthReplicate: value}
+}
+
+func NewSourceTypeConfigWebhookAuthFromSourceConfigWebhookAuthTikTok(value *SourceConfigWebhookAuthTikTok) *SourceTypeConfigWebhookAuth {
+	return &SourceTypeConfigWebhookAuth{typ: "SourceConfigWebhookAuthTikTok", SourceConfigWebhookAuthTikTok: value}
+}
+
+func NewSourceTypeConfigWebhookAuthFromSourceConfigWebhookAuthAirwallex(value *SourceConfigWebhookAuthAirwallex) *SourceTypeConfigWebhookAuth {
+	return &SourceTypeConfigWebhookAuth{typ: "SourceConfigWebhookAuthAirwallex", SourceConfigWebhookAuthAirwallex: value}
+}
+
+func NewSourceTypeConfigWebhookAuthFromSourceConfigWebhookAuthZendesk(value *SourceConfigWebhookAuthZendesk) *SourceTypeConfigWebhookAuth {
+	return &SourceTypeConfigWebhookAuth{typ: "SourceConfigWebhookAuthZendesk", SourceConfigWebhookAuthZendesk: value}
+}
+
+func NewSourceTypeConfigWebhookAuthFromSourceConfigWebhookAuthUpollo(value *SourceConfigWebhookAuthUpollo) *SourceTypeConfigWebhookAuth {
+	return &SourceTypeConfigWebhookAuth{typ: "SourceConfigWebhookAuthUpollo", SourceConfigWebhookAuthUpollo: value}
+}
+
+func NewSourceTypeConfigWebhookAuthFromSourceConfigWebhookAuthLinkedIn(value *SourceConfigWebhookAuthLinkedIn) *SourceTypeConfigWebhookAuth {
+	return &SourceTypeConfigWebhookAuth{typ: "SourceConfigWebhookAuthLinkedIn", SourceConfigWebhookAuthLinkedIn: value}
+}
+
+func (s *SourceTypeConfigWebhookAuth) GetSourceConfigWebhookAuthHmac() *SourceConfigWebhookAuthHmac {
 	if s == nil {
 		return nil
 	}
-	return s.SourceTypeConfigWebhookAuthAlgorithm
+	return s.SourceConfigWebhookAuthHmac
 }
 
-func (s *SourceTypeConfigWebhookAuth) GetSourceTypeConfigWebhookAuthPassword() *SourceTypeConfigWebhookAuthPassword {
+func (s *SourceTypeConfigWebhookAuth) GetSourceConfigWebhookAuthBasicAuth() *SourceConfigWebhookAuthBasicAuth {
 	if s == nil {
 		return nil
 	}
-	return s.SourceTypeConfigWebhookAuthPassword
+	return s.SourceConfigWebhookAuthBasicAuth
 }
 
-func (s *SourceTypeConfigWebhookAuth) GetSourceTypeConfigWebhookAuthApiKey() *SourceTypeConfigWebhookAuthApiKey {
+func (s *SourceTypeConfigWebhookAuth) GetSourceConfigWebhookAuthApiKey() *SourceConfigWebhookAuthApiKey {
 	if s == nil {
 		return nil
 	}
-	return s.SourceTypeConfigWebhookAuthApiKey
+	return s.SourceConfigWebhookAuthApiKey
+}
+
+func (s *SourceTypeConfigWebhookAuth) GetSourceConfigWebhookAuthSanity() *SourceConfigWebhookAuthSanity {
+	if s == nil {
+		return nil
+	}
+	return s.SourceConfigWebhookAuthSanity
+}
+
+func (s *SourceTypeConfigWebhookAuth) GetSourceConfigWebhookAuthBridge() *SourceConfigWebhookAuthBridge {
+	if s == nil {
+		return nil
+	}
+	return s.SourceConfigWebhookAuthBridge
+}
+
+func (s *SourceTypeConfigWebhookAuth) GetSourceConfigWebhookAuthCloudSignal() *SourceConfigWebhookAuthCloudSignal {
+	if s == nil {
+		return nil
+	}
+	return s.SourceConfigWebhookAuthCloudSignal
+}
+
+func (s *SourceTypeConfigWebhookAuth) GetSourceConfigWebhookAuthCourier() *SourceConfigWebhookAuthCourier {
+	if s == nil {
+		return nil
+	}
+	return s.SourceConfigWebhookAuthCourier
+}
+
+func (s *SourceTypeConfigWebhookAuth) GetSourceConfigWebhookAuthFrontApp() *SourceConfigWebhookAuthFrontApp {
+	if s == nil {
+		return nil
+	}
+	return s.SourceConfigWebhookAuthFrontApp
+}
+
+func (s *SourceTypeConfigWebhookAuth) GetSourceConfigWebhookAuthZoom() *SourceConfigWebhookAuthZoom {
+	if s == nil {
+		return nil
+	}
+	return s.SourceConfigWebhookAuthZoom
+}
+
+func (s *SourceTypeConfigWebhookAuth) GetSourceConfigWebhookAuthTwitter() *SourceConfigWebhookAuthTwitter {
+	if s == nil {
+		return nil
+	}
+	return s.SourceConfigWebhookAuthTwitter
+}
+
+func (s *SourceTypeConfigWebhookAuth) GetSourceConfigWebhookAuthRecharge() *SourceConfigWebhookAuthRecharge {
+	if s == nil {
+		return nil
+	}
+	return s.SourceConfigWebhookAuthRecharge
+}
+
+func (s *SourceTypeConfigWebhookAuth) GetSourceConfigWebhookAuthStripe() *SourceConfigWebhookAuthStripe {
+	if s == nil {
+		return nil
+	}
+	return s.SourceConfigWebhookAuthStripe
+}
+
+func (s *SourceTypeConfigWebhookAuth) GetSourceConfigWebhookAuthPropertyFinder() *SourceConfigWebhookAuthPropertyFinder {
+	if s == nil {
+		return nil
+	}
+	return s.SourceConfigWebhookAuthPropertyFinder
+}
+
+func (s *SourceTypeConfigWebhookAuth) GetSourceConfigWebhookAuthShopify() *SourceConfigWebhookAuthShopify {
+	if s == nil {
+		return nil
+	}
+	return s.SourceConfigWebhookAuthShopify
+}
+
+func (s *SourceTypeConfigWebhookAuth) GetSourceConfigWebhookAuthTwilio() *SourceConfigWebhookAuthTwilio {
+	if s == nil {
+		return nil
+	}
+	return s.SourceConfigWebhookAuthTwilio
+}
+
+func (s *SourceTypeConfigWebhookAuth) GetSourceConfigWebhookAuthGitHub() *SourceConfigWebhookAuthGitHub {
+	if s == nil {
+		return nil
+	}
+	return s.SourceConfigWebhookAuthGitHub
+}
+
+func (s *SourceTypeConfigWebhookAuth) GetSourceConfigWebhookAuthPostmark() *SourceConfigWebhookAuthPostmark {
+	if s == nil {
+		return nil
+	}
+	return s.SourceConfigWebhookAuthPostmark
+}
+
+func (s *SourceTypeConfigWebhookAuth) GetSourceConfigWebhookAuthTypeform() *SourceConfigWebhookAuthTypeform {
+	if s == nil {
+		return nil
+	}
+	return s.SourceConfigWebhookAuthTypeform
+}
+
+func (s *SourceTypeConfigWebhookAuth) GetSourceConfigWebhookAuthXero() *SourceConfigWebhookAuthXero {
+	if s == nil {
+		return nil
+	}
+	return s.SourceConfigWebhookAuthXero
+}
+
+func (s *SourceTypeConfigWebhookAuth) GetSourceConfigWebhookAuthSvix() *SourceConfigWebhookAuthSvix {
+	if s == nil {
+		return nil
+	}
+	return s.SourceConfigWebhookAuthSvix
+}
+
+func (s *SourceTypeConfigWebhookAuth) GetSourceConfigWebhookAuthAdyen() *SourceConfigWebhookAuthAdyen {
+	if s == nil {
+		return nil
+	}
+	return s.SourceConfigWebhookAuthAdyen
+}
+
+func (s *SourceTypeConfigWebhookAuth) GetSourceConfigWebhookAuthAkeneo() *SourceConfigWebhookAuthAkeneo {
+	if s == nil {
+		return nil
+	}
+	return s.SourceConfigWebhookAuthAkeneo
+}
+
+func (s *SourceTypeConfigWebhookAuth) GetSourceConfigWebhookAuthGitLab() *SourceConfigWebhookAuthGitLab {
+	if s == nil {
+		return nil
+	}
+	return s.SourceConfigWebhookAuthGitLab
+}
+
+func (s *SourceTypeConfigWebhookAuth) GetSourceConfigWebhookAuthWooCommerce() *SourceConfigWebhookAuthWooCommerce {
+	if s == nil {
+		return nil
+	}
+	return s.SourceConfigWebhookAuthWooCommerce
+}
+
+func (s *SourceTypeConfigWebhookAuth) GetSourceConfigWebhookAuthOura() *SourceConfigWebhookAuthOura {
+	if s == nil {
+		return nil
+	}
+	return s.SourceConfigWebhookAuthOura
+}
+
+func (s *SourceTypeConfigWebhookAuth) GetSourceConfigWebhookAuthCommerceLayer() *SourceConfigWebhookAuthCommerceLayer {
+	if s == nil {
+		return nil
+	}
+	return s.SourceConfigWebhookAuthCommerceLayer
+}
+
+func (s *SourceTypeConfigWebhookAuth) GetSourceConfigWebhookAuthHubspot() *SourceConfigWebhookAuthHubspot {
+	if s == nil {
+		return nil
+	}
+	return s.SourceConfigWebhookAuthHubspot
+}
+
+func (s *SourceTypeConfigWebhookAuth) GetSourceConfigWebhookAuthMailgun() *SourceConfigWebhookAuthMailgun {
+	if s == nil {
+		return nil
+	}
+	return s.SourceConfigWebhookAuthMailgun
+}
+
+func (s *SourceTypeConfigWebhookAuth) GetSourceConfigWebhookAuthPersona() *SourceConfigWebhookAuthPersona {
+	if s == nil {
+		return nil
+	}
+	return s.SourceConfigWebhookAuthPersona
+}
+
+func (s *SourceTypeConfigWebhookAuth) GetSourceConfigWebhookAuthPipedrive() *SourceConfigWebhookAuthPipedrive {
+	if s == nil {
+		return nil
+	}
+	return s.SourceConfigWebhookAuthPipedrive
+}
+
+func (s *SourceTypeConfigWebhookAuth) GetSourceConfigWebhookAuthSendgrid() *SourceConfigWebhookAuthSendgrid {
+	if s == nil {
+		return nil
+	}
+	return s.SourceConfigWebhookAuthSendgrid
+}
+
+func (s *SourceTypeConfigWebhookAuth) GetSourceConfigWebhookAuthWorkOs() *SourceConfigWebhookAuthWorkOs {
+	if s == nil {
+		return nil
+	}
+	return s.SourceConfigWebhookAuthWorkOs
+}
+
+func (s *SourceTypeConfigWebhookAuth) GetSourceConfigWebhookAuthSynctera() *SourceConfigWebhookAuthSynctera {
+	if s == nil {
+		return nil
+	}
+	return s.SourceConfigWebhookAuthSynctera
+}
+
+func (s *SourceTypeConfigWebhookAuth) GetSourceConfigWebhookAuthAwssns() *SourceConfigWebhookAuthAwssns {
+	if s == nil {
+		return nil
+	}
+	return s.SourceConfigWebhookAuthAwssns
+}
+
+func (s *SourceTypeConfigWebhookAuth) GetSourceConfigWebhookAuth3DEye() *SourceConfigWebhookAuth3DEye {
+	if s == nil {
+		return nil
+	}
+	return s.SourceConfigWebhookAuth3DEye
+}
+
+func (s *SourceTypeConfigWebhookAuth) GetSourceConfigWebhookAuthTwitch() *SourceConfigWebhookAuthTwitch {
+	if s == nil {
+		return nil
+	}
+	return s.SourceConfigWebhookAuthTwitch
+}
+
+func (s *SourceTypeConfigWebhookAuth) GetSourceConfigWebhookAuthEnode() *SourceConfigWebhookAuthEnode {
+	if s == nil {
+		return nil
+	}
+	return s.SourceConfigWebhookAuthEnode
+}
+
+func (s *SourceTypeConfigWebhookAuth) GetSourceConfigWebhookAuthFavro() *SourceConfigWebhookAuthFavro {
+	if s == nil {
+		return nil
+	}
+	return s.SourceConfigWebhookAuthFavro
+}
+
+func (s *SourceTypeConfigWebhookAuth) GetSourceConfigWebhookAuthLinear() *SourceConfigWebhookAuthLinear {
+	if s == nil {
+		return nil
+	}
+	return s.SourceConfigWebhookAuthLinear
+}
+
+func (s *SourceTypeConfigWebhookAuth) GetSourceConfigWebhookAuthShopline() *SourceConfigWebhookAuthShopline {
+	if s == nil {
+		return nil
+	}
+	return s.SourceConfigWebhookAuthShopline
+}
+
+func (s *SourceTypeConfigWebhookAuth) GetSourceConfigWebhookAuthWix() *SourceConfigWebhookAuthWix {
+	if s == nil {
+		return nil
+	}
+	return s.SourceConfigWebhookAuthWix
+}
+
+func (s *SourceTypeConfigWebhookAuth) GetSourceConfigWebhookAuthNmiPaymentGateway() *SourceConfigWebhookAuthNmiPaymentGateway {
+	if s == nil {
+		return nil
+	}
+	return s.SourceConfigWebhookAuthNmiPaymentGateway
+}
+
+func (s *SourceTypeConfigWebhookAuth) GetSourceConfigWebhookAuthOrb() *SourceConfigWebhookAuthOrb {
+	if s == nil {
+		return nil
+	}
+	return s.SourceConfigWebhookAuthOrb
+}
+
+func (s *SourceTypeConfigWebhookAuth) GetSourceConfigWebhookAuthPylon() *SourceConfigWebhookAuthPylon {
+	if s == nil {
+		return nil
+	}
+	return s.SourceConfigWebhookAuthPylon
+}
+
+func (s *SourceTypeConfigWebhookAuth) GetSourceConfigWebhookAuthRazorpay() *SourceConfigWebhookAuthRazorpay {
+	if s == nil {
+		return nil
+	}
+	return s.SourceConfigWebhookAuthRazorpay
+}
+
+func (s *SourceTypeConfigWebhookAuth) GetSourceConfigWebhookAuthRepay() *SourceConfigWebhookAuthRepay {
+	if s == nil {
+		return nil
+	}
+	return s.SourceConfigWebhookAuthRepay
+}
+
+func (s *SourceTypeConfigWebhookAuth) GetSourceConfigWebhookAuthSquare() *SourceConfigWebhookAuthSquare {
+	if s == nil {
+		return nil
+	}
+	return s.SourceConfigWebhookAuthSquare
+}
+
+func (s *SourceTypeConfigWebhookAuth) GetSourceConfigWebhookAuthSolidgate() *SourceConfigWebhookAuthSolidgate {
+	if s == nil {
+		return nil
+	}
+	return s.SourceConfigWebhookAuthSolidgate
+}
+
+func (s *SourceTypeConfigWebhookAuth) GetSourceConfigWebhookAuthTrello() *SourceConfigWebhookAuthTrello {
+	if s == nil {
+		return nil
+	}
+	return s.SourceConfigWebhookAuthTrello
+}
+
+func (s *SourceTypeConfigWebhookAuth) GetSourceConfigWebhookAuthEbay() *SourceConfigWebhookAuthEbay {
+	if s == nil {
+		return nil
+	}
+	return s.SourceConfigWebhookAuthEbay
+}
+
+func (s *SourceTypeConfigWebhookAuth) GetSourceConfigWebhookAuthTelnyx() *SourceConfigWebhookAuthTelnyx {
+	if s == nil {
+		return nil
+	}
+	return s.SourceConfigWebhookAuthTelnyx
+}
+
+func (s *SourceTypeConfigWebhookAuth) GetSourceConfigWebhookAuthDiscord() *SourceConfigWebhookAuthDiscord {
+	if s == nil {
+		return nil
+	}
+	return s.SourceConfigWebhookAuthDiscord
+}
+
+func (s *SourceTypeConfigWebhookAuth) GetSourceConfigWebhookAuthTokenIo() *SourceConfigWebhookAuthTokenIo {
+	if s == nil {
+		return nil
+	}
+	return s.SourceConfigWebhookAuthTokenIo
+}
+
+func (s *SourceTypeConfigWebhookAuth) GetSourceConfigWebhookAuthFiserv() *SourceConfigWebhookAuthFiserv {
+	if s == nil {
+		return nil
+	}
+	return s.SourceConfigWebhookAuthFiserv
+}
+
+func (s *SourceTypeConfigWebhookAuth) GetSourceConfigWebhookAuthBondsmith() *SourceConfigWebhookAuthBondsmith {
+	if s == nil {
+		return nil
+	}
+	return s.SourceConfigWebhookAuthBondsmith
+}
+
+func (s *SourceTypeConfigWebhookAuth) GetSourceConfigWebhookAuthVercelLogDrains() *SourceConfigWebhookAuthVercelLogDrains {
+	if s == nil {
+		return nil
+	}
+	return s.SourceConfigWebhookAuthVercelLogDrains
+}
+
+func (s *SourceTypeConfigWebhookAuth) GetSourceConfigWebhookAuthVercelWebhooks() *SourceConfigWebhookAuthVercelWebhooks {
+	if s == nil {
+		return nil
+	}
+	return s.SourceConfigWebhookAuthVercelWebhooks
+}
+
+func (s *SourceTypeConfigWebhookAuth) GetSourceConfigWebhookAuthTebex() *SourceConfigWebhookAuthTebex {
+	if s == nil {
+		return nil
+	}
+	return s.SourceConfigWebhookAuthTebex
+}
+
+func (s *SourceTypeConfigWebhookAuth) GetSourceConfigWebhookAuthSlack() *SourceConfigWebhookAuthSlack {
+	if s == nil {
+		return nil
+	}
+	return s.SourceConfigWebhookAuthSlack
+}
+
+func (s *SourceTypeConfigWebhookAuth) GetSourceConfigWebhookAuthMailchimp() *SourceConfigWebhookAuthMailchimp {
+	if s == nil {
+		return nil
+	}
+	return s.SourceConfigWebhookAuthMailchimp
+}
+
+func (s *SourceTypeConfigWebhookAuth) GetSourceConfigWebhookAuthPaddle() *SourceConfigWebhookAuthPaddle {
+	if s == nil {
+		return nil
+	}
+	return s.SourceConfigWebhookAuthPaddle
+}
+
+func (s *SourceTypeConfigWebhookAuth) GetSourceConfigWebhookAuthPaypal() *SourceConfigWebhookAuthPaypal {
+	if s == nil {
+		return nil
+	}
+	return s.SourceConfigWebhookAuthPaypal
+}
+
+func (s *SourceTypeConfigWebhookAuth) GetSourceConfigWebhookAuthTreezor() *SourceConfigWebhookAuthTreezor {
+	if s == nil {
+		return nil
+	}
+	return s.SourceConfigWebhookAuthTreezor
+}
+
+func (s *SourceTypeConfigWebhookAuth) GetSourceConfigWebhookAuthPraxis() *SourceConfigWebhookAuthPraxis {
+	if s == nil {
+		return nil
+	}
+	return s.SourceConfigWebhookAuthPraxis
+}
+
+func (s *SourceTypeConfigWebhookAuth) GetSourceConfigWebhookAuthCustomerIo() *SourceConfigWebhookAuthCustomerIo {
+	if s == nil {
+		return nil
+	}
+	return s.SourceConfigWebhookAuthCustomerIo
+}
+
+func (s *SourceTypeConfigWebhookAuth) GetSourceConfigWebhookAuthFacebook() *SourceConfigWebhookAuthFacebook {
+	if s == nil {
+		return nil
+	}
+	return s.SourceConfigWebhookAuthFacebook
+}
+
+func (s *SourceTypeConfigWebhookAuth) GetSourceConfigWebhookAuthWhatsApp() *SourceConfigWebhookAuthWhatsApp {
+	if s == nil {
+		return nil
+	}
+	return s.SourceConfigWebhookAuthWhatsApp
+}
+
+func (s *SourceTypeConfigWebhookAuth) GetSourceConfigWebhookAuthReplicate() *SourceConfigWebhookAuthReplicate {
+	if s == nil {
+		return nil
+	}
+	return s.SourceConfigWebhookAuthReplicate
+}
+
+func (s *SourceTypeConfigWebhookAuth) GetSourceConfigWebhookAuthTikTok() *SourceConfigWebhookAuthTikTok {
+	if s == nil {
+		return nil
+	}
+	return s.SourceConfigWebhookAuthTikTok
+}
+
+func (s *SourceTypeConfigWebhookAuth) GetSourceConfigWebhookAuthAirwallex() *SourceConfigWebhookAuthAirwallex {
+	if s == nil {
+		return nil
+	}
+	return s.SourceConfigWebhookAuthAirwallex
+}
+
+func (s *SourceTypeConfigWebhookAuth) GetSourceConfigWebhookAuthZendesk() *SourceConfigWebhookAuthZendesk {
+	if s == nil {
+		return nil
+	}
+	return s.SourceConfigWebhookAuthZendesk
+}
+
+func (s *SourceTypeConfigWebhookAuth) GetSourceConfigWebhookAuthUpollo() *SourceConfigWebhookAuthUpollo {
+	if s == nil {
+		return nil
+	}
+	return s.SourceConfigWebhookAuthUpollo
+}
+
+func (s *SourceTypeConfigWebhookAuth) GetSourceConfigWebhookAuthLinkedIn() *SourceConfigWebhookAuthLinkedIn {
+	if s == nil {
+		return nil
+	}
+	return s.SourceConfigWebhookAuthLinkedIn
 }
 
 func (s *SourceTypeConfigWebhookAuth) UnmarshalJSON(data []byte) error {
-	valueSourceTypeConfigWebhookAuthAlgorithm := new(SourceTypeConfigWebhookAuthAlgorithm)
-	if err := json.Unmarshal(data, &valueSourceTypeConfigWebhookAuthAlgorithm); err == nil {
-		s.typ = "SourceTypeConfigWebhookAuthAlgorithm"
-		s.SourceTypeConfigWebhookAuthAlgorithm = valueSourceTypeConfigWebhookAuthAlgorithm
+	valueSourceConfigWebhookAuthHmac := new(SourceConfigWebhookAuthHmac)
+	if err := json.Unmarshal(data, &valueSourceConfigWebhookAuthHmac); err == nil {
+		s.typ = "SourceConfigWebhookAuthHmac"
+		s.SourceConfigWebhookAuthHmac = valueSourceConfigWebhookAuthHmac
 		return nil
 	}
-	valueSourceTypeConfigWebhookAuthPassword := new(SourceTypeConfigWebhookAuthPassword)
-	if err := json.Unmarshal(data, &valueSourceTypeConfigWebhookAuthPassword); err == nil {
-		s.typ = "SourceTypeConfigWebhookAuthPassword"
-		s.SourceTypeConfigWebhookAuthPassword = valueSourceTypeConfigWebhookAuthPassword
+	valueSourceConfigWebhookAuthBasicAuth := new(SourceConfigWebhookAuthBasicAuth)
+	if err := json.Unmarshal(data, &valueSourceConfigWebhookAuthBasicAuth); err == nil {
+		s.typ = "SourceConfigWebhookAuthBasicAuth"
+		s.SourceConfigWebhookAuthBasicAuth = valueSourceConfigWebhookAuthBasicAuth
 		return nil
 	}
-	valueSourceTypeConfigWebhookAuthApiKey := new(SourceTypeConfigWebhookAuthApiKey)
-	if err := json.Unmarshal(data, &valueSourceTypeConfigWebhookAuthApiKey); err == nil {
-		s.typ = "SourceTypeConfigWebhookAuthApiKey"
-		s.SourceTypeConfigWebhookAuthApiKey = valueSourceTypeConfigWebhookAuthApiKey
+	valueSourceConfigWebhookAuthApiKey := new(SourceConfigWebhookAuthApiKey)
+	if err := json.Unmarshal(data, &valueSourceConfigWebhookAuthApiKey); err == nil {
+		s.typ = "SourceConfigWebhookAuthApiKey"
+		s.SourceConfigWebhookAuthApiKey = valueSourceConfigWebhookAuthApiKey
+		return nil
+	}
+	valueSourceConfigWebhookAuthSanity := new(SourceConfigWebhookAuthSanity)
+	if err := json.Unmarshal(data, &valueSourceConfigWebhookAuthSanity); err == nil {
+		s.typ = "SourceConfigWebhookAuthSanity"
+		s.SourceConfigWebhookAuthSanity = valueSourceConfigWebhookAuthSanity
+		return nil
+	}
+	valueSourceConfigWebhookAuthBridge := new(SourceConfigWebhookAuthBridge)
+	if err := json.Unmarshal(data, &valueSourceConfigWebhookAuthBridge); err == nil {
+		s.typ = "SourceConfigWebhookAuthBridge"
+		s.SourceConfigWebhookAuthBridge = valueSourceConfigWebhookAuthBridge
+		return nil
+	}
+	valueSourceConfigWebhookAuthCloudSignal := new(SourceConfigWebhookAuthCloudSignal)
+	if err := json.Unmarshal(data, &valueSourceConfigWebhookAuthCloudSignal); err == nil {
+		s.typ = "SourceConfigWebhookAuthCloudSignal"
+		s.SourceConfigWebhookAuthCloudSignal = valueSourceConfigWebhookAuthCloudSignal
+		return nil
+	}
+	valueSourceConfigWebhookAuthCourier := new(SourceConfigWebhookAuthCourier)
+	if err := json.Unmarshal(data, &valueSourceConfigWebhookAuthCourier); err == nil {
+		s.typ = "SourceConfigWebhookAuthCourier"
+		s.SourceConfigWebhookAuthCourier = valueSourceConfigWebhookAuthCourier
+		return nil
+	}
+	valueSourceConfigWebhookAuthFrontApp := new(SourceConfigWebhookAuthFrontApp)
+	if err := json.Unmarshal(data, &valueSourceConfigWebhookAuthFrontApp); err == nil {
+		s.typ = "SourceConfigWebhookAuthFrontApp"
+		s.SourceConfigWebhookAuthFrontApp = valueSourceConfigWebhookAuthFrontApp
+		return nil
+	}
+	valueSourceConfigWebhookAuthZoom := new(SourceConfigWebhookAuthZoom)
+	if err := json.Unmarshal(data, &valueSourceConfigWebhookAuthZoom); err == nil {
+		s.typ = "SourceConfigWebhookAuthZoom"
+		s.SourceConfigWebhookAuthZoom = valueSourceConfigWebhookAuthZoom
+		return nil
+	}
+	valueSourceConfigWebhookAuthTwitter := new(SourceConfigWebhookAuthTwitter)
+	if err := json.Unmarshal(data, &valueSourceConfigWebhookAuthTwitter); err == nil {
+		s.typ = "SourceConfigWebhookAuthTwitter"
+		s.SourceConfigWebhookAuthTwitter = valueSourceConfigWebhookAuthTwitter
+		return nil
+	}
+	valueSourceConfigWebhookAuthRecharge := new(SourceConfigWebhookAuthRecharge)
+	if err := json.Unmarshal(data, &valueSourceConfigWebhookAuthRecharge); err == nil {
+		s.typ = "SourceConfigWebhookAuthRecharge"
+		s.SourceConfigWebhookAuthRecharge = valueSourceConfigWebhookAuthRecharge
+		return nil
+	}
+	valueSourceConfigWebhookAuthStripe := new(SourceConfigWebhookAuthStripe)
+	if err := json.Unmarshal(data, &valueSourceConfigWebhookAuthStripe); err == nil {
+		s.typ = "SourceConfigWebhookAuthStripe"
+		s.SourceConfigWebhookAuthStripe = valueSourceConfigWebhookAuthStripe
+		return nil
+	}
+	valueSourceConfigWebhookAuthPropertyFinder := new(SourceConfigWebhookAuthPropertyFinder)
+	if err := json.Unmarshal(data, &valueSourceConfigWebhookAuthPropertyFinder); err == nil {
+		s.typ = "SourceConfigWebhookAuthPropertyFinder"
+		s.SourceConfigWebhookAuthPropertyFinder = valueSourceConfigWebhookAuthPropertyFinder
+		return nil
+	}
+	valueSourceConfigWebhookAuthShopify := new(SourceConfigWebhookAuthShopify)
+	if err := json.Unmarshal(data, &valueSourceConfigWebhookAuthShopify); err == nil {
+		s.typ = "SourceConfigWebhookAuthShopify"
+		s.SourceConfigWebhookAuthShopify = valueSourceConfigWebhookAuthShopify
+		return nil
+	}
+	valueSourceConfigWebhookAuthTwilio := new(SourceConfigWebhookAuthTwilio)
+	if err := json.Unmarshal(data, &valueSourceConfigWebhookAuthTwilio); err == nil {
+		s.typ = "SourceConfigWebhookAuthTwilio"
+		s.SourceConfigWebhookAuthTwilio = valueSourceConfigWebhookAuthTwilio
+		return nil
+	}
+	valueSourceConfigWebhookAuthGitHub := new(SourceConfigWebhookAuthGitHub)
+	if err := json.Unmarshal(data, &valueSourceConfigWebhookAuthGitHub); err == nil {
+		s.typ = "SourceConfigWebhookAuthGitHub"
+		s.SourceConfigWebhookAuthGitHub = valueSourceConfigWebhookAuthGitHub
+		return nil
+	}
+	valueSourceConfigWebhookAuthPostmark := new(SourceConfigWebhookAuthPostmark)
+	if err := json.Unmarshal(data, &valueSourceConfigWebhookAuthPostmark); err == nil {
+		s.typ = "SourceConfigWebhookAuthPostmark"
+		s.SourceConfigWebhookAuthPostmark = valueSourceConfigWebhookAuthPostmark
+		return nil
+	}
+	valueSourceConfigWebhookAuthTypeform := new(SourceConfigWebhookAuthTypeform)
+	if err := json.Unmarshal(data, &valueSourceConfigWebhookAuthTypeform); err == nil {
+		s.typ = "SourceConfigWebhookAuthTypeform"
+		s.SourceConfigWebhookAuthTypeform = valueSourceConfigWebhookAuthTypeform
+		return nil
+	}
+	valueSourceConfigWebhookAuthXero := new(SourceConfigWebhookAuthXero)
+	if err := json.Unmarshal(data, &valueSourceConfigWebhookAuthXero); err == nil {
+		s.typ = "SourceConfigWebhookAuthXero"
+		s.SourceConfigWebhookAuthXero = valueSourceConfigWebhookAuthXero
+		return nil
+	}
+	valueSourceConfigWebhookAuthSvix := new(SourceConfigWebhookAuthSvix)
+	if err := json.Unmarshal(data, &valueSourceConfigWebhookAuthSvix); err == nil {
+		s.typ = "SourceConfigWebhookAuthSvix"
+		s.SourceConfigWebhookAuthSvix = valueSourceConfigWebhookAuthSvix
+		return nil
+	}
+	valueSourceConfigWebhookAuthAdyen := new(SourceConfigWebhookAuthAdyen)
+	if err := json.Unmarshal(data, &valueSourceConfigWebhookAuthAdyen); err == nil {
+		s.typ = "SourceConfigWebhookAuthAdyen"
+		s.SourceConfigWebhookAuthAdyen = valueSourceConfigWebhookAuthAdyen
+		return nil
+	}
+	valueSourceConfigWebhookAuthAkeneo := new(SourceConfigWebhookAuthAkeneo)
+	if err := json.Unmarshal(data, &valueSourceConfigWebhookAuthAkeneo); err == nil {
+		s.typ = "SourceConfigWebhookAuthAkeneo"
+		s.SourceConfigWebhookAuthAkeneo = valueSourceConfigWebhookAuthAkeneo
+		return nil
+	}
+	valueSourceConfigWebhookAuthGitLab := new(SourceConfigWebhookAuthGitLab)
+	if err := json.Unmarshal(data, &valueSourceConfigWebhookAuthGitLab); err == nil {
+		s.typ = "SourceConfigWebhookAuthGitLab"
+		s.SourceConfigWebhookAuthGitLab = valueSourceConfigWebhookAuthGitLab
+		return nil
+	}
+	valueSourceConfigWebhookAuthWooCommerce := new(SourceConfigWebhookAuthWooCommerce)
+	if err := json.Unmarshal(data, &valueSourceConfigWebhookAuthWooCommerce); err == nil {
+		s.typ = "SourceConfigWebhookAuthWooCommerce"
+		s.SourceConfigWebhookAuthWooCommerce = valueSourceConfigWebhookAuthWooCommerce
+		return nil
+	}
+	valueSourceConfigWebhookAuthOura := new(SourceConfigWebhookAuthOura)
+	if err := json.Unmarshal(data, &valueSourceConfigWebhookAuthOura); err == nil {
+		s.typ = "SourceConfigWebhookAuthOura"
+		s.SourceConfigWebhookAuthOura = valueSourceConfigWebhookAuthOura
+		return nil
+	}
+	valueSourceConfigWebhookAuthCommerceLayer := new(SourceConfigWebhookAuthCommerceLayer)
+	if err := json.Unmarshal(data, &valueSourceConfigWebhookAuthCommerceLayer); err == nil {
+		s.typ = "SourceConfigWebhookAuthCommerceLayer"
+		s.SourceConfigWebhookAuthCommerceLayer = valueSourceConfigWebhookAuthCommerceLayer
+		return nil
+	}
+	valueSourceConfigWebhookAuthHubspot := new(SourceConfigWebhookAuthHubspot)
+	if err := json.Unmarshal(data, &valueSourceConfigWebhookAuthHubspot); err == nil {
+		s.typ = "SourceConfigWebhookAuthHubspot"
+		s.SourceConfigWebhookAuthHubspot = valueSourceConfigWebhookAuthHubspot
+		return nil
+	}
+	valueSourceConfigWebhookAuthMailgun := new(SourceConfigWebhookAuthMailgun)
+	if err := json.Unmarshal(data, &valueSourceConfigWebhookAuthMailgun); err == nil {
+		s.typ = "SourceConfigWebhookAuthMailgun"
+		s.SourceConfigWebhookAuthMailgun = valueSourceConfigWebhookAuthMailgun
+		return nil
+	}
+	valueSourceConfigWebhookAuthPersona := new(SourceConfigWebhookAuthPersona)
+	if err := json.Unmarshal(data, &valueSourceConfigWebhookAuthPersona); err == nil {
+		s.typ = "SourceConfigWebhookAuthPersona"
+		s.SourceConfigWebhookAuthPersona = valueSourceConfigWebhookAuthPersona
+		return nil
+	}
+	valueSourceConfigWebhookAuthPipedrive := new(SourceConfigWebhookAuthPipedrive)
+	if err := json.Unmarshal(data, &valueSourceConfigWebhookAuthPipedrive); err == nil {
+		s.typ = "SourceConfigWebhookAuthPipedrive"
+		s.SourceConfigWebhookAuthPipedrive = valueSourceConfigWebhookAuthPipedrive
+		return nil
+	}
+	valueSourceConfigWebhookAuthSendgrid := new(SourceConfigWebhookAuthSendgrid)
+	if err := json.Unmarshal(data, &valueSourceConfigWebhookAuthSendgrid); err == nil {
+		s.typ = "SourceConfigWebhookAuthSendgrid"
+		s.SourceConfigWebhookAuthSendgrid = valueSourceConfigWebhookAuthSendgrid
+		return nil
+	}
+	valueSourceConfigWebhookAuthWorkOs := new(SourceConfigWebhookAuthWorkOs)
+	if err := json.Unmarshal(data, &valueSourceConfigWebhookAuthWorkOs); err == nil {
+		s.typ = "SourceConfigWebhookAuthWorkOs"
+		s.SourceConfigWebhookAuthWorkOs = valueSourceConfigWebhookAuthWorkOs
+		return nil
+	}
+	valueSourceConfigWebhookAuthSynctera := new(SourceConfigWebhookAuthSynctera)
+	if err := json.Unmarshal(data, &valueSourceConfigWebhookAuthSynctera); err == nil {
+		s.typ = "SourceConfigWebhookAuthSynctera"
+		s.SourceConfigWebhookAuthSynctera = valueSourceConfigWebhookAuthSynctera
+		return nil
+	}
+	valueSourceConfigWebhookAuthAwssns := new(SourceConfigWebhookAuthAwssns)
+	if err := json.Unmarshal(data, &valueSourceConfigWebhookAuthAwssns); err == nil {
+		s.typ = "SourceConfigWebhookAuthAwssns"
+		s.SourceConfigWebhookAuthAwssns = valueSourceConfigWebhookAuthAwssns
+		return nil
+	}
+	valueSourceConfigWebhookAuth3DEye := new(SourceConfigWebhookAuth3DEye)
+	if err := json.Unmarshal(data, &valueSourceConfigWebhookAuth3DEye); err == nil {
+		s.typ = "SourceConfigWebhookAuth3DEye"
+		s.SourceConfigWebhookAuth3DEye = valueSourceConfigWebhookAuth3DEye
+		return nil
+	}
+	valueSourceConfigWebhookAuthTwitch := new(SourceConfigWebhookAuthTwitch)
+	if err := json.Unmarshal(data, &valueSourceConfigWebhookAuthTwitch); err == nil {
+		s.typ = "SourceConfigWebhookAuthTwitch"
+		s.SourceConfigWebhookAuthTwitch = valueSourceConfigWebhookAuthTwitch
+		return nil
+	}
+	valueSourceConfigWebhookAuthEnode := new(SourceConfigWebhookAuthEnode)
+	if err := json.Unmarshal(data, &valueSourceConfigWebhookAuthEnode); err == nil {
+		s.typ = "SourceConfigWebhookAuthEnode"
+		s.SourceConfigWebhookAuthEnode = valueSourceConfigWebhookAuthEnode
+		return nil
+	}
+	valueSourceConfigWebhookAuthFavro := new(SourceConfigWebhookAuthFavro)
+	if err := json.Unmarshal(data, &valueSourceConfigWebhookAuthFavro); err == nil {
+		s.typ = "SourceConfigWebhookAuthFavro"
+		s.SourceConfigWebhookAuthFavro = valueSourceConfigWebhookAuthFavro
+		return nil
+	}
+	valueSourceConfigWebhookAuthLinear := new(SourceConfigWebhookAuthLinear)
+	if err := json.Unmarshal(data, &valueSourceConfigWebhookAuthLinear); err == nil {
+		s.typ = "SourceConfigWebhookAuthLinear"
+		s.SourceConfigWebhookAuthLinear = valueSourceConfigWebhookAuthLinear
+		return nil
+	}
+	valueSourceConfigWebhookAuthShopline := new(SourceConfigWebhookAuthShopline)
+	if err := json.Unmarshal(data, &valueSourceConfigWebhookAuthShopline); err == nil {
+		s.typ = "SourceConfigWebhookAuthShopline"
+		s.SourceConfigWebhookAuthShopline = valueSourceConfigWebhookAuthShopline
+		return nil
+	}
+	valueSourceConfigWebhookAuthWix := new(SourceConfigWebhookAuthWix)
+	if err := json.Unmarshal(data, &valueSourceConfigWebhookAuthWix); err == nil {
+		s.typ = "SourceConfigWebhookAuthWix"
+		s.SourceConfigWebhookAuthWix = valueSourceConfigWebhookAuthWix
+		return nil
+	}
+	valueSourceConfigWebhookAuthNmiPaymentGateway := new(SourceConfigWebhookAuthNmiPaymentGateway)
+	if err := json.Unmarshal(data, &valueSourceConfigWebhookAuthNmiPaymentGateway); err == nil {
+		s.typ = "SourceConfigWebhookAuthNmiPaymentGateway"
+		s.SourceConfigWebhookAuthNmiPaymentGateway = valueSourceConfigWebhookAuthNmiPaymentGateway
+		return nil
+	}
+	valueSourceConfigWebhookAuthOrb := new(SourceConfigWebhookAuthOrb)
+	if err := json.Unmarshal(data, &valueSourceConfigWebhookAuthOrb); err == nil {
+		s.typ = "SourceConfigWebhookAuthOrb"
+		s.SourceConfigWebhookAuthOrb = valueSourceConfigWebhookAuthOrb
+		return nil
+	}
+	valueSourceConfigWebhookAuthPylon := new(SourceConfigWebhookAuthPylon)
+	if err := json.Unmarshal(data, &valueSourceConfigWebhookAuthPylon); err == nil {
+		s.typ = "SourceConfigWebhookAuthPylon"
+		s.SourceConfigWebhookAuthPylon = valueSourceConfigWebhookAuthPylon
+		return nil
+	}
+	valueSourceConfigWebhookAuthRazorpay := new(SourceConfigWebhookAuthRazorpay)
+	if err := json.Unmarshal(data, &valueSourceConfigWebhookAuthRazorpay); err == nil {
+		s.typ = "SourceConfigWebhookAuthRazorpay"
+		s.SourceConfigWebhookAuthRazorpay = valueSourceConfigWebhookAuthRazorpay
+		return nil
+	}
+	valueSourceConfigWebhookAuthRepay := new(SourceConfigWebhookAuthRepay)
+	if err := json.Unmarshal(data, &valueSourceConfigWebhookAuthRepay); err == nil {
+		s.typ = "SourceConfigWebhookAuthRepay"
+		s.SourceConfigWebhookAuthRepay = valueSourceConfigWebhookAuthRepay
+		return nil
+	}
+	valueSourceConfigWebhookAuthSquare := new(SourceConfigWebhookAuthSquare)
+	if err := json.Unmarshal(data, &valueSourceConfigWebhookAuthSquare); err == nil {
+		s.typ = "SourceConfigWebhookAuthSquare"
+		s.SourceConfigWebhookAuthSquare = valueSourceConfigWebhookAuthSquare
+		return nil
+	}
+	valueSourceConfigWebhookAuthSolidgate := new(SourceConfigWebhookAuthSolidgate)
+	if err := json.Unmarshal(data, &valueSourceConfigWebhookAuthSolidgate); err == nil {
+		s.typ = "SourceConfigWebhookAuthSolidgate"
+		s.SourceConfigWebhookAuthSolidgate = valueSourceConfigWebhookAuthSolidgate
+		return nil
+	}
+	valueSourceConfigWebhookAuthTrello := new(SourceConfigWebhookAuthTrello)
+	if err := json.Unmarshal(data, &valueSourceConfigWebhookAuthTrello); err == nil {
+		s.typ = "SourceConfigWebhookAuthTrello"
+		s.SourceConfigWebhookAuthTrello = valueSourceConfigWebhookAuthTrello
+		return nil
+	}
+	valueSourceConfigWebhookAuthEbay := new(SourceConfigWebhookAuthEbay)
+	if err := json.Unmarshal(data, &valueSourceConfigWebhookAuthEbay); err == nil {
+		s.typ = "SourceConfigWebhookAuthEbay"
+		s.SourceConfigWebhookAuthEbay = valueSourceConfigWebhookAuthEbay
+		return nil
+	}
+	valueSourceConfigWebhookAuthTelnyx := new(SourceConfigWebhookAuthTelnyx)
+	if err := json.Unmarshal(data, &valueSourceConfigWebhookAuthTelnyx); err == nil {
+		s.typ = "SourceConfigWebhookAuthTelnyx"
+		s.SourceConfigWebhookAuthTelnyx = valueSourceConfigWebhookAuthTelnyx
+		return nil
+	}
+	valueSourceConfigWebhookAuthDiscord := new(SourceConfigWebhookAuthDiscord)
+	if err := json.Unmarshal(data, &valueSourceConfigWebhookAuthDiscord); err == nil {
+		s.typ = "SourceConfigWebhookAuthDiscord"
+		s.SourceConfigWebhookAuthDiscord = valueSourceConfigWebhookAuthDiscord
+		return nil
+	}
+	valueSourceConfigWebhookAuthTokenIo := new(SourceConfigWebhookAuthTokenIo)
+	if err := json.Unmarshal(data, &valueSourceConfigWebhookAuthTokenIo); err == nil {
+		s.typ = "SourceConfigWebhookAuthTokenIo"
+		s.SourceConfigWebhookAuthTokenIo = valueSourceConfigWebhookAuthTokenIo
+		return nil
+	}
+	valueSourceConfigWebhookAuthFiserv := new(SourceConfigWebhookAuthFiserv)
+	if err := json.Unmarshal(data, &valueSourceConfigWebhookAuthFiserv); err == nil {
+		s.typ = "SourceConfigWebhookAuthFiserv"
+		s.SourceConfigWebhookAuthFiserv = valueSourceConfigWebhookAuthFiserv
+		return nil
+	}
+	valueSourceConfigWebhookAuthBondsmith := new(SourceConfigWebhookAuthBondsmith)
+	if err := json.Unmarshal(data, &valueSourceConfigWebhookAuthBondsmith); err == nil {
+		s.typ = "SourceConfigWebhookAuthBondsmith"
+		s.SourceConfigWebhookAuthBondsmith = valueSourceConfigWebhookAuthBondsmith
+		return nil
+	}
+	valueSourceConfigWebhookAuthVercelLogDrains := new(SourceConfigWebhookAuthVercelLogDrains)
+	if err := json.Unmarshal(data, &valueSourceConfigWebhookAuthVercelLogDrains); err == nil {
+		s.typ = "SourceConfigWebhookAuthVercelLogDrains"
+		s.SourceConfigWebhookAuthVercelLogDrains = valueSourceConfigWebhookAuthVercelLogDrains
+		return nil
+	}
+	valueSourceConfigWebhookAuthVercelWebhooks := new(SourceConfigWebhookAuthVercelWebhooks)
+	if err := json.Unmarshal(data, &valueSourceConfigWebhookAuthVercelWebhooks); err == nil {
+		s.typ = "SourceConfigWebhookAuthVercelWebhooks"
+		s.SourceConfigWebhookAuthVercelWebhooks = valueSourceConfigWebhookAuthVercelWebhooks
+		return nil
+	}
+	valueSourceConfigWebhookAuthTebex := new(SourceConfigWebhookAuthTebex)
+	if err := json.Unmarshal(data, &valueSourceConfigWebhookAuthTebex); err == nil {
+		s.typ = "SourceConfigWebhookAuthTebex"
+		s.SourceConfigWebhookAuthTebex = valueSourceConfigWebhookAuthTebex
+		return nil
+	}
+	valueSourceConfigWebhookAuthSlack := new(SourceConfigWebhookAuthSlack)
+	if err := json.Unmarshal(data, &valueSourceConfigWebhookAuthSlack); err == nil {
+		s.typ = "SourceConfigWebhookAuthSlack"
+		s.SourceConfigWebhookAuthSlack = valueSourceConfigWebhookAuthSlack
+		return nil
+	}
+	valueSourceConfigWebhookAuthMailchimp := new(SourceConfigWebhookAuthMailchimp)
+	if err := json.Unmarshal(data, &valueSourceConfigWebhookAuthMailchimp); err == nil {
+		s.typ = "SourceConfigWebhookAuthMailchimp"
+		s.SourceConfigWebhookAuthMailchimp = valueSourceConfigWebhookAuthMailchimp
+		return nil
+	}
+	valueSourceConfigWebhookAuthPaddle := new(SourceConfigWebhookAuthPaddle)
+	if err := json.Unmarshal(data, &valueSourceConfigWebhookAuthPaddle); err == nil {
+		s.typ = "SourceConfigWebhookAuthPaddle"
+		s.SourceConfigWebhookAuthPaddle = valueSourceConfigWebhookAuthPaddle
+		return nil
+	}
+	valueSourceConfigWebhookAuthPaypal := new(SourceConfigWebhookAuthPaypal)
+	if err := json.Unmarshal(data, &valueSourceConfigWebhookAuthPaypal); err == nil {
+		s.typ = "SourceConfigWebhookAuthPaypal"
+		s.SourceConfigWebhookAuthPaypal = valueSourceConfigWebhookAuthPaypal
+		return nil
+	}
+	valueSourceConfigWebhookAuthTreezor := new(SourceConfigWebhookAuthTreezor)
+	if err := json.Unmarshal(data, &valueSourceConfigWebhookAuthTreezor); err == nil {
+		s.typ = "SourceConfigWebhookAuthTreezor"
+		s.SourceConfigWebhookAuthTreezor = valueSourceConfigWebhookAuthTreezor
+		return nil
+	}
+	valueSourceConfigWebhookAuthPraxis := new(SourceConfigWebhookAuthPraxis)
+	if err := json.Unmarshal(data, &valueSourceConfigWebhookAuthPraxis); err == nil {
+		s.typ = "SourceConfigWebhookAuthPraxis"
+		s.SourceConfigWebhookAuthPraxis = valueSourceConfigWebhookAuthPraxis
+		return nil
+	}
+	valueSourceConfigWebhookAuthCustomerIo := new(SourceConfigWebhookAuthCustomerIo)
+	if err := json.Unmarshal(data, &valueSourceConfigWebhookAuthCustomerIo); err == nil {
+		s.typ = "SourceConfigWebhookAuthCustomerIo"
+		s.SourceConfigWebhookAuthCustomerIo = valueSourceConfigWebhookAuthCustomerIo
+		return nil
+	}
+	valueSourceConfigWebhookAuthFacebook := new(SourceConfigWebhookAuthFacebook)
+	if err := json.Unmarshal(data, &valueSourceConfigWebhookAuthFacebook); err == nil {
+		s.typ = "SourceConfigWebhookAuthFacebook"
+		s.SourceConfigWebhookAuthFacebook = valueSourceConfigWebhookAuthFacebook
+		return nil
+	}
+	valueSourceConfigWebhookAuthWhatsApp := new(SourceConfigWebhookAuthWhatsApp)
+	if err := json.Unmarshal(data, &valueSourceConfigWebhookAuthWhatsApp); err == nil {
+		s.typ = "SourceConfigWebhookAuthWhatsApp"
+		s.SourceConfigWebhookAuthWhatsApp = valueSourceConfigWebhookAuthWhatsApp
+		return nil
+	}
+	valueSourceConfigWebhookAuthReplicate := new(SourceConfigWebhookAuthReplicate)
+	if err := json.Unmarshal(data, &valueSourceConfigWebhookAuthReplicate); err == nil {
+		s.typ = "SourceConfigWebhookAuthReplicate"
+		s.SourceConfigWebhookAuthReplicate = valueSourceConfigWebhookAuthReplicate
+		return nil
+	}
+	valueSourceConfigWebhookAuthTikTok := new(SourceConfigWebhookAuthTikTok)
+	if err := json.Unmarshal(data, &valueSourceConfigWebhookAuthTikTok); err == nil {
+		s.typ = "SourceConfigWebhookAuthTikTok"
+		s.SourceConfigWebhookAuthTikTok = valueSourceConfigWebhookAuthTikTok
+		return nil
+	}
+	valueSourceConfigWebhookAuthAirwallex := new(SourceConfigWebhookAuthAirwallex)
+	if err := json.Unmarshal(data, &valueSourceConfigWebhookAuthAirwallex); err == nil {
+		s.typ = "SourceConfigWebhookAuthAirwallex"
+		s.SourceConfigWebhookAuthAirwallex = valueSourceConfigWebhookAuthAirwallex
+		return nil
+	}
+	valueSourceConfigWebhookAuthZendesk := new(SourceConfigWebhookAuthZendesk)
+	if err := json.Unmarshal(data, &valueSourceConfigWebhookAuthZendesk); err == nil {
+		s.typ = "SourceConfigWebhookAuthZendesk"
+		s.SourceConfigWebhookAuthZendesk = valueSourceConfigWebhookAuthZendesk
+		return nil
+	}
+	valueSourceConfigWebhookAuthUpollo := new(SourceConfigWebhookAuthUpollo)
+	if err := json.Unmarshal(data, &valueSourceConfigWebhookAuthUpollo); err == nil {
+		s.typ = "SourceConfigWebhookAuthUpollo"
+		s.SourceConfigWebhookAuthUpollo = valueSourceConfigWebhookAuthUpollo
+		return nil
+	}
+	valueSourceConfigWebhookAuthLinkedIn := new(SourceConfigWebhookAuthLinkedIn)
+	if err := json.Unmarshal(data, &valueSourceConfigWebhookAuthLinkedIn); err == nil {
+		s.typ = "SourceConfigWebhookAuthLinkedIn"
+		s.SourceConfigWebhookAuthLinkedIn = valueSourceConfigWebhookAuthLinkedIn
 		return nil
 	}
 	return fmt.Errorf("%s cannot be deserialized as a %T", data, s)
 }
 
 func (s SourceTypeConfigWebhookAuth) MarshalJSON() ([]byte, error) {
-	if s.typ == "SourceTypeConfigWebhookAuthAlgorithm" || s.SourceTypeConfigWebhookAuthAlgorithm != nil {
-		return json.Marshal(s.SourceTypeConfigWebhookAuthAlgorithm)
+	if s.typ == "SourceConfigWebhookAuthHmac" || s.SourceConfigWebhookAuthHmac != nil {
+		return json.Marshal(s.SourceConfigWebhookAuthHmac)
 	}
-	if s.typ == "SourceTypeConfigWebhookAuthPassword" || s.SourceTypeConfigWebhookAuthPassword != nil {
-		return json.Marshal(s.SourceTypeConfigWebhookAuthPassword)
+	if s.typ == "SourceConfigWebhookAuthBasicAuth" || s.SourceConfigWebhookAuthBasicAuth != nil {
+		return json.Marshal(s.SourceConfigWebhookAuthBasicAuth)
 	}
-	if s.typ == "SourceTypeConfigWebhookAuthApiKey" || s.SourceTypeConfigWebhookAuthApiKey != nil {
-		return json.Marshal(s.SourceTypeConfigWebhookAuthApiKey)
+	if s.typ == "SourceConfigWebhookAuthApiKey" || s.SourceConfigWebhookAuthApiKey != nil {
+		return json.Marshal(s.SourceConfigWebhookAuthApiKey)
+	}
+	if s.typ == "SourceConfigWebhookAuthSanity" || s.SourceConfigWebhookAuthSanity != nil {
+		return json.Marshal(s.SourceConfigWebhookAuthSanity)
+	}
+	if s.typ == "SourceConfigWebhookAuthBridge" || s.SourceConfigWebhookAuthBridge != nil {
+		return json.Marshal(s.SourceConfigWebhookAuthBridge)
+	}
+	if s.typ == "SourceConfigWebhookAuthCloudSignal" || s.SourceConfigWebhookAuthCloudSignal != nil {
+		return json.Marshal(s.SourceConfigWebhookAuthCloudSignal)
+	}
+	if s.typ == "SourceConfigWebhookAuthCourier" || s.SourceConfigWebhookAuthCourier != nil {
+		return json.Marshal(s.SourceConfigWebhookAuthCourier)
+	}
+	if s.typ == "SourceConfigWebhookAuthFrontApp" || s.SourceConfigWebhookAuthFrontApp != nil {
+		return json.Marshal(s.SourceConfigWebhookAuthFrontApp)
+	}
+	if s.typ == "SourceConfigWebhookAuthZoom" || s.SourceConfigWebhookAuthZoom != nil {
+		return json.Marshal(s.SourceConfigWebhookAuthZoom)
+	}
+	if s.typ == "SourceConfigWebhookAuthTwitter" || s.SourceConfigWebhookAuthTwitter != nil {
+		return json.Marshal(s.SourceConfigWebhookAuthTwitter)
+	}
+	if s.typ == "SourceConfigWebhookAuthRecharge" || s.SourceConfigWebhookAuthRecharge != nil {
+		return json.Marshal(s.SourceConfigWebhookAuthRecharge)
+	}
+	if s.typ == "SourceConfigWebhookAuthStripe" || s.SourceConfigWebhookAuthStripe != nil {
+		return json.Marshal(s.SourceConfigWebhookAuthStripe)
+	}
+	if s.typ == "SourceConfigWebhookAuthPropertyFinder" || s.SourceConfigWebhookAuthPropertyFinder != nil {
+		return json.Marshal(s.SourceConfigWebhookAuthPropertyFinder)
+	}
+	if s.typ == "SourceConfigWebhookAuthShopify" || s.SourceConfigWebhookAuthShopify != nil {
+		return json.Marshal(s.SourceConfigWebhookAuthShopify)
+	}
+	if s.typ == "SourceConfigWebhookAuthTwilio" || s.SourceConfigWebhookAuthTwilio != nil {
+		return json.Marshal(s.SourceConfigWebhookAuthTwilio)
+	}
+	if s.typ == "SourceConfigWebhookAuthGitHub" || s.SourceConfigWebhookAuthGitHub != nil {
+		return json.Marshal(s.SourceConfigWebhookAuthGitHub)
+	}
+	if s.typ == "SourceConfigWebhookAuthPostmark" || s.SourceConfigWebhookAuthPostmark != nil {
+		return json.Marshal(s.SourceConfigWebhookAuthPostmark)
+	}
+	if s.typ == "SourceConfigWebhookAuthTypeform" || s.SourceConfigWebhookAuthTypeform != nil {
+		return json.Marshal(s.SourceConfigWebhookAuthTypeform)
+	}
+	if s.typ == "SourceConfigWebhookAuthXero" || s.SourceConfigWebhookAuthXero != nil {
+		return json.Marshal(s.SourceConfigWebhookAuthXero)
+	}
+	if s.typ == "SourceConfigWebhookAuthSvix" || s.SourceConfigWebhookAuthSvix != nil {
+		return json.Marshal(s.SourceConfigWebhookAuthSvix)
+	}
+	if s.typ == "SourceConfigWebhookAuthAdyen" || s.SourceConfigWebhookAuthAdyen != nil {
+		return json.Marshal(s.SourceConfigWebhookAuthAdyen)
+	}
+	if s.typ == "SourceConfigWebhookAuthAkeneo" || s.SourceConfigWebhookAuthAkeneo != nil {
+		return json.Marshal(s.SourceConfigWebhookAuthAkeneo)
+	}
+	if s.typ == "SourceConfigWebhookAuthGitLab" || s.SourceConfigWebhookAuthGitLab != nil {
+		return json.Marshal(s.SourceConfigWebhookAuthGitLab)
+	}
+	if s.typ == "SourceConfigWebhookAuthWooCommerce" || s.SourceConfigWebhookAuthWooCommerce != nil {
+		return json.Marshal(s.SourceConfigWebhookAuthWooCommerce)
+	}
+	if s.typ == "SourceConfigWebhookAuthOura" || s.SourceConfigWebhookAuthOura != nil {
+		return json.Marshal(s.SourceConfigWebhookAuthOura)
+	}
+	if s.typ == "SourceConfigWebhookAuthCommerceLayer" || s.SourceConfigWebhookAuthCommerceLayer != nil {
+		return json.Marshal(s.SourceConfigWebhookAuthCommerceLayer)
+	}
+	if s.typ == "SourceConfigWebhookAuthHubspot" || s.SourceConfigWebhookAuthHubspot != nil {
+		return json.Marshal(s.SourceConfigWebhookAuthHubspot)
+	}
+	if s.typ == "SourceConfigWebhookAuthMailgun" || s.SourceConfigWebhookAuthMailgun != nil {
+		return json.Marshal(s.SourceConfigWebhookAuthMailgun)
+	}
+	if s.typ == "SourceConfigWebhookAuthPersona" || s.SourceConfigWebhookAuthPersona != nil {
+		return json.Marshal(s.SourceConfigWebhookAuthPersona)
+	}
+	if s.typ == "SourceConfigWebhookAuthPipedrive" || s.SourceConfigWebhookAuthPipedrive != nil {
+		return json.Marshal(s.SourceConfigWebhookAuthPipedrive)
+	}
+	if s.typ == "SourceConfigWebhookAuthSendgrid" || s.SourceConfigWebhookAuthSendgrid != nil {
+		return json.Marshal(s.SourceConfigWebhookAuthSendgrid)
+	}
+	if s.typ == "SourceConfigWebhookAuthWorkOs" || s.SourceConfigWebhookAuthWorkOs != nil {
+		return json.Marshal(s.SourceConfigWebhookAuthWorkOs)
+	}
+	if s.typ == "SourceConfigWebhookAuthSynctera" || s.SourceConfigWebhookAuthSynctera != nil {
+		return json.Marshal(s.SourceConfigWebhookAuthSynctera)
+	}
+	if s.typ == "SourceConfigWebhookAuthAwssns" || s.SourceConfigWebhookAuthAwssns != nil {
+		return json.Marshal(s.SourceConfigWebhookAuthAwssns)
+	}
+	if s.typ == "SourceConfigWebhookAuth3DEye" || s.SourceConfigWebhookAuth3DEye != nil {
+		return json.Marshal(s.SourceConfigWebhookAuth3DEye)
+	}
+	if s.typ == "SourceConfigWebhookAuthTwitch" || s.SourceConfigWebhookAuthTwitch != nil {
+		return json.Marshal(s.SourceConfigWebhookAuthTwitch)
+	}
+	if s.typ == "SourceConfigWebhookAuthEnode" || s.SourceConfigWebhookAuthEnode != nil {
+		return json.Marshal(s.SourceConfigWebhookAuthEnode)
+	}
+	if s.typ == "SourceConfigWebhookAuthFavro" || s.SourceConfigWebhookAuthFavro != nil {
+		return json.Marshal(s.SourceConfigWebhookAuthFavro)
+	}
+	if s.typ == "SourceConfigWebhookAuthLinear" || s.SourceConfigWebhookAuthLinear != nil {
+		return json.Marshal(s.SourceConfigWebhookAuthLinear)
+	}
+	if s.typ == "SourceConfigWebhookAuthShopline" || s.SourceConfigWebhookAuthShopline != nil {
+		return json.Marshal(s.SourceConfigWebhookAuthShopline)
+	}
+	if s.typ == "SourceConfigWebhookAuthWix" || s.SourceConfigWebhookAuthWix != nil {
+		return json.Marshal(s.SourceConfigWebhookAuthWix)
+	}
+	if s.typ == "SourceConfigWebhookAuthNmiPaymentGateway" || s.SourceConfigWebhookAuthNmiPaymentGateway != nil {
+		return json.Marshal(s.SourceConfigWebhookAuthNmiPaymentGateway)
+	}
+	if s.typ == "SourceConfigWebhookAuthOrb" || s.SourceConfigWebhookAuthOrb != nil {
+		return json.Marshal(s.SourceConfigWebhookAuthOrb)
+	}
+	if s.typ == "SourceConfigWebhookAuthPylon" || s.SourceConfigWebhookAuthPylon != nil {
+		return json.Marshal(s.SourceConfigWebhookAuthPylon)
+	}
+	if s.typ == "SourceConfigWebhookAuthRazorpay" || s.SourceConfigWebhookAuthRazorpay != nil {
+		return json.Marshal(s.SourceConfigWebhookAuthRazorpay)
+	}
+	if s.typ == "SourceConfigWebhookAuthRepay" || s.SourceConfigWebhookAuthRepay != nil {
+		return json.Marshal(s.SourceConfigWebhookAuthRepay)
+	}
+	if s.typ == "SourceConfigWebhookAuthSquare" || s.SourceConfigWebhookAuthSquare != nil {
+		return json.Marshal(s.SourceConfigWebhookAuthSquare)
+	}
+	if s.typ == "SourceConfigWebhookAuthSolidgate" || s.SourceConfigWebhookAuthSolidgate != nil {
+		return json.Marshal(s.SourceConfigWebhookAuthSolidgate)
+	}
+	if s.typ == "SourceConfigWebhookAuthTrello" || s.SourceConfigWebhookAuthTrello != nil {
+		return json.Marshal(s.SourceConfigWebhookAuthTrello)
+	}
+	if s.typ == "SourceConfigWebhookAuthEbay" || s.SourceConfigWebhookAuthEbay != nil {
+		return json.Marshal(s.SourceConfigWebhookAuthEbay)
+	}
+	if s.typ == "SourceConfigWebhookAuthTelnyx" || s.SourceConfigWebhookAuthTelnyx != nil {
+		return json.Marshal(s.SourceConfigWebhookAuthTelnyx)
+	}
+	if s.typ == "SourceConfigWebhookAuthDiscord" || s.SourceConfigWebhookAuthDiscord != nil {
+		return json.Marshal(s.SourceConfigWebhookAuthDiscord)
+	}
+	if s.typ == "SourceConfigWebhookAuthTokenIo" || s.SourceConfigWebhookAuthTokenIo != nil {
+		return json.Marshal(s.SourceConfigWebhookAuthTokenIo)
+	}
+	if s.typ == "SourceConfigWebhookAuthFiserv" || s.SourceConfigWebhookAuthFiserv != nil {
+		return json.Marshal(s.SourceConfigWebhookAuthFiserv)
+	}
+	if s.typ == "SourceConfigWebhookAuthBondsmith" || s.SourceConfigWebhookAuthBondsmith != nil {
+		return json.Marshal(s.SourceConfigWebhookAuthBondsmith)
+	}
+	if s.typ == "SourceConfigWebhookAuthVercelLogDrains" || s.SourceConfigWebhookAuthVercelLogDrains != nil {
+		return json.Marshal(s.SourceConfigWebhookAuthVercelLogDrains)
+	}
+	if s.typ == "SourceConfigWebhookAuthVercelWebhooks" || s.SourceConfigWebhookAuthVercelWebhooks != nil {
+		return json.Marshal(s.SourceConfigWebhookAuthVercelWebhooks)
+	}
+	if s.typ == "SourceConfigWebhookAuthTebex" || s.SourceConfigWebhookAuthTebex != nil {
+		return json.Marshal(s.SourceConfigWebhookAuthTebex)
+	}
+	if s.typ == "SourceConfigWebhookAuthSlack" || s.SourceConfigWebhookAuthSlack != nil {
+		return json.Marshal(s.SourceConfigWebhookAuthSlack)
+	}
+	if s.typ == "SourceConfigWebhookAuthMailchimp" || s.SourceConfigWebhookAuthMailchimp != nil {
+		return json.Marshal(s.SourceConfigWebhookAuthMailchimp)
+	}
+	if s.typ == "SourceConfigWebhookAuthPaddle" || s.SourceConfigWebhookAuthPaddle != nil {
+		return json.Marshal(s.SourceConfigWebhookAuthPaddle)
+	}
+	if s.typ == "SourceConfigWebhookAuthPaypal" || s.SourceConfigWebhookAuthPaypal != nil {
+		return json.Marshal(s.SourceConfigWebhookAuthPaypal)
+	}
+	if s.typ == "SourceConfigWebhookAuthTreezor" || s.SourceConfigWebhookAuthTreezor != nil {
+		return json.Marshal(s.SourceConfigWebhookAuthTreezor)
+	}
+	if s.typ == "SourceConfigWebhookAuthPraxis" || s.SourceConfigWebhookAuthPraxis != nil {
+		return json.Marshal(s.SourceConfigWebhookAuthPraxis)
+	}
+	if s.typ == "SourceConfigWebhookAuthCustomerIo" || s.SourceConfigWebhookAuthCustomerIo != nil {
+		return json.Marshal(s.SourceConfigWebhookAuthCustomerIo)
+	}
+	if s.typ == "SourceConfigWebhookAuthFacebook" || s.SourceConfigWebhookAuthFacebook != nil {
+		return json.Marshal(s.SourceConfigWebhookAuthFacebook)
+	}
+	if s.typ == "SourceConfigWebhookAuthWhatsApp" || s.SourceConfigWebhookAuthWhatsApp != nil {
+		return json.Marshal(s.SourceConfigWebhookAuthWhatsApp)
+	}
+	if s.typ == "SourceConfigWebhookAuthReplicate" || s.SourceConfigWebhookAuthReplicate != nil {
+		return json.Marshal(s.SourceConfigWebhookAuthReplicate)
+	}
+	if s.typ == "SourceConfigWebhookAuthTikTok" || s.SourceConfigWebhookAuthTikTok != nil {
+		return json.Marshal(s.SourceConfigWebhookAuthTikTok)
+	}
+	if s.typ == "SourceConfigWebhookAuthAirwallex" || s.SourceConfigWebhookAuthAirwallex != nil {
+		return json.Marshal(s.SourceConfigWebhookAuthAirwallex)
+	}
+	if s.typ == "SourceConfigWebhookAuthZendesk" || s.SourceConfigWebhookAuthZendesk != nil {
+		return json.Marshal(s.SourceConfigWebhookAuthZendesk)
+	}
+	if s.typ == "SourceConfigWebhookAuthUpollo" || s.SourceConfigWebhookAuthUpollo != nil {
+		return json.Marshal(s.SourceConfigWebhookAuthUpollo)
+	}
+	if s.typ == "SourceConfigWebhookAuthLinkedIn" || s.SourceConfigWebhookAuthLinkedIn != nil {
+		return json.Marshal(s.SourceConfigWebhookAuthLinkedIn)
 	}
 	return nil, fmt.Errorf("type %T does not include a non-empty union type", s)
 }
 
 type SourceTypeConfigWebhookAuthVisitor interface {
-	VisitSourceTypeConfigWebhookAuthAlgorithm(*SourceTypeConfigWebhookAuthAlgorithm) error
-	VisitSourceTypeConfigWebhookAuthPassword(*SourceTypeConfigWebhookAuthPassword) error
-	VisitSourceTypeConfigWebhookAuthApiKey(*SourceTypeConfigWebhookAuthApiKey) error
+	VisitSourceConfigWebhookAuthHmac(*SourceConfigWebhookAuthHmac) error
+	VisitSourceConfigWebhookAuthBasicAuth(*SourceConfigWebhookAuthBasicAuth) error
+	VisitSourceConfigWebhookAuthApiKey(*SourceConfigWebhookAuthApiKey) error
+	VisitSourceConfigWebhookAuthSanity(*SourceConfigWebhookAuthSanity) error
+	VisitSourceConfigWebhookAuthBridge(*SourceConfigWebhookAuthBridge) error
+	VisitSourceConfigWebhookAuthCloudSignal(*SourceConfigWebhookAuthCloudSignal) error
+	VisitSourceConfigWebhookAuthCourier(*SourceConfigWebhookAuthCourier) error
+	VisitSourceConfigWebhookAuthFrontApp(*SourceConfigWebhookAuthFrontApp) error
+	VisitSourceConfigWebhookAuthZoom(*SourceConfigWebhookAuthZoom) error
+	VisitSourceConfigWebhookAuthTwitter(*SourceConfigWebhookAuthTwitter) error
+	VisitSourceConfigWebhookAuthRecharge(*SourceConfigWebhookAuthRecharge) error
+	VisitSourceConfigWebhookAuthStripe(*SourceConfigWebhookAuthStripe) error
+	VisitSourceConfigWebhookAuthPropertyFinder(*SourceConfigWebhookAuthPropertyFinder) error
+	VisitSourceConfigWebhookAuthShopify(*SourceConfigWebhookAuthShopify) error
+	VisitSourceConfigWebhookAuthTwilio(*SourceConfigWebhookAuthTwilio) error
+	VisitSourceConfigWebhookAuthGitHub(*SourceConfigWebhookAuthGitHub) error
+	VisitSourceConfigWebhookAuthPostmark(*SourceConfigWebhookAuthPostmark) error
+	VisitSourceConfigWebhookAuthTypeform(*SourceConfigWebhookAuthTypeform) error
+	VisitSourceConfigWebhookAuthXero(*SourceConfigWebhookAuthXero) error
+	VisitSourceConfigWebhookAuthSvix(*SourceConfigWebhookAuthSvix) error
+	VisitSourceConfigWebhookAuthAdyen(*SourceConfigWebhookAuthAdyen) error
+	VisitSourceConfigWebhookAuthAkeneo(*SourceConfigWebhookAuthAkeneo) error
+	VisitSourceConfigWebhookAuthGitLab(*SourceConfigWebhookAuthGitLab) error
+	VisitSourceConfigWebhookAuthWooCommerce(*SourceConfigWebhookAuthWooCommerce) error
+	VisitSourceConfigWebhookAuthOura(*SourceConfigWebhookAuthOura) error
+	VisitSourceConfigWebhookAuthCommerceLayer(*SourceConfigWebhookAuthCommerceLayer) error
+	VisitSourceConfigWebhookAuthHubspot(*SourceConfigWebhookAuthHubspot) error
+	VisitSourceConfigWebhookAuthMailgun(*SourceConfigWebhookAuthMailgun) error
+	VisitSourceConfigWebhookAuthPersona(*SourceConfigWebhookAuthPersona) error
+	VisitSourceConfigWebhookAuthPipedrive(*SourceConfigWebhookAuthPipedrive) error
+	VisitSourceConfigWebhookAuthSendgrid(*SourceConfigWebhookAuthSendgrid) error
+	VisitSourceConfigWebhookAuthWorkOs(*SourceConfigWebhookAuthWorkOs) error
+	VisitSourceConfigWebhookAuthSynctera(*SourceConfigWebhookAuthSynctera) error
+	VisitSourceConfigWebhookAuthAwssns(*SourceConfigWebhookAuthAwssns) error
+	VisitSourceConfigWebhookAuth3DEye(*SourceConfigWebhookAuth3DEye) error
+	VisitSourceConfigWebhookAuthTwitch(*SourceConfigWebhookAuthTwitch) error
+	VisitSourceConfigWebhookAuthEnode(*SourceConfigWebhookAuthEnode) error
+	VisitSourceConfigWebhookAuthFavro(*SourceConfigWebhookAuthFavro) error
+	VisitSourceConfigWebhookAuthLinear(*SourceConfigWebhookAuthLinear) error
+	VisitSourceConfigWebhookAuthShopline(*SourceConfigWebhookAuthShopline) error
+	VisitSourceConfigWebhookAuthWix(*SourceConfigWebhookAuthWix) error
+	VisitSourceConfigWebhookAuthNmiPaymentGateway(*SourceConfigWebhookAuthNmiPaymentGateway) error
+	VisitSourceConfigWebhookAuthOrb(*SourceConfigWebhookAuthOrb) error
+	VisitSourceConfigWebhookAuthPylon(*SourceConfigWebhookAuthPylon) error
+	VisitSourceConfigWebhookAuthRazorpay(*SourceConfigWebhookAuthRazorpay) error
+	VisitSourceConfigWebhookAuthRepay(*SourceConfigWebhookAuthRepay) error
+	VisitSourceConfigWebhookAuthSquare(*SourceConfigWebhookAuthSquare) error
+	VisitSourceConfigWebhookAuthSolidgate(*SourceConfigWebhookAuthSolidgate) error
+	VisitSourceConfigWebhookAuthTrello(*SourceConfigWebhookAuthTrello) error
+	VisitSourceConfigWebhookAuthEbay(*SourceConfigWebhookAuthEbay) error
+	VisitSourceConfigWebhookAuthTelnyx(*SourceConfigWebhookAuthTelnyx) error
+	VisitSourceConfigWebhookAuthDiscord(*SourceConfigWebhookAuthDiscord) error
+	VisitSourceConfigWebhookAuthTokenIo(*SourceConfigWebhookAuthTokenIo) error
+	VisitSourceConfigWebhookAuthFiserv(*SourceConfigWebhookAuthFiserv) error
+	VisitSourceConfigWebhookAuthBondsmith(*SourceConfigWebhookAuthBondsmith) error
+	VisitSourceConfigWebhookAuthVercelLogDrains(*SourceConfigWebhookAuthVercelLogDrains) error
+	VisitSourceConfigWebhookAuthVercelWebhooks(*SourceConfigWebhookAuthVercelWebhooks) error
+	VisitSourceConfigWebhookAuthTebex(*SourceConfigWebhookAuthTebex) error
+	VisitSourceConfigWebhookAuthSlack(*SourceConfigWebhookAuthSlack) error
+	VisitSourceConfigWebhookAuthMailchimp(*SourceConfigWebhookAuthMailchimp) error
+	VisitSourceConfigWebhookAuthPaddle(*SourceConfigWebhookAuthPaddle) error
+	VisitSourceConfigWebhookAuthPaypal(*SourceConfigWebhookAuthPaypal) error
+	VisitSourceConfigWebhookAuthTreezor(*SourceConfigWebhookAuthTreezor) error
+	VisitSourceConfigWebhookAuthPraxis(*SourceConfigWebhookAuthPraxis) error
+	VisitSourceConfigWebhookAuthCustomerIo(*SourceConfigWebhookAuthCustomerIo) error
+	VisitSourceConfigWebhookAuthFacebook(*SourceConfigWebhookAuthFacebook) error
+	VisitSourceConfigWebhookAuthWhatsApp(*SourceConfigWebhookAuthWhatsApp) error
+	VisitSourceConfigWebhookAuthReplicate(*SourceConfigWebhookAuthReplicate) error
+	VisitSourceConfigWebhookAuthTikTok(*SourceConfigWebhookAuthTikTok) error
+	VisitSourceConfigWebhookAuthAirwallex(*SourceConfigWebhookAuthAirwallex) error
+	VisitSourceConfigWebhookAuthZendesk(*SourceConfigWebhookAuthZendesk) error
+	VisitSourceConfigWebhookAuthUpollo(*SourceConfigWebhookAuthUpollo) error
+	VisitSourceConfigWebhookAuthLinkedIn(*SourceConfigWebhookAuthLinkedIn) error
 }
 
 func (s *SourceTypeConfigWebhookAuth) Accept(visitor SourceTypeConfigWebhookAuthVisitor) error {
-	if s.typ == "SourceTypeConfigWebhookAuthAlgorithm" || s.SourceTypeConfigWebhookAuthAlgorithm != nil {
-		return visitor.VisitSourceTypeConfigWebhookAuthAlgorithm(s.SourceTypeConfigWebhookAuthAlgorithm)
+	if s.typ == "SourceConfigWebhookAuthHmac" || s.SourceConfigWebhookAuthHmac != nil {
+		return visitor.VisitSourceConfigWebhookAuthHmac(s.SourceConfigWebhookAuthHmac)
 	}
-	if s.typ == "SourceTypeConfigWebhookAuthPassword" || s.SourceTypeConfigWebhookAuthPassword != nil {
-		return visitor.VisitSourceTypeConfigWebhookAuthPassword(s.SourceTypeConfigWebhookAuthPassword)
+	if s.typ == "SourceConfigWebhookAuthBasicAuth" || s.SourceConfigWebhookAuthBasicAuth != nil {
+		return visitor.VisitSourceConfigWebhookAuthBasicAuth(s.SourceConfigWebhookAuthBasicAuth)
 	}
-	if s.typ == "SourceTypeConfigWebhookAuthApiKey" || s.SourceTypeConfigWebhookAuthApiKey != nil {
-		return visitor.VisitSourceTypeConfigWebhookAuthApiKey(s.SourceTypeConfigWebhookAuthApiKey)
+	if s.typ == "SourceConfigWebhookAuthApiKey" || s.SourceConfigWebhookAuthApiKey != nil {
+		return visitor.VisitSourceConfigWebhookAuthApiKey(s.SourceConfigWebhookAuthApiKey)
+	}
+	if s.typ == "SourceConfigWebhookAuthSanity" || s.SourceConfigWebhookAuthSanity != nil {
+		return visitor.VisitSourceConfigWebhookAuthSanity(s.SourceConfigWebhookAuthSanity)
+	}
+	if s.typ == "SourceConfigWebhookAuthBridge" || s.SourceConfigWebhookAuthBridge != nil {
+		return visitor.VisitSourceConfigWebhookAuthBridge(s.SourceConfigWebhookAuthBridge)
+	}
+	if s.typ == "SourceConfigWebhookAuthCloudSignal" || s.SourceConfigWebhookAuthCloudSignal != nil {
+		return visitor.VisitSourceConfigWebhookAuthCloudSignal(s.SourceConfigWebhookAuthCloudSignal)
+	}
+	if s.typ == "SourceConfigWebhookAuthCourier" || s.SourceConfigWebhookAuthCourier != nil {
+		return visitor.VisitSourceConfigWebhookAuthCourier(s.SourceConfigWebhookAuthCourier)
+	}
+	if s.typ == "SourceConfigWebhookAuthFrontApp" || s.SourceConfigWebhookAuthFrontApp != nil {
+		return visitor.VisitSourceConfigWebhookAuthFrontApp(s.SourceConfigWebhookAuthFrontApp)
+	}
+	if s.typ == "SourceConfigWebhookAuthZoom" || s.SourceConfigWebhookAuthZoom != nil {
+		return visitor.VisitSourceConfigWebhookAuthZoom(s.SourceConfigWebhookAuthZoom)
+	}
+	if s.typ == "SourceConfigWebhookAuthTwitter" || s.SourceConfigWebhookAuthTwitter != nil {
+		return visitor.VisitSourceConfigWebhookAuthTwitter(s.SourceConfigWebhookAuthTwitter)
+	}
+	if s.typ == "SourceConfigWebhookAuthRecharge" || s.SourceConfigWebhookAuthRecharge != nil {
+		return visitor.VisitSourceConfigWebhookAuthRecharge(s.SourceConfigWebhookAuthRecharge)
+	}
+	if s.typ == "SourceConfigWebhookAuthStripe" || s.SourceConfigWebhookAuthStripe != nil {
+		return visitor.VisitSourceConfigWebhookAuthStripe(s.SourceConfigWebhookAuthStripe)
+	}
+	if s.typ == "SourceConfigWebhookAuthPropertyFinder" || s.SourceConfigWebhookAuthPropertyFinder != nil {
+		return visitor.VisitSourceConfigWebhookAuthPropertyFinder(s.SourceConfigWebhookAuthPropertyFinder)
+	}
+	if s.typ == "SourceConfigWebhookAuthShopify" || s.SourceConfigWebhookAuthShopify != nil {
+		return visitor.VisitSourceConfigWebhookAuthShopify(s.SourceConfigWebhookAuthShopify)
+	}
+	if s.typ == "SourceConfigWebhookAuthTwilio" || s.SourceConfigWebhookAuthTwilio != nil {
+		return visitor.VisitSourceConfigWebhookAuthTwilio(s.SourceConfigWebhookAuthTwilio)
+	}
+	if s.typ == "SourceConfigWebhookAuthGitHub" || s.SourceConfigWebhookAuthGitHub != nil {
+		return visitor.VisitSourceConfigWebhookAuthGitHub(s.SourceConfigWebhookAuthGitHub)
+	}
+	if s.typ == "SourceConfigWebhookAuthPostmark" || s.SourceConfigWebhookAuthPostmark != nil {
+		return visitor.VisitSourceConfigWebhookAuthPostmark(s.SourceConfigWebhookAuthPostmark)
+	}
+	if s.typ == "SourceConfigWebhookAuthTypeform" || s.SourceConfigWebhookAuthTypeform != nil {
+		return visitor.VisitSourceConfigWebhookAuthTypeform(s.SourceConfigWebhookAuthTypeform)
+	}
+	if s.typ == "SourceConfigWebhookAuthXero" || s.SourceConfigWebhookAuthXero != nil {
+		return visitor.VisitSourceConfigWebhookAuthXero(s.SourceConfigWebhookAuthXero)
+	}
+	if s.typ == "SourceConfigWebhookAuthSvix" || s.SourceConfigWebhookAuthSvix != nil {
+		return visitor.VisitSourceConfigWebhookAuthSvix(s.SourceConfigWebhookAuthSvix)
+	}
+	if s.typ == "SourceConfigWebhookAuthAdyen" || s.SourceConfigWebhookAuthAdyen != nil {
+		return visitor.VisitSourceConfigWebhookAuthAdyen(s.SourceConfigWebhookAuthAdyen)
+	}
+	if s.typ == "SourceConfigWebhookAuthAkeneo" || s.SourceConfigWebhookAuthAkeneo != nil {
+		return visitor.VisitSourceConfigWebhookAuthAkeneo(s.SourceConfigWebhookAuthAkeneo)
+	}
+	if s.typ == "SourceConfigWebhookAuthGitLab" || s.SourceConfigWebhookAuthGitLab != nil {
+		return visitor.VisitSourceConfigWebhookAuthGitLab(s.SourceConfigWebhookAuthGitLab)
+	}
+	if s.typ == "SourceConfigWebhookAuthWooCommerce" || s.SourceConfigWebhookAuthWooCommerce != nil {
+		return visitor.VisitSourceConfigWebhookAuthWooCommerce(s.SourceConfigWebhookAuthWooCommerce)
+	}
+	if s.typ == "SourceConfigWebhookAuthOura" || s.SourceConfigWebhookAuthOura != nil {
+		return visitor.VisitSourceConfigWebhookAuthOura(s.SourceConfigWebhookAuthOura)
+	}
+	if s.typ == "SourceConfigWebhookAuthCommerceLayer" || s.SourceConfigWebhookAuthCommerceLayer != nil {
+		return visitor.VisitSourceConfigWebhookAuthCommerceLayer(s.SourceConfigWebhookAuthCommerceLayer)
+	}
+	if s.typ == "SourceConfigWebhookAuthHubspot" || s.SourceConfigWebhookAuthHubspot != nil {
+		return visitor.VisitSourceConfigWebhookAuthHubspot(s.SourceConfigWebhookAuthHubspot)
+	}
+	if s.typ == "SourceConfigWebhookAuthMailgun" || s.SourceConfigWebhookAuthMailgun != nil {
+		return visitor.VisitSourceConfigWebhookAuthMailgun(s.SourceConfigWebhookAuthMailgun)
+	}
+	if s.typ == "SourceConfigWebhookAuthPersona" || s.SourceConfigWebhookAuthPersona != nil {
+		return visitor.VisitSourceConfigWebhookAuthPersona(s.SourceConfigWebhookAuthPersona)
+	}
+	if s.typ == "SourceConfigWebhookAuthPipedrive" || s.SourceConfigWebhookAuthPipedrive != nil {
+		return visitor.VisitSourceConfigWebhookAuthPipedrive(s.SourceConfigWebhookAuthPipedrive)
+	}
+	if s.typ == "SourceConfigWebhookAuthSendgrid" || s.SourceConfigWebhookAuthSendgrid != nil {
+		return visitor.VisitSourceConfigWebhookAuthSendgrid(s.SourceConfigWebhookAuthSendgrid)
+	}
+	if s.typ == "SourceConfigWebhookAuthWorkOs" || s.SourceConfigWebhookAuthWorkOs != nil {
+		return visitor.VisitSourceConfigWebhookAuthWorkOs(s.SourceConfigWebhookAuthWorkOs)
+	}
+	if s.typ == "SourceConfigWebhookAuthSynctera" || s.SourceConfigWebhookAuthSynctera != nil {
+		return visitor.VisitSourceConfigWebhookAuthSynctera(s.SourceConfigWebhookAuthSynctera)
+	}
+	if s.typ == "SourceConfigWebhookAuthAwssns" || s.SourceConfigWebhookAuthAwssns != nil {
+		return visitor.VisitSourceConfigWebhookAuthAwssns(s.SourceConfigWebhookAuthAwssns)
+	}
+	if s.typ == "SourceConfigWebhookAuth3DEye" || s.SourceConfigWebhookAuth3DEye != nil {
+		return visitor.VisitSourceConfigWebhookAuth3DEye(s.SourceConfigWebhookAuth3DEye)
+	}
+	if s.typ == "SourceConfigWebhookAuthTwitch" || s.SourceConfigWebhookAuthTwitch != nil {
+		return visitor.VisitSourceConfigWebhookAuthTwitch(s.SourceConfigWebhookAuthTwitch)
+	}
+	if s.typ == "SourceConfigWebhookAuthEnode" || s.SourceConfigWebhookAuthEnode != nil {
+		return visitor.VisitSourceConfigWebhookAuthEnode(s.SourceConfigWebhookAuthEnode)
+	}
+	if s.typ == "SourceConfigWebhookAuthFavro" || s.SourceConfigWebhookAuthFavro != nil {
+		return visitor.VisitSourceConfigWebhookAuthFavro(s.SourceConfigWebhookAuthFavro)
+	}
+	if s.typ == "SourceConfigWebhookAuthLinear" || s.SourceConfigWebhookAuthLinear != nil {
+		return visitor.VisitSourceConfigWebhookAuthLinear(s.SourceConfigWebhookAuthLinear)
+	}
+	if s.typ == "SourceConfigWebhookAuthShopline" || s.SourceConfigWebhookAuthShopline != nil {
+		return visitor.VisitSourceConfigWebhookAuthShopline(s.SourceConfigWebhookAuthShopline)
+	}
+	if s.typ == "SourceConfigWebhookAuthWix" || s.SourceConfigWebhookAuthWix != nil {
+		return visitor.VisitSourceConfigWebhookAuthWix(s.SourceConfigWebhookAuthWix)
+	}
+	if s.typ == "SourceConfigWebhookAuthNmiPaymentGateway" || s.SourceConfigWebhookAuthNmiPaymentGateway != nil {
+		return visitor.VisitSourceConfigWebhookAuthNmiPaymentGateway(s.SourceConfigWebhookAuthNmiPaymentGateway)
+	}
+	if s.typ == "SourceConfigWebhookAuthOrb" || s.SourceConfigWebhookAuthOrb != nil {
+		return visitor.VisitSourceConfigWebhookAuthOrb(s.SourceConfigWebhookAuthOrb)
+	}
+	if s.typ == "SourceConfigWebhookAuthPylon" || s.SourceConfigWebhookAuthPylon != nil {
+		return visitor.VisitSourceConfigWebhookAuthPylon(s.SourceConfigWebhookAuthPylon)
+	}
+	if s.typ == "SourceConfigWebhookAuthRazorpay" || s.SourceConfigWebhookAuthRazorpay != nil {
+		return visitor.VisitSourceConfigWebhookAuthRazorpay(s.SourceConfigWebhookAuthRazorpay)
+	}
+	if s.typ == "SourceConfigWebhookAuthRepay" || s.SourceConfigWebhookAuthRepay != nil {
+		return visitor.VisitSourceConfigWebhookAuthRepay(s.SourceConfigWebhookAuthRepay)
+	}
+	if s.typ == "SourceConfigWebhookAuthSquare" || s.SourceConfigWebhookAuthSquare != nil {
+		return visitor.VisitSourceConfigWebhookAuthSquare(s.SourceConfigWebhookAuthSquare)
+	}
+	if s.typ == "SourceConfigWebhookAuthSolidgate" || s.SourceConfigWebhookAuthSolidgate != nil {
+		return visitor.VisitSourceConfigWebhookAuthSolidgate(s.SourceConfigWebhookAuthSolidgate)
+	}
+	if s.typ == "SourceConfigWebhookAuthTrello" || s.SourceConfigWebhookAuthTrello != nil {
+		return visitor.VisitSourceConfigWebhookAuthTrello(s.SourceConfigWebhookAuthTrello)
+	}
+	if s.typ == "SourceConfigWebhookAuthEbay" || s.SourceConfigWebhookAuthEbay != nil {
+		return visitor.VisitSourceConfigWebhookAuthEbay(s.SourceConfigWebhookAuthEbay)
+	}
+	if s.typ == "SourceConfigWebhookAuthTelnyx" || s.SourceConfigWebhookAuthTelnyx != nil {
+		return visitor.VisitSourceConfigWebhookAuthTelnyx(s.SourceConfigWebhookAuthTelnyx)
+	}
+	if s.typ == "SourceConfigWebhookAuthDiscord" || s.SourceConfigWebhookAuthDiscord != nil {
+		return visitor.VisitSourceConfigWebhookAuthDiscord(s.SourceConfigWebhookAuthDiscord)
+	}
+	if s.typ == "SourceConfigWebhookAuthTokenIo" || s.SourceConfigWebhookAuthTokenIo != nil {
+		return visitor.VisitSourceConfigWebhookAuthTokenIo(s.SourceConfigWebhookAuthTokenIo)
+	}
+	if s.typ == "SourceConfigWebhookAuthFiserv" || s.SourceConfigWebhookAuthFiserv != nil {
+		return visitor.VisitSourceConfigWebhookAuthFiserv(s.SourceConfigWebhookAuthFiserv)
+	}
+	if s.typ == "SourceConfigWebhookAuthBondsmith" || s.SourceConfigWebhookAuthBondsmith != nil {
+		return visitor.VisitSourceConfigWebhookAuthBondsmith(s.SourceConfigWebhookAuthBondsmith)
+	}
+	if s.typ == "SourceConfigWebhookAuthVercelLogDrains" || s.SourceConfigWebhookAuthVercelLogDrains != nil {
+		return visitor.VisitSourceConfigWebhookAuthVercelLogDrains(s.SourceConfigWebhookAuthVercelLogDrains)
+	}
+	if s.typ == "SourceConfigWebhookAuthVercelWebhooks" || s.SourceConfigWebhookAuthVercelWebhooks != nil {
+		return visitor.VisitSourceConfigWebhookAuthVercelWebhooks(s.SourceConfigWebhookAuthVercelWebhooks)
+	}
+	if s.typ == "SourceConfigWebhookAuthTebex" || s.SourceConfigWebhookAuthTebex != nil {
+		return visitor.VisitSourceConfigWebhookAuthTebex(s.SourceConfigWebhookAuthTebex)
+	}
+	if s.typ == "SourceConfigWebhookAuthSlack" || s.SourceConfigWebhookAuthSlack != nil {
+		return visitor.VisitSourceConfigWebhookAuthSlack(s.SourceConfigWebhookAuthSlack)
+	}
+	if s.typ == "SourceConfigWebhookAuthMailchimp" || s.SourceConfigWebhookAuthMailchimp != nil {
+		return visitor.VisitSourceConfigWebhookAuthMailchimp(s.SourceConfigWebhookAuthMailchimp)
+	}
+	if s.typ == "SourceConfigWebhookAuthPaddle" || s.SourceConfigWebhookAuthPaddle != nil {
+		return visitor.VisitSourceConfigWebhookAuthPaddle(s.SourceConfigWebhookAuthPaddle)
+	}
+	if s.typ == "SourceConfigWebhookAuthPaypal" || s.SourceConfigWebhookAuthPaypal != nil {
+		return visitor.VisitSourceConfigWebhookAuthPaypal(s.SourceConfigWebhookAuthPaypal)
+	}
+	if s.typ == "SourceConfigWebhookAuthTreezor" || s.SourceConfigWebhookAuthTreezor != nil {
+		return visitor.VisitSourceConfigWebhookAuthTreezor(s.SourceConfigWebhookAuthTreezor)
+	}
+	if s.typ == "SourceConfigWebhookAuthPraxis" || s.SourceConfigWebhookAuthPraxis != nil {
+		return visitor.VisitSourceConfigWebhookAuthPraxis(s.SourceConfigWebhookAuthPraxis)
+	}
+	if s.typ == "SourceConfigWebhookAuthCustomerIo" || s.SourceConfigWebhookAuthCustomerIo != nil {
+		return visitor.VisitSourceConfigWebhookAuthCustomerIo(s.SourceConfigWebhookAuthCustomerIo)
+	}
+	if s.typ == "SourceConfigWebhookAuthFacebook" || s.SourceConfigWebhookAuthFacebook != nil {
+		return visitor.VisitSourceConfigWebhookAuthFacebook(s.SourceConfigWebhookAuthFacebook)
+	}
+	if s.typ == "SourceConfigWebhookAuthWhatsApp" || s.SourceConfigWebhookAuthWhatsApp != nil {
+		return visitor.VisitSourceConfigWebhookAuthWhatsApp(s.SourceConfigWebhookAuthWhatsApp)
+	}
+	if s.typ == "SourceConfigWebhookAuthReplicate" || s.SourceConfigWebhookAuthReplicate != nil {
+		return visitor.VisitSourceConfigWebhookAuthReplicate(s.SourceConfigWebhookAuthReplicate)
+	}
+	if s.typ == "SourceConfigWebhookAuthTikTok" || s.SourceConfigWebhookAuthTikTok != nil {
+		return visitor.VisitSourceConfigWebhookAuthTikTok(s.SourceConfigWebhookAuthTikTok)
+	}
+	if s.typ == "SourceConfigWebhookAuthAirwallex" || s.SourceConfigWebhookAuthAirwallex != nil {
+		return visitor.VisitSourceConfigWebhookAuthAirwallex(s.SourceConfigWebhookAuthAirwallex)
+	}
+	if s.typ == "SourceConfigWebhookAuthZendesk" || s.SourceConfigWebhookAuthZendesk != nil {
+		return visitor.VisitSourceConfigWebhookAuthZendesk(s.SourceConfigWebhookAuthZendesk)
+	}
+	if s.typ == "SourceConfigWebhookAuthUpollo" || s.SourceConfigWebhookAuthUpollo != nil {
+		return visitor.VisitSourceConfigWebhookAuthUpollo(s.SourceConfigWebhookAuthUpollo)
+	}
+	if s.typ == "SourceConfigWebhookAuthLinkedIn" || s.SourceConfigWebhookAuthLinkedIn != nil {
+		return visitor.VisitSourceConfigWebhookAuthLinkedIn(s.SourceConfigWebhookAuthLinkedIn)
 	}
 	return fmt.Errorf("type %T does not include a non-empty union type", s)
 }
 
-type SourceTypeConfigWebhookAuthAlgorithm struct {
-	Algorithm        SourceTypeConfigWebhookAuthAlgorithmAlgorithm `json:"algorithm" url:"algorithm"`
-	Encoding         SourceTypeConfigWebhookAuthAlgorithmEncoding  `json:"encoding" url:"encoding"`
-	HeaderKey        string                                        `json:"header_key" url:"header_key"`
-	WebhookSecretKey string                                        `json:"webhook_secret_key" url:"webhook_secret_key"`
-
-	extraProperties map[string]interface{}
-	rawJSON         json.RawMessage
-}
-
-func (s *SourceTypeConfigWebhookAuthAlgorithm) GetAlgorithm() SourceTypeConfigWebhookAuthAlgorithmAlgorithm {
-	if s == nil {
-		return ""
-	}
-	return s.Algorithm
-}
-
-func (s *SourceTypeConfigWebhookAuthAlgorithm) GetEncoding() SourceTypeConfigWebhookAuthAlgorithmEncoding {
-	if s == nil {
-		return ""
-	}
-	return s.Encoding
-}
-
-func (s *SourceTypeConfigWebhookAuthAlgorithm) GetHeaderKey() string {
-	if s == nil {
-		return ""
-	}
-	return s.HeaderKey
-}
-
-func (s *SourceTypeConfigWebhookAuthAlgorithm) GetWebhookSecretKey() string {
-	if s == nil {
-		return ""
-	}
-	return s.WebhookSecretKey
-}
-
-func (s *SourceTypeConfigWebhookAuthAlgorithm) GetExtraProperties() map[string]interface{} {
-	return s.extraProperties
-}
-
-func (s *SourceTypeConfigWebhookAuthAlgorithm) UnmarshalJSON(data []byte) error {
-	type unmarshaler SourceTypeConfigWebhookAuthAlgorithm
-	var value unmarshaler
-	if err := json.Unmarshal(data, &value); err != nil {
-		return err
-	}
-	*s = SourceTypeConfigWebhookAuthAlgorithm(value)
-	extraProperties, err := internal.ExtractExtraProperties(data, *s)
-	if err != nil {
-		return err
-	}
-	s.extraProperties = extraProperties
-	s.rawJSON = json.RawMessage(data)
-	return nil
-}
-
-func (s *SourceTypeConfigWebhookAuthAlgorithm) String() string {
-	if len(s.rawJSON) > 0 {
-		if value, err := internal.StringifyJSON(s.rawJSON); err == nil {
-			return value
-		}
-	}
-	if value, err := internal.StringifyJSON(s); err == nil {
-		return value
-	}
-	return fmt.Sprintf("%#v", s)
-}
-
-type SourceTypeConfigWebhookAuthAlgorithmAlgorithm string
+type SourceTypeConfigWebhookAuthType string
 
 const (
-	SourceTypeConfigWebhookAuthAlgorithmAlgorithmSha1   SourceTypeConfigWebhookAuthAlgorithmAlgorithm = "sha1"
-	SourceTypeConfigWebhookAuthAlgorithmAlgorithmSha256 SourceTypeConfigWebhookAuthAlgorithmAlgorithm = "sha256"
-	SourceTypeConfigWebhookAuthAlgorithmAlgorithmSha512 SourceTypeConfigWebhookAuthAlgorithmAlgorithm = "sha512"
-	SourceTypeConfigWebhookAuthAlgorithmAlgorithmMd5    SourceTypeConfigWebhookAuthAlgorithmAlgorithm = "md5"
+	SourceTypeConfigWebhookAuthTypeHmac            SourceTypeConfigWebhookAuthType = "HMAC"
+	SourceTypeConfigWebhookAuthTypeBasicAuth       SourceTypeConfigWebhookAuthType = "BASIC_AUTH"
+	SourceTypeConfigWebhookAuthTypeApiKey          SourceTypeConfigWebhookAuthType = "API_KEY"
+	SourceTypeConfigWebhookAuthTypeWebhook         SourceTypeConfigWebhookAuthType = "WEBHOOK"
+	SourceTypeConfigWebhookAuthTypeHttp            SourceTypeConfigWebhookAuthType = "HTTP"
+	SourceTypeConfigWebhookAuthTypeManaged         SourceTypeConfigWebhookAuthType = "MANAGED"
+	SourceTypeConfigWebhookAuthTypeSanity          SourceTypeConfigWebhookAuthType = "SANITY"
+	SourceTypeConfigWebhookAuthTypeBridge          SourceTypeConfigWebhookAuthType = "BRIDGE"
+	SourceTypeConfigWebhookAuthTypeCloudsignal     SourceTypeConfigWebhookAuthType = "CLOUDSIGNAL"
+	SourceTypeConfigWebhookAuthTypeCourier         SourceTypeConfigWebhookAuthType = "COURIER"
+	SourceTypeConfigWebhookAuthTypeFrontapp        SourceTypeConfigWebhookAuthType = "FRONTAPP"
+	SourceTypeConfigWebhookAuthTypeZoom            SourceTypeConfigWebhookAuthType = "ZOOM"
+	SourceTypeConfigWebhookAuthTypeTwitter         SourceTypeConfigWebhookAuthType = "TWITTER"
+	SourceTypeConfigWebhookAuthTypeRecharge        SourceTypeConfigWebhookAuthType = "RECHARGE"
+	SourceTypeConfigWebhookAuthTypeStripe          SourceTypeConfigWebhookAuthType = "STRIPE"
+	SourceTypeConfigWebhookAuthTypePropertyFinder  SourceTypeConfigWebhookAuthType = "PROPERTY-FINDER"
+	SourceTypeConfigWebhookAuthTypeShopify         SourceTypeConfigWebhookAuthType = "SHOPIFY"
+	SourceTypeConfigWebhookAuthTypeTwilio          SourceTypeConfigWebhookAuthType = "TWILIO"
+	SourceTypeConfigWebhookAuthTypeGithub          SourceTypeConfigWebhookAuthType = "GITHUB"
+	SourceTypeConfigWebhookAuthTypePostmark        SourceTypeConfigWebhookAuthType = "POSTMARK"
+	SourceTypeConfigWebhookAuthTypeTypeform        SourceTypeConfigWebhookAuthType = "TYPEFORM"
+	SourceTypeConfigWebhookAuthTypeXero            SourceTypeConfigWebhookAuthType = "XERO"
+	SourceTypeConfigWebhookAuthTypeSvix            SourceTypeConfigWebhookAuthType = "SVIX"
+	SourceTypeConfigWebhookAuthTypeAdyen           SourceTypeConfigWebhookAuthType = "ADYEN"
+	SourceTypeConfigWebhookAuthTypeAkeneo          SourceTypeConfigWebhookAuthType = "AKENEO"
+	SourceTypeConfigWebhookAuthTypeGitlab          SourceTypeConfigWebhookAuthType = "GITLAB"
+	SourceTypeConfigWebhookAuthTypeWoocommerce     SourceTypeConfigWebhookAuthType = "WOOCOMMERCE"
+	SourceTypeConfigWebhookAuthTypeOura            SourceTypeConfigWebhookAuthType = "OURA"
+	SourceTypeConfigWebhookAuthTypeCommercelayer   SourceTypeConfigWebhookAuthType = "COMMERCELAYER"
+	SourceTypeConfigWebhookAuthTypeHubspot         SourceTypeConfigWebhookAuthType = "HUBSPOT"
+	SourceTypeConfigWebhookAuthTypeMailgun         SourceTypeConfigWebhookAuthType = "MAILGUN"
+	SourceTypeConfigWebhookAuthTypePersona         SourceTypeConfigWebhookAuthType = "PERSONA"
+	SourceTypeConfigWebhookAuthTypePipedrive       SourceTypeConfigWebhookAuthType = "PIPEDRIVE"
+	SourceTypeConfigWebhookAuthTypeSendgrid        SourceTypeConfigWebhookAuthType = "SENDGRID"
+	SourceTypeConfigWebhookAuthTypeWorkos          SourceTypeConfigWebhookAuthType = "WORKOS"
+	SourceTypeConfigWebhookAuthTypeSynctera        SourceTypeConfigWebhookAuthType = "SYNCTERA"
+	SourceTypeConfigWebhookAuthTypeAwsSns          SourceTypeConfigWebhookAuthType = "AWS_SNS"
+	SourceTypeConfigWebhookAuthTypeThreeDEye       SourceTypeConfigWebhookAuthType = "THREE_D_EYE"
+	SourceTypeConfigWebhookAuthTypeTwitch          SourceTypeConfigWebhookAuthType = "TWITCH"
+	SourceTypeConfigWebhookAuthTypeEnode           SourceTypeConfigWebhookAuthType = "ENODE"
+	SourceTypeConfigWebhookAuthTypeFavro           SourceTypeConfigWebhookAuthType = "FAVRO"
+	SourceTypeConfigWebhookAuthTypeLinear          SourceTypeConfigWebhookAuthType = "LINEAR"
+	SourceTypeConfigWebhookAuthTypeShopline        SourceTypeConfigWebhookAuthType = "SHOPLINE"
+	SourceTypeConfigWebhookAuthTypeWix             SourceTypeConfigWebhookAuthType = "WIX"
+	SourceTypeConfigWebhookAuthTypeNmi             SourceTypeConfigWebhookAuthType = "NMI"
+	SourceTypeConfigWebhookAuthTypeOrb             SourceTypeConfigWebhookAuthType = "ORB"
+	SourceTypeConfigWebhookAuthTypePylon           SourceTypeConfigWebhookAuthType = "PYLON"
+	SourceTypeConfigWebhookAuthTypeRazorpay        SourceTypeConfigWebhookAuthType = "RAZORPAY"
+	SourceTypeConfigWebhookAuthTypeRepay           SourceTypeConfigWebhookAuthType = "REPAY"
+	SourceTypeConfigWebhookAuthTypeSquare          SourceTypeConfigWebhookAuthType = "SQUARE"
+	SourceTypeConfigWebhookAuthTypeSolidgate       SourceTypeConfigWebhookAuthType = "SOLIDGATE"
+	SourceTypeConfigWebhookAuthTypeTrello          SourceTypeConfigWebhookAuthType = "TRELLO"
+	SourceTypeConfigWebhookAuthTypeEbay            SourceTypeConfigWebhookAuthType = "EBAY"
+	SourceTypeConfigWebhookAuthTypeTelnyx          SourceTypeConfigWebhookAuthType = "TELNYX"
+	SourceTypeConfigWebhookAuthTypeDiscord         SourceTypeConfigWebhookAuthType = "DISCORD"
+	SourceTypeConfigWebhookAuthTypeTokenio         SourceTypeConfigWebhookAuthType = "TOKENIO"
+	SourceTypeConfigWebhookAuthTypeFiserv          SourceTypeConfigWebhookAuthType = "FISERV"
+	SourceTypeConfigWebhookAuthTypeBondsmith       SourceTypeConfigWebhookAuthType = "BONDSMITH"
+	SourceTypeConfigWebhookAuthTypeVercelLogDrains SourceTypeConfigWebhookAuthType = "VERCEL_LOG_DRAINS"
+	SourceTypeConfigWebhookAuthTypeVercel          SourceTypeConfigWebhookAuthType = "VERCEL"
+	SourceTypeConfigWebhookAuthTypeTebex           SourceTypeConfigWebhookAuthType = "TEBEX"
+	SourceTypeConfigWebhookAuthTypeSlack           SourceTypeConfigWebhookAuthType = "SLACK"
+	SourceTypeConfigWebhookAuthTypeMailchimp       SourceTypeConfigWebhookAuthType = "MAILCHIMP"
+	SourceTypeConfigWebhookAuthTypePaddle          SourceTypeConfigWebhookAuthType = "PADDLE"
+	SourceTypeConfigWebhookAuthTypePaypal          SourceTypeConfigWebhookAuthType = "PAYPAL"
+	SourceTypeConfigWebhookAuthTypeTreezor         SourceTypeConfigWebhookAuthType = "TREEZOR"
+	SourceTypeConfigWebhookAuthTypePraxis          SourceTypeConfigWebhookAuthType = "PRAXIS"
+	SourceTypeConfigWebhookAuthTypeCustomerio      SourceTypeConfigWebhookAuthType = "CUSTOMERIO"
+	SourceTypeConfigWebhookAuthTypeFacebook        SourceTypeConfigWebhookAuthType = "FACEBOOK"
+	SourceTypeConfigWebhookAuthTypeWhatsapp        SourceTypeConfigWebhookAuthType = "WHATSAPP"
+	SourceTypeConfigWebhookAuthTypeReplicate       SourceTypeConfigWebhookAuthType = "REPLICATE"
+	SourceTypeConfigWebhookAuthTypeTiktok          SourceTypeConfigWebhookAuthType = "TIKTOK"
+	SourceTypeConfigWebhookAuthTypeAirwallex       SourceTypeConfigWebhookAuthType = "AIRWALLEX"
+	SourceTypeConfigWebhookAuthTypeZendesk         SourceTypeConfigWebhookAuthType = "ZENDESK"
+	SourceTypeConfigWebhookAuthTypeUpollo          SourceTypeConfigWebhookAuthType = "UPOLLO"
+	SourceTypeConfigWebhookAuthTypeLinkedin        SourceTypeConfigWebhookAuthType = "LINKEDIN"
 )
 
-func NewSourceTypeConfigWebhookAuthAlgorithmAlgorithmFromString(s string) (SourceTypeConfigWebhookAuthAlgorithmAlgorithm, error) {
+func NewSourceTypeConfigWebhookAuthTypeFromString(s string) (SourceTypeConfigWebhookAuthType, error) {
 	switch s {
-	case "sha1":
-		return SourceTypeConfigWebhookAuthAlgorithmAlgorithmSha1, nil
-	case "sha256":
-		return SourceTypeConfigWebhookAuthAlgorithmAlgorithmSha256, nil
-	case "sha512":
-		return SourceTypeConfigWebhookAuthAlgorithmAlgorithmSha512, nil
-	case "md5":
-		return SourceTypeConfigWebhookAuthAlgorithmAlgorithmMd5, nil
+	case "HMAC":
+		return SourceTypeConfigWebhookAuthTypeHmac, nil
+	case "BASIC_AUTH":
+		return SourceTypeConfigWebhookAuthTypeBasicAuth, nil
+	case "API_KEY":
+		return SourceTypeConfigWebhookAuthTypeApiKey, nil
+	case "WEBHOOK":
+		return SourceTypeConfigWebhookAuthTypeWebhook, nil
+	case "HTTP":
+		return SourceTypeConfigWebhookAuthTypeHttp, nil
+	case "MANAGED":
+		return SourceTypeConfigWebhookAuthTypeManaged, nil
+	case "SANITY":
+		return SourceTypeConfigWebhookAuthTypeSanity, nil
+	case "BRIDGE":
+		return SourceTypeConfigWebhookAuthTypeBridge, nil
+	case "CLOUDSIGNAL":
+		return SourceTypeConfigWebhookAuthTypeCloudsignal, nil
+	case "COURIER":
+		return SourceTypeConfigWebhookAuthTypeCourier, nil
+	case "FRONTAPP":
+		return SourceTypeConfigWebhookAuthTypeFrontapp, nil
+	case "ZOOM":
+		return SourceTypeConfigWebhookAuthTypeZoom, nil
+	case "TWITTER":
+		return SourceTypeConfigWebhookAuthTypeTwitter, nil
+	case "RECHARGE":
+		return SourceTypeConfigWebhookAuthTypeRecharge, nil
+	case "STRIPE":
+		return SourceTypeConfigWebhookAuthTypeStripe, nil
+	case "PROPERTY-FINDER":
+		return SourceTypeConfigWebhookAuthTypePropertyFinder, nil
+	case "SHOPIFY":
+		return SourceTypeConfigWebhookAuthTypeShopify, nil
+	case "TWILIO":
+		return SourceTypeConfigWebhookAuthTypeTwilio, nil
+	case "GITHUB":
+		return SourceTypeConfigWebhookAuthTypeGithub, nil
+	case "POSTMARK":
+		return SourceTypeConfigWebhookAuthTypePostmark, nil
+	case "TYPEFORM":
+		return SourceTypeConfigWebhookAuthTypeTypeform, nil
+	case "XERO":
+		return SourceTypeConfigWebhookAuthTypeXero, nil
+	case "SVIX":
+		return SourceTypeConfigWebhookAuthTypeSvix, nil
+	case "ADYEN":
+		return SourceTypeConfigWebhookAuthTypeAdyen, nil
+	case "AKENEO":
+		return SourceTypeConfigWebhookAuthTypeAkeneo, nil
+	case "GITLAB":
+		return SourceTypeConfigWebhookAuthTypeGitlab, nil
+	case "WOOCOMMERCE":
+		return SourceTypeConfigWebhookAuthTypeWoocommerce, nil
+	case "OURA":
+		return SourceTypeConfigWebhookAuthTypeOura, nil
+	case "COMMERCELAYER":
+		return SourceTypeConfigWebhookAuthTypeCommercelayer, nil
+	case "HUBSPOT":
+		return SourceTypeConfigWebhookAuthTypeHubspot, nil
+	case "MAILGUN":
+		return SourceTypeConfigWebhookAuthTypeMailgun, nil
+	case "PERSONA":
+		return SourceTypeConfigWebhookAuthTypePersona, nil
+	case "PIPEDRIVE":
+		return SourceTypeConfigWebhookAuthTypePipedrive, nil
+	case "SENDGRID":
+		return SourceTypeConfigWebhookAuthTypeSendgrid, nil
+	case "WORKOS":
+		return SourceTypeConfigWebhookAuthTypeWorkos, nil
+	case "SYNCTERA":
+		return SourceTypeConfigWebhookAuthTypeSynctera, nil
+	case "AWS_SNS":
+		return SourceTypeConfigWebhookAuthTypeAwsSns, nil
+	case "THREE_D_EYE":
+		return SourceTypeConfigWebhookAuthTypeThreeDEye, nil
+	case "TWITCH":
+		return SourceTypeConfigWebhookAuthTypeTwitch, nil
+	case "ENODE":
+		return SourceTypeConfigWebhookAuthTypeEnode, nil
+	case "FAVRO":
+		return SourceTypeConfigWebhookAuthTypeFavro, nil
+	case "LINEAR":
+		return SourceTypeConfigWebhookAuthTypeLinear, nil
+	case "SHOPLINE":
+		return SourceTypeConfigWebhookAuthTypeShopline, nil
+	case "WIX":
+		return SourceTypeConfigWebhookAuthTypeWix, nil
+	case "NMI":
+		return SourceTypeConfigWebhookAuthTypeNmi, nil
+	case "ORB":
+		return SourceTypeConfigWebhookAuthTypeOrb, nil
+	case "PYLON":
+		return SourceTypeConfigWebhookAuthTypePylon, nil
+	case "RAZORPAY":
+		return SourceTypeConfigWebhookAuthTypeRazorpay, nil
+	case "REPAY":
+		return SourceTypeConfigWebhookAuthTypeRepay, nil
+	case "SQUARE":
+		return SourceTypeConfigWebhookAuthTypeSquare, nil
+	case "SOLIDGATE":
+		return SourceTypeConfigWebhookAuthTypeSolidgate, nil
+	case "TRELLO":
+		return SourceTypeConfigWebhookAuthTypeTrello, nil
+	case "EBAY":
+		return SourceTypeConfigWebhookAuthTypeEbay, nil
+	case "TELNYX":
+		return SourceTypeConfigWebhookAuthTypeTelnyx, nil
+	case "DISCORD":
+		return SourceTypeConfigWebhookAuthTypeDiscord, nil
+	case "TOKENIO":
+		return SourceTypeConfigWebhookAuthTypeTokenio, nil
+	case "FISERV":
+		return SourceTypeConfigWebhookAuthTypeFiserv, nil
+	case "BONDSMITH":
+		return SourceTypeConfigWebhookAuthTypeBondsmith, nil
+	case "VERCEL_LOG_DRAINS":
+		return SourceTypeConfigWebhookAuthTypeVercelLogDrains, nil
+	case "VERCEL":
+		return SourceTypeConfigWebhookAuthTypeVercel, nil
+	case "TEBEX":
+		return SourceTypeConfigWebhookAuthTypeTebex, nil
+	case "SLACK":
+		return SourceTypeConfigWebhookAuthTypeSlack, nil
+	case "MAILCHIMP":
+		return SourceTypeConfigWebhookAuthTypeMailchimp, nil
+	case "PADDLE":
+		return SourceTypeConfigWebhookAuthTypePaddle, nil
+	case "PAYPAL":
+		return SourceTypeConfigWebhookAuthTypePaypal, nil
+	case "TREEZOR":
+		return SourceTypeConfigWebhookAuthTypeTreezor, nil
+	case "PRAXIS":
+		return SourceTypeConfigWebhookAuthTypePraxis, nil
+	case "CUSTOMERIO":
+		return SourceTypeConfigWebhookAuthTypeCustomerio, nil
+	case "FACEBOOK":
+		return SourceTypeConfigWebhookAuthTypeFacebook, nil
+	case "WHATSAPP":
+		return SourceTypeConfigWebhookAuthTypeWhatsapp, nil
+	case "REPLICATE":
+		return SourceTypeConfigWebhookAuthTypeReplicate, nil
+	case "TIKTOK":
+		return SourceTypeConfigWebhookAuthTypeTiktok, nil
+	case "AIRWALLEX":
+		return SourceTypeConfigWebhookAuthTypeAirwallex, nil
+	case "ZENDESK":
+		return SourceTypeConfigWebhookAuthTypeZendesk, nil
+	case "UPOLLO":
+		return SourceTypeConfigWebhookAuthTypeUpollo, nil
+	case "LINKEDIN":
+		return SourceTypeConfigWebhookAuthTypeLinkedin, nil
 	}
-	var t SourceTypeConfigWebhookAuthAlgorithmAlgorithm
+	var t SourceTypeConfigWebhookAuthType
 	return "", fmt.Errorf("%s is not a valid %T", s, t)
 }
 
-func (s SourceTypeConfigWebhookAuthAlgorithmAlgorithm) Ptr() *SourceTypeConfigWebhookAuthAlgorithmAlgorithm {
+func (s SourceTypeConfigWebhookAuthType) Ptr() *SourceTypeConfigWebhookAuthType {
 	return &s
-}
-
-type SourceTypeConfigWebhookAuthAlgorithmEncoding string
-
-const (
-	SourceTypeConfigWebhookAuthAlgorithmEncodingBase64    SourceTypeConfigWebhookAuthAlgorithmEncoding = "base64"
-	SourceTypeConfigWebhookAuthAlgorithmEncodingBase64Url SourceTypeConfigWebhookAuthAlgorithmEncoding = "base64url"
-	SourceTypeConfigWebhookAuthAlgorithmEncodingHex       SourceTypeConfigWebhookAuthAlgorithmEncoding = "hex"
-)
-
-func NewSourceTypeConfigWebhookAuthAlgorithmEncodingFromString(s string) (SourceTypeConfigWebhookAuthAlgorithmEncoding, error) {
-	switch s {
-	case "base64":
-		return SourceTypeConfigWebhookAuthAlgorithmEncodingBase64, nil
-	case "base64url":
-		return SourceTypeConfigWebhookAuthAlgorithmEncodingBase64Url, nil
-	case "hex":
-		return SourceTypeConfigWebhookAuthAlgorithmEncodingHex, nil
-	}
-	var t SourceTypeConfigWebhookAuthAlgorithmEncoding
-	return "", fmt.Errorf("%s is not a valid %T", s, t)
-}
-
-func (s SourceTypeConfigWebhookAuthAlgorithmEncoding) Ptr() *SourceTypeConfigWebhookAuthAlgorithmEncoding {
-	return &s
-}
-
-type SourceTypeConfigWebhookAuthApiKey struct {
-	HeaderKey string `json:"header_key" url:"header_key"`
-	ApiKey    string `json:"api_key" url:"api_key"`
-
-	extraProperties map[string]interface{}
-	rawJSON         json.RawMessage
-}
-
-func (s *SourceTypeConfigWebhookAuthApiKey) GetHeaderKey() string {
-	if s == nil {
-		return ""
-	}
-	return s.HeaderKey
-}
-
-func (s *SourceTypeConfigWebhookAuthApiKey) GetApiKey() string {
-	if s == nil {
-		return ""
-	}
-	return s.ApiKey
-}
-
-func (s *SourceTypeConfigWebhookAuthApiKey) GetExtraProperties() map[string]interface{} {
-	return s.extraProperties
-}
-
-func (s *SourceTypeConfigWebhookAuthApiKey) UnmarshalJSON(data []byte) error {
-	type unmarshaler SourceTypeConfigWebhookAuthApiKey
-	var value unmarshaler
-	if err := json.Unmarshal(data, &value); err != nil {
-		return err
-	}
-	*s = SourceTypeConfigWebhookAuthApiKey(value)
-	extraProperties, err := internal.ExtractExtraProperties(data, *s)
-	if err != nil {
-		return err
-	}
-	s.extraProperties = extraProperties
-	s.rawJSON = json.RawMessage(data)
-	return nil
-}
-
-func (s *SourceTypeConfigWebhookAuthApiKey) String() string {
-	if len(s.rawJSON) > 0 {
-		if value, err := internal.StringifyJSON(s.rawJSON); err == nil {
-			return value
-		}
-	}
-	if value, err := internal.StringifyJSON(s); err == nil {
-		return value
-	}
-	return fmt.Sprintf("%#v", s)
-}
-
-type SourceTypeConfigWebhookAuthPassword struct {
-	Username *string `json:"username,omitempty" url:"username,omitempty"`
-	Password *string `json:"password,omitempty" url:"password,omitempty"`
-
-	extraProperties map[string]interface{}
-	rawJSON         json.RawMessage
-}
-
-func (s *SourceTypeConfigWebhookAuthPassword) GetUsername() *string {
-	if s == nil {
-		return nil
-	}
-	return s.Username
-}
-
-func (s *SourceTypeConfigWebhookAuthPassword) GetPassword() *string {
-	if s == nil {
-		return nil
-	}
-	return s.Password
-}
-
-func (s *SourceTypeConfigWebhookAuthPassword) GetExtraProperties() map[string]interface{} {
-	return s.extraProperties
-}
-
-func (s *SourceTypeConfigWebhookAuthPassword) UnmarshalJSON(data []byte) error {
-	type unmarshaler SourceTypeConfigWebhookAuthPassword
-	var value unmarshaler
-	if err := json.Unmarshal(data, &value); err != nil {
-		return err
-	}
-	*s = SourceTypeConfigWebhookAuthPassword(value)
-	extraProperties, err := internal.ExtractExtraProperties(data, *s)
-	if err != nil {
-		return err
-	}
-	s.extraProperties = extraProperties
-	s.rawJSON = json.RawMessage(data)
-	return nil
-}
-
-func (s *SourceTypeConfigWebhookAuthPassword) String() string {
-	if len(s.rawJSON) > 0 {
-		if value, err := internal.StringifyJSON(s.rawJSON); err == nil {
-			return value
-		}
-	}
-	if value, err := internal.StringifyJSON(s); err == nil {
-		return value
-	}
-	return fmt.Sprintf("%#v", s)
 }
 
 type SourceTypeConfigWebhookCustomResponse struct {
-	ContentType *SourceTypeConfigWebhookCustomResponseContentType `json:"content_type,omitempty" url:"content_type,omitempty"`
-	Body        string                                            `json:"body" url:"body"`
+	ContentType SourceTypeConfigWebhookCustomResponseContentType `json:"content_type" url:"content_type"`
+	Body        string                                           `json:"body" url:"body"`
 
 	extraProperties map[string]interface{}
 	rawJSON         json.RawMessage
 }
 
-func (s *SourceTypeConfigWebhookCustomResponse) GetContentType() *SourceTypeConfigWebhookCustomResponseContentType {
+func (s *SourceTypeConfigWebhookCustomResponse) GetContentType() SourceTypeConfigWebhookCustomResponseContentType {
 	if s == nil {
-		return nil
+		return ""
 	}
 	return s.ContentType
 }
@@ -19196,48 +22923,15 @@ func (s SourceTypeConfigWebhookCustomResponseContentType) Ptr() *SourceTypeConfi
 	return &s
 }
 
-type SourceTypeConfigWebhookType string
-
-const (
-	SourceTypeConfigWebhookTypeHmac      SourceTypeConfigWebhookType = "HMAC"
-	SourceTypeConfigWebhookTypeBasicAuth SourceTypeConfigWebhookType = "BASIC_AUTH"
-	SourceTypeConfigWebhookTypeApiKey    SourceTypeConfigWebhookType = "API_KEY"
-)
-
-func NewSourceTypeConfigWebhookTypeFromString(s string) (SourceTypeConfigWebhookType, error) {
-	switch s {
-	case "HMAC":
-		return SourceTypeConfigWebhookTypeHmac, nil
-	case "BASIC_AUTH":
-		return SourceTypeConfigWebhookTypeBasicAuth, nil
-	case "API_KEY":
-		return SourceTypeConfigWebhookTypeApiKey, nil
-	}
-	var t SourceTypeConfigWebhookType
-	return "", fmt.Errorf("%s is not a valid %T", s, t)
-}
-
-func (s SourceTypeConfigWebhookType) Ptr() *SourceTypeConfigWebhookType {
-	return &s
-}
-
 // The type config for WhatsApp. Requires type to be `WHATSAPP`.
 type SourceTypeConfigWhatsApp struct {
-	AllowedHttpMethods []SourceTypeConfigWhatsAppAllowedHttpMethodsItem `json:"allowed_http_methods,omitempty" url:"allowed_http_methods,omitempty"`
-	Auth               *SourceTypeConfigWhatsAppAuth                    `json:"auth,omitempty" url:"auth,omitempty"`
+	Auth *SourceConfigWhatsAppAuth `json:"auth,omitempty" url:"auth,omitempty"`
 
 	extraProperties map[string]interface{}
 	rawJSON         json.RawMessage
 }
 
-func (s *SourceTypeConfigWhatsApp) GetAllowedHttpMethods() []SourceTypeConfigWhatsAppAllowedHttpMethodsItem {
-	if s == nil {
-		return nil
-	}
-	return s.AllowedHttpMethods
-}
-
-func (s *SourceTypeConfigWhatsApp) GetAuth() *SourceTypeConfigWhatsAppAuth {
+func (s *SourceTypeConfigWhatsApp) GetAuth() *SourceConfigWhatsAppAuth {
 	if s == nil {
 		return nil
 	}
@@ -19276,100 +22970,15 @@ func (s *SourceTypeConfigWhatsApp) String() string {
 	return fmt.Sprintf("%#v", s)
 }
 
-type SourceTypeConfigWhatsAppAllowedHttpMethodsItem string
-
-const (
-	SourceTypeConfigWhatsAppAllowedHttpMethodsItemGet    SourceTypeConfigWhatsAppAllowedHttpMethodsItem = "GET"
-	SourceTypeConfigWhatsAppAllowedHttpMethodsItemPost   SourceTypeConfigWhatsAppAllowedHttpMethodsItem = "POST"
-	SourceTypeConfigWhatsAppAllowedHttpMethodsItemPut    SourceTypeConfigWhatsAppAllowedHttpMethodsItem = "PUT"
-	SourceTypeConfigWhatsAppAllowedHttpMethodsItemPatch  SourceTypeConfigWhatsAppAllowedHttpMethodsItem = "PATCH"
-	SourceTypeConfigWhatsAppAllowedHttpMethodsItemDelete SourceTypeConfigWhatsAppAllowedHttpMethodsItem = "DELETE"
-)
-
-func NewSourceTypeConfigWhatsAppAllowedHttpMethodsItemFromString(s string) (SourceTypeConfigWhatsAppAllowedHttpMethodsItem, error) {
-	switch s {
-	case "GET":
-		return SourceTypeConfigWhatsAppAllowedHttpMethodsItemGet, nil
-	case "POST":
-		return SourceTypeConfigWhatsAppAllowedHttpMethodsItemPost, nil
-	case "PUT":
-		return SourceTypeConfigWhatsAppAllowedHttpMethodsItemPut, nil
-	case "PATCH":
-		return SourceTypeConfigWhatsAppAllowedHttpMethodsItemPatch, nil
-	case "DELETE":
-		return SourceTypeConfigWhatsAppAllowedHttpMethodsItemDelete, nil
-	}
-	var t SourceTypeConfigWhatsAppAllowedHttpMethodsItem
-	return "", fmt.Errorf("%s is not a valid %T", s, t)
-}
-
-func (s SourceTypeConfigWhatsAppAllowedHttpMethodsItem) Ptr() *SourceTypeConfigWhatsAppAllowedHttpMethodsItem {
-	return &s
-}
-
-type SourceTypeConfigWhatsAppAuth struct {
-	WebhookSecretKey string `json:"webhook_secret_key" url:"webhook_secret_key"`
-
-	extraProperties map[string]interface{}
-	rawJSON         json.RawMessage
-}
-
-func (s *SourceTypeConfigWhatsAppAuth) GetWebhookSecretKey() string {
-	if s == nil {
-		return ""
-	}
-	return s.WebhookSecretKey
-}
-
-func (s *SourceTypeConfigWhatsAppAuth) GetExtraProperties() map[string]interface{} {
-	return s.extraProperties
-}
-
-func (s *SourceTypeConfigWhatsAppAuth) UnmarshalJSON(data []byte) error {
-	type unmarshaler SourceTypeConfigWhatsAppAuth
-	var value unmarshaler
-	if err := json.Unmarshal(data, &value); err != nil {
-		return err
-	}
-	*s = SourceTypeConfigWhatsAppAuth(value)
-	extraProperties, err := internal.ExtractExtraProperties(data, *s)
-	if err != nil {
-		return err
-	}
-	s.extraProperties = extraProperties
-	s.rawJSON = json.RawMessage(data)
-	return nil
-}
-
-func (s *SourceTypeConfigWhatsAppAuth) String() string {
-	if len(s.rawJSON) > 0 {
-		if value, err := internal.StringifyJSON(s.rawJSON); err == nil {
-			return value
-		}
-	}
-	if value, err := internal.StringifyJSON(s); err == nil {
-		return value
-	}
-	return fmt.Sprintf("%#v", s)
-}
-
 // The type config for Wix. Requires type to be `WIX`.
 type SourceTypeConfigWix struct {
-	AllowedHttpMethods []SourceTypeConfigWixAllowedHttpMethodsItem `json:"allowed_http_methods,omitempty" url:"allowed_http_methods,omitempty"`
-	Auth               *SourceTypeConfigWixAuth                    `json:"auth,omitempty" url:"auth,omitempty"`
+	Auth *SourceConfigWixAuth `json:"auth,omitempty" url:"auth,omitempty"`
 
 	extraProperties map[string]interface{}
 	rawJSON         json.RawMessage
 }
 
-func (s *SourceTypeConfigWix) GetAllowedHttpMethods() []SourceTypeConfigWixAllowedHttpMethodsItem {
-	if s == nil {
-		return nil
-	}
-	return s.AllowedHttpMethods
-}
-
-func (s *SourceTypeConfigWix) GetAuth() *SourceTypeConfigWixAuth {
+func (s *SourceTypeConfigWix) GetAuth() *SourceConfigWixAuth {
 	if s == nil {
 		return nil
 	}
@@ -19408,100 +23017,15 @@ func (s *SourceTypeConfigWix) String() string {
 	return fmt.Sprintf("%#v", s)
 }
 
-type SourceTypeConfigWixAllowedHttpMethodsItem string
-
-const (
-	SourceTypeConfigWixAllowedHttpMethodsItemGet    SourceTypeConfigWixAllowedHttpMethodsItem = "GET"
-	SourceTypeConfigWixAllowedHttpMethodsItemPost   SourceTypeConfigWixAllowedHttpMethodsItem = "POST"
-	SourceTypeConfigWixAllowedHttpMethodsItemPut    SourceTypeConfigWixAllowedHttpMethodsItem = "PUT"
-	SourceTypeConfigWixAllowedHttpMethodsItemPatch  SourceTypeConfigWixAllowedHttpMethodsItem = "PATCH"
-	SourceTypeConfigWixAllowedHttpMethodsItemDelete SourceTypeConfigWixAllowedHttpMethodsItem = "DELETE"
-)
-
-func NewSourceTypeConfigWixAllowedHttpMethodsItemFromString(s string) (SourceTypeConfigWixAllowedHttpMethodsItem, error) {
-	switch s {
-	case "GET":
-		return SourceTypeConfigWixAllowedHttpMethodsItemGet, nil
-	case "POST":
-		return SourceTypeConfigWixAllowedHttpMethodsItemPost, nil
-	case "PUT":
-		return SourceTypeConfigWixAllowedHttpMethodsItemPut, nil
-	case "PATCH":
-		return SourceTypeConfigWixAllowedHttpMethodsItemPatch, nil
-	case "DELETE":
-		return SourceTypeConfigWixAllowedHttpMethodsItemDelete, nil
-	}
-	var t SourceTypeConfigWixAllowedHttpMethodsItem
-	return "", fmt.Errorf("%s is not a valid %T", s, t)
-}
-
-func (s SourceTypeConfigWixAllowedHttpMethodsItem) Ptr() *SourceTypeConfigWixAllowedHttpMethodsItem {
-	return &s
-}
-
-type SourceTypeConfigWixAuth struct {
-	WebhookSecretKey string `json:"webhook_secret_key" url:"webhook_secret_key"`
-
-	extraProperties map[string]interface{}
-	rawJSON         json.RawMessage
-}
-
-func (s *SourceTypeConfigWixAuth) GetWebhookSecretKey() string {
-	if s == nil {
-		return ""
-	}
-	return s.WebhookSecretKey
-}
-
-func (s *SourceTypeConfigWixAuth) GetExtraProperties() map[string]interface{} {
-	return s.extraProperties
-}
-
-func (s *SourceTypeConfigWixAuth) UnmarshalJSON(data []byte) error {
-	type unmarshaler SourceTypeConfigWixAuth
-	var value unmarshaler
-	if err := json.Unmarshal(data, &value); err != nil {
-		return err
-	}
-	*s = SourceTypeConfigWixAuth(value)
-	extraProperties, err := internal.ExtractExtraProperties(data, *s)
-	if err != nil {
-		return err
-	}
-	s.extraProperties = extraProperties
-	s.rawJSON = json.RawMessage(data)
-	return nil
-}
-
-func (s *SourceTypeConfigWixAuth) String() string {
-	if len(s.rawJSON) > 0 {
-		if value, err := internal.StringifyJSON(s.rawJSON); err == nil {
-			return value
-		}
-	}
-	if value, err := internal.StringifyJSON(s); err == nil {
-		return value
-	}
-	return fmt.Sprintf("%#v", s)
-}
-
 // The type config for WooCommerce. Requires type to be `WOOCOMMERCE`.
 type SourceTypeConfigWooCommerce struct {
-	AllowedHttpMethods []SourceTypeConfigWooCommerceAllowedHttpMethodsItem `json:"allowed_http_methods,omitempty" url:"allowed_http_methods,omitempty"`
-	Auth               *SourceTypeConfigWooCommerceAuth                    `json:"auth,omitempty" url:"auth,omitempty"`
+	Auth *SourceConfigWooCommerceAuth `json:"auth,omitempty" url:"auth,omitempty"`
 
 	extraProperties map[string]interface{}
 	rawJSON         json.RawMessage
 }
 
-func (s *SourceTypeConfigWooCommerce) GetAllowedHttpMethods() []SourceTypeConfigWooCommerceAllowedHttpMethodsItem {
-	if s == nil {
-		return nil
-	}
-	return s.AllowedHttpMethods
-}
-
-func (s *SourceTypeConfigWooCommerce) GetAuth() *SourceTypeConfigWooCommerceAuth {
+func (s *SourceTypeConfigWooCommerce) GetAuth() *SourceConfigWooCommerceAuth {
 	if s == nil {
 		return nil
 	}
@@ -19540,100 +23064,15 @@ func (s *SourceTypeConfigWooCommerce) String() string {
 	return fmt.Sprintf("%#v", s)
 }
 
-type SourceTypeConfigWooCommerceAllowedHttpMethodsItem string
-
-const (
-	SourceTypeConfigWooCommerceAllowedHttpMethodsItemGet    SourceTypeConfigWooCommerceAllowedHttpMethodsItem = "GET"
-	SourceTypeConfigWooCommerceAllowedHttpMethodsItemPost   SourceTypeConfigWooCommerceAllowedHttpMethodsItem = "POST"
-	SourceTypeConfigWooCommerceAllowedHttpMethodsItemPut    SourceTypeConfigWooCommerceAllowedHttpMethodsItem = "PUT"
-	SourceTypeConfigWooCommerceAllowedHttpMethodsItemPatch  SourceTypeConfigWooCommerceAllowedHttpMethodsItem = "PATCH"
-	SourceTypeConfigWooCommerceAllowedHttpMethodsItemDelete SourceTypeConfigWooCommerceAllowedHttpMethodsItem = "DELETE"
-)
-
-func NewSourceTypeConfigWooCommerceAllowedHttpMethodsItemFromString(s string) (SourceTypeConfigWooCommerceAllowedHttpMethodsItem, error) {
-	switch s {
-	case "GET":
-		return SourceTypeConfigWooCommerceAllowedHttpMethodsItemGet, nil
-	case "POST":
-		return SourceTypeConfigWooCommerceAllowedHttpMethodsItemPost, nil
-	case "PUT":
-		return SourceTypeConfigWooCommerceAllowedHttpMethodsItemPut, nil
-	case "PATCH":
-		return SourceTypeConfigWooCommerceAllowedHttpMethodsItemPatch, nil
-	case "DELETE":
-		return SourceTypeConfigWooCommerceAllowedHttpMethodsItemDelete, nil
-	}
-	var t SourceTypeConfigWooCommerceAllowedHttpMethodsItem
-	return "", fmt.Errorf("%s is not a valid %T", s, t)
-}
-
-func (s SourceTypeConfigWooCommerceAllowedHttpMethodsItem) Ptr() *SourceTypeConfigWooCommerceAllowedHttpMethodsItem {
-	return &s
-}
-
-type SourceTypeConfigWooCommerceAuth struct {
-	WebhookSecretKey string `json:"webhook_secret_key" url:"webhook_secret_key"`
-
-	extraProperties map[string]interface{}
-	rawJSON         json.RawMessage
-}
-
-func (s *SourceTypeConfigWooCommerceAuth) GetWebhookSecretKey() string {
-	if s == nil {
-		return ""
-	}
-	return s.WebhookSecretKey
-}
-
-func (s *SourceTypeConfigWooCommerceAuth) GetExtraProperties() map[string]interface{} {
-	return s.extraProperties
-}
-
-func (s *SourceTypeConfigWooCommerceAuth) UnmarshalJSON(data []byte) error {
-	type unmarshaler SourceTypeConfigWooCommerceAuth
-	var value unmarshaler
-	if err := json.Unmarshal(data, &value); err != nil {
-		return err
-	}
-	*s = SourceTypeConfigWooCommerceAuth(value)
-	extraProperties, err := internal.ExtractExtraProperties(data, *s)
-	if err != nil {
-		return err
-	}
-	s.extraProperties = extraProperties
-	s.rawJSON = json.RawMessage(data)
-	return nil
-}
-
-func (s *SourceTypeConfigWooCommerceAuth) String() string {
-	if len(s.rawJSON) > 0 {
-		if value, err := internal.StringifyJSON(s.rawJSON); err == nil {
-			return value
-		}
-	}
-	if value, err := internal.StringifyJSON(s); err == nil {
-		return value
-	}
-	return fmt.Sprintf("%#v", s)
-}
-
 // The type config for WorkOS. Requires type to be `WORKOS`.
 type SourceTypeConfigWorkOs struct {
-	AllowedHttpMethods []SourceTypeConfigWorkOsAllowedHttpMethodsItem `json:"allowed_http_methods,omitempty" url:"allowed_http_methods,omitempty"`
-	Auth               *SourceTypeConfigWorkOsAuth                    `json:"auth,omitempty" url:"auth,omitempty"`
+	Auth *SourceConfigWorkOsAuth `json:"auth,omitempty" url:"auth,omitempty"`
 
 	extraProperties map[string]interface{}
 	rawJSON         json.RawMessage
 }
 
-func (s *SourceTypeConfigWorkOs) GetAllowedHttpMethods() []SourceTypeConfigWorkOsAllowedHttpMethodsItem {
-	if s == nil {
-		return nil
-	}
-	return s.AllowedHttpMethods
-}
-
-func (s *SourceTypeConfigWorkOs) GetAuth() *SourceTypeConfigWorkOsAuth {
+func (s *SourceTypeConfigWorkOs) GetAuth() *SourceConfigWorkOsAuth {
 	if s == nil {
 		return nil
 	}
@@ -19672,100 +23111,15 @@ func (s *SourceTypeConfigWorkOs) String() string {
 	return fmt.Sprintf("%#v", s)
 }
 
-type SourceTypeConfigWorkOsAllowedHttpMethodsItem string
-
-const (
-	SourceTypeConfigWorkOsAllowedHttpMethodsItemGet    SourceTypeConfigWorkOsAllowedHttpMethodsItem = "GET"
-	SourceTypeConfigWorkOsAllowedHttpMethodsItemPost   SourceTypeConfigWorkOsAllowedHttpMethodsItem = "POST"
-	SourceTypeConfigWorkOsAllowedHttpMethodsItemPut    SourceTypeConfigWorkOsAllowedHttpMethodsItem = "PUT"
-	SourceTypeConfigWorkOsAllowedHttpMethodsItemPatch  SourceTypeConfigWorkOsAllowedHttpMethodsItem = "PATCH"
-	SourceTypeConfigWorkOsAllowedHttpMethodsItemDelete SourceTypeConfigWorkOsAllowedHttpMethodsItem = "DELETE"
-)
-
-func NewSourceTypeConfigWorkOsAllowedHttpMethodsItemFromString(s string) (SourceTypeConfigWorkOsAllowedHttpMethodsItem, error) {
-	switch s {
-	case "GET":
-		return SourceTypeConfigWorkOsAllowedHttpMethodsItemGet, nil
-	case "POST":
-		return SourceTypeConfigWorkOsAllowedHttpMethodsItemPost, nil
-	case "PUT":
-		return SourceTypeConfigWorkOsAllowedHttpMethodsItemPut, nil
-	case "PATCH":
-		return SourceTypeConfigWorkOsAllowedHttpMethodsItemPatch, nil
-	case "DELETE":
-		return SourceTypeConfigWorkOsAllowedHttpMethodsItemDelete, nil
-	}
-	var t SourceTypeConfigWorkOsAllowedHttpMethodsItem
-	return "", fmt.Errorf("%s is not a valid %T", s, t)
-}
-
-func (s SourceTypeConfigWorkOsAllowedHttpMethodsItem) Ptr() *SourceTypeConfigWorkOsAllowedHttpMethodsItem {
-	return &s
-}
-
-type SourceTypeConfigWorkOsAuth struct {
-	WebhookSecretKey string `json:"webhook_secret_key" url:"webhook_secret_key"`
-
-	extraProperties map[string]interface{}
-	rawJSON         json.RawMessage
-}
-
-func (s *SourceTypeConfigWorkOsAuth) GetWebhookSecretKey() string {
-	if s == nil {
-		return ""
-	}
-	return s.WebhookSecretKey
-}
-
-func (s *SourceTypeConfigWorkOsAuth) GetExtraProperties() map[string]interface{} {
-	return s.extraProperties
-}
-
-func (s *SourceTypeConfigWorkOsAuth) UnmarshalJSON(data []byte) error {
-	type unmarshaler SourceTypeConfigWorkOsAuth
-	var value unmarshaler
-	if err := json.Unmarshal(data, &value); err != nil {
-		return err
-	}
-	*s = SourceTypeConfigWorkOsAuth(value)
-	extraProperties, err := internal.ExtractExtraProperties(data, *s)
-	if err != nil {
-		return err
-	}
-	s.extraProperties = extraProperties
-	s.rawJSON = json.RawMessage(data)
-	return nil
-}
-
-func (s *SourceTypeConfigWorkOsAuth) String() string {
-	if len(s.rawJSON) > 0 {
-		if value, err := internal.StringifyJSON(s.rawJSON); err == nil {
-			return value
-		}
-	}
-	if value, err := internal.StringifyJSON(s); err == nil {
-		return value
-	}
-	return fmt.Sprintf("%#v", s)
-}
-
 // The type config for Xero. Requires type to be `XERO`.
 type SourceTypeConfigXero struct {
-	AllowedHttpMethods []SourceTypeConfigXeroAllowedHttpMethodsItem `json:"allowed_http_methods,omitempty" url:"allowed_http_methods,omitempty"`
-	Auth               *SourceTypeConfigXeroAuth                    `json:"auth,omitempty" url:"auth,omitempty"`
+	Auth *SourceConfigXeroAuth `json:"auth,omitempty" url:"auth,omitempty"`
 
 	extraProperties map[string]interface{}
 	rawJSON         json.RawMessage
 }
 
-func (s *SourceTypeConfigXero) GetAllowedHttpMethods() []SourceTypeConfigXeroAllowedHttpMethodsItem {
-	if s == nil {
-		return nil
-	}
-	return s.AllowedHttpMethods
-}
-
-func (s *SourceTypeConfigXero) GetAuth() *SourceTypeConfigXeroAuth {
+func (s *SourceTypeConfigXero) GetAuth() *SourceConfigXeroAuth {
 	if s == nil {
 		return nil
 	}
@@ -19804,62 +23158,32 @@ func (s *SourceTypeConfigXero) String() string {
 	return fmt.Sprintf("%#v", s)
 }
 
-type SourceTypeConfigXeroAllowedHttpMethodsItem string
-
-const (
-	SourceTypeConfigXeroAllowedHttpMethodsItemGet    SourceTypeConfigXeroAllowedHttpMethodsItem = "GET"
-	SourceTypeConfigXeroAllowedHttpMethodsItemPost   SourceTypeConfigXeroAllowedHttpMethodsItem = "POST"
-	SourceTypeConfigXeroAllowedHttpMethodsItemPut    SourceTypeConfigXeroAllowedHttpMethodsItem = "PUT"
-	SourceTypeConfigXeroAllowedHttpMethodsItemPatch  SourceTypeConfigXeroAllowedHttpMethodsItem = "PATCH"
-	SourceTypeConfigXeroAllowedHttpMethodsItemDelete SourceTypeConfigXeroAllowedHttpMethodsItem = "DELETE"
-)
-
-func NewSourceTypeConfigXeroAllowedHttpMethodsItemFromString(s string) (SourceTypeConfigXeroAllowedHttpMethodsItem, error) {
-	switch s {
-	case "GET":
-		return SourceTypeConfigXeroAllowedHttpMethodsItemGet, nil
-	case "POST":
-		return SourceTypeConfigXeroAllowedHttpMethodsItemPost, nil
-	case "PUT":
-		return SourceTypeConfigXeroAllowedHttpMethodsItemPut, nil
-	case "PATCH":
-		return SourceTypeConfigXeroAllowedHttpMethodsItemPatch, nil
-	case "DELETE":
-		return SourceTypeConfigXeroAllowedHttpMethodsItemDelete, nil
-	}
-	var t SourceTypeConfigXeroAllowedHttpMethodsItem
-	return "", fmt.Errorf("%s is not a valid %T", s, t)
-}
-
-func (s SourceTypeConfigXeroAllowedHttpMethodsItem) Ptr() *SourceTypeConfigXeroAllowedHttpMethodsItem {
-	return &s
-}
-
-type SourceTypeConfigXeroAuth struct {
-	WebhookSecretKey string `json:"webhook_secret_key" url:"webhook_secret_key"`
+// The type config for Zendesk. Requires type to be `ZENDESK`.
+type SourceTypeConfigZendesk struct {
+	Auth *SourceConfigZendeskAuth `json:"auth,omitempty" url:"auth,omitempty"`
 
 	extraProperties map[string]interface{}
 	rawJSON         json.RawMessage
 }
 
-func (s *SourceTypeConfigXeroAuth) GetWebhookSecretKey() string {
+func (s *SourceTypeConfigZendesk) GetAuth() *SourceConfigZendeskAuth {
 	if s == nil {
-		return ""
+		return nil
 	}
-	return s.WebhookSecretKey
+	return s.Auth
 }
 
-func (s *SourceTypeConfigXeroAuth) GetExtraProperties() map[string]interface{} {
+func (s *SourceTypeConfigZendesk) GetExtraProperties() map[string]interface{} {
 	return s.extraProperties
 }
 
-func (s *SourceTypeConfigXeroAuth) UnmarshalJSON(data []byte) error {
-	type unmarshaler SourceTypeConfigXeroAuth
+func (s *SourceTypeConfigZendesk) UnmarshalJSON(data []byte) error {
+	type unmarshaler SourceTypeConfigZendesk
 	var value unmarshaler
 	if err := json.Unmarshal(data, &value); err != nil {
 		return err
 	}
-	*s = SourceTypeConfigXeroAuth(value)
+	*s = SourceTypeConfigZendesk(value)
 	extraProperties, err := internal.ExtractExtraProperties(data, *s)
 	if err != nil {
 		return err
@@ -19869,7 +23193,7 @@ func (s *SourceTypeConfigXeroAuth) UnmarshalJSON(data []byte) error {
 	return nil
 }
 
-func (s *SourceTypeConfigXeroAuth) String() string {
+func (s *SourceTypeConfigZendesk) String() string {
 	if len(s.rawJSON) > 0 {
 		if value, err := internal.StringifyJSON(s.rawJSON); err == nil {
 			return value
@@ -19883,21 +23207,13 @@ func (s *SourceTypeConfigXeroAuth) String() string {
 
 // The type config for Zoom. Requires type to be `ZOOM`.
 type SourceTypeConfigZoom struct {
-	AllowedHttpMethods []SourceTypeConfigZoomAllowedHttpMethodsItem `json:"allowed_http_methods,omitempty" url:"allowed_http_methods,omitempty"`
-	Auth               *SourceTypeConfigZoomAuth                    `json:"auth,omitempty" url:"auth,omitempty"`
+	Auth *SourceConfigZoomAuth `json:"auth,omitempty" url:"auth,omitempty"`
 
 	extraProperties map[string]interface{}
 	rawJSON         json.RawMessage
 }
 
-func (s *SourceTypeConfigZoom) GetAllowedHttpMethods() []SourceTypeConfigZoomAllowedHttpMethodsItem {
-	if s == nil {
-		return nil
-	}
-	return s.AllowedHttpMethods
-}
-
-func (s *SourceTypeConfigZoom) GetAuth() *SourceTypeConfigZoomAuth {
+func (s *SourceTypeConfigZoom) GetAuth() *SourceConfigZoomAuth {
 	if s == nil {
 		return nil
 	}
@@ -19925,83 +23241,6 @@ func (s *SourceTypeConfigZoom) UnmarshalJSON(data []byte) error {
 }
 
 func (s *SourceTypeConfigZoom) String() string {
-	if len(s.rawJSON) > 0 {
-		if value, err := internal.StringifyJSON(s.rawJSON); err == nil {
-			return value
-		}
-	}
-	if value, err := internal.StringifyJSON(s); err == nil {
-		return value
-	}
-	return fmt.Sprintf("%#v", s)
-}
-
-type SourceTypeConfigZoomAllowedHttpMethodsItem string
-
-const (
-	SourceTypeConfigZoomAllowedHttpMethodsItemGet    SourceTypeConfigZoomAllowedHttpMethodsItem = "GET"
-	SourceTypeConfigZoomAllowedHttpMethodsItemPost   SourceTypeConfigZoomAllowedHttpMethodsItem = "POST"
-	SourceTypeConfigZoomAllowedHttpMethodsItemPut    SourceTypeConfigZoomAllowedHttpMethodsItem = "PUT"
-	SourceTypeConfigZoomAllowedHttpMethodsItemPatch  SourceTypeConfigZoomAllowedHttpMethodsItem = "PATCH"
-	SourceTypeConfigZoomAllowedHttpMethodsItemDelete SourceTypeConfigZoomAllowedHttpMethodsItem = "DELETE"
-)
-
-func NewSourceTypeConfigZoomAllowedHttpMethodsItemFromString(s string) (SourceTypeConfigZoomAllowedHttpMethodsItem, error) {
-	switch s {
-	case "GET":
-		return SourceTypeConfigZoomAllowedHttpMethodsItemGet, nil
-	case "POST":
-		return SourceTypeConfigZoomAllowedHttpMethodsItemPost, nil
-	case "PUT":
-		return SourceTypeConfigZoomAllowedHttpMethodsItemPut, nil
-	case "PATCH":
-		return SourceTypeConfigZoomAllowedHttpMethodsItemPatch, nil
-	case "DELETE":
-		return SourceTypeConfigZoomAllowedHttpMethodsItemDelete, nil
-	}
-	var t SourceTypeConfigZoomAllowedHttpMethodsItem
-	return "", fmt.Errorf("%s is not a valid %T", s, t)
-}
-
-func (s SourceTypeConfigZoomAllowedHttpMethodsItem) Ptr() *SourceTypeConfigZoomAllowedHttpMethodsItem {
-	return &s
-}
-
-type SourceTypeConfigZoomAuth struct {
-	WebhookSecretKey string `json:"webhook_secret_key" url:"webhook_secret_key"`
-
-	extraProperties map[string]interface{}
-	rawJSON         json.RawMessage
-}
-
-func (s *SourceTypeConfigZoomAuth) GetWebhookSecretKey() string {
-	if s == nil {
-		return ""
-	}
-	return s.WebhookSecretKey
-}
-
-func (s *SourceTypeConfigZoomAuth) GetExtraProperties() map[string]interface{} {
-	return s.extraProperties
-}
-
-func (s *SourceTypeConfigZoomAuth) UnmarshalJSON(data []byte) error {
-	type unmarshaler SourceTypeConfigZoomAuth
-	var value unmarshaler
-	if err := json.Unmarshal(data, &value); err != nil {
-		return err
-	}
-	*s = SourceTypeConfigZoomAuth(value)
-	extraProperties, err := internal.ExtractExtraProperties(data, *s)
-	if err != nil {
-		return err
-	}
-	s.extraProperties = extraProperties
-	s.rawJSON = json.RawMessage(data)
-	return nil
-}
-
-func (s *SourceTypeConfigZoomAuth) String() string {
 	if len(s.rawJSON) > 0 {
 		if value, err := internal.StringifyJSON(s.rawJSON); err == nil {
 			return value
@@ -20210,2818 +23449,6 @@ func (t TransformationExecutionLogLevel) Ptr() *TransformationExecutionLogLevel 
 	return &t
 }
 
-// The type config for 3d Eye. Requires type to be `THREE_D_EYE`.
-type Type3DEyeConfig struct {
-	extraProperties map[string]interface{}
-	rawJSON         json.RawMessage
-}
-
-func (t *Type3DEyeConfig) GetExtraProperties() map[string]interface{} {
-	return t.extraProperties
-}
-
-func (t *Type3DEyeConfig) UnmarshalJSON(data []byte) error {
-	type unmarshaler Type3DEyeConfig
-	var value unmarshaler
-	if err := json.Unmarshal(data, &value); err != nil {
-		return err
-	}
-	*t = Type3DEyeConfig(value)
-	extraProperties, err := internal.ExtractExtraProperties(data, *t)
-	if err != nil {
-		return err
-	}
-	t.extraProperties = extraProperties
-	t.rawJSON = json.RawMessage(data)
-	return nil
-}
-
-func (t *Type3DEyeConfig) String() string {
-	if len(t.rawJSON) > 0 {
-		if value, err := internal.StringifyJSON(t.rawJSON); err == nil {
-			return value
-		}
-	}
-	if value, err := internal.StringifyJSON(t); err == nil {
-		return value
-	}
-	return fmt.Sprintf("%#v", t)
-}
-
-// The type config for Adyen. Requires type to be `ADYEN`.
-type TypeAdyenConfig struct {
-	extraProperties map[string]interface{}
-	rawJSON         json.RawMessage
-}
-
-func (t *TypeAdyenConfig) GetExtraProperties() map[string]interface{} {
-	return t.extraProperties
-}
-
-func (t *TypeAdyenConfig) UnmarshalJSON(data []byte) error {
-	type unmarshaler TypeAdyenConfig
-	var value unmarshaler
-	if err := json.Unmarshal(data, &value); err != nil {
-		return err
-	}
-	*t = TypeAdyenConfig(value)
-	extraProperties, err := internal.ExtractExtraProperties(data, *t)
-	if err != nil {
-		return err
-	}
-	t.extraProperties = extraProperties
-	t.rawJSON = json.RawMessage(data)
-	return nil
-}
-
-func (t *TypeAdyenConfig) String() string {
-	if len(t.rawJSON) > 0 {
-		if value, err := internal.StringifyJSON(t.rawJSON); err == nil {
-			return value
-		}
-	}
-	if value, err := internal.StringifyJSON(t); err == nil {
-		return value
-	}
-	return fmt.Sprintf("%#v", t)
-}
-
-// The type config for Airwallex. Requires type to be `AIRWALLEX`.
-type TypeAirwallexConfig struct {
-	extraProperties map[string]interface{}
-	rawJSON         json.RawMessage
-}
-
-func (t *TypeAirwallexConfig) GetExtraProperties() map[string]interface{} {
-	return t.extraProperties
-}
-
-func (t *TypeAirwallexConfig) UnmarshalJSON(data []byte) error {
-	type unmarshaler TypeAirwallexConfig
-	var value unmarshaler
-	if err := json.Unmarshal(data, &value); err != nil {
-		return err
-	}
-	*t = TypeAirwallexConfig(value)
-	extraProperties, err := internal.ExtractExtraProperties(data, *t)
-	if err != nil {
-		return err
-	}
-	t.extraProperties = extraProperties
-	t.rawJSON = json.RawMessage(data)
-	return nil
-}
-
-func (t *TypeAirwallexConfig) String() string {
-	if len(t.rawJSON) > 0 {
-		if value, err := internal.StringifyJSON(t.rawJSON); err == nil {
-			return value
-		}
-	}
-	if value, err := internal.StringifyJSON(t); err == nil {
-		return value
-	}
-	return fmt.Sprintf("%#v", t)
-}
-
-// The type config for Akeneo. Requires type to be `AKENEO`.
-type TypeAkeneoConfig struct {
-	extraProperties map[string]interface{}
-	rawJSON         json.RawMessage
-}
-
-func (t *TypeAkeneoConfig) GetExtraProperties() map[string]interface{} {
-	return t.extraProperties
-}
-
-func (t *TypeAkeneoConfig) UnmarshalJSON(data []byte) error {
-	type unmarshaler TypeAkeneoConfig
-	var value unmarshaler
-	if err := json.Unmarshal(data, &value); err != nil {
-		return err
-	}
-	*t = TypeAkeneoConfig(value)
-	extraProperties, err := internal.ExtractExtraProperties(data, *t)
-	if err != nil {
-		return err
-	}
-	t.extraProperties = extraProperties
-	t.rawJSON = json.RawMessage(data)
-	return nil
-}
-
-func (t *TypeAkeneoConfig) String() string {
-	if len(t.rawJSON) > 0 {
-		if value, err := internal.StringifyJSON(t.rawJSON); err == nil {
-			return value
-		}
-	}
-	if value, err := internal.StringifyJSON(t); err == nil {
-		return value
-	}
-	return fmt.Sprintf("%#v", t)
-}
-
-// The type config for API Key. Requires type to be `API_KEY`.
-type TypeApiKeyConfig struct {
-	extraProperties map[string]interface{}
-	rawJSON         json.RawMessage
-}
-
-func (t *TypeApiKeyConfig) GetExtraProperties() map[string]interface{} {
-	return t.extraProperties
-}
-
-func (t *TypeApiKeyConfig) UnmarshalJSON(data []byte) error {
-	type unmarshaler TypeApiKeyConfig
-	var value unmarshaler
-	if err := json.Unmarshal(data, &value); err != nil {
-		return err
-	}
-	*t = TypeApiKeyConfig(value)
-	extraProperties, err := internal.ExtractExtraProperties(data, *t)
-	if err != nil {
-		return err
-	}
-	t.extraProperties = extraProperties
-	t.rawJSON = json.RawMessage(data)
-	return nil
-}
-
-func (t *TypeApiKeyConfig) String() string {
-	if len(t.rawJSON) > 0 {
-		if value, err := internal.StringifyJSON(t.rawJSON); err == nil {
-			return value
-		}
-	}
-	if value, err := internal.StringifyJSON(t); err == nil {
-		return value
-	}
-	return fmt.Sprintf("%#v", t)
-}
-
-// The type config for AWS SNS. Requires type to be `AWS_SNS`.
-type TypeAwssnsConfig struct {
-	extraProperties map[string]interface{}
-	rawJSON         json.RawMessage
-}
-
-func (t *TypeAwssnsConfig) GetExtraProperties() map[string]interface{} {
-	return t.extraProperties
-}
-
-func (t *TypeAwssnsConfig) UnmarshalJSON(data []byte) error {
-	type unmarshaler TypeAwssnsConfig
-	var value unmarshaler
-	if err := json.Unmarshal(data, &value); err != nil {
-		return err
-	}
-	*t = TypeAwssnsConfig(value)
-	extraProperties, err := internal.ExtractExtraProperties(data, *t)
-	if err != nil {
-		return err
-	}
-	t.extraProperties = extraProperties
-	t.rawJSON = json.RawMessage(data)
-	return nil
-}
-
-func (t *TypeAwssnsConfig) String() string {
-	if len(t.rawJSON) > 0 {
-		if value, err := internal.StringifyJSON(t.rawJSON); err == nil {
-			return value
-		}
-	}
-	if value, err := internal.StringifyJSON(t); err == nil {
-		return value
-	}
-	return fmt.Sprintf("%#v", t)
-}
-
-// The type config for Basic Auth. Requires type to be `BASIC_AUTH`.
-type TypeBasicAuthConfig struct {
-	extraProperties map[string]interface{}
-	rawJSON         json.RawMessage
-}
-
-func (t *TypeBasicAuthConfig) GetExtraProperties() map[string]interface{} {
-	return t.extraProperties
-}
-
-func (t *TypeBasicAuthConfig) UnmarshalJSON(data []byte) error {
-	type unmarshaler TypeBasicAuthConfig
-	var value unmarshaler
-	if err := json.Unmarshal(data, &value); err != nil {
-		return err
-	}
-	*t = TypeBasicAuthConfig(value)
-	extraProperties, err := internal.ExtractExtraProperties(data, *t)
-	if err != nil {
-		return err
-	}
-	t.extraProperties = extraProperties
-	t.rawJSON = json.RawMessage(data)
-	return nil
-}
-
-func (t *TypeBasicAuthConfig) String() string {
-	if len(t.rawJSON) > 0 {
-		if value, err := internal.StringifyJSON(t.rawJSON); err == nil {
-			return value
-		}
-	}
-	if value, err := internal.StringifyJSON(t); err == nil {
-		return value
-	}
-	return fmt.Sprintf("%#v", t)
-}
-
-// The type config for Bondsmith. Requires type to be `BONDSMITH`.
-type TypeBondsmithConfig struct {
-	extraProperties map[string]interface{}
-	rawJSON         json.RawMessage
-}
-
-func (t *TypeBondsmithConfig) GetExtraProperties() map[string]interface{} {
-	return t.extraProperties
-}
-
-func (t *TypeBondsmithConfig) UnmarshalJSON(data []byte) error {
-	type unmarshaler TypeBondsmithConfig
-	var value unmarshaler
-	if err := json.Unmarshal(data, &value); err != nil {
-		return err
-	}
-	*t = TypeBondsmithConfig(value)
-	extraProperties, err := internal.ExtractExtraProperties(data, *t)
-	if err != nil {
-		return err
-	}
-	t.extraProperties = extraProperties
-	t.rawJSON = json.RawMessage(data)
-	return nil
-}
-
-func (t *TypeBondsmithConfig) String() string {
-	if len(t.rawJSON) > 0 {
-		if value, err := internal.StringifyJSON(t.rawJSON); err == nil {
-			return value
-		}
-	}
-	if value, err := internal.StringifyJSON(t); err == nil {
-		return value
-	}
-	return fmt.Sprintf("%#v", t)
-}
-
-// The type config for Bridge. Requires type to be `BRIDGE`.
-type TypeBridgeConfig struct {
-	extraProperties map[string]interface{}
-	rawJSON         json.RawMessage
-}
-
-func (t *TypeBridgeConfig) GetExtraProperties() map[string]interface{} {
-	return t.extraProperties
-}
-
-func (t *TypeBridgeConfig) UnmarshalJSON(data []byte) error {
-	type unmarshaler TypeBridgeConfig
-	var value unmarshaler
-	if err := json.Unmarshal(data, &value); err != nil {
-		return err
-	}
-	*t = TypeBridgeConfig(value)
-	extraProperties, err := internal.ExtractExtraProperties(data, *t)
-	if err != nil {
-		return err
-	}
-	t.extraProperties = extraProperties
-	t.rawJSON = json.RawMessage(data)
-	return nil
-}
-
-func (t *TypeBridgeConfig) String() string {
-	if len(t.rawJSON) > 0 {
-		if value, err := internal.StringifyJSON(t.rawJSON); err == nil {
-			return value
-		}
-	}
-	if value, err := internal.StringifyJSON(t); err == nil {
-		return value
-	}
-	return fmt.Sprintf("%#v", t)
-}
-
-// The type config for Cloud Signal. Requires type to be `CLOUDSIGNAL`.
-type TypeCloudSignalConfig struct {
-	extraProperties map[string]interface{}
-	rawJSON         json.RawMessage
-}
-
-func (t *TypeCloudSignalConfig) GetExtraProperties() map[string]interface{} {
-	return t.extraProperties
-}
-
-func (t *TypeCloudSignalConfig) UnmarshalJSON(data []byte) error {
-	type unmarshaler TypeCloudSignalConfig
-	var value unmarshaler
-	if err := json.Unmarshal(data, &value); err != nil {
-		return err
-	}
-	*t = TypeCloudSignalConfig(value)
-	extraProperties, err := internal.ExtractExtraProperties(data, *t)
-	if err != nil {
-		return err
-	}
-	t.extraProperties = extraProperties
-	t.rawJSON = json.RawMessage(data)
-	return nil
-}
-
-func (t *TypeCloudSignalConfig) String() string {
-	if len(t.rawJSON) > 0 {
-		if value, err := internal.StringifyJSON(t.rawJSON); err == nil {
-			return value
-		}
-	}
-	if value, err := internal.StringifyJSON(t); err == nil {
-		return value
-	}
-	return fmt.Sprintf("%#v", t)
-}
-
-// The type config for Commerce Layer. Requires type to be `COMMERCELAYER`.
-type TypeCommerceLayerConfig struct {
-	extraProperties map[string]interface{}
-	rawJSON         json.RawMessage
-}
-
-func (t *TypeCommerceLayerConfig) GetExtraProperties() map[string]interface{} {
-	return t.extraProperties
-}
-
-func (t *TypeCommerceLayerConfig) UnmarshalJSON(data []byte) error {
-	type unmarshaler TypeCommerceLayerConfig
-	var value unmarshaler
-	if err := json.Unmarshal(data, &value); err != nil {
-		return err
-	}
-	*t = TypeCommerceLayerConfig(value)
-	extraProperties, err := internal.ExtractExtraProperties(data, *t)
-	if err != nil {
-		return err
-	}
-	t.extraProperties = extraProperties
-	t.rawJSON = json.RawMessage(data)
-	return nil
-}
-
-func (t *TypeCommerceLayerConfig) String() string {
-	if len(t.rawJSON) > 0 {
-		if value, err := internal.StringifyJSON(t.rawJSON); err == nil {
-			return value
-		}
-	}
-	if value, err := internal.StringifyJSON(t); err == nil {
-		return value
-	}
-	return fmt.Sprintf("%#v", t)
-}
-
-// The type config for Courier. Requires type to be `COURIER`.
-type TypeCourierConfig struct {
-	extraProperties map[string]interface{}
-	rawJSON         json.RawMessage
-}
-
-func (t *TypeCourierConfig) GetExtraProperties() map[string]interface{} {
-	return t.extraProperties
-}
-
-func (t *TypeCourierConfig) UnmarshalJSON(data []byte) error {
-	type unmarshaler TypeCourierConfig
-	var value unmarshaler
-	if err := json.Unmarshal(data, &value); err != nil {
-		return err
-	}
-	*t = TypeCourierConfig(value)
-	extraProperties, err := internal.ExtractExtraProperties(data, *t)
-	if err != nil {
-		return err
-	}
-	t.extraProperties = extraProperties
-	t.rawJSON = json.RawMessage(data)
-	return nil
-}
-
-func (t *TypeCourierConfig) String() string {
-	if len(t.rawJSON) > 0 {
-		if value, err := internal.StringifyJSON(t.rawJSON); err == nil {
-			return value
-		}
-	}
-	if value, err := internal.StringifyJSON(t); err == nil {
-		return value
-	}
-	return fmt.Sprintf("%#v", t)
-}
-
-// The type config for Customer.IO. Requires type to be `CUSTOMERIO`.
-type TypeCustomerIoConfig struct {
-	extraProperties map[string]interface{}
-	rawJSON         json.RawMessage
-}
-
-func (t *TypeCustomerIoConfig) GetExtraProperties() map[string]interface{} {
-	return t.extraProperties
-}
-
-func (t *TypeCustomerIoConfig) UnmarshalJSON(data []byte) error {
-	type unmarshaler TypeCustomerIoConfig
-	var value unmarshaler
-	if err := json.Unmarshal(data, &value); err != nil {
-		return err
-	}
-	*t = TypeCustomerIoConfig(value)
-	extraProperties, err := internal.ExtractExtraProperties(data, *t)
-	if err != nil {
-		return err
-	}
-	t.extraProperties = extraProperties
-	t.rawJSON = json.RawMessage(data)
-	return nil
-}
-
-func (t *TypeCustomerIoConfig) String() string {
-	if len(t.rawJSON) > 0 {
-		if value, err := internal.StringifyJSON(t.rawJSON); err == nil {
-			return value
-		}
-	}
-	if value, err := internal.StringifyJSON(t); err == nil {
-		return value
-	}
-	return fmt.Sprintf("%#v", t)
-}
-
-// The type config for Discord. Requires type to be `DISCORD`.
-type TypeDiscordConfig struct {
-	extraProperties map[string]interface{}
-	rawJSON         json.RawMessage
-}
-
-func (t *TypeDiscordConfig) GetExtraProperties() map[string]interface{} {
-	return t.extraProperties
-}
-
-func (t *TypeDiscordConfig) UnmarshalJSON(data []byte) error {
-	type unmarshaler TypeDiscordConfig
-	var value unmarshaler
-	if err := json.Unmarshal(data, &value); err != nil {
-		return err
-	}
-	*t = TypeDiscordConfig(value)
-	extraProperties, err := internal.ExtractExtraProperties(data, *t)
-	if err != nil {
-		return err
-	}
-	t.extraProperties = extraProperties
-	t.rawJSON = json.RawMessage(data)
-	return nil
-}
-
-func (t *TypeDiscordConfig) String() string {
-	if len(t.rawJSON) > 0 {
-		if value, err := internal.StringifyJSON(t.rawJSON); err == nil {
-			return value
-		}
-	}
-	if value, err := internal.StringifyJSON(t); err == nil {
-		return value
-	}
-	return fmt.Sprintf("%#v", t)
-}
-
-// The type config for Ebay. Requires type to be `EBAY`.
-type TypeEbayConfig struct {
-	extraProperties map[string]interface{}
-	rawJSON         json.RawMessage
-}
-
-func (t *TypeEbayConfig) GetExtraProperties() map[string]interface{} {
-	return t.extraProperties
-}
-
-func (t *TypeEbayConfig) UnmarshalJSON(data []byte) error {
-	type unmarshaler TypeEbayConfig
-	var value unmarshaler
-	if err := json.Unmarshal(data, &value); err != nil {
-		return err
-	}
-	*t = TypeEbayConfig(value)
-	extraProperties, err := internal.ExtractExtraProperties(data, *t)
-	if err != nil {
-		return err
-	}
-	t.extraProperties = extraProperties
-	t.rawJSON = json.RawMessage(data)
-	return nil
-}
-
-func (t *TypeEbayConfig) String() string {
-	if len(t.rawJSON) > 0 {
-		if value, err := internal.StringifyJSON(t.rawJSON); err == nil {
-			return value
-		}
-	}
-	if value, err := internal.StringifyJSON(t); err == nil {
-		return value
-	}
-	return fmt.Sprintf("%#v", t)
-}
-
-// The type config for Enode. Requires type to be `ENODE`.
-type TypeEnodeConfig struct {
-	extraProperties map[string]interface{}
-	rawJSON         json.RawMessage
-}
-
-func (t *TypeEnodeConfig) GetExtraProperties() map[string]interface{} {
-	return t.extraProperties
-}
-
-func (t *TypeEnodeConfig) UnmarshalJSON(data []byte) error {
-	type unmarshaler TypeEnodeConfig
-	var value unmarshaler
-	if err := json.Unmarshal(data, &value); err != nil {
-		return err
-	}
-	*t = TypeEnodeConfig(value)
-	extraProperties, err := internal.ExtractExtraProperties(data, *t)
-	if err != nil {
-		return err
-	}
-	t.extraProperties = extraProperties
-	t.rawJSON = json.RawMessage(data)
-	return nil
-}
-
-func (t *TypeEnodeConfig) String() string {
-	if len(t.rawJSON) > 0 {
-		if value, err := internal.StringifyJSON(t.rawJSON); err == nil {
-			return value
-		}
-	}
-	if value, err := internal.StringifyJSON(t); err == nil {
-		return value
-	}
-	return fmt.Sprintf("%#v", t)
-}
-
-// The type config for Facebook. Requires type to be `FACEBOOK`.
-type TypeFacebookConfig struct {
-	extraProperties map[string]interface{}
-	rawJSON         json.RawMessage
-}
-
-func (t *TypeFacebookConfig) GetExtraProperties() map[string]interface{} {
-	return t.extraProperties
-}
-
-func (t *TypeFacebookConfig) UnmarshalJSON(data []byte) error {
-	type unmarshaler TypeFacebookConfig
-	var value unmarshaler
-	if err := json.Unmarshal(data, &value); err != nil {
-		return err
-	}
-	*t = TypeFacebookConfig(value)
-	extraProperties, err := internal.ExtractExtraProperties(data, *t)
-	if err != nil {
-		return err
-	}
-	t.extraProperties = extraProperties
-	t.rawJSON = json.RawMessage(data)
-	return nil
-}
-
-func (t *TypeFacebookConfig) String() string {
-	if len(t.rawJSON) > 0 {
-		if value, err := internal.StringifyJSON(t.rawJSON); err == nil {
-			return value
-		}
-	}
-	if value, err := internal.StringifyJSON(t); err == nil {
-		return value
-	}
-	return fmt.Sprintf("%#v", t)
-}
-
-// The type config for Favro. Requires type to be `FAVRO`.
-type TypeFavroConfig struct {
-	extraProperties map[string]interface{}
-	rawJSON         json.RawMessage
-}
-
-func (t *TypeFavroConfig) GetExtraProperties() map[string]interface{} {
-	return t.extraProperties
-}
-
-func (t *TypeFavroConfig) UnmarshalJSON(data []byte) error {
-	type unmarshaler TypeFavroConfig
-	var value unmarshaler
-	if err := json.Unmarshal(data, &value); err != nil {
-		return err
-	}
-	*t = TypeFavroConfig(value)
-	extraProperties, err := internal.ExtractExtraProperties(data, *t)
-	if err != nil {
-		return err
-	}
-	t.extraProperties = extraProperties
-	t.rawJSON = json.RawMessage(data)
-	return nil
-}
-
-func (t *TypeFavroConfig) String() string {
-	if len(t.rawJSON) > 0 {
-		if value, err := internal.StringifyJSON(t.rawJSON); err == nil {
-			return value
-		}
-	}
-	if value, err := internal.StringifyJSON(t); err == nil {
-		return value
-	}
-	return fmt.Sprintf("%#v", t)
-}
-
-// The type config for Fiserv. Requires type to be `FISERV`.
-type TypeFiservConfig struct {
-	extraProperties map[string]interface{}
-	rawJSON         json.RawMessage
-}
-
-func (t *TypeFiservConfig) GetExtraProperties() map[string]interface{} {
-	return t.extraProperties
-}
-
-func (t *TypeFiservConfig) UnmarshalJSON(data []byte) error {
-	type unmarshaler TypeFiservConfig
-	var value unmarshaler
-	if err := json.Unmarshal(data, &value); err != nil {
-		return err
-	}
-	*t = TypeFiservConfig(value)
-	extraProperties, err := internal.ExtractExtraProperties(data, *t)
-	if err != nil {
-		return err
-	}
-	t.extraProperties = extraProperties
-	t.rawJSON = json.RawMessage(data)
-	return nil
-}
-
-func (t *TypeFiservConfig) String() string {
-	if len(t.rawJSON) > 0 {
-		if value, err := internal.StringifyJSON(t.rawJSON); err == nil {
-			return value
-		}
-	}
-	if value, err := internal.StringifyJSON(t); err == nil {
-		return value
-	}
-	return fmt.Sprintf("%#v", t)
-}
-
-// The type config for FrontApp. Requires type to be `FRONTAPP`.
-type TypeFrontAppConfig struct {
-	extraProperties map[string]interface{}
-	rawJSON         json.RawMessage
-}
-
-func (t *TypeFrontAppConfig) GetExtraProperties() map[string]interface{} {
-	return t.extraProperties
-}
-
-func (t *TypeFrontAppConfig) UnmarshalJSON(data []byte) error {
-	type unmarshaler TypeFrontAppConfig
-	var value unmarshaler
-	if err := json.Unmarshal(data, &value); err != nil {
-		return err
-	}
-	*t = TypeFrontAppConfig(value)
-	extraProperties, err := internal.ExtractExtraProperties(data, *t)
-	if err != nil {
-		return err
-	}
-	t.extraProperties = extraProperties
-	t.rawJSON = json.RawMessage(data)
-	return nil
-}
-
-func (t *TypeFrontAppConfig) String() string {
-	if len(t.rawJSON) > 0 {
-		if value, err := internal.StringifyJSON(t.rawJSON); err == nil {
-			return value
-		}
-	}
-	if value, err := internal.StringifyJSON(t); err == nil {
-		return value
-	}
-	return fmt.Sprintf("%#v", t)
-}
-
-// The type config for GitHub. Requires type to be `GITHUB`.
-type TypeGitHubConfig struct {
-	extraProperties map[string]interface{}
-	rawJSON         json.RawMessage
-}
-
-func (t *TypeGitHubConfig) GetExtraProperties() map[string]interface{} {
-	return t.extraProperties
-}
-
-func (t *TypeGitHubConfig) UnmarshalJSON(data []byte) error {
-	type unmarshaler TypeGitHubConfig
-	var value unmarshaler
-	if err := json.Unmarshal(data, &value); err != nil {
-		return err
-	}
-	*t = TypeGitHubConfig(value)
-	extraProperties, err := internal.ExtractExtraProperties(data, *t)
-	if err != nil {
-		return err
-	}
-	t.extraProperties = extraProperties
-	t.rawJSON = json.RawMessage(data)
-	return nil
-}
-
-func (t *TypeGitHubConfig) String() string {
-	if len(t.rawJSON) > 0 {
-		if value, err := internal.StringifyJSON(t.rawJSON); err == nil {
-			return value
-		}
-	}
-	if value, err := internal.StringifyJSON(t); err == nil {
-		return value
-	}
-	return fmt.Sprintf("%#v", t)
-}
-
-// The type config for GitLab. Requires type to be `GITLAB`.
-type TypeGitLabConfig struct {
-	extraProperties map[string]interface{}
-	rawJSON         json.RawMessage
-}
-
-func (t *TypeGitLabConfig) GetExtraProperties() map[string]interface{} {
-	return t.extraProperties
-}
-
-func (t *TypeGitLabConfig) UnmarshalJSON(data []byte) error {
-	type unmarshaler TypeGitLabConfig
-	var value unmarshaler
-	if err := json.Unmarshal(data, &value); err != nil {
-		return err
-	}
-	*t = TypeGitLabConfig(value)
-	extraProperties, err := internal.ExtractExtraProperties(data, *t)
-	if err != nil {
-		return err
-	}
-	t.extraProperties = extraProperties
-	t.rawJSON = json.RawMessage(data)
-	return nil
-}
-
-func (t *TypeGitLabConfig) String() string {
-	if len(t.rawJSON) > 0 {
-		if value, err := internal.StringifyJSON(t.rawJSON); err == nil {
-			return value
-		}
-	}
-	if value, err := internal.StringifyJSON(t); err == nil {
-		return value
-	}
-	return fmt.Sprintf("%#v", t)
-}
-
-// The type config for HMAC. Requires type to be `HMAC`.
-type TypeHmacConfig struct {
-	extraProperties map[string]interface{}
-	rawJSON         json.RawMessage
-}
-
-func (t *TypeHmacConfig) GetExtraProperties() map[string]interface{} {
-	return t.extraProperties
-}
-
-func (t *TypeHmacConfig) UnmarshalJSON(data []byte) error {
-	type unmarshaler TypeHmacConfig
-	var value unmarshaler
-	if err := json.Unmarshal(data, &value); err != nil {
-		return err
-	}
-	*t = TypeHmacConfig(value)
-	extraProperties, err := internal.ExtractExtraProperties(data, *t)
-	if err != nil {
-		return err
-	}
-	t.extraProperties = extraProperties
-	t.rawJSON = json.RawMessage(data)
-	return nil
-}
-
-func (t *TypeHmacConfig) String() string {
-	if len(t.rawJSON) > 0 {
-		if value, err := internal.StringifyJSON(t.rawJSON); err == nil {
-			return value
-		}
-	}
-	if value, err := internal.StringifyJSON(t); err == nil {
-		return value
-	}
-	return fmt.Sprintf("%#v", t)
-}
-
-// The type config for HTTP. Requires type to be `HTTP`.
-type TypeHttpConfig struct {
-	extraProperties map[string]interface{}
-	rawJSON         json.RawMessage
-}
-
-func (t *TypeHttpConfig) GetExtraProperties() map[string]interface{} {
-	return t.extraProperties
-}
-
-func (t *TypeHttpConfig) UnmarshalJSON(data []byte) error {
-	type unmarshaler TypeHttpConfig
-	var value unmarshaler
-	if err := json.Unmarshal(data, &value); err != nil {
-		return err
-	}
-	*t = TypeHttpConfig(value)
-	extraProperties, err := internal.ExtractExtraProperties(data, *t)
-	if err != nil {
-		return err
-	}
-	t.extraProperties = extraProperties
-	t.rawJSON = json.RawMessage(data)
-	return nil
-}
-
-func (t *TypeHttpConfig) String() string {
-	if len(t.rawJSON) > 0 {
-		if value, err := internal.StringifyJSON(t.rawJSON); err == nil {
-			return value
-		}
-	}
-	if value, err := internal.StringifyJSON(t); err == nil {
-		return value
-	}
-	return fmt.Sprintf("%#v", t)
-}
-
-// The type config for Hubspot. Requires type to be `HUBSPOT`.
-type TypeHubspotConfig struct {
-	extraProperties map[string]interface{}
-	rawJSON         json.RawMessage
-}
-
-func (t *TypeHubspotConfig) GetExtraProperties() map[string]interface{} {
-	return t.extraProperties
-}
-
-func (t *TypeHubspotConfig) UnmarshalJSON(data []byte) error {
-	type unmarshaler TypeHubspotConfig
-	var value unmarshaler
-	if err := json.Unmarshal(data, &value); err != nil {
-		return err
-	}
-	*t = TypeHubspotConfig(value)
-	extraProperties, err := internal.ExtractExtraProperties(data, *t)
-	if err != nil {
-		return err
-	}
-	t.extraProperties = extraProperties
-	t.rawJSON = json.RawMessage(data)
-	return nil
-}
-
-func (t *TypeHubspotConfig) String() string {
-	if len(t.rawJSON) > 0 {
-		if value, err := internal.StringifyJSON(t.rawJSON); err == nil {
-			return value
-		}
-	}
-	if value, err := internal.StringifyJSON(t); err == nil {
-		return value
-	}
-	return fmt.Sprintf("%#v", t)
-}
-
-// The type config for Linear. Requires type to be `LINEAR`.
-type TypeLinearConfig struct {
-	extraProperties map[string]interface{}
-	rawJSON         json.RawMessage
-}
-
-func (t *TypeLinearConfig) GetExtraProperties() map[string]interface{} {
-	return t.extraProperties
-}
-
-func (t *TypeLinearConfig) UnmarshalJSON(data []byte) error {
-	type unmarshaler TypeLinearConfig
-	var value unmarshaler
-	if err := json.Unmarshal(data, &value); err != nil {
-		return err
-	}
-	*t = TypeLinearConfig(value)
-	extraProperties, err := internal.ExtractExtraProperties(data, *t)
-	if err != nil {
-		return err
-	}
-	t.extraProperties = extraProperties
-	t.rawJSON = json.RawMessage(data)
-	return nil
-}
-
-func (t *TypeLinearConfig) String() string {
-	if len(t.rawJSON) > 0 {
-		if value, err := internal.StringifyJSON(t.rawJSON); err == nil {
-			return value
-		}
-	}
-	if value, err := internal.StringifyJSON(t); err == nil {
-		return value
-	}
-	return fmt.Sprintf("%#v", t)
-}
-
-// The type config for Mailchimp. Requires type to be `MAILCHIMP`.
-type TypeMailchimpConfig struct {
-	extraProperties map[string]interface{}
-	rawJSON         json.RawMessage
-}
-
-func (t *TypeMailchimpConfig) GetExtraProperties() map[string]interface{} {
-	return t.extraProperties
-}
-
-func (t *TypeMailchimpConfig) UnmarshalJSON(data []byte) error {
-	type unmarshaler TypeMailchimpConfig
-	var value unmarshaler
-	if err := json.Unmarshal(data, &value); err != nil {
-		return err
-	}
-	*t = TypeMailchimpConfig(value)
-	extraProperties, err := internal.ExtractExtraProperties(data, *t)
-	if err != nil {
-		return err
-	}
-	t.extraProperties = extraProperties
-	t.rawJSON = json.RawMessage(data)
-	return nil
-}
-
-func (t *TypeMailchimpConfig) String() string {
-	if len(t.rawJSON) > 0 {
-		if value, err := internal.StringifyJSON(t.rawJSON); err == nil {
-			return value
-		}
-	}
-	if value, err := internal.StringifyJSON(t); err == nil {
-		return value
-	}
-	return fmt.Sprintf("%#v", t)
-}
-
-// The type config for Mailgun. Requires type to be `MAILGUN`.
-type TypeMailgunConfig struct {
-	extraProperties map[string]interface{}
-	rawJSON         json.RawMessage
-}
-
-func (t *TypeMailgunConfig) GetExtraProperties() map[string]interface{} {
-	return t.extraProperties
-}
-
-func (t *TypeMailgunConfig) UnmarshalJSON(data []byte) error {
-	type unmarshaler TypeMailgunConfig
-	var value unmarshaler
-	if err := json.Unmarshal(data, &value); err != nil {
-		return err
-	}
-	*t = TypeMailgunConfig(value)
-	extraProperties, err := internal.ExtractExtraProperties(data, *t)
-	if err != nil {
-		return err
-	}
-	t.extraProperties = extraProperties
-	t.rawJSON = json.RawMessage(data)
-	return nil
-}
-
-func (t *TypeMailgunConfig) String() string {
-	if len(t.rawJSON) > 0 {
-		if value, err := internal.StringifyJSON(t.rawJSON); err == nil {
-			return value
-		}
-	}
-	if value, err := internal.StringifyJSON(t); err == nil {
-		return value
-	}
-	return fmt.Sprintf("%#v", t)
-}
-
-// The type config for NMI Payment Gateway. Requires type to be `NMI`.
-type TypeNmiPaymentGatewayConfig struct {
-	extraProperties map[string]interface{}
-	rawJSON         json.RawMessage
-}
-
-func (t *TypeNmiPaymentGatewayConfig) GetExtraProperties() map[string]interface{} {
-	return t.extraProperties
-}
-
-func (t *TypeNmiPaymentGatewayConfig) UnmarshalJSON(data []byte) error {
-	type unmarshaler TypeNmiPaymentGatewayConfig
-	var value unmarshaler
-	if err := json.Unmarshal(data, &value); err != nil {
-		return err
-	}
-	*t = TypeNmiPaymentGatewayConfig(value)
-	extraProperties, err := internal.ExtractExtraProperties(data, *t)
-	if err != nil {
-		return err
-	}
-	t.extraProperties = extraProperties
-	t.rawJSON = json.RawMessage(data)
-	return nil
-}
-
-func (t *TypeNmiPaymentGatewayConfig) String() string {
-	if len(t.rawJSON) > 0 {
-		if value, err := internal.StringifyJSON(t.rawJSON); err == nil {
-			return value
-		}
-	}
-	if value, err := internal.StringifyJSON(t); err == nil {
-		return value
-	}
-	return fmt.Sprintf("%#v", t)
-}
-
-// The type config for Orb. Requires type to be `ORB`.
-type TypeOrbConfig struct {
-	extraProperties map[string]interface{}
-	rawJSON         json.RawMessage
-}
-
-func (t *TypeOrbConfig) GetExtraProperties() map[string]interface{} {
-	return t.extraProperties
-}
-
-func (t *TypeOrbConfig) UnmarshalJSON(data []byte) error {
-	type unmarshaler TypeOrbConfig
-	var value unmarshaler
-	if err := json.Unmarshal(data, &value); err != nil {
-		return err
-	}
-	*t = TypeOrbConfig(value)
-	extraProperties, err := internal.ExtractExtraProperties(data, *t)
-	if err != nil {
-		return err
-	}
-	t.extraProperties = extraProperties
-	t.rawJSON = json.RawMessage(data)
-	return nil
-}
-
-func (t *TypeOrbConfig) String() string {
-	if len(t.rawJSON) > 0 {
-		if value, err := internal.StringifyJSON(t.rawJSON); err == nil {
-			return value
-		}
-	}
-	if value, err := internal.StringifyJSON(t); err == nil {
-		return value
-	}
-	return fmt.Sprintf("%#v", t)
-}
-
-// The type config for Oura. Requires type to be `OURA`.
-type TypeOuraConfig struct {
-	extraProperties map[string]interface{}
-	rawJSON         json.RawMessage
-}
-
-func (t *TypeOuraConfig) GetExtraProperties() map[string]interface{} {
-	return t.extraProperties
-}
-
-func (t *TypeOuraConfig) UnmarshalJSON(data []byte) error {
-	type unmarshaler TypeOuraConfig
-	var value unmarshaler
-	if err := json.Unmarshal(data, &value); err != nil {
-		return err
-	}
-	*t = TypeOuraConfig(value)
-	extraProperties, err := internal.ExtractExtraProperties(data, *t)
-	if err != nil {
-		return err
-	}
-	t.extraProperties = extraProperties
-	t.rawJSON = json.RawMessage(data)
-	return nil
-}
-
-func (t *TypeOuraConfig) String() string {
-	if len(t.rawJSON) > 0 {
-		if value, err := internal.StringifyJSON(t.rawJSON); err == nil {
-			return value
-		}
-	}
-	if value, err := internal.StringifyJSON(t); err == nil {
-		return value
-	}
-	return fmt.Sprintf("%#v", t)
-}
-
-// The type config for Paddle. Requires type to be `PADDLE`.
-type TypePaddleConfig struct {
-	extraProperties map[string]interface{}
-	rawJSON         json.RawMessage
-}
-
-func (t *TypePaddleConfig) GetExtraProperties() map[string]interface{} {
-	return t.extraProperties
-}
-
-func (t *TypePaddleConfig) UnmarshalJSON(data []byte) error {
-	type unmarshaler TypePaddleConfig
-	var value unmarshaler
-	if err := json.Unmarshal(data, &value); err != nil {
-		return err
-	}
-	*t = TypePaddleConfig(value)
-	extraProperties, err := internal.ExtractExtraProperties(data, *t)
-	if err != nil {
-		return err
-	}
-	t.extraProperties = extraProperties
-	t.rawJSON = json.RawMessage(data)
-	return nil
-}
-
-func (t *TypePaddleConfig) String() string {
-	if len(t.rawJSON) > 0 {
-		if value, err := internal.StringifyJSON(t.rawJSON); err == nil {
-			return value
-		}
-	}
-	if value, err := internal.StringifyJSON(t); err == nil {
-		return value
-	}
-	return fmt.Sprintf("%#v", t)
-}
-
-// The type config for Paypal. Requires type to be `PAYPAL`.
-type TypePaypalConfig struct {
-	extraProperties map[string]interface{}
-	rawJSON         json.RawMessage
-}
-
-func (t *TypePaypalConfig) GetExtraProperties() map[string]interface{} {
-	return t.extraProperties
-}
-
-func (t *TypePaypalConfig) UnmarshalJSON(data []byte) error {
-	type unmarshaler TypePaypalConfig
-	var value unmarshaler
-	if err := json.Unmarshal(data, &value); err != nil {
-		return err
-	}
-	*t = TypePaypalConfig(value)
-	extraProperties, err := internal.ExtractExtraProperties(data, *t)
-	if err != nil {
-		return err
-	}
-	t.extraProperties = extraProperties
-	t.rawJSON = json.RawMessage(data)
-	return nil
-}
-
-func (t *TypePaypalConfig) String() string {
-	if len(t.rawJSON) > 0 {
-		if value, err := internal.StringifyJSON(t.rawJSON); err == nil {
-			return value
-		}
-	}
-	if value, err := internal.StringifyJSON(t); err == nil {
-		return value
-	}
-	return fmt.Sprintf("%#v", t)
-}
-
-// The type config for Persona. Requires type to be `PERSONA`.
-type TypePersonaConfig struct {
-	extraProperties map[string]interface{}
-	rawJSON         json.RawMessage
-}
-
-func (t *TypePersonaConfig) GetExtraProperties() map[string]interface{} {
-	return t.extraProperties
-}
-
-func (t *TypePersonaConfig) UnmarshalJSON(data []byte) error {
-	type unmarshaler TypePersonaConfig
-	var value unmarshaler
-	if err := json.Unmarshal(data, &value); err != nil {
-		return err
-	}
-	*t = TypePersonaConfig(value)
-	extraProperties, err := internal.ExtractExtraProperties(data, *t)
-	if err != nil {
-		return err
-	}
-	t.extraProperties = extraProperties
-	t.rawJSON = json.RawMessage(data)
-	return nil
-}
-
-func (t *TypePersonaConfig) String() string {
-	if len(t.rawJSON) > 0 {
-		if value, err := internal.StringifyJSON(t.rawJSON); err == nil {
-			return value
-		}
-	}
-	if value, err := internal.StringifyJSON(t); err == nil {
-		return value
-	}
-	return fmt.Sprintf("%#v", t)
-}
-
-// The type config for Pipedrive. Requires type to be `PIPEDRIVE`.
-type TypePipedriveConfig struct {
-	extraProperties map[string]interface{}
-	rawJSON         json.RawMessage
-}
-
-func (t *TypePipedriveConfig) GetExtraProperties() map[string]interface{} {
-	return t.extraProperties
-}
-
-func (t *TypePipedriveConfig) UnmarshalJSON(data []byte) error {
-	type unmarshaler TypePipedriveConfig
-	var value unmarshaler
-	if err := json.Unmarshal(data, &value); err != nil {
-		return err
-	}
-	*t = TypePipedriveConfig(value)
-	extraProperties, err := internal.ExtractExtraProperties(data, *t)
-	if err != nil {
-		return err
-	}
-	t.extraProperties = extraProperties
-	t.rawJSON = json.RawMessage(data)
-	return nil
-}
-
-func (t *TypePipedriveConfig) String() string {
-	if len(t.rawJSON) > 0 {
-		if value, err := internal.StringifyJSON(t.rawJSON); err == nil {
-			return value
-		}
-	}
-	if value, err := internal.StringifyJSON(t); err == nil {
-		return value
-	}
-	return fmt.Sprintf("%#v", t)
-}
-
-// The type config for Postmark. Requires type to be `POSTMARK`.
-type TypePostmarkConfig struct {
-	extraProperties map[string]interface{}
-	rawJSON         json.RawMessage
-}
-
-func (t *TypePostmarkConfig) GetExtraProperties() map[string]interface{} {
-	return t.extraProperties
-}
-
-func (t *TypePostmarkConfig) UnmarshalJSON(data []byte) error {
-	type unmarshaler TypePostmarkConfig
-	var value unmarshaler
-	if err := json.Unmarshal(data, &value); err != nil {
-		return err
-	}
-	*t = TypePostmarkConfig(value)
-	extraProperties, err := internal.ExtractExtraProperties(data, *t)
-	if err != nil {
-		return err
-	}
-	t.extraProperties = extraProperties
-	t.rawJSON = json.RawMessage(data)
-	return nil
-}
-
-func (t *TypePostmarkConfig) String() string {
-	if len(t.rawJSON) > 0 {
-		if value, err := internal.StringifyJSON(t.rawJSON); err == nil {
-			return value
-		}
-	}
-	if value, err := internal.StringifyJSON(t); err == nil {
-		return value
-	}
-	return fmt.Sprintf("%#v", t)
-}
-
-// The type config for Praxis. Requires type to be `PRAXIS`.
-type TypePraxisConfig struct {
-	extraProperties map[string]interface{}
-	rawJSON         json.RawMessage
-}
-
-func (t *TypePraxisConfig) GetExtraProperties() map[string]interface{} {
-	return t.extraProperties
-}
-
-func (t *TypePraxisConfig) UnmarshalJSON(data []byte) error {
-	type unmarshaler TypePraxisConfig
-	var value unmarshaler
-	if err := json.Unmarshal(data, &value); err != nil {
-		return err
-	}
-	*t = TypePraxisConfig(value)
-	extraProperties, err := internal.ExtractExtraProperties(data, *t)
-	if err != nil {
-		return err
-	}
-	t.extraProperties = extraProperties
-	t.rawJSON = json.RawMessage(data)
-	return nil
-}
-
-func (t *TypePraxisConfig) String() string {
-	if len(t.rawJSON) > 0 {
-		if value, err := internal.StringifyJSON(t.rawJSON); err == nil {
-			return value
-		}
-	}
-	if value, err := internal.StringifyJSON(t); err == nil {
-		return value
-	}
-	return fmt.Sprintf("%#v", t)
-}
-
-// The type config for Property Finder. Requires type to be `PROPERTY-FINDER`.
-type TypePropertyFinderConfig struct {
-	extraProperties map[string]interface{}
-	rawJSON         json.RawMessage
-}
-
-func (t *TypePropertyFinderConfig) GetExtraProperties() map[string]interface{} {
-	return t.extraProperties
-}
-
-func (t *TypePropertyFinderConfig) UnmarshalJSON(data []byte) error {
-	type unmarshaler TypePropertyFinderConfig
-	var value unmarshaler
-	if err := json.Unmarshal(data, &value); err != nil {
-		return err
-	}
-	*t = TypePropertyFinderConfig(value)
-	extraProperties, err := internal.ExtractExtraProperties(data, *t)
-	if err != nil {
-		return err
-	}
-	t.extraProperties = extraProperties
-	t.rawJSON = json.RawMessage(data)
-	return nil
-}
-
-func (t *TypePropertyFinderConfig) String() string {
-	if len(t.rawJSON) > 0 {
-		if value, err := internal.StringifyJSON(t.rawJSON); err == nil {
-			return value
-		}
-	}
-	if value, err := internal.StringifyJSON(t); err == nil {
-		return value
-	}
-	return fmt.Sprintf("%#v", t)
-}
-
-// The type config for Pylon. Requires type to be `PYLON`.
-type TypePylonConfig struct {
-	extraProperties map[string]interface{}
-	rawJSON         json.RawMessage
-}
-
-func (t *TypePylonConfig) GetExtraProperties() map[string]interface{} {
-	return t.extraProperties
-}
-
-func (t *TypePylonConfig) UnmarshalJSON(data []byte) error {
-	type unmarshaler TypePylonConfig
-	var value unmarshaler
-	if err := json.Unmarshal(data, &value); err != nil {
-		return err
-	}
-	*t = TypePylonConfig(value)
-	extraProperties, err := internal.ExtractExtraProperties(data, *t)
-	if err != nil {
-		return err
-	}
-	t.extraProperties = extraProperties
-	t.rawJSON = json.RawMessage(data)
-	return nil
-}
-
-func (t *TypePylonConfig) String() string {
-	if len(t.rawJSON) > 0 {
-		if value, err := internal.StringifyJSON(t.rawJSON); err == nil {
-			return value
-		}
-	}
-	if value, err := internal.StringifyJSON(t); err == nil {
-		return value
-	}
-	return fmt.Sprintf("%#v", t)
-}
-
-// The type config for Razorpay. Requires type to be `RAZORPAY`.
-type TypeRazorpayConfig struct {
-	extraProperties map[string]interface{}
-	rawJSON         json.RawMessage
-}
-
-func (t *TypeRazorpayConfig) GetExtraProperties() map[string]interface{} {
-	return t.extraProperties
-}
-
-func (t *TypeRazorpayConfig) UnmarshalJSON(data []byte) error {
-	type unmarshaler TypeRazorpayConfig
-	var value unmarshaler
-	if err := json.Unmarshal(data, &value); err != nil {
-		return err
-	}
-	*t = TypeRazorpayConfig(value)
-	extraProperties, err := internal.ExtractExtraProperties(data, *t)
-	if err != nil {
-		return err
-	}
-	t.extraProperties = extraProperties
-	t.rawJSON = json.RawMessage(data)
-	return nil
-}
-
-func (t *TypeRazorpayConfig) String() string {
-	if len(t.rawJSON) > 0 {
-		if value, err := internal.StringifyJSON(t.rawJSON); err == nil {
-			return value
-		}
-	}
-	if value, err := internal.StringifyJSON(t); err == nil {
-		return value
-	}
-	return fmt.Sprintf("%#v", t)
-}
-
-// The type config for Recharge. Requires type to be `RECHARGE`.
-type TypeRechargeConfig struct {
-	extraProperties map[string]interface{}
-	rawJSON         json.RawMessage
-}
-
-func (t *TypeRechargeConfig) GetExtraProperties() map[string]interface{} {
-	return t.extraProperties
-}
-
-func (t *TypeRechargeConfig) UnmarshalJSON(data []byte) error {
-	type unmarshaler TypeRechargeConfig
-	var value unmarshaler
-	if err := json.Unmarshal(data, &value); err != nil {
-		return err
-	}
-	*t = TypeRechargeConfig(value)
-	extraProperties, err := internal.ExtractExtraProperties(data, *t)
-	if err != nil {
-		return err
-	}
-	t.extraProperties = extraProperties
-	t.rawJSON = json.RawMessage(data)
-	return nil
-}
-
-func (t *TypeRechargeConfig) String() string {
-	if len(t.rawJSON) > 0 {
-		if value, err := internal.StringifyJSON(t.rawJSON); err == nil {
-			return value
-		}
-	}
-	if value, err := internal.StringifyJSON(t); err == nil {
-		return value
-	}
-	return fmt.Sprintf("%#v", t)
-}
-
-// The type config for Repay. Requires type to be `REPAY`.
-type TypeRepayConfig struct {
-	extraProperties map[string]interface{}
-	rawJSON         json.RawMessage
-}
-
-func (t *TypeRepayConfig) GetExtraProperties() map[string]interface{} {
-	return t.extraProperties
-}
-
-func (t *TypeRepayConfig) UnmarshalJSON(data []byte) error {
-	type unmarshaler TypeRepayConfig
-	var value unmarshaler
-	if err := json.Unmarshal(data, &value); err != nil {
-		return err
-	}
-	*t = TypeRepayConfig(value)
-	extraProperties, err := internal.ExtractExtraProperties(data, *t)
-	if err != nil {
-		return err
-	}
-	t.extraProperties = extraProperties
-	t.rawJSON = json.RawMessage(data)
-	return nil
-}
-
-func (t *TypeRepayConfig) String() string {
-	if len(t.rawJSON) > 0 {
-		if value, err := internal.StringifyJSON(t.rawJSON); err == nil {
-			return value
-		}
-	}
-	if value, err := internal.StringifyJSON(t); err == nil {
-		return value
-	}
-	return fmt.Sprintf("%#v", t)
-}
-
-// The type config for Replicate. Requires type to be `REPLICATE`.
-type TypeReplicateConfig struct {
-	extraProperties map[string]interface{}
-	rawJSON         json.RawMessage
-}
-
-func (t *TypeReplicateConfig) GetExtraProperties() map[string]interface{} {
-	return t.extraProperties
-}
-
-func (t *TypeReplicateConfig) UnmarshalJSON(data []byte) error {
-	type unmarshaler TypeReplicateConfig
-	var value unmarshaler
-	if err := json.Unmarshal(data, &value); err != nil {
-		return err
-	}
-	*t = TypeReplicateConfig(value)
-	extraProperties, err := internal.ExtractExtraProperties(data, *t)
-	if err != nil {
-		return err
-	}
-	t.extraProperties = extraProperties
-	t.rawJSON = json.RawMessage(data)
-	return nil
-}
-
-func (t *TypeReplicateConfig) String() string {
-	if len(t.rawJSON) > 0 {
-		if value, err := internal.StringifyJSON(t.rawJSON); err == nil {
-			return value
-		}
-	}
-	if value, err := internal.StringifyJSON(t); err == nil {
-		return value
-	}
-	return fmt.Sprintf("%#v", t)
-}
-
-// The type config for Sanity. Requires type to be `SANITY`.
-type TypeSanityConfig struct {
-	extraProperties map[string]interface{}
-	rawJSON         json.RawMessage
-}
-
-func (t *TypeSanityConfig) GetExtraProperties() map[string]interface{} {
-	return t.extraProperties
-}
-
-func (t *TypeSanityConfig) UnmarshalJSON(data []byte) error {
-	type unmarshaler TypeSanityConfig
-	var value unmarshaler
-	if err := json.Unmarshal(data, &value); err != nil {
-		return err
-	}
-	*t = TypeSanityConfig(value)
-	extraProperties, err := internal.ExtractExtraProperties(data, *t)
-	if err != nil {
-		return err
-	}
-	t.extraProperties = extraProperties
-	t.rawJSON = json.RawMessage(data)
-	return nil
-}
-
-func (t *TypeSanityConfig) String() string {
-	if len(t.rawJSON) > 0 {
-		if value, err := internal.StringifyJSON(t.rawJSON); err == nil {
-			return value
-		}
-	}
-	if value, err := internal.StringifyJSON(t); err == nil {
-		return value
-	}
-	return fmt.Sprintf("%#v", t)
-}
-
-// The type config for Sendgrid. Requires type to be `SENDGRID`.
-type TypeSendgridConfig struct {
-	extraProperties map[string]interface{}
-	rawJSON         json.RawMessage
-}
-
-func (t *TypeSendgridConfig) GetExtraProperties() map[string]interface{} {
-	return t.extraProperties
-}
-
-func (t *TypeSendgridConfig) UnmarshalJSON(data []byte) error {
-	type unmarshaler TypeSendgridConfig
-	var value unmarshaler
-	if err := json.Unmarshal(data, &value); err != nil {
-		return err
-	}
-	*t = TypeSendgridConfig(value)
-	extraProperties, err := internal.ExtractExtraProperties(data, *t)
-	if err != nil {
-		return err
-	}
-	t.extraProperties = extraProperties
-	t.rawJSON = json.RawMessage(data)
-	return nil
-}
-
-func (t *TypeSendgridConfig) String() string {
-	if len(t.rawJSON) > 0 {
-		if value, err := internal.StringifyJSON(t.rawJSON); err == nil {
-			return value
-		}
-	}
-	if value, err := internal.StringifyJSON(t); err == nil {
-		return value
-	}
-	return fmt.Sprintf("%#v", t)
-}
-
-// The type config for Shopify. Requires type to be `SHOPIFY`.
-type TypeShopifyConfig struct {
-	extraProperties map[string]interface{}
-	rawJSON         json.RawMessage
-}
-
-func (t *TypeShopifyConfig) GetExtraProperties() map[string]interface{} {
-	return t.extraProperties
-}
-
-func (t *TypeShopifyConfig) UnmarshalJSON(data []byte) error {
-	type unmarshaler TypeShopifyConfig
-	var value unmarshaler
-	if err := json.Unmarshal(data, &value); err != nil {
-		return err
-	}
-	*t = TypeShopifyConfig(value)
-	extraProperties, err := internal.ExtractExtraProperties(data, *t)
-	if err != nil {
-		return err
-	}
-	t.extraProperties = extraProperties
-	t.rawJSON = json.RawMessage(data)
-	return nil
-}
-
-func (t *TypeShopifyConfig) String() string {
-	if len(t.rawJSON) > 0 {
-		if value, err := internal.StringifyJSON(t.rawJSON); err == nil {
-			return value
-		}
-	}
-	if value, err := internal.StringifyJSON(t); err == nil {
-		return value
-	}
-	return fmt.Sprintf("%#v", t)
-}
-
-// The type config for Shopline. Requires type to be `SHOPLINE`.
-type TypeShoplineConfig struct {
-	extraProperties map[string]interface{}
-	rawJSON         json.RawMessage
-}
-
-func (t *TypeShoplineConfig) GetExtraProperties() map[string]interface{} {
-	return t.extraProperties
-}
-
-func (t *TypeShoplineConfig) UnmarshalJSON(data []byte) error {
-	type unmarshaler TypeShoplineConfig
-	var value unmarshaler
-	if err := json.Unmarshal(data, &value); err != nil {
-		return err
-	}
-	*t = TypeShoplineConfig(value)
-	extraProperties, err := internal.ExtractExtraProperties(data, *t)
-	if err != nil {
-		return err
-	}
-	t.extraProperties = extraProperties
-	t.rawJSON = json.RawMessage(data)
-	return nil
-}
-
-func (t *TypeShoplineConfig) String() string {
-	if len(t.rawJSON) > 0 {
-		if value, err := internal.StringifyJSON(t.rawJSON); err == nil {
-			return value
-		}
-	}
-	if value, err := internal.StringifyJSON(t); err == nil {
-		return value
-	}
-	return fmt.Sprintf("%#v", t)
-}
-
-// The type config for Slack. Requires type to be `SLACK`.
-type TypeSlackConfig struct {
-	extraProperties map[string]interface{}
-	rawJSON         json.RawMessage
-}
-
-func (t *TypeSlackConfig) GetExtraProperties() map[string]interface{} {
-	return t.extraProperties
-}
-
-func (t *TypeSlackConfig) UnmarshalJSON(data []byte) error {
-	type unmarshaler TypeSlackConfig
-	var value unmarshaler
-	if err := json.Unmarshal(data, &value); err != nil {
-		return err
-	}
-	*t = TypeSlackConfig(value)
-	extraProperties, err := internal.ExtractExtraProperties(data, *t)
-	if err != nil {
-		return err
-	}
-	t.extraProperties = extraProperties
-	t.rawJSON = json.RawMessage(data)
-	return nil
-}
-
-func (t *TypeSlackConfig) String() string {
-	if len(t.rawJSON) > 0 {
-		if value, err := internal.StringifyJSON(t.rawJSON); err == nil {
-			return value
-		}
-	}
-	if value, err := internal.StringifyJSON(t); err == nil {
-		return value
-	}
-	return fmt.Sprintf("%#v", t)
-}
-
-// The type config for Solidgate. Requires type to be `SOLIDGATE`.
-type TypeSolidgateConfig struct {
-	extraProperties map[string]interface{}
-	rawJSON         json.RawMessage
-}
-
-func (t *TypeSolidgateConfig) GetExtraProperties() map[string]interface{} {
-	return t.extraProperties
-}
-
-func (t *TypeSolidgateConfig) UnmarshalJSON(data []byte) error {
-	type unmarshaler TypeSolidgateConfig
-	var value unmarshaler
-	if err := json.Unmarshal(data, &value); err != nil {
-		return err
-	}
-	*t = TypeSolidgateConfig(value)
-	extraProperties, err := internal.ExtractExtraProperties(data, *t)
-	if err != nil {
-		return err
-	}
-	t.extraProperties = extraProperties
-	t.rawJSON = json.RawMessage(data)
-	return nil
-}
-
-func (t *TypeSolidgateConfig) String() string {
-	if len(t.rawJSON) > 0 {
-		if value, err := internal.StringifyJSON(t.rawJSON); err == nil {
-			return value
-		}
-	}
-	if value, err := internal.StringifyJSON(t); err == nil {
-		return value
-	}
-	return fmt.Sprintf("%#v", t)
-}
-
-// The type config for Square. Requires type to be `SQUARE`.
-type TypeSquareConfig struct {
-	extraProperties map[string]interface{}
-	rawJSON         json.RawMessage
-}
-
-func (t *TypeSquareConfig) GetExtraProperties() map[string]interface{} {
-	return t.extraProperties
-}
-
-func (t *TypeSquareConfig) UnmarshalJSON(data []byte) error {
-	type unmarshaler TypeSquareConfig
-	var value unmarshaler
-	if err := json.Unmarshal(data, &value); err != nil {
-		return err
-	}
-	*t = TypeSquareConfig(value)
-	extraProperties, err := internal.ExtractExtraProperties(data, *t)
-	if err != nil {
-		return err
-	}
-	t.extraProperties = extraProperties
-	t.rawJSON = json.RawMessage(data)
-	return nil
-}
-
-func (t *TypeSquareConfig) String() string {
-	if len(t.rawJSON) > 0 {
-		if value, err := internal.StringifyJSON(t.rawJSON); err == nil {
-			return value
-		}
-	}
-	if value, err := internal.StringifyJSON(t); err == nil {
-		return value
-	}
-	return fmt.Sprintf("%#v", t)
-}
-
-// The type config for Stripe. Requires type to be `STRIPE`.
-type TypeStripeConfig struct {
-	extraProperties map[string]interface{}
-	rawJSON         json.RawMessage
-}
-
-func (t *TypeStripeConfig) GetExtraProperties() map[string]interface{} {
-	return t.extraProperties
-}
-
-func (t *TypeStripeConfig) UnmarshalJSON(data []byte) error {
-	type unmarshaler TypeStripeConfig
-	var value unmarshaler
-	if err := json.Unmarshal(data, &value); err != nil {
-		return err
-	}
-	*t = TypeStripeConfig(value)
-	extraProperties, err := internal.ExtractExtraProperties(data, *t)
-	if err != nil {
-		return err
-	}
-	t.extraProperties = extraProperties
-	t.rawJSON = json.RawMessage(data)
-	return nil
-}
-
-func (t *TypeStripeConfig) String() string {
-	if len(t.rawJSON) > 0 {
-		if value, err := internal.StringifyJSON(t.rawJSON); err == nil {
-			return value
-		}
-	}
-	if value, err := internal.StringifyJSON(t); err == nil {
-		return value
-	}
-	return fmt.Sprintf("%#v", t)
-}
-
-// The type config for Svix. Requires type to be `SVIX`.
-type TypeSvixConfig struct {
-	extraProperties map[string]interface{}
-	rawJSON         json.RawMessage
-}
-
-func (t *TypeSvixConfig) GetExtraProperties() map[string]interface{} {
-	return t.extraProperties
-}
-
-func (t *TypeSvixConfig) UnmarshalJSON(data []byte) error {
-	type unmarshaler TypeSvixConfig
-	var value unmarshaler
-	if err := json.Unmarshal(data, &value); err != nil {
-		return err
-	}
-	*t = TypeSvixConfig(value)
-	extraProperties, err := internal.ExtractExtraProperties(data, *t)
-	if err != nil {
-		return err
-	}
-	t.extraProperties = extraProperties
-	t.rawJSON = json.RawMessage(data)
-	return nil
-}
-
-func (t *TypeSvixConfig) String() string {
-	if len(t.rawJSON) > 0 {
-		if value, err := internal.StringifyJSON(t.rawJSON); err == nil {
-			return value
-		}
-	}
-	if value, err := internal.StringifyJSON(t); err == nil {
-		return value
-	}
-	return fmt.Sprintf("%#v", t)
-}
-
-// The type config for Synctera. Requires type to be `SYNCTERA`.
-type TypeSyncteraConfig struct {
-	extraProperties map[string]interface{}
-	rawJSON         json.RawMessage
-}
-
-func (t *TypeSyncteraConfig) GetExtraProperties() map[string]interface{} {
-	return t.extraProperties
-}
-
-func (t *TypeSyncteraConfig) UnmarshalJSON(data []byte) error {
-	type unmarshaler TypeSyncteraConfig
-	var value unmarshaler
-	if err := json.Unmarshal(data, &value); err != nil {
-		return err
-	}
-	*t = TypeSyncteraConfig(value)
-	extraProperties, err := internal.ExtractExtraProperties(data, *t)
-	if err != nil {
-		return err
-	}
-	t.extraProperties = extraProperties
-	t.rawJSON = json.RawMessage(data)
-	return nil
-}
-
-func (t *TypeSyncteraConfig) String() string {
-	if len(t.rawJSON) > 0 {
-		if value, err := internal.StringifyJSON(t.rawJSON); err == nil {
-			return value
-		}
-	}
-	if value, err := internal.StringifyJSON(t); err == nil {
-		return value
-	}
-	return fmt.Sprintf("%#v", t)
-}
-
-// The type config for Tebex. Requires type to be `TEBEX`.
-type TypeTebexConfig struct {
-	extraProperties map[string]interface{}
-	rawJSON         json.RawMessage
-}
-
-func (t *TypeTebexConfig) GetExtraProperties() map[string]interface{} {
-	return t.extraProperties
-}
-
-func (t *TypeTebexConfig) UnmarshalJSON(data []byte) error {
-	type unmarshaler TypeTebexConfig
-	var value unmarshaler
-	if err := json.Unmarshal(data, &value); err != nil {
-		return err
-	}
-	*t = TypeTebexConfig(value)
-	extraProperties, err := internal.ExtractExtraProperties(data, *t)
-	if err != nil {
-		return err
-	}
-	t.extraProperties = extraProperties
-	t.rawJSON = json.RawMessage(data)
-	return nil
-}
-
-func (t *TypeTebexConfig) String() string {
-	if len(t.rawJSON) > 0 {
-		if value, err := internal.StringifyJSON(t.rawJSON); err == nil {
-			return value
-		}
-	}
-	if value, err := internal.StringifyJSON(t); err == nil {
-		return value
-	}
-	return fmt.Sprintf("%#v", t)
-}
-
-// The type config for Telnyx. Requires type to be `TELNYX`.
-type TypeTelnyxConfig struct {
-	extraProperties map[string]interface{}
-	rawJSON         json.RawMessage
-}
-
-func (t *TypeTelnyxConfig) GetExtraProperties() map[string]interface{} {
-	return t.extraProperties
-}
-
-func (t *TypeTelnyxConfig) UnmarshalJSON(data []byte) error {
-	type unmarshaler TypeTelnyxConfig
-	var value unmarshaler
-	if err := json.Unmarshal(data, &value); err != nil {
-		return err
-	}
-	*t = TypeTelnyxConfig(value)
-	extraProperties, err := internal.ExtractExtraProperties(data, *t)
-	if err != nil {
-		return err
-	}
-	t.extraProperties = extraProperties
-	t.rawJSON = json.RawMessage(data)
-	return nil
-}
-
-func (t *TypeTelnyxConfig) String() string {
-	if len(t.rawJSON) > 0 {
-		if value, err := internal.StringifyJSON(t.rawJSON); err == nil {
-			return value
-		}
-	}
-	if value, err := internal.StringifyJSON(t); err == nil {
-		return value
-	}
-	return fmt.Sprintf("%#v", t)
-}
-
-// The type config for TikTok. Requires type to be `TIKTOK`.
-type TypeTikTokConfig struct {
-	extraProperties map[string]interface{}
-	rawJSON         json.RawMessage
-}
-
-func (t *TypeTikTokConfig) GetExtraProperties() map[string]interface{} {
-	return t.extraProperties
-}
-
-func (t *TypeTikTokConfig) UnmarshalJSON(data []byte) error {
-	type unmarshaler TypeTikTokConfig
-	var value unmarshaler
-	if err := json.Unmarshal(data, &value); err != nil {
-		return err
-	}
-	*t = TypeTikTokConfig(value)
-	extraProperties, err := internal.ExtractExtraProperties(data, *t)
-	if err != nil {
-		return err
-	}
-	t.extraProperties = extraProperties
-	t.rawJSON = json.RawMessage(data)
-	return nil
-}
-
-func (t *TypeTikTokConfig) String() string {
-	if len(t.rawJSON) > 0 {
-		if value, err := internal.StringifyJSON(t.rawJSON); err == nil {
-			return value
-		}
-	}
-	if value, err := internal.StringifyJSON(t); err == nil {
-		return value
-	}
-	return fmt.Sprintf("%#v", t)
-}
-
-// The type config for TokenIO. Requires type to be `TOKENIO`.
-type TypeTokenIoConfig struct {
-	extraProperties map[string]interface{}
-	rawJSON         json.RawMessage
-}
-
-func (t *TypeTokenIoConfig) GetExtraProperties() map[string]interface{} {
-	return t.extraProperties
-}
-
-func (t *TypeTokenIoConfig) UnmarshalJSON(data []byte) error {
-	type unmarshaler TypeTokenIoConfig
-	var value unmarshaler
-	if err := json.Unmarshal(data, &value); err != nil {
-		return err
-	}
-	*t = TypeTokenIoConfig(value)
-	extraProperties, err := internal.ExtractExtraProperties(data, *t)
-	if err != nil {
-		return err
-	}
-	t.extraProperties = extraProperties
-	t.rawJSON = json.RawMessage(data)
-	return nil
-}
-
-func (t *TypeTokenIoConfig) String() string {
-	if len(t.rawJSON) > 0 {
-		if value, err := internal.StringifyJSON(t.rawJSON); err == nil {
-			return value
-		}
-	}
-	if value, err := internal.StringifyJSON(t); err == nil {
-		return value
-	}
-	return fmt.Sprintf("%#v", t)
-}
-
-// The type config for Treezor. Requires type to be `TREEZOR`.
-type TypeTreezorConfig struct {
-	extraProperties map[string]interface{}
-	rawJSON         json.RawMessage
-}
-
-func (t *TypeTreezorConfig) GetExtraProperties() map[string]interface{} {
-	return t.extraProperties
-}
-
-func (t *TypeTreezorConfig) UnmarshalJSON(data []byte) error {
-	type unmarshaler TypeTreezorConfig
-	var value unmarshaler
-	if err := json.Unmarshal(data, &value); err != nil {
-		return err
-	}
-	*t = TypeTreezorConfig(value)
-	extraProperties, err := internal.ExtractExtraProperties(data, *t)
-	if err != nil {
-		return err
-	}
-	t.extraProperties = extraProperties
-	t.rawJSON = json.RawMessage(data)
-	return nil
-}
-
-func (t *TypeTreezorConfig) String() string {
-	if len(t.rawJSON) > 0 {
-		if value, err := internal.StringifyJSON(t.rawJSON); err == nil {
-			return value
-		}
-	}
-	if value, err := internal.StringifyJSON(t); err == nil {
-		return value
-	}
-	return fmt.Sprintf("%#v", t)
-}
-
-// The type config for Trello. Requires type to be `TRELLO`.
-type TypeTrelloConfig struct {
-	extraProperties map[string]interface{}
-	rawJSON         json.RawMessage
-}
-
-func (t *TypeTrelloConfig) GetExtraProperties() map[string]interface{} {
-	return t.extraProperties
-}
-
-func (t *TypeTrelloConfig) UnmarshalJSON(data []byte) error {
-	type unmarshaler TypeTrelloConfig
-	var value unmarshaler
-	if err := json.Unmarshal(data, &value); err != nil {
-		return err
-	}
-	*t = TypeTrelloConfig(value)
-	extraProperties, err := internal.ExtractExtraProperties(data, *t)
-	if err != nil {
-		return err
-	}
-	t.extraProperties = extraProperties
-	t.rawJSON = json.RawMessage(data)
-	return nil
-}
-
-func (t *TypeTrelloConfig) String() string {
-	if len(t.rawJSON) > 0 {
-		if value, err := internal.StringifyJSON(t.rawJSON); err == nil {
-			return value
-		}
-	}
-	if value, err := internal.StringifyJSON(t); err == nil {
-		return value
-	}
-	return fmt.Sprintf("%#v", t)
-}
-
-// The type config for Twilio. Requires type to be `TWILIO`.
-type TypeTwilioConfig struct {
-	extraProperties map[string]interface{}
-	rawJSON         json.RawMessage
-}
-
-func (t *TypeTwilioConfig) GetExtraProperties() map[string]interface{} {
-	return t.extraProperties
-}
-
-func (t *TypeTwilioConfig) UnmarshalJSON(data []byte) error {
-	type unmarshaler TypeTwilioConfig
-	var value unmarshaler
-	if err := json.Unmarshal(data, &value); err != nil {
-		return err
-	}
-	*t = TypeTwilioConfig(value)
-	extraProperties, err := internal.ExtractExtraProperties(data, *t)
-	if err != nil {
-		return err
-	}
-	t.extraProperties = extraProperties
-	t.rawJSON = json.RawMessage(data)
-	return nil
-}
-
-func (t *TypeTwilioConfig) String() string {
-	if len(t.rawJSON) > 0 {
-		if value, err := internal.StringifyJSON(t.rawJSON); err == nil {
-			return value
-		}
-	}
-	if value, err := internal.StringifyJSON(t); err == nil {
-		return value
-	}
-	return fmt.Sprintf("%#v", t)
-}
-
-// The type config for Twitch. Requires type to be `TWITCH`.
-type TypeTwitchConfig struct {
-	extraProperties map[string]interface{}
-	rawJSON         json.RawMessage
-}
-
-func (t *TypeTwitchConfig) GetExtraProperties() map[string]interface{} {
-	return t.extraProperties
-}
-
-func (t *TypeTwitchConfig) UnmarshalJSON(data []byte) error {
-	type unmarshaler TypeTwitchConfig
-	var value unmarshaler
-	if err := json.Unmarshal(data, &value); err != nil {
-		return err
-	}
-	*t = TypeTwitchConfig(value)
-	extraProperties, err := internal.ExtractExtraProperties(data, *t)
-	if err != nil {
-		return err
-	}
-	t.extraProperties = extraProperties
-	t.rawJSON = json.RawMessage(data)
-	return nil
-}
-
-func (t *TypeTwitchConfig) String() string {
-	if len(t.rawJSON) > 0 {
-		if value, err := internal.StringifyJSON(t.rawJSON); err == nil {
-			return value
-		}
-	}
-	if value, err := internal.StringifyJSON(t); err == nil {
-		return value
-	}
-	return fmt.Sprintf("%#v", t)
-}
-
-// The type config for Twitter. Requires type to be `TWITTER`.
-type TypeTwitterConfig struct {
-	extraProperties map[string]interface{}
-	rawJSON         json.RawMessage
-}
-
-func (t *TypeTwitterConfig) GetExtraProperties() map[string]interface{} {
-	return t.extraProperties
-}
-
-func (t *TypeTwitterConfig) UnmarshalJSON(data []byte) error {
-	type unmarshaler TypeTwitterConfig
-	var value unmarshaler
-	if err := json.Unmarshal(data, &value); err != nil {
-		return err
-	}
-	*t = TypeTwitterConfig(value)
-	extraProperties, err := internal.ExtractExtraProperties(data, *t)
-	if err != nil {
-		return err
-	}
-	t.extraProperties = extraProperties
-	t.rawJSON = json.RawMessage(data)
-	return nil
-}
-
-func (t *TypeTwitterConfig) String() string {
-	if len(t.rawJSON) > 0 {
-		if value, err := internal.StringifyJSON(t.rawJSON); err == nil {
-			return value
-		}
-	}
-	if value, err := internal.StringifyJSON(t); err == nil {
-		return value
-	}
-	return fmt.Sprintf("%#v", t)
-}
-
-// The type config for Typeform. Requires type to be `TYPEFORM`.
-type TypeTypeformConfig struct {
-	extraProperties map[string]interface{}
-	rawJSON         json.RawMessage
-}
-
-func (t *TypeTypeformConfig) GetExtraProperties() map[string]interface{} {
-	return t.extraProperties
-}
-
-func (t *TypeTypeformConfig) UnmarshalJSON(data []byte) error {
-	type unmarshaler TypeTypeformConfig
-	var value unmarshaler
-	if err := json.Unmarshal(data, &value); err != nil {
-		return err
-	}
-	*t = TypeTypeformConfig(value)
-	extraProperties, err := internal.ExtractExtraProperties(data, *t)
-	if err != nil {
-		return err
-	}
-	t.extraProperties = extraProperties
-	t.rawJSON = json.RawMessage(data)
-	return nil
-}
-
-func (t *TypeTypeformConfig) String() string {
-	if len(t.rawJSON) > 0 {
-		if value, err := internal.StringifyJSON(t.rawJSON); err == nil {
-			return value
-		}
-	}
-	if value, err := internal.StringifyJSON(t); err == nil {
-		return value
-	}
-	return fmt.Sprintf("%#v", t)
-}
-
-// The type config for Upollo. Requires type to be `UPOLLO`.
-type TypeUpolloConfig struct {
-	extraProperties map[string]interface{}
-	rawJSON         json.RawMessage
-}
-
-func (t *TypeUpolloConfig) GetExtraProperties() map[string]interface{} {
-	return t.extraProperties
-}
-
-func (t *TypeUpolloConfig) UnmarshalJSON(data []byte) error {
-	type unmarshaler TypeUpolloConfig
-	var value unmarshaler
-	if err := json.Unmarshal(data, &value); err != nil {
-		return err
-	}
-	*t = TypeUpolloConfig(value)
-	extraProperties, err := internal.ExtractExtraProperties(data, *t)
-	if err != nil {
-		return err
-	}
-	t.extraProperties = extraProperties
-	t.rawJSON = json.RawMessage(data)
-	return nil
-}
-
-func (t *TypeUpolloConfig) String() string {
-	if len(t.rawJSON) > 0 {
-		if value, err := internal.StringifyJSON(t.rawJSON); err == nil {
-			return value
-		}
-	}
-	if value, err := internal.StringifyJSON(t); err == nil {
-		return value
-	}
-	return fmt.Sprintf("%#v", t)
-}
-
-// The type config for Vercel Log Drains. Requires type to be `VERCEL_LOG_DRAINS`.
-type TypeVercelLogDrainsConfig struct {
-	extraProperties map[string]interface{}
-	rawJSON         json.RawMessage
-}
-
-func (t *TypeVercelLogDrainsConfig) GetExtraProperties() map[string]interface{} {
-	return t.extraProperties
-}
-
-func (t *TypeVercelLogDrainsConfig) UnmarshalJSON(data []byte) error {
-	type unmarshaler TypeVercelLogDrainsConfig
-	var value unmarshaler
-	if err := json.Unmarshal(data, &value); err != nil {
-		return err
-	}
-	*t = TypeVercelLogDrainsConfig(value)
-	extraProperties, err := internal.ExtractExtraProperties(data, *t)
-	if err != nil {
-		return err
-	}
-	t.extraProperties = extraProperties
-	t.rawJSON = json.RawMessage(data)
-	return nil
-}
-
-func (t *TypeVercelLogDrainsConfig) String() string {
-	if len(t.rawJSON) > 0 {
-		if value, err := internal.StringifyJSON(t.rawJSON); err == nil {
-			return value
-		}
-	}
-	if value, err := internal.StringifyJSON(t); err == nil {
-		return value
-	}
-	return fmt.Sprintf("%#v", t)
-}
-
-// The type config for Vercel Webhooks. Requires type to be `VERCEL`.
-type TypeVercelWebhooksConfig struct {
-	extraProperties map[string]interface{}
-	rawJSON         json.RawMessage
-}
-
-func (t *TypeVercelWebhooksConfig) GetExtraProperties() map[string]interface{} {
-	return t.extraProperties
-}
-
-func (t *TypeVercelWebhooksConfig) UnmarshalJSON(data []byte) error {
-	type unmarshaler TypeVercelWebhooksConfig
-	var value unmarshaler
-	if err := json.Unmarshal(data, &value); err != nil {
-		return err
-	}
-	*t = TypeVercelWebhooksConfig(value)
-	extraProperties, err := internal.ExtractExtraProperties(data, *t)
-	if err != nil {
-		return err
-	}
-	t.extraProperties = extraProperties
-	t.rawJSON = json.RawMessage(data)
-	return nil
-}
-
-func (t *TypeVercelWebhooksConfig) String() string {
-	if len(t.rawJSON) > 0 {
-		if value, err := internal.StringifyJSON(t.rawJSON); err == nil {
-			return value
-		}
-	}
-	if value, err := internal.StringifyJSON(t); err == nil {
-		return value
-	}
-	return fmt.Sprintf("%#v", t)
-}
-
-// The type config for Webhook. Requires type to be `WEBHOOK`.
-type TypeWebhookConfig struct {
-	extraProperties map[string]interface{}
-	rawJSON         json.RawMessage
-}
-
-func (t *TypeWebhookConfig) GetExtraProperties() map[string]interface{} {
-	return t.extraProperties
-}
-
-func (t *TypeWebhookConfig) UnmarshalJSON(data []byte) error {
-	type unmarshaler TypeWebhookConfig
-	var value unmarshaler
-	if err := json.Unmarshal(data, &value); err != nil {
-		return err
-	}
-	*t = TypeWebhookConfig(value)
-	extraProperties, err := internal.ExtractExtraProperties(data, *t)
-	if err != nil {
-		return err
-	}
-	t.extraProperties = extraProperties
-	t.rawJSON = json.RawMessage(data)
-	return nil
-}
-
-func (t *TypeWebhookConfig) String() string {
-	if len(t.rawJSON) > 0 {
-		if value, err := internal.StringifyJSON(t.rawJSON); err == nil {
-			return value
-		}
-	}
-	if value, err := internal.StringifyJSON(t); err == nil {
-		return value
-	}
-	return fmt.Sprintf("%#v", t)
-}
-
-// The type config for WhatsApp. Requires type to be `WHATSAPP`.
-type TypeWhatsAppConfig struct {
-	extraProperties map[string]interface{}
-	rawJSON         json.RawMessage
-}
-
-func (t *TypeWhatsAppConfig) GetExtraProperties() map[string]interface{} {
-	return t.extraProperties
-}
-
-func (t *TypeWhatsAppConfig) UnmarshalJSON(data []byte) error {
-	type unmarshaler TypeWhatsAppConfig
-	var value unmarshaler
-	if err := json.Unmarshal(data, &value); err != nil {
-		return err
-	}
-	*t = TypeWhatsAppConfig(value)
-	extraProperties, err := internal.ExtractExtraProperties(data, *t)
-	if err != nil {
-		return err
-	}
-	t.extraProperties = extraProperties
-	t.rawJSON = json.RawMessage(data)
-	return nil
-}
-
-func (t *TypeWhatsAppConfig) String() string {
-	if len(t.rawJSON) > 0 {
-		if value, err := internal.StringifyJSON(t.rawJSON); err == nil {
-			return value
-		}
-	}
-	if value, err := internal.StringifyJSON(t); err == nil {
-		return value
-	}
-	return fmt.Sprintf("%#v", t)
-}
-
-// The type config for Wix. Requires type to be `WIX`.
-type TypeWixConfig struct {
-	extraProperties map[string]interface{}
-	rawJSON         json.RawMessage
-}
-
-func (t *TypeWixConfig) GetExtraProperties() map[string]interface{} {
-	return t.extraProperties
-}
-
-func (t *TypeWixConfig) UnmarshalJSON(data []byte) error {
-	type unmarshaler TypeWixConfig
-	var value unmarshaler
-	if err := json.Unmarshal(data, &value); err != nil {
-		return err
-	}
-	*t = TypeWixConfig(value)
-	extraProperties, err := internal.ExtractExtraProperties(data, *t)
-	if err != nil {
-		return err
-	}
-	t.extraProperties = extraProperties
-	t.rawJSON = json.RawMessage(data)
-	return nil
-}
-
-func (t *TypeWixConfig) String() string {
-	if len(t.rawJSON) > 0 {
-		if value, err := internal.StringifyJSON(t.rawJSON); err == nil {
-			return value
-		}
-	}
-	if value, err := internal.StringifyJSON(t); err == nil {
-		return value
-	}
-	return fmt.Sprintf("%#v", t)
-}
-
-// The type config for WooCommerce. Requires type to be `WOOCOMMERCE`.
-type TypeWooCommerceConfig struct {
-	extraProperties map[string]interface{}
-	rawJSON         json.RawMessage
-}
-
-func (t *TypeWooCommerceConfig) GetExtraProperties() map[string]interface{} {
-	return t.extraProperties
-}
-
-func (t *TypeWooCommerceConfig) UnmarshalJSON(data []byte) error {
-	type unmarshaler TypeWooCommerceConfig
-	var value unmarshaler
-	if err := json.Unmarshal(data, &value); err != nil {
-		return err
-	}
-	*t = TypeWooCommerceConfig(value)
-	extraProperties, err := internal.ExtractExtraProperties(data, *t)
-	if err != nil {
-		return err
-	}
-	t.extraProperties = extraProperties
-	t.rawJSON = json.RawMessage(data)
-	return nil
-}
-
-func (t *TypeWooCommerceConfig) String() string {
-	if len(t.rawJSON) > 0 {
-		if value, err := internal.StringifyJSON(t.rawJSON); err == nil {
-			return value
-		}
-	}
-	if value, err := internal.StringifyJSON(t); err == nil {
-		return value
-	}
-	return fmt.Sprintf("%#v", t)
-}
-
-// The type config for WorkOS. Requires type to be `WORKOS`.
-type TypeWorkOsConfig struct {
-	extraProperties map[string]interface{}
-	rawJSON         json.RawMessage
-}
-
-func (t *TypeWorkOsConfig) GetExtraProperties() map[string]interface{} {
-	return t.extraProperties
-}
-
-func (t *TypeWorkOsConfig) UnmarshalJSON(data []byte) error {
-	type unmarshaler TypeWorkOsConfig
-	var value unmarshaler
-	if err := json.Unmarshal(data, &value); err != nil {
-		return err
-	}
-	*t = TypeWorkOsConfig(value)
-	extraProperties, err := internal.ExtractExtraProperties(data, *t)
-	if err != nil {
-		return err
-	}
-	t.extraProperties = extraProperties
-	t.rawJSON = json.RawMessage(data)
-	return nil
-}
-
-func (t *TypeWorkOsConfig) String() string {
-	if len(t.rawJSON) > 0 {
-		if value, err := internal.StringifyJSON(t.rawJSON); err == nil {
-			return value
-		}
-	}
-	if value, err := internal.StringifyJSON(t); err == nil {
-		return value
-	}
-	return fmt.Sprintf("%#v", t)
-}
-
-// The type config for Xero. Requires type to be `XERO`.
-type TypeXeroConfig struct {
-	extraProperties map[string]interface{}
-	rawJSON         json.RawMessage
-}
-
-func (t *TypeXeroConfig) GetExtraProperties() map[string]interface{} {
-	return t.extraProperties
-}
-
-func (t *TypeXeroConfig) UnmarshalJSON(data []byte) error {
-	type unmarshaler TypeXeroConfig
-	var value unmarshaler
-	if err := json.Unmarshal(data, &value); err != nil {
-		return err
-	}
-	*t = TypeXeroConfig(value)
-	extraProperties, err := internal.ExtractExtraProperties(data, *t)
-	if err != nil {
-		return err
-	}
-	t.extraProperties = extraProperties
-	t.rawJSON = json.RawMessage(data)
-	return nil
-}
-
-func (t *TypeXeroConfig) String() string {
-	if len(t.rawJSON) > 0 {
-		if value, err := internal.StringifyJSON(t.rawJSON); err == nil {
-			return value
-		}
-	}
-	if value, err := internal.StringifyJSON(t); err == nil {
-		return value
-	}
-	return fmt.Sprintf("%#v", t)
-}
-
-// The type config for Zendesk. Requires type to be `ZENDESK`.
-type TypeZendeskConfig struct {
-	extraProperties map[string]interface{}
-	rawJSON         json.RawMessage
-}
-
-func (t *TypeZendeskConfig) GetExtraProperties() map[string]interface{} {
-	return t.extraProperties
-}
-
-func (t *TypeZendeskConfig) UnmarshalJSON(data []byte) error {
-	type unmarshaler TypeZendeskConfig
-	var value unmarshaler
-	if err := json.Unmarshal(data, &value); err != nil {
-		return err
-	}
-	*t = TypeZendeskConfig(value)
-	extraProperties, err := internal.ExtractExtraProperties(data, *t)
-	if err != nil {
-		return err
-	}
-	t.extraProperties = extraProperties
-	t.rawJSON = json.RawMessage(data)
-	return nil
-}
-
-func (t *TypeZendeskConfig) String() string {
-	if len(t.rawJSON) > 0 {
-		if value, err := internal.StringifyJSON(t.rawJSON); err == nil {
-			return value
-		}
-	}
-	if value, err := internal.StringifyJSON(t); err == nil {
-		return value
-	}
-	return fmt.Sprintf("%#v", t)
-}
-
-// The type config for Zoom. Requires type to be `ZOOM`.
-type TypeZoomConfig struct {
-	extraProperties map[string]interface{}
-	rawJSON         json.RawMessage
-}
-
-func (t *TypeZoomConfig) GetExtraProperties() map[string]interface{} {
-	return t.extraProperties
-}
-
-func (t *TypeZoomConfig) UnmarshalJSON(data []byte) error {
-	type unmarshaler TypeZoomConfig
-	var value unmarshaler
-	if err := json.Unmarshal(data, &value); err != nil {
-		return err
-	}
-	*t = TypeZoomConfig(value)
-	extraProperties, err := internal.ExtractExtraProperties(data, *t)
-	if err != nil {
-		return err
-	}
-	t.extraProperties = extraProperties
-	t.rawJSON = json.RawMessage(data)
-	return nil
-}
-
-func (t *TypeZoomConfig) String() string {
-	if len(t.rawJSON) > 0 {
-		if value, err := internal.StringifyJSON(t.rawJSON); err == nil {
-			return value
-		}
-	}
-	if value, err := internal.StringifyJSON(t); err == nil {
-		return value
-	}
-	return fmt.Sprintf("%#v", t)
-}
-
 type VercelLogDrainsIntegrationConfigs struct {
 	WebhookSecretKey      *string `json:"webhook_secret_key,omitempty" url:"webhook_secret_key,omitempty"`
 	VercelLogDrainsSecret string  `json:"vercel_log_drains_secret" url:"vercel_log_drains_secret"`
@@ -23076,3467 +23503,18 @@ func (v *VercelLogDrainsIntegrationConfigs) String() string {
 	return fmt.Sprintf("%#v", v)
 }
 
-type Verification3DEye struct {
-	Configs *Type3DEyeConfig `json:"configs,omitempty" url:"configs,omitempty"`
+type VerificationPropertyFinder struct {
+	Type *string `json:"type,omitempty" url:"type,omitempty"`
 
 	extraProperties map[string]interface{}
 	rawJSON         json.RawMessage
 }
 
-func (v *Verification3DEye) GetConfigs() *Type3DEyeConfig {
+func (v *VerificationPropertyFinder) GetType() *string {
 	if v == nil {
 		return nil
-	}
-	return v.Configs
-}
-
-func (v *Verification3DEye) GetExtraProperties() map[string]interface{} {
-	return v.extraProperties
-}
-
-func (v *Verification3DEye) UnmarshalJSON(data []byte) error {
-	type unmarshaler Verification3DEye
-	var value unmarshaler
-	if err := json.Unmarshal(data, &value); err != nil {
-		return err
-	}
-	*v = Verification3DEye(value)
-	extraProperties, err := internal.ExtractExtraProperties(data, *v)
-	if err != nil {
-		return err
-	}
-	v.extraProperties = extraProperties
-	v.rawJSON = json.RawMessage(data)
-	return nil
-}
-
-func (v *Verification3DEye) String() string {
-	if len(v.rawJSON) > 0 {
-		if value, err := internal.StringifyJSON(v.rawJSON); err == nil {
-			return value
-		}
-	}
-	if value, err := internal.StringifyJSON(v); err == nil {
-		return value
-	}
-	return fmt.Sprintf("%#v", v)
-}
-
-type VerificationAdyen struct {
-	Configs *TypeAdyenConfig `json:"configs,omitempty" url:"configs,omitempty"`
-
-	extraProperties map[string]interface{}
-	rawJSON         json.RawMessage
-}
-
-func (v *VerificationAdyen) GetConfigs() *TypeAdyenConfig {
-	if v == nil {
-		return nil
-	}
-	return v.Configs
-}
-
-func (v *VerificationAdyen) GetExtraProperties() map[string]interface{} {
-	return v.extraProperties
-}
-
-func (v *VerificationAdyen) UnmarshalJSON(data []byte) error {
-	type unmarshaler VerificationAdyen
-	var value unmarshaler
-	if err := json.Unmarshal(data, &value); err != nil {
-		return err
-	}
-	*v = VerificationAdyen(value)
-	extraProperties, err := internal.ExtractExtraProperties(data, *v)
-	if err != nil {
-		return err
-	}
-	v.extraProperties = extraProperties
-	v.rawJSON = json.RawMessage(data)
-	return nil
-}
-
-func (v *VerificationAdyen) String() string {
-	if len(v.rawJSON) > 0 {
-		if value, err := internal.StringifyJSON(v.rawJSON); err == nil {
-			return value
-		}
-	}
-	if value, err := internal.StringifyJSON(v); err == nil {
-		return value
-	}
-	return fmt.Sprintf("%#v", v)
-}
-
-type VerificationAirwallex struct {
-	Configs *TypeAirwallexConfig `json:"configs,omitempty" url:"configs,omitempty"`
-
-	extraProperties map[string]interface{}
-	rawJSON         json.RawMessage
-}
-
-func (v *VerificationAirwallex) GetConfigs() *TypeAirwallexConfig {
-	if v == nil {
-		return nil
-	}
-	return v.Configs
-}
-
-func (v *VerificationAirwallex) GetExtraProperties() map[string]interface{} {
-	return v.extraProperties
-}
-
-func (v *VerificationAirwallex) UnmarshalJSON(data []byte) error {
-	type unmarshaler VerificationAirwallex
-	var value unmarshaler
-	if err := json.Unmarshal(data, &value); err != nil {
-		return err
-	}
-	*v = VerificationAirwallex(value)
-	extraProperties, err := internal.ExtractExtraProperties(data, *v)
-	if err != nil {
-		return err
-	}
-	v.extraProperties = extraProperties
-	v.rawJSON = json.RawMessage(data)
-	return nil
-}
-
-func (v *VerificationAirwallex) String() string {
-	if len(v.rawJSON) > 0 {
-		if value, err := internal.StringifyJSON(v.rawJSON); err == nil {
-			return value
-		}
-	}
-	if value, err := internal.StringifyJSON(v); err == nil {
-		return value
-	}
-	return fmt.Sprintf("%#v", v)
-}
-
-type VerificationAkeneo struct {
-	Configs *TypeAkeneoConfig `json:"configs,omitempty" url:"configs,omitempty"`
-
-	extraProperties map[string]interface{}
-	rawJSON         json.RawMessage
-}
-
-func (v *VerificationAkeneo) GetConfigs() *TypeAkeneoConfig {
-	if v == nil {
-		return nil
-	}
-	return v.Configs
-}
-
-func (v *VerificationAkeneo) GetExtraProperties() map[string]interface{} {
-	return v.extraProperties
-}
-
-func (v *VerificationAkeneo) UnmarshalJSON(data []byte) error {
-	type unmarshaler VerificationAkeneo
-	var value unmarshaler
-	if err := json.Unmarshal(data, &value); err != nil {
-		return err
-	}
-	*v = VerificationAkeneo(value)
-	extraProperties, err := internal.ExtractExtraProperties(data, *v)
-	if err != nil {
-		return err
-	}
-	v.extraProperties = extraProperties
-	v.rawJSON = json.RawMessage(data)
-	return nil
-}
-
-func (v *VerificationAkeneo) String() string {
-	if len(v.rawJSON) > 0 {
-		if value, err := internal.StringifyJSON(v.rawJSON); err == nil {
-			return value
-		}
-	}
-	if value, err := internal.StringifyJSON(v); err == nil {
-		return value
-	}
-	return fmt.Sprintf("%#v", v)
-}
-
-type VerificationApiKey struct {
-	Configs *TypeApiKeyConfig `json:"configs,omitempty" url:"configs,omitempty"`
-
-	extraProperties map[string]interface{}
-	rawJSON         json.RawMessage
-}
-
-func (v *VerificationApiKey) GetConfigs() *TypeApiKeyConfig {
-	if v == nil {
-		return nil
-	}
-	return v.Configs
-}
-
-func (v *VerificationApiKey) GetExtraProperties() map[string]interface{} {
-	return v.extraProperties
-}
-
-func (v *VerificationApiKey) UnmarshalJSON(data []byte) error {
-	type unmarshaler VerificationApiKey
-	var value unmarshaler
-	if err := json.Unmarshal(data, &value); err != nil {
-		return err
-	}
-	*v = VerificationApiKey(value)
-	extraProperties, err := internal.ExtractExtraProperties(data, *v)
-	if err != nil {
-		return err
-	}
-	v.extraProperties = extraProperties
-	v.rawJSON = json.RawMessage(data)
-	return nil
-}
-
-func (v *VerificationApiKey) String() string {
-	if len(v.rawJSON) > 0 {
-		if value, err := internal.StringifyJSON(v.rawJSON); err == nil {
-			return value
-		}
-	}
-	if value, err := internal.StringifyJSON(v); err == nil {
-		return value
-	}
-	return fmt.Sprintf("%#v", v)
-}
-
-type VerificationAwssns struct {
-	Configs *TypeAwssnsConfig `json:"configs,omitempty" url:"configs,omitempty"`
-
-	extraProperties map[string]interface{}
-	rawJSON         json.RawMessage
-}
-
-func (v *VerificationAwssns) GetConfigs() *TypeAwssnsConfig {
-	if v == nil {
-		return nil
-	}
-	return v.Configs
-}
-
-func (v *VerificationAwssns) GetExtraProperties() map[string]interface{} {
-	return v.extraProperties
-}
-
-func (v *VerificationAwssns) UnmarshalJSON(data []byte) error {
-	type unmarshaler VerificationAwssns
-	var value unmarshaler
-	if err := json.Unmarshal(data, &value); err != nil {
-		return err
-	}
-	*v = VerificationAwssns(value)
-	extraProperties, err := internal.ExtractExtraProperties(data, *v)
-	if err != nil {
-		return err
-	}
-	v.extraProperties = extraProperties
-	v.rawJSON = json.RawMessage(data)
-	return nil
-}
-
-func (v *VerificationAwssns) String() string {
-	if len(v.rawJSON) > 0 {
-		if value, err := internal.StringifyJSON(v.rawJSON); err == nil {
-			return value
-		}
-	}
-	if value, err := internal.StringifyJSON(v); err == nil {
-		return value
-	}
-	return fmt.Sprintf("%#v", v)
-}
-
-type VerificationBasicAuth struct {
-	Configs *TypeBasicAuthConfig `json:"configs,omitempty" url:"configs,omitempty"`
-
-	extraProperties map[string]interface{}
-	rawJSON         json.RawMessage
-}
-
-func (v *VerificationBasicAuth) GetConfigs() *TypeBasicAuthConfig {
-	if v == nil {
-		return nil
-	}
-	return v.Configs
-}
-
-func (v *VerificationBasicAuth) GetExtraProperties() map[string]interface{} {
-	return v.extraProperties
-}
-
-func (v *VerificationBasicAuth) UnmarshalJSON(data []byte) error {
-	type unmarshaler VerificationBasicAuth
-	var value unmarshaler
-	if err := json.Unmarshal(data, &value); err != nil {
-		return err
-	}
-	*v = VerificationBasicAuth(value)
-	extraProperties, err := internal.ExtractExtraProperties(data, *v)
-	if err != nil {
-		return err
-	}
-	v.extraProperties = extraProperties
-	v.rawJSON = json.RawMessage(data)
-	return nil
-}
-
-func (v *VerificationBasicAuth) String() string {
-	if len(v.rawJSON) > 0 {
-		if value, err := internal.StringifyJSON(v.rawJSON); err == nil {
-			return value
-		}
-	}
-	if value, err := internal.StringifyJSON(v); err == nil {
-		return value
-	}
-	return fmt.Sprintf("%#v", v)
-}
-
-type VerificationBondsmith struct {
-	Configs *TypeBondsmithConfig `json:"configs,omitempty" url:"configs,omitempty"`
-
-	extraProperties map[string]interface{}
-	rawJSON         json.RawMessage
-}
-
-func (v *VerificationBondsmith) GetConfigs() *TypeBondsmithConfig {
-	if v == nil {
-		return nil
-	}
-	return v.Configs
-}
-
-func (v *VerificationBondsmith) GetExtraProperties() map[string]interface{} {
-	return v.extraProperties
-}
-
-func (v *VerificationBondsmith) UnmarshalJSON(data []byte) error {
-	type unmarshaler VerificationBondsmith
-	var value unmarshaler
-	if err := json.Unmarshal(data, &value); err != nil {
-		return err
-	}
-	*v = VerificationBondsmith(value)
-	extraProperties, err := internal.ExtractExtraProperties(data, *v)
-	if err != nil {
-		return err
-	}
-	v.extraProperties = extraProperties
-	v.rawJSON = json.RawMessage(data)
-	return nil
-}
-
-func (v *VerificationBondsmith) String() string {
-	if len(v.rawJSON) > 0 {
-		if value, err := internal.StringifyJSON(v.rawJSON); err == nil {
-			return value
-		}
-	}
-	if value, err := internal.StringifyJSON(v); err == nil {
-		return value
-	}
-	return fmt.Sprintf("%#v", v)
-}
-
-type VerificationBridge struct {
-	Configs *TypeBridgeConfig `json:"configs,omitempty" url:"configs,omitempty"`
-
-	extraProperties map[string]interface{}
-	rawJSON         json.RawMessage
-}
-
-func (v *VerificationBridge) GetConfigs() *TypeBridgeConfig {
-	if v == nil {
-		return nil
-	}
-	return v.Configs
-}
-
-func (v *VerificationBridge) GetExtraProperties() map[string]interface{} {
-	return v.extraProperties
-}
-
-func (v *VerificationBridge) UnmarshalJSON(data []byte) error {
-	type unmarshaler VerificationBridge
-	var value unmarshaler
-	if err := json.Unmarshal(data, &value); err != nil {
-		return err
-	}
-	*v = VerificationBridge(value)
-	extraProperties, err := internal.ExtractExtraProperties(data, *v)
-	if err != nil {
-		return err
-	}
-	v.extraProperties = extraProperties
-	v.rawJSON = json.RawMessage(data)
-	return nil
-}
-
-func (v *VerificationBridge) String() string {
-	if len(v.rawJSON) > 0 {
-		if value, err := internal.StringifyJSON(v.rawJSON); err == nil {
-			return value
-		}
-	}
-	if value, err := internal.StringifyJSON(v); err == nil {
-		return value
-	}
-	return fmt.Sprintf("%#v", v)
-}
-
-type VerificationCloudSignal struct {
-	Configs *TypeCloudSignalConfig `json:"configs,omitempty" url:"configs,omitempty"`
-
-	extraProperties map[string]interface{}
-	rawJSON         json.RawMessage
-}
-
-func (v *VerificationCloudSignal) GetConfigs() *TypeCloudSignalConfig {
-	if v == nil {
-		return nil
-	}
-	return v.Configs
-}
-
-func (v *VerificationCloudSignal) GetExtraProperties() map[string]interface{} {
-	return v.extraProperties
-}
-
-func (v *VerificationCloudSignal) UnmarshalJSON(data []byte) error {
-	type unmarshaler VerificationCloudSignal
-	var value unmarshaler
-	if err := json.Unmarshal(data, &value); err != nil {
-		return err
-	}
-	*v = VerificationCloudSignal(value)
-	extraProperties, err := internal.ExtractExtraProperties(data, *v)
-	if err != nil {
-		return err
-	}
-	v.extraProperties = extraProperties
-	v.rawJSON = json.RawMessage(data)
-	return nil
-}
-
-func (v *VerificationCloudSignal) String() string {
-	if len(v.rawJSON) > 0 {
-		if value, err := internal.StringifyJSON(v.rawJSON); err == nil {
-			return value
-		}
-	}
-	if value, err := internal.StringifyJSON(v); err == nil {
-		return value
-	}
-	return fmt.Sprintf("%#v", v)
-}
-
-type VerificationCommerceLayer struct {
-	Configs *TypeCommerceLayerConfig `json:"configs,omitempty" url:"configs,omitempty"`
-
-	extraProperties map[string]interface{}
-	rawJSON         json.RawMessage
-}
-
-func (v *VerificationCommerceLayer) GetConfigs() *TypeCommerceLayerConfig {
-	if v == nil {
-		return nil
-	}
-	return v.Configs
-}
-
-func (v *VerificationCommerceLayer) GetExtraProperties() map[string]interface{} {
-	return v.extraProperties
-}
-
-func (v *VerificationCommerceLayer) UnmarshalJSON(data []byte) error {
-	type unmarshaler VerificationCommerceLayer
-	var value unmarshaler
-	if err := json.Unmarshal(data, &value); err != nil {
-		return err
-	}
-	*v = VerificationCommerceLayer(value)
-	extraProperties, err := internal.ExtractExtraProperties(data, *v)
-	if err != nil {
-		return err
-	}
-	v.extraProperties = extraProperties
-	v.rawJSON = json.RawMessage(data)
-	return nil
-}
-
-func (v *VerificationCommerceLayer) String() string {
-	if len(v.rawJSON) > 0 {
-		if value, err := internal.StringifyJSON(v.rawJSON); err == nil {
-			return value
-		}
-	}
-	if value, err := internal.StringifyJSON(v); err == nil {
-		return value
-	}
-	return fmt.Sprintf("%#v", v)
-}
-
-// The verification configs for the specified verification type
-type VerificationConfig struct {
-	Type            string
-	Hmac            *VerificationHmac
-	BasicAuth       *VerificationBasicAuth
-	ApiKey          *VerificationApiKey
-	Webhook         *VerificationWebhook
-	Http            *VerificationHttp
-	Sanity          *VerificationSanity
-	Bridge          *VerificationBridge
-	Cloudsignal     *VerificationCloudSignal
-	Courier         *VerificationCourier
-	Frontapp        *VerificationFrontApp
-	Zoom            *VerificationZoom
-	Twitter         *VerificationTwitter
-	Recharge        *VerificationRecharge
-	Stripe          *VerificationStripe
-	PropertyFinder  *VerificationPropertyFinder
-	Shopify         *VerificationShopify
-	Twilio          *VerificationTwilio
-	Github          *VerificationGitHub
-	Postmark        *VerificationPostmark
-	Typeform        *VerificationTypeform
-	Xero            *VerificationXero
-	Svix            *VerificationSvix
-	Adyen           *VerificationAdyen
-	Akeneo          *VerificationAkeneo
-	Gitlab          *VerificationGitLab
-	Woocommerce     *VerificationWooCommerce
-	Oura            *VerificationOura
-	Commercelayer   *VerificationCommerceLayer
-	Hubspot         *VerificationHubspot
-	Mailgun         *VerificationMailgun
-	Persona         *VerificationPersona
-	Pipedrive       *VerificationPipedrive
-	Sendgrid        *VerificationSendgrid
-	Workos          *VerificationWorkOs
-	Synctera        *VerificationSynctera
-	AwsSns          *VerificationAwssns
-	ThreeDEye       *Verification3DEye
-	Twitch          *VerificationTwitch
-	Enode           *VerificationEnode
-	Favro           *VerificationFavro
-	Linear          *VerificationLinear
-	Shopline        *VerificationShopline
-	Wix             *VerificationWix
-	Nmi             *VerificationNmiPaymentGateway
-	Orb             *VerificationOrb
-	Pylon           *VerificationPylon
-	Razorpay        *VerificationRazorpay
-	Repay           *VerificationRepay
-	Square          *VerificationSquare
-	Solidgate       *VerificationSolidgate
-	Trello          *VerificationTrello
-	Ebay            *VerificationEbay
-	Telnyx          *VerificationTelnyx
-	Discord         *VerificationDiscord
-	Tokenio         *VerificationTokenIo
-	Fiserv          *VerificationFiserv
-	Bondsmith       *VerificationBondsmith
-	VercelLogDrains *VerificationVercelLogDrains
-	Vercel          *VerificationVercelWebhooks
-	Tebex           *VerificationTebex
-	Slack           *VerificationSlack
-	Mailchimp       *VerificationMailchimp
-	Paddle          *VerificationPaddle
-	Paypal          *VerificationPaypal
-	Treezor         *VerificationTreezor
-	Praxis          *VerificationPraxis
-	Customerio      *VerificationCustomerIo
-	Facebook        *VerificationFacebook
-	Whatsapp        *VerificationWhatsApp
-	Replicate       *VerificationReplicate
-	Tiktok          *VerificationTikTok
-	Airwallex       *VerificationAirwallex
-	Zendesk         *VerificationZendesk
-	Upollo          *VerificationUpollo
-}
-
-func NewVerificationConfigFromHmac(value *VerificationHmac) *VerificationConfig {
-	return &VerificationConfig{Type: "hmac", Hmac: value}
-}
-
-func NewVerificationConfigFromBasicAuth(value *VerificationBasicAuth) *VerificationConfig {
-	return &VerificationConfig{Type: "basic_auth", BasicAuth: value}
-}
-
-func NewVerificationConfigFromApiKey(value *VerificationApiKey) *VerificationConfig {
-	return &VerificationConfig{Type: "api_key", ApiKey: value}
-}
-
-func NewVerificationConfigFromWebhook(value *VerificationWebhook) *VerificationConfig {
-	return &VerificationConfig{Type: "webhook", Webhook: value}
-}
-
-func NewVerificationConfigFromHttp(value *VerificationHttp) *VerificationConfig {
-	return &VerificationConfig{Type: "http", Http: value}
-}
-
-func NewVerificationConfigFromSanity(value *VerificationSanity) *VerificationConfig {
-	return &VerificationConfig{Type: "sanity", Sanity: value}
-}
-
-func NewVerificationConfigFromBridge(value *VerificationBridge) *VerificationConfig {
-	return &VerificationConfig{Type: "bridge", Bridge: value}
-}
-
-func NewVerificationConfigFromCloudsignal(value *VerificationCloudSignal) *VerificationConfig {
-	return &VerificationConfig{Type: "cloudsignal", Cloudsignal: value}
-}
-
-func NewVerificationConfigFromCourier(value *VerificationCourier) *VerificationConfig {
-	return &VerificationConfig{Type: "courier", Courier: value}
-}
-
-func NewVerificationConfigFromFrontapp(value *VerificationFrontApp) *VerificationConfig {
-	return &VerificationConfig{Type: "frontapp", Frontapp: value}
-}
-
-func NewVerificationConfigFromZoom(value *VerificationZoom) *VerificationConfig {
-	return &VerificationConfig{Type: "zoom", Zoom: value}
-}
-
-func NewVerificationConfigFromTwitter(value *VerificationTwitter) *VerificationConfig {
-	return &VerificationConfig{Type: "twitter", Twitter: value}
-}
-
-func NewVerificationConfigFromRecharge(value *VerificationRecharge) *VerificationConfig {
-	return &VerificationConfig{Type: "recharge", Recharge: value}
-}
-
-func NewVerificationConfigFromStripe(value *VerificationStripe) *VerificationConfig {
-	return &VerificationConfig{Type: "stripe", Stripe: value}
-}
-
-func NewVerificationConfigFromPropertyFinder(value *VerificationPropertyFinder) *VerificationConfig {
-	return &VerificationConfig{Type: "property-finder", PropertyFinder: value}
-}
-
-func NewVerificationConfigFromShopify(value *VerificationShopify) *VerificationConfig {
-	return &VerificationConfig{Type: "shopify", Shopify: value}
-}
-
-func NewVerificationConfigFromTwilio(value *VerificationTwilio) *VerificationConfig {
-	return &VerificationConfig{Type: "twilio", Twilio: value}
-}
-
-func NewVerificationConfigFromGithub(value *VerificationGitHub) *VerificationConfig {
-	return &VerificationConfig{Type: "github", Github: value}
-}
-
-func NewVerificationConfigFromPostmark(value *VerificationPostmark) *VerificationConfig {
-	return &VerificationConfig{Type: "postmark", Postmark: value}
-}
-
-func NewVerificationConfigFromTypeform(value *VerificationTypeform) *VerificationConfig {
-	return &VerificationConfig{Type: "typeform", Typeform: value}
-}
-
-func NewVerificationConfigFromXero(value *VerificationXero) *VerificationConfig {
-	return &VerificationConfig{Type: "xero", Xero: value}
-}
-
-func NewVerificationConfigFromSvix(value *VerificationSvix) *VerificationConfig {
-	return &VerificationConfig{Type: "svix", Svix: value}
-}
-
-func NewVerificationConfigFromAdyen(value *VerificationAdyen) *VerificationConfig {
-	return &VerificationConfig{Type: "adyen", Adyen: value}
-}
-
-func NewVerificationConfigFromAkeneo(value *VerificationAkeneo) *VerificationConfig {
-	return &VerificationConfig{Type: "akeneo", Akeneo: value}
-}
-
-func NewVerificationConfigFromGitlab(value *VerificationGitLab) *VerificationConfig {
-	return &VerificationConfig{Type: "gitlab", Gitlab: value}
-}
-
-func NewVerificationConfigFromWoocommerce(value *VerificationWooCommerce) *VerificationConfig {
-	return &VerificationConfig{Type: "woocommerce", Woocommerce: value}
-}
-
-func NewVerificationConfigFromOura(value *VerificationOura) *VerificationConfig {
-	return &VerificationConfig{Type: "oura", Oura: value}
-}
-
-func NewVerificationConfigFromCommercelayer(value *VerificationCommerceLayer) *VerificationConfig {
-	return &VerificationConfig{Type: "commercelayer", Commercelayer: value}
-}
-
-func NewVerificationConfigFromHubspot(value *VerificationHubspot) *VerificationConfig {
-	return &VerificationConfig{Type: "hubspot", Hubspot: value}
-}
-
-func NewVerificationConfigFromMailgun(value *VerificationMailgun) *VerificationConfig {
-	return &VerificationConfig{Type: "mailgun", Mailgun: value}
-}
-
-func NewVerificationConfigFromPersona(value *VerificationPersona) *VerificationConfig {
-	return &VerificationConfig{Type: "persona", Persona: value}
-}
-
-func NewVerificationConfigFromPipedrive(value *VerificationPipedrive) *VerificationConfig {
-	return &VerificationConfig{Type: "pipedrive", Pipedrive: value}
-}
-
-func NewVerificationConfigFromSendgrid(value *VerificationSendgrid) *VerificationConfig {
-	return &VerificationConfig{Type: "sendgrid", Sendgrid: value}
-}
-
-func NewVerificationConfigFromWorkos(value *VerificationWorkOs) *VerificationConfig {
-	return &VerificationConfig{Type: "workos", Workos: value}
-}
-
-func NewVerificationConfigFromSynctera(value *VerificationSynctera) *VerificationConfig {
-	return &VerificationConfig{Type: "synctera", Synctera: value}
-}
-
-func NewVerificationConfigFromAwsSns(value *VerificationAwssns) *VerificationConfig {
-	return &VerificationConfig{Type: "aws_sns", AwsSns: value}
-}
-
-func NewVerificationConfigFromThreeDEye(value *Verification3DEye) *VerificationConfig {
-	return &VerificationConfig{Type: "three_d_eye", ThreeDEye: value}
-}
-
-func NewVerificationConfigFromTwitch(value *VerificationTwitch) *VerificationConfig {
-	return &VerificationConfig{Type: "twitch", Twitch: value}
-}
-
-func NewVerificationConfigFromEnode(value *VerificationEnode) *VerificationConfig {
-	return &VerificationConfig{Type: "enode", Enode: value}
-}
-
-func NewVerificationConfigFromFavro(value *VerificationFavro) *VerificationConfig {
-	return &VerificationConfig{Type: "favro", Favro: value}
-}
-
-func NewVerificationConfigFromLinear(value *VerificationLinear) *VerificationConfig {
-	return &VerificationConfig{Type: "linear", Linear: value}
-}
-
-func NewVerificationConfigFromShopline(value *VerificationShopline) *VerificationConfig {
-	return &VerificationConfig{Type: "shopline", Shopline: value}
-}
-
-func NewVerificationConfigFromWix(value *VerificationWix) *VerificationConfig {
-	return &VerificationConfig{Type: "wix", Wix: value}
-}
-
-func NewVerificationConfigFromNmi(value *VerificationNmiPaymentGateway) *VerificationConfig {
-	return &VerificationConfig{Type: "nmi", Nmi: value}
-}
-
-func NewVerificationConfigFromOrb(value *VerificationOrb) *VerificationConfig {
-	return &VerificationConfig{Type: "orb", Orb: value}
-}
-
-func NewVerificationConfigFromPylon(value *VerificationPylon) *VerificationConfig {
-	return &VerificationConfig{Type: "pylon", Pylon: value}
-}
-
-func NewVerificationConfigFromRazorpay(value *VerificationRazorpay) *VerificationConfig {
-	return &VerificationConfig{Type: "razorpay", Razorpay: value}
-}
-
-func NewVerificationConfigFromRepay(value *VerificationRepay) *VerificationConfig {
-	return &VerificationConfig{Type: "repay", Repay: value}
-}
-
-func NewVerificationConfigFromSquare(value *VerificationSquare) *VerificationConfig {
-	return &VerificationConfig{Type: "square", Square: value}
-}
-
-func NewVerificationConfigFromSolidgate(value *VerificationSolidgate) *VerificationConfig {
-	return &VerificationConfig{Type: "solidgate", Solidgate: value}
-}
-
-func NewVerificationConfigFromTrello(value *VerificationTrello) *VerificationConfig {
-	return &VerificationConfig{Type: "trello", Trello: value}
-}
-
-func NewVerificationConfigFromEbay(value *VerificationEbay) *VerificationConfig {
-	return &VerificationConfig{Type: "ebay", Ebay: value}
-}
-
-func NewVerificationConfigFromTelnyx(value *VerificationTelnyx) *VerificationConfig {
-	return &VerificationConfig{Type: "telnyx", Telnyx: value}
-}
-
-func NewVerificationConfigFromDiscord(value *VerificationDiscord) *VerificationConfig {
-	return &VerificationConfig{Type: "discord", Discord: value}
-}
-
-func NewVerificationConfigFromTokenio(value *VerificationTokenIo) *VerificationConfig {
-	return &VerificationConfig{Type: "tokenio", Tokenio: value}
-}
-
-func NewVerificationConfigFromFiserv(value *VerificationFiserv) *VerificationConfig {
-	return &VerificationConfig{Type: "fiserv", Fiserv: value}
-}
-
-func NewVerificationConfigFromBondsmith(value *VerificationBondsmith) *VerificationConfig {
-	return &VerificationConfig{Type: "bondsmith", Bondsmith: value}
-}
-
-func NewVerificationConfigFromVercelLogDrains(value *VerificationVercelLogDrains) *VerificationConfig {
-	return &VerificationConfig{Type: "vercel_log_drains", VercelLogDrains: value}
-}
-
-func NewVerificationConfigFromVercel(value *VerificationVercelWebhooks) *VerificationConfig {
-	return &VerificationConfig{Type: "vercel", Vercel: value}
-}
-
-func NewVerificationConfigFromTebex(value *VerificationTebex) *VerificationConfig {
-	return &VerificationConfig{Type: "tebex", Tebex: value}
-}
-
-func NewVerificationConfigFromSlack(value *VerificationSlack) *VerificationConfig {
-	return &VerificationConfig{Type: "slack", Slack: value}
-}
-
-func NewVerificationConfigFromMailchimp(value *VerificationMailchimp) *VerificationConfig {
-	return &VerificationConfig{Type: "mailchimp", Mailchimp: value}
-}
-
-func NewVerificationConfigFromPaddle(value *VerificationPaddle) *VerificationConfig {
-	return &VerificationConfig{Type: "paddle", Paddle: value}
-}
-
-func NewVerificationConfigFromPaypal(value *VerificationPaypal) *VerificationConfig {
-	return &VerificationConfig{Type: "paypal", Paypal: value}
-}
-
-func NewVerificationConfigFromTreezor(value *VerificationTreezor) *VerificationConfig {
-	return &VerificationConfig{Type: "treezor", Treezor: value}
-}
-
-func NewVerificationConfigFromPraxis(value *VerificationPraxis) *VerificationConfig {
-	return &VerificationConfig{Type: "praxis", Praxis: value}
-}
-
-func NewVerificationConfigFromCustomerio(value *VerificationCustomerIo) *VerificationConfig {
-	return &VerificationConfig{Type: "customerio", Customerio: value}
-}
-
-func NewVerificationConfigFromFacebook(value *VerificationFacebook) *VerificationConfig {
-	return &VerificationConfig{Type: "facebook", Facebook: value}
-}
-
-func NewVerificationConfigFromWhatsapp(value *VerificationWhatsApp) *VerificationConfig {
-	return &VerificationConfig{Type: "whatsapp", Whatsapp: value}
-}
-
-func NewVerificationConfigFromReplicate(value *VerificationReplicate) *VerificationConfig {
-	return &VerificationConfig{Type: "replicate", Replicate: value}
-}
-
-func NewVerificationConfigFromTiktok(value *VerificationTikTok) *VerificationConfig {
-	return &VerificationConfig{Type: "tiktok", Tiktok: value}
-}
-
-func NewVerificationConfigFromAirwallex(value *VerificationAirwallex) *VerificationConfig {
-	return &VerificationConfig{Type: "airwallex", Airwallex: value}
-}
-
-func NewVerificationConfigFromZendesk(value *VerificationZendesk) *VerificationConfig {
-	return &VerificationConfig{Type: "zendesk", Zendesk: value}
-}
-
-func NewVerificationConfigFromUpollo(value *VerificationUpollo) *VerificationConfig {
-	return &VerificationConfig{Type: "upollo", Upollo: value}
-}
-
-func (v *VerificationConfig) GetType() string {
-	if v == nil {
-		return ""
 	}
 	return v.Type
-}
-
-func (v *VerificationConfig) GetHmac() *VerificationHmac {
-	if v == nil {
-		return nil
-	}
-	return v.Hmac
-}
-
-func (v *VerificationConfig) GetBasicAuth() *VerificationBasicAuth {
-	if v == nil {
-		return nil
-	}
-	return v.BasicAuth
-}
-
-func (v *VerificationConfig) GetApiKey() *VerificationApiKey {
-	if v == nil {
-		return nil
-	}
-	return v.ApiKey
-}
-
-func (v *VerificationConfig) GetWebhook() *VerificationWebhook {
-	if v == nil {
-		return nil
-	}
-	return v.Webhook
-}
-
-func (v *VerificationConfig) GetHttp() *VerificationHttp {
-	if v == nil {
-		return nil
-	}
-	return v.Http
-}
-
-func (v *VerificationConfig) GetSanity() *VerificationSanity {
-	if v == nil {
-		return nil
-	}
-	return v.Sanity
-}
-
-func (v *VerificationConfig) GetBridge() *VerificationBridge {
-	if v == nil {
-		return nil
-	}
-	return v.Bridge
-}
-
-func (v *VerificationConfig) GetCloudsignal() *VerificationCloudSignal {
-	if v == nil {
-		return nil
-	}
-	return v.Cloudsignal
-}
-
-func (v *VerificationConfig) GetCourier() *VerificationCourier {
-	if v == nil {
-		return nil
-	}
-	return v.Courier
-}
-
-func (v *VerificationConfig) GetFrontapp() *VerificationFrontApp {
-	if v == nil {
-		return nil
-	}
-	return v.Frontapp
-}
-
-func (v *VerificationConfig) GetZoom() *VerificationZoom {
-	if v == nil {
-		return nil
-	}
-	return v.Zoom
-}
-
-func (v *VerificationConfig) GetTwitter() *VerificationTwitter {
-	if v == nil {
-		return nil
-	}
-	return v.Twitter
-}
-
-func (v *VerificationConfig) GetRecharge() *VerificationRecharge {
-	if v == nil {
-		return nil
-	}
-	return v.Recharge
-}
-
-func (v *VerificationConfig) GetStripe() *VerificationStripe {
-	if v == nil {
-		return nil
-	}
-	return v.Stripe
-}
-
-func (v *VerificationConfig) GetPropertyFinder() *VerificationPropertyFinder {
-	if v == nil {
-		return nil
-	}
-	return v.PropertyFinder
-}
-
-func (v *VerificationConfig) GetShopify() *VerificationShopify {
-	if v == nil {
-		return nil
-	}
-	return v.Shopify
-}
-
-func (v *VerificationConfig) GetTwilio() *VerificationTwilio {
-	if v == nil {
-		return nil
-	}
-	return v.Twilio
-}
-
-func (v *VerificationConfig) GetGithub() *VerificationGitHub {
-	if v == nil {
-		return nil
-	}
-	return v.Github
-}
-
-func (v *VerificationConfig) GetPostmark() *VerificationPostmark {
-	if v == nil {
-		return nil
-	}
-	return v.Postmark
-}
-
-func (v *VerificationConfig) GetTypeform() *VerificationTypeform {
-	if v == nil {
-		return nil
-	}
-	return v.Typeform
-}
-
-func (v *VerificationConfig) GetXero() *VerificationXero {
-	if v == nil {
-		return nil
-	}
-	return v.Xero
-}
-
-func (v *VerificationConfig) GetSvix() *VerificationSvix {
-	if v == nil {
-		return nil
-	}
-	return v.Svix
-}
-
-func (v *VerificationConfig) GetAdyen() *VerificationAdyen {
-	if v == nil {
-		return nil
-	}
-	return v.Adyen
-}
-
-func (v *VerificationConfig) GetAkeneo() *VerificationAkeneo {
-	if v == nil {
-		return nil
-	}
-	return v.Akeneo
-}
-
-func (v *VerificationConfig) GetGitlab() *VerificationGitLab {
-	if v == nil {
-		return nil
-	}
-	return v.Gitlab
-}
-
-func (v *VerificationConfig) GetWoocommerce() *VerificationWooCommerce {
-	if v == nil {
-		return nil
-	}
-	return v.Woocommerce
-}
-
-func (v *VerificationConfig) GetOura() *VerificationOura {
-	if v == nil {
-		return nil
-	}
-	return v.Oura
-}
-
-func (v *VerificationConfig) GetCommercelayer() *VerificationCommerceLayer {
-	if v == nil {
-		return nil
-	}
-	return v.Commercelayer
-}
-
-func (v *VerificationConfig) GetHubspot() *VerificationHubspot {
-	if v == nil {
-		return nil
-	}
-	return v.Hubspot
-}
-
-func (v *VerificationConfig) GetMailgun() *VerificationMailgun {
-	if v == nil {
-		return nil
-	}
-	return v.Mailgun
-}
-
-func (v *VerificationConfig) GetPersona() *VerificationPersona {
-	if v == nil {
-		return nil
-	}
-	return v.Persona
-}
-
-func (v *VerificationConfig) GetPipedrive() *VerificationPipedrive {
-	if v == nil {
-		return nil
-	}
-	return v.Pipedrive
-}
-
-func (v *VerificationConfig) GetSendgrid() *VerificationSendgrid {
-	if v == nil {
-		return nil
-	}
-	return v.Sendgrid
-}
-
-func (v *VerificationConfig) GetWorkos() *VerificationWorkOs {
-	if v == nil {
-		return nil
-	}
-	return v.Workos
-}
-
-func (v *VerificationConfig) GetSynctera() *VerificationSynctera {
-	if v == nil {
-		return nil
-	}
-	return v.Synctera
-}
-
-func (v *VerificationConfig) GetAwsSns() *VerificationAwssns {
-	if v == nil {
-		return nil
-	}
-	return v.AwsSns
-}
-
-func (v *VerificationConfig) GetThreeDEye() *Verification3DEye {
-	if v == nil {
-		return nil
-	}
-	return v.ThreeDEye
-}
-
-func (v *VerificationConfig) GetTwitch() *VerificationTwitch {
-	if v == nil {
-		return nil
-	}
-	return v.Twitch
-}
-
-func (v *VerificationConfig) GetEnode() *VerificationEnode {
-	if v == nil {
-		return nil
-	}
-	return v.Enode
-}
-
-func (v *VerificationConfig) GetFavro() *VerificationFavro {
-	if v == nil {
-		return nil
-	}
-	return v.Favro
-}
-
-func (v *VerificationConfig) GetLinear() *VerificationLinear {
-	if v == nil {
-		return nil
-	}
-	return v.Linear
-}
-
-func (v *VerificationConfig) GetShopline() *VerificationShopline {
-	if v == nil {
-		return nil
-	}
-	return v.Shopline
-}
-
-func (v *VerificationConfig) GetWix() *VerificationWix {
-	if v == nil {
-		return nil
-	}
-	return v.Wix
-}
-
-func (v *VerificationConfig) GetNmi() *VerificationNmiPaymentGateway {
-	if v == nil {
-		return nil
-	}
-	return v.Nmi
-}
-
-func (v *VerificationConfig) GetOrb() *VerificationOrb {
-	if v == nil {
-		return nil
-	}
-	return v.Orb
-}
-
-func (v *VerificationConfig) GetPylon() *VerificationPylon {
-	if v == nil {
-		return nil
-	}
-	return v.Pylon
-}
-
-func (v *VerificationConfig) GetRazorpay() *VerificationRazorpay {
-	if v == nil {
-		return nil
-	}
-	return v.Razorpay
-}
-
-func (v *VerificationConfig) GetRepay() *VerificationRepay {
-	if v == nil {
-		return nil
-	}
-	return v.Repay
-}
-
-func (v *VerificationConfig) GetSquare() *VerificationSquare {
-	if v == nil {
-		return nil
-	}
-	return v.Square
-}
-
-func (v *VerificationConfig) GetSolidgate() *VerificationSolidgate {
-	if v == nil {
-		return nil
-	}
-	return v.Solidgate
-}
-
-func (v *VerificationConfig) GetTrello() *VerificationTrello {
-	if v == nil {
-		return nil
-	}
-	return v.Trello
-}
-
-func (v *VerificationConfig) GetEbay() *VerificationEbay {
-	if v == nil {
-		return nil
-	}
-	return v.Ebay
-}
-
-func (v *VerificationConfig) GetTelnyx() *VerificationTelnyx {
-	if v == nil {
-		return nil
-	}
-	return v.Telnyx
-}
-
-func (v *VerificationConfig) GetDiscord() *VerificationDiscord {
-	if v == nil {
-		return nil
-	}
-	return v.Discord
-}
-
-func (v *VerificationConfig) GetTokenio() *VerificationTokenIo {
-	if v == nil {
-		return nil
-	}
-	return v.Tokenio
-}
-
-func (v *VerificationConfig) GetFiserv() *VerificationFiserv {
-	if v == nil {
-		return nil
-	}
-	return v.Fiserv
-}
-
-func (v *VerificationConfig) GetBondsmith() *VerificationBondsmith {
-	if v == nil {
-		return nil
-	}
-	return v.Bondsmith
-}
-
-func (v *VerificationConfig) GetVercelLogDrains() *VerificationVercelLogDrains {
-	if v == nil {
-		return nil
-	}
-	return v.VercelLogDrains
-}
-
-func (v *VerificationConfig) GetVercel() *VerificationVercelWebhooks {
-	if v == nil {
-		return nil
-	}
-	return v.Vercel
-}
-
-func (v *VerificationConfig) GetTebex() *VerificationTebex {
-	if v == nil {
-		return nil
-	}
-	return v.Tebex
-}
-
-func (v *VerificationConfig) GetSlack() *VerificationSlack {
-	if v == nil {
-		return nil
-	}
-	return v.Slack
-}
-
-func (v *VerificationConfig) GetMailchimp() *VerificationMailchimp {
-	if v == nil {
-		return nil
-	}
-	return v.Mailchimp
-}
-
-func (v *VerificationConfig) GetPaddle() *VerificationPaddle {
-	if v == nil {
-		return nil
-	}
-	return v.Paddle
-}
-
-func (v *VerificationConfig) GetPaypal() *VerificationPaypal {
-	if v == nil {
-		return nil
-	}
-	return v.Paypal
-}
-
-func (v *VerificationConfig) GetTreezor() *VerificationTreezor {
-	if v == nil {
-		return nil
-	}
-	return v.Treezor
-}
-
-func (v *VerificationConfig) GetPraxis() *VerificationPraxis {
-	if v == nil {
-		return nil
-	}
-	return v.Praxis
-}
-
-func (v *VerificationConfig) GetCustomerio() *VerificationCustomerIo {
-	if v == nil {
-		return nil
-	}
-	return v.Customerio
-}
-
-func (v *VerificationConfig) GetFacebook() *VerificationFacebook {
-	if v == nil {
-		return nil
-	}
-	return v.Facebook
-}
-
-func (v *VerificationConfig) GetWhatsapp() *VerificationWhatsApp {
-	if v == nil {
-		return nil
-	}
-	return v.Whatsapp
-}
-
-func (v *VerificationConfig) GetReplicate() *VerificationReplicate {
-	if v == nil {
-		return nil
-	}
-	return v.Replicate
-}
-
-func (v *VerificationConfig) GetTiktok() *VerificationTikTok {
-	if v == nil {
-		return nil
-	}
-	return v.Tiktok
-}
-
-func (v *VerificationConfig) GetAirwallex() *VerificationAirwallex {
-	if v == nil {
-		return nil
-	}
-	return v.Airwallex
-}
-
-func (v *VerificationConfig) GetZendesk() *VerificationZendesk {
-	if v == nil {
-		return nil
-	}
-	return v.Zendesk
-}
-
-func (v *VerificationConfig) GetUpollo() *VerificationUpollo {
-	if v == nil {
-		return nil
-	}
-	return v.Upollo
-}
-
-func (v *VerificationConfig) UnmarshalJSON(data []byte) error {
-	var unmarshaler struct {
-		Type string `json:"type"`
-	}
-	if err := json.Unmarshal(data, &unmarshaler); err != nil {
-		return err
-	}
-	v.Type = unmarshaler.Type
-	if unmarshaler.Type == "" {
-		return fmt.Errorf("%T did not include discriminant type", v)
-	}
-	switch unmarshaler.Type {
-	case "hmac":
-		value := new(VerificationHmac)
-		if err := json.Unmarshal(data, &value); err != nil {
-			return err
-		}
-		v.Hmac = value
-	case "basic_auth":
-		value := new(VerificationBasicAuth)
-		if err := json.Unmarshal(data, &value); err != nil {
-			return err
-		}
-		v.BasicAuth = value
-	case "api_key":
-		value := new(VerificationApiKey)
-		if err := json.Unmarshal(data, &value); err != nil {
-			return err
-		}
-		v.ApiKey = value
-	case "webhook":
-		value := new(VerificationWebhook)
-		if err := json.Unmarshal(data, &value); err != nil {
-			return err
-		}
-		v.Webhook = value
-	case "http":
-		value := new(VerificationHttp)
-		if err := json.Unmarshal(data, &value); err != nil {
-			return err
-		}
-		v.Http = value
-	case "sanity":
-		value := new(VerificationSanity)
-		if err := json.Unmarshal(data, &value); err != nil {
-			return err
-		}
-		v.Sanity = value
-	case "bridge":
-		value := new(VerificationBridge)
-		if err := json.Unmarshal(data, &value); err != nil {
-			return err
-		}
-		v.Bridge = value
-	case "cloudsignal":
-		value := new(VerificationCloudSignal)
-		if err := json.Unmarshal(data, &value); err != nil {
-			return err
-		}
-		v.Cloudsignal = value
-	case "courier":
-		value := new(VerificationCourier)
-		if err := json.Unmarshal(data, &value); err != nil {
-			return err
-		}
-		v.Courier = value
-	case "frontapp":
-		value := new(VerificationFrontApp)
-		if err := json.Unmarshal(data, &value); err != nil {
-			return err
-		}
-		v.Frontapp = value
-	case "zoom":
-		value := new(VerificationZoom)
-		if err := json.Unmarshal(data, &value); err != nil {
-			return err
-		}
-		v.Zoom = value
-	case "twitter":
-		value := new(VerificationTwitter)
-		if err := json.Unmarshal(data, &value); err != nil {
-			return err
-		}
-		v.Twitter = value
-	case "recharge":
-		value := new(VerificationRecharge)
-		if err := json.Unmarshal(data, &value); err != nil {
-			return err
-		}
-		v.Recharge = value
-	case "stripe":
-		value := new(VerificationStripe)
-		if err := json.Unmarshal(data, &value); err != nil {
-			return err
-		}
-		v.Stripe = value
-	case "property-finder":
-		value := new(VerificationPropertyFinder)
-		if err := json.Unmarshal(data, &value); err != nil {
-			return err
-		}
-		v.PropertyFinder = value
-	case "shopify":
-		value := new(VerificationShopify)
-		if err := json.Unmarshal(data, &value); err != nil {
-			return err
-		}
-		v.Shopify = value
-	case "twilio":
-		value := new(VerificationTwilio)
-		if err := json.Unmarshal(data, &value); err != nil {
-			return err
-		}
-		v.Twilio = value
-	case "github":
-		value := new(VerificationGitHub)
-		if err := json.Unmarshal(data, &value); err != nil {
-			return err
-		}
-		v.Github = value
-	case "postmark":
-		value := new(VerificationPostmark)
-		if err := json.Unmarshal(data, &value); err != nil {
-			return err
-		}
-		v.Postmark = value
-	case "typeform":
-		value := new(VerificationTypeform)
-		if err := json.Unmarshal(data, &value); err != nil {
-			return err
-		}
-		v.Typeform = value
-	case "xero":
-		value := new(VerificationXero)
-		if err := json.Unmarshal(data, &value); err != nil {
-			return err
-		}
-		v.Xero = value
-	case "svix":
-		value := new(VerificationSvix)
-		if err := json.Unmarshal(data, &value); err != nil {
-			return err
-		}
-		v.Svix = value
-	case "adyen":
-		value := new(VerificationAdyen)
-		if err := json.Unmarshal(data, &value); err != nil {
-			return err
-		}
-		v.Adyen = value
-	case "akeneo":
-		value := new(VerificationAkeneo)
-		if err := json.Unmarshal(data, &value); err != nil {
-			return err
-		}
-		v.Akeneo = value
-	case "gitlab":
-		value := new(VerificationGitLab)
-		if err := json.Unmarshal(data, &value); err != nil {
-			return err
-		}
-		v.Gitlab = value
-	case "woocommerce":
-		value := new(VerificationWooCommerce)
-		if err := json.Unmarshal(data, &value); err != nil {
-			return err
-		}
-		v.Woocommerce = value
-	case "oura":
-		value := new(VerificationOura)
-		if err := json.Unmarshal(data, &value); err != nil {
-			return err
-		}
-		v.Oura = value
-	case "commercelayer":
-		value := new(VerificationCommerceLayer)
-		if err := json.Unmarshal(data, &value); err != nil {
-			return err
-		}
-		v.Commercelayer = value
-	case "hubspot":
-		value := new(VerificationHubspot)
-		if err := json.Unmarshal(data, &value); err != nil {
-			return err
-		}
-		v.Hubspot = value
-	case "mailgun":
-		value := new(VerificationMailgun)
-		if err := json.Unmarshal(data, &value); err != nil {
-			return err
-		}
-		v.Mailgun = value
-	case "persona":
-		value := new(VerificationPersona)
-		if err := json.Unmarshal(data, &value); err != nil {
-			return err
-		}
-		v.Persona = value
-	case "pipedrive":
-		value := new(VerificationPipedrive)
-		if err := json.Unmarshal(data, &value); err != nil {
-			return err
-		}
-		v.Pipedrive = value
-	case "sendgrid":
-		value := new(VerificationSendgrid)
-		if err := json.Unmarshal(data, &value); err != nil {
-			return err
-		}
-		v.Sendgrid = value
-	case "workos":
-		value := new(VerificationWorkOs)
-		if err := json.Unmarshal(data, &value); err != nil {
-			return err
-		}
-		v.Workos = value
-	case "synctera":
-		value := new(VerificationSynctera)
-		if err := json.Unmarshal(data, &value); err != nil {
-			return err
-		}
-		v.Synctera = value
-	case "aws_sns":
-		value := new(VerificationAwssns)
-		if err := json.Unmarshal(data, &value); err != nil {
-			return err
-		}
-		v.AwsSns = value
-	case "three_d_eye":
-		value := new(Verification3DEye)
-		if err := json.Unmarshal(data, &value); err != nil {
-			return err
-		}
-		v.ThreeDEye = value
-	case "twitch":
-		value := new(VerificationTwitch)
-		if err := json.Unmarshal(data, &value); err != nil {
-			return err
-		}
-		v.Twitch = value
-	case "enode":
-		value := new(VerificationEnode)
-		if err := json.Unmarshal(data, &value); err != nil {
-			return err
-		}
-		v.Enode = value
-	case "favro":
-		value := new(VerificationFavro)
-		if err := json.Unmarshal(data, &value); err != nil {
-			return err
-		}
-		v.Favro = value
-	case "linear":
-		value := new(VerificationLinear)
-		if err := json.Unmarshal(data, &value); err != nil {
-			return err
-		}
-		v.Linear = value
-	case "shopline":
-		value := new(VerificationShopline)
-		if err := json.Unmarshal(data, &value); err != nil {
-			return err
-		}
-		v.Shopline = value
-	case "wix":
-		value := new(VerificationWix)
-		if err := json.Unmarshal(data, &value); err != nil {
-			return err
-		}
-		v.Wix = value
-	case "nmi":
-		value := new(VerificationNmiPaymentGateway)
-		if err := json.Unmarshal(data, &value); err != nil {
-			return err
-		}
-		v.Nmi = value
-	case "orb":
-		value := new(VerificationOrb)
-		if err := json.Unmarshal(data, &value); err != nil {
-			return err
-		}
-		v.Orb = value
-	case "pylon":
-		value := new(VerificationPylon)
-		if err := json.Unmarshal(data, &value); err != nil {
-			return err
-		}
-		v.Pylon = value
-	case "razorpay":
-		value := new(VerificationRazorpay)
-		if err := json.Unmarshal(data, &value); err != nil {
-			return err
-		}
-		v.Razorpay = value
-	case "repay":
-		value := new(VerificationRepay)
-		if err := json.Unmarshal(data, &value); err != nil {
-			return err
-		}
-		v.Repay = value
-	case "square":
-		value := new(VerificationSquare)
-		if err := json.Unmarshal(data, &value); err != nil {
-			return err
-		}
-		v.Square = value
-	case "solidgate":
-		value := new(VerificationSolidgate)
-		if err := json.Unmarshal(data, &value); err != nil {
-			return err
-		}
-		v.Solidgate = value
-	case "trello":
-		value := new(VerificationTrello)
-		if err := json.Unmarshal(data, &value); err != nil {
-			return err
-		}
-		v.Trello = value
-	case "ebay":
-		value := new(VerificationEbay)
-		if err := json.Unmarshal(data, &value); err != nil {
-			return err
-		}
-		v.Ebay = value
-	case "telnyx":
-		value := new(VerificationTelnyx)
-		if err := json.Unmarshal(data, &value); err != nil {
-			return err
-		}
-		v.Telnyx = value
-	case "discord":
-		value := new(VerificationDiscord)
-		if err := json.Unmarshal(data, &value); err != nil {
-			return err
-		}
-		v.Discord = value
-	case "tokenio":
-		value := new(VerificationTokenIo)
-		if err := json.Unmarshal(data, &value); err != nil {
-			return err
-		}
-		v.Tokenio = value
-	case "fiserv":
-		value := new(VerificationFiserv)
-		if err := json.Unmarshal(data, &value); err != nil {
-			return err
-		}
-		v.Fiserv = value
-	case "bondsmith":
-		value := new(VerificationBondsmith)
-		if err := json.Unmarshal(data, &value); err != nil {
-			return err
-		}
-		v.Bondsmith = value
-	case "vercel_log_drains":
-		value := new(VerificationVercelLogDrains)
-		if err := json.Unmarshal(data, &value); err != nil {
-			return err
-		}
-		v.VercelLogDrains = value
-	case "vercel":
-		value := new(VerificationVercelWebhooks)
-		if err := json.Unmarshal(data, &value); err != nil {
-			return err
-		}
-		v.Vercel = value
-	case "tebex":
-		value := new(VerificationTebex)
-		if err := json.Unmarshal(data, &value); err != nil {
-			return err
-		}
-		v.Tebex = value
-	case "slack":
-		value := new(VerificationSlack)
-		if err := json.Unmarshal(data, &value); err != nil {
-			return err
-		}
-		v.Slack = value
-	case "mailchimp":
-		value := new(VerificationMailchimp)
-		if err := json.Unmarshal(data, &value); err != nil {
-			return err
-		}
-		v.Mailchimp = value
-	case "paddle":
-		value := new(VerificationPaddle)
-		if err := json.Unmarshal(data, &value); err != nil {
-			return err
-		}
-		v.Paddle = value
-	case "paypal":
-		value := new(VerificationPaypal)
-		if err := json.Unmarshal(data, &value); err != nil {
-			return err
-		}
-		v.Paypal = value
-	case "treezor":
-		value := new(VerificationTreezor)
-		if err := json.Unmarshal(data, &value); err != nil {
-			return err
-		}
-		v.Treezor = value
-	case "praxis":
-		value := new(VerificationPraxis)
-		if err := json.Unmarshal(data, &value); err != nil {
-			return err
-		}
-		v.Praxis = value
-	case "customerio":
-		value := new(VerificationCustomerIo)
-		if err := json.Unmarshal(data, &value); err != nil {
-			return err
-		}
-		v.Customerio = value
-	case "facebook":
-		value := new(VerificationFacebook)
-		if err := json.Unmarshal(data, &value); err != nil {
-			return err
-		}
-		v.Facebook = value
-	case "whatsapp":
-		value := new(VerificationWhatsApp)
-		if err := json.Unmarshal(data, &value); err != nil {
-			return err
-		}
-		v.Whatsapp = value
-	case "replicate":
-		value := new(VerificationReplicate)
-		if err := json.Unmarshal(data, &value); err != nil {
-			return err
-		}
-		v.Replicate = value
-	case "tiktok":
-		value := new(VerificationTikTok)
-		if err := json.Unmarshal(data, &value); err != nil {
-			return err
-		}
-		v.Tiktok = value
-	case "airwallex":
-		value := new(VerificationAirwallex)
-		if err := json.Unmarshal(data, &value); err != nil {
-			return err
-		}
-		v.Airwallex = value
-	case "zendesk":
-		value := new(VerificationZendesk)
-		if err := json.Unmarshal(data, &value); err != nil {
-			return err
-		}
-		v.Zendesk = value
-	case "upollo":
-		value := new(VerificationUpollo)
-		if err := json.Unmarshal(data, &value); err != nil {
-			return err
-		}
-		v.Upollo = value
-	}
-	return nil
-}
-
-func (v VerificationConfig) MarshalJSON() ([]byte, error) {
-	switch v.Type {
-	default:
-		return nil, fmt.Errorf("invalid type %s in %T", v.Type, v)
-	case "hmac":
-		return internal.MarshalJSONWithExtraProperty(v.Hmac, "type", "hmac")
-	case "basic_auth":
-		return internal.MarshalJSONWithExtraProperty(v.BasicAuth, "type", "basic_auth")
-	case "api_key":
-		return internal.MarshalJSONWithExtraProperty(v.ApiKey, "type", "api_key")
-	case "webhook":
-		return internal.MarshalJSONWithExtraProperty(v.Webhook, "type", "webhook")
-	case "http":
-		return internal.MarshalJSONWithExtraProperty(v.Http, "type", "http")
-	case "sanity":
-		return internal.MarshalJSONWithExtraProperty(v.Sanity, "type", "sanity")
-	case "bridge":
-		return internal.MarshalJSONWithExtraProperty(v.Bridge, "type", "bridge")
-	case "cloudsignal":
-		return internal.MarshalJSONWithExtraProperty(v.Cloudsignal, "type", "cloudsignal")
-	case "courier":
-		return internal.MarshalJSONWithExtraProperty(v.Courier, "type", "courier")
-	case "frontapp":
-		return internal.MarshalJSONWithExtraProperty(v.Frontapp, "type", "frontapp")
-	case "zoom":
-		return internal.MarshalJSONWithExtraProperty(v.Zoom, "type", "zoom")
-	case "twitter":
-		return internal.MarshalJSONWithExtraProperty(v.Twitter, "type", "twitter")
-	case "recharge":
-		return internal.MarshalJSONWithExtraProperty(v.Recharge, "type", "recharge")
-	case "stripe":
-		return internal.MarshalJSONWithExtraProperty(v.Stripe, "type", "stripe")
-	case "property-finder":
-		return internal.MarshalJSONWithExtraProperty(v.PropertyFinder, "type", "property-finder")
-	case "shopify":
-		return internal.MarshalJSONWithExtraProperty(v.Shopify, "type", "shopify")
-	case "twilio":
-		return internal.MarshalJSONWithExtraProperty(v.Twilio, "type", "twilio")
-	case "github":
-		return internal.MarshalJSONWithExtraProperty(v.Github, "type", "github")
-	case "postmark":
-		return internal.MarshalJSONWithExtraProperty(v.Postmark, "type", "postmark")
-	case "typeform":
-		return internal.MarshalJSONWithExtraProperty(v.Typeform, "type", "typeform")
-	case "xero":
-		return internal.MarshalJSONWithExtraProperty(v.Xero, "type", "xero")
-	case "svix":
-		return internal.MarshalJSONWithExtraProperty(v.Svix, "type", "svix")
-	case "adyen":
-		return internal.MarshalJSONWithExtraProperty(v.Adyen, "type", "adyen")
-	case "akeneo":
-		return internal.MarshalJSONWithExtraProperty(v.Akeneo, "type", "akeneo")
-	case "gitlab":
-		return internal.MarshalJSONWithExtraProperty(v.Gitlab, "type", "gitlab")
-	case "woocommerce":
-		return internal.MarshalJSONWithExtraProperty(v.Woocommerce, "type", "woocommerce")
-	case "oura":
-		return internal.MarshalJSONWithExtraProperty(v.Oura, "type", "oura")
-	case "commercelayer":
-		return internal.MarshalJSONWithExtraProperty(v.Commercelayer, "type", "commercelayer")
-	case "hubspot":
-		return internal.MarshalJSONWithExtraProperty(v.Hubspot, "type", "hubspot")
-	case "mailgun":
-		return internal.MarshalJSONWithExtraProperty(v.Mailgun, "type", "mailgun")
-	case "persona":
-		return internal.MarshalJSONWithExtraProperty(v.Persona, "type", "persona")
-	case "pipedrive":
-		return internal.MarshalJSONWithExtraProperty(v.Pipedrive, "type", "pipedrive")
-	case "sendgrid":
-		return internal.MarshalJSONWithExtraProperty(v.Sendgrid, "type", "sendgrid")
-	case "workos":
-		return internal.MarshalJSONWithExtraProperty(v.Workos, "type", "workos")
-	case "synctera":
-		return internal.MarshalJSONWithExtraProperty(v.Synctera, "type", "synctera")
-	case "aws_sns":
-		return internal.MarshalJSONWithExtraProperty(v.AwsSns, "type", "aws_sns")
-	case "three_d_eye":
-		return internal.MarshalJSONWithExtraProperty(v.ThreeDEye, "type", "three_d_eye")
-	case "twitch":
-		return internal.MarshalJSONWithExtraProperty(v.Twitch, "type", "twitch")
-	case "enode":
-		return internal.MarshalJSONWithExtraProperty(v.Enode, "type", "enode")
-	case "favro":
-		return internal.MarshalJSONWithExtraProperty(v.Favro, "type", "favro")
-	case "linear":
-		return internal.MarshalJSONWithExtraProperty(v.Linear, "type", "linear")
-	case "shopline":
-		return internal.MarshalJSONWithExtraProperty(v.Shopline, "type", "shopline")
-	case "wix":
-		return internal.MarshalJSONWithExtraProperty(v.Wix, "type", "wix")
-	case "nmi":
-		return internal.MarshalJSONWithExtraProperty(v.Nmi, "type", "nmi")
-	case "orb":
-		return internal.MarshalJSONWithExtraProperty(v.Orb, "type", "orb")
-	case "pylon":
-		return internal.MarshalJSONWithExtraProperty(v.Pylon, "type", "pylon")
-	case "razorpay":
-		return internal.MarshalJSONWithExtraProperty(v.Razorpay, "type", "razorpay")
-	case "repay":
-		return internal.MarshalJSONWithExtraProperty(v.Repay, "type", "repay")
-	case "square":
-		return internal.MarshalJSONWithExtraProperty(v.Square, "type", "square")
-	case "solidgate":
-		return internal.MarshalJSONWithExtraProperty(v.Solidgate, "type", "solidgate")
-	case "trello":
-		return internal.MarshalJSONWithExtraProperty(v.Trello, "type", "trello")
-	case "ebay":
-		return internal.MarshalJSONWithExtraProperty(v.Ebay, "type", "ebay")
-	case "telnyx":
-		return internal.MarshalJSONWithExtraProperty(v.Telnyx, "type", "telnyx")
-	case "discord":
-		return internal.MarshalJSONWithExtraProperty(v.Discord, "type", "discord")
-	case "tokenio":
-		return internal.MarshalJSONWithExtraProperty(v.Tokenio, "type", "tokenio")
-	case "fiserv":
-		return internal.MarshalJSONWithExtraProperty(v.Fiserv, "type", "fiserv")
-	case "bondsmith":
-		return internal.MarshalJSONWithExtraProperty(v.Bondsmith, "type", "bondsmith")
-	case "vercel_log_drains":
-		return internal.MarshalJSONWithExtraProperty(v.VercelLogDrains, "type", "vercel_log_drains")
-	case "vercel":
-		return internal.MarshalJSONWithExtraProperty(v.Vercel, "type", "vercel")
-	case "tebex":
-		return internal.MarshalJSONWithExtraProperty(v.Tebex, "type", "tebex")
-	case "slack":
-		return internal.MarshalJSONWithExtraProperty(v.Slack, "type", "slack")
-	case "mailchimp":
-		return internal.MarshalJSONWithExtraProperty(v.Mailchimp, "type", "mailchimp")
-	case "paddle":
-		return internal.MarshalJSONWithExtraProperty(v.Paddle, "type", "paddle")
-	case "paypal":
-		return internal.MarshalJSONWithExtraProperty(v.Paypal, "type", "paypal")
-	case "treezor":
-		return internal.MarshalJSONWithExtraProperty(v.Treezor, "type", "treezor")
-	case "praxis":
-		return internal.MarshalJSONWithExtraProperty(v.Praxis, "type", "praxis")
-	case "customerio":
-		return internal.MarshalJSONWithExtraProperty(v.Customerio, "type", "customerio")
-	case "facebook":
-		return internal.MarshalJSONWithExtraProperty(v.Facebook, "type", "facebook")
-	case "whatsapp":
-		return internal.MarshalJSONWithExtraProperty(v.Whatsapp, "type", "whatsapp")
-	case "replicate":
-		return internal.MarshalJSONWithExtraProperty(v.Replicate, "type", "replicate")
-	case "tiktok":
-		return internal.MarshalJSONWithExtraProperty(v.Tiktok, "type", "tiktok")
-	case "airwallex":
-		return internal.MarshalJSONWithExtraProperty(v.Airwallex, "type", "airwallex")
-	case "zendesk":
-		return internal.MarshalJSONWithExtraProperty(v.Zendesk, "type", "zendesk")
-	case "upollo":
-		return internal.MarshalJSONWithExtraProperty(v.Upollo, "type", "upollo")
-	}
-}
-
-type VerificationConfigVisitor interface {
-	VisitHmac(*VerificationHmac) error
-	VisitBasicAuth(*VerificationBasicAuth) error
-	VisitApiKey(*VerificationApiKey) error
-	VisitWebhook(*VerificationWebhook) error
-	VisitHttp(*VerificationHttp) error
-	VisitSanity(*VerificationSanity) error
-	VisitBridge(*VerificationBridge) error
-	VisitCloudsignal(*VerificationCloudSignal) error
-	VisitCourier(*VerificationCourier) error
-	VisitFrontapp(*VerificationFrontApp) error
-	VisitZoom(*VerificationZoom) error
-	VisitTwitter(*VerificationTwitter) error
-	VisitRecharge(*VerificationRecharge) error
-	VisitStripe(*VerificationStripe) error
-	VisitPropertyFinder(*VerificationPropertyFinder) error
-	VisitShopify(*VerificationShopify) error
-	VisitTwilio(*VerificationTwilio) error
-	VisitGithub(*VerificationGitHub) error
-	VisitPostmark(*VerificationPostmark) error
-	VisitTypeform(*VerificationTypeform) error
-	VisitXero(*VerificationXero) error
-	VisitSvix(*VerificationSvix) error
-	VisitAdyen(*VerificationAdyen) error
-	VisitAkeneo(*VerificationAkeneo) error
-	VisitGitlab(*VerificationGitLab) error
-	VisitWoocommerce(*VerificationWooCommerce) error
-	VisitOura(*VerificationOura) error
-	VisitCommercelayer(*VerificationCommerceLayer) error
-	VisitHubspot(*VerificationHubspot) error
-	VisitMailgun(*VerificationMailgun) error
-	VisitPersona(*VerificationPersona) error
-	VisitPipedrive(*VerificationPipedrive) error
-	VisitSendgrid(*VerificationSendgrid) error
-	VisitWorkos(*VerificationWorkOs) error
-	VisitSynctera(*VerificationSynctera) error
-	VisitAwsSns(*VerificationAwssns) error
-	VisitThreeDEye(*Verification3DEye) error
-	VisitTwitch(*VerificationTwitch) error
-	VisitEnode(*VerificationEnode) error
-	VisitFavro(*VerificationFavro) error
-	VisitLinear(*VerificationLinear) error
-	VisitShopline(*VerificationShopline) error
-	VisitWix(*VerificationWix) error
-	VisitNmi(*VerificationNmiPaymentGateway) error
-	VisitOrb(*VerificationOrb) error
-	VisitPylon(*VerificationPylon) error
-	VisitRazorpay(*VerificationRazorpay) error
-	VisitRepay(*VerificationRepay) error
-	VisitSquare(*VerificationSquare) error
-	VisitSolidgate(*VerificationSolidgate) error
-	VisitTrello(*VerificationTrello) error
-	VisitEbay(*VerificationEbay) error
-	VisitTelnyx(*VerificationTelnyx) error
-	VisitDiscord(*VerificationDiscord) error
-	VisitTokenio(*VerificationTokenIo) error
-	VisitFiserv(*VerificationFiserv) error
-	VisitBondsmith(*VerificationBondsmith) error
-	VisitVercelLogDrains(*VerificationVercelLogDrains) error
-	VisitVercel(*VerificationVercelWebhooks) error
-	VisitTebex(*VerificationTebex) error
-	VisitSlack(*VerificationSlack) error
-	VisitMailchimp(*VerificationMailchimp) error
-	VisitPaddle(*VerificationPaddle) error
-	VisitPaypal(*VerificationPaypal) error
-	VisitTreezor(*VerificationTreezor) error
-	VisitPraxis(*VerificationPraxis) error
-	VisitCustomerio(*VerificationCustomerIo) error
-	VisitFacebook(*VerificationFacebook) error
-	VisitWhatsapp(*VerificationWhatsApp) error
-	VisitReplicate(*VerificationReplicate) error
-	VisitTiktok(*VerificationTikTok) error
-	VisitAirwallex(*VerificationAirwallex) error
-	VisitZendesk(*VerificationZendesk) error
-	VisitUpollo(*VerificationUpollo) error
-}
-
-func (v *VerificationConfig) Accept(visitor VerificationConfigVisitor) error {
-	switch v.Type {
-	default:
-		return fmt.Errorf("invalid type %s in %T", v.Type, v)
-	case "hmac":
-		return visitor.VisitHmac(v.Hmac)
-	case "basic_auth":
-		return visitor.VisitBasicAuth(v.BasicAuth)
-	case "api_key":
-		return visitor.VisitApiKey(v.ApiKey)
-	case "webhook":
-		return visitor.VisitWebhook(v.Webhook)
-	case "http":
-		return visitor.VisitHttp(v.Http)
-	case "sanity":
-		return visitor.VisitSanity(v.Sanity)
-	case "bridge":
-		return visitor.VisitBridge(v.Bridge)
-	case "cloudsignal":
-		return visitor.VisitCloudsignal(v.Cloudsignal)
-	case "courier":
-		return visitor.VisitCourier(v.Courier)
-	case "frontapp":
-		return visitor.VisitFrontapp(v.Frontapp)
-	case "zoom":
-		return visitor.VisitZoom(v.Zoom)
-	case "twitter":
-		return visitor.VisitTwitter(v.Twitter)
-	case "recharge":
-		return visitor.VisitRecharge(v.Recharge)
-	case "stripe":
-		return visitor.VisitStripe(v.Stripe)
-	case "property-finder":
-		return visitor.VisitPropertyFinder(v.PropertyFinder)
-	case "shopify":
-		return visitor.VisitShopify(v.Shopify)
-	case "twilio":
-		return visitor.VisitTwilio(v.Twilio)
-	case "github":
-		return visitor.VisitGithub(v.Github)
-	case "postmark":
-		return visitor.VisitPostmark(v.Postmark)
-	case "typeform":
-		return visitor.VisitTypeform(v.Typeform)
-	case "xero":
-		return visitor.VisitXero(v.Xero)
-	case "svix":
-		return visitor.VisitSvix(v.Svix)
-	case "adyen":
-		return visitor.VisitAdyen(v.Adyen)
-	case "akeneo":
-		return visitor.VisitAkeneo(v.Akeneo)
-	case "gitlab":
-		return visitor.VisitGitlab(v.Gitlab)
-	case "woocommerce":
-		return visitor.VisitWoocommerce(v.Woocommerce)
-	case "oura":
-		return visitor.VisitOura(v.Oura)
-	case "commercelayer":
-		return visitor.VisitCommercelayer(v.Commercelayer)
-	case "hubspot":
-		return visitor.VisitHubspot(v.Hubspot)
-	case "mailgun":
-		return visitor.VisitMailgun(v.Mailgun)
-	case "persona":
-		return visitor.VisitPersona(v.Persona)
-	case "pipedrive":
-		return visitor.VisitPipedrive(v.Pipedrive)
-	case "sendgrid":
-		return visitor.VisitSendgrid(v.Sendgrid)
-	case "workos":
-		return visitor.VisitWorkos(v.Workos)
-	case "synctera":
-		return visitor.VisitSynctera(v.Synctera)
-	case "aws_sns":
-		return visitor.VisitAwsSns(v.AwsSns)
-	case "three_d_eye":
-		return visitor.VisitThreeDEye(v.ThreeDEye)
-	case "twitch":
-		return visitor.VisitTwitch(v.Twitch)
-	case "enode":
-		return visitor.VisitEnode(v.Enode)
-	case "favro":
-		return visitor.VisitFavro(v.Favro)
-	case "linear":
-		return visitor.VisitLinear(v.Linear)
-	case "shopline":
-		return visitor.VisitShopline(v.Shopline)
-	case "wix":
-		return visitor.VisitWix(v.Wix)
-	case "nmi":
-		return visitor.VisitNmi(v.Nmi)
-	case "orb":
-		return visitor.VisitOrb(v.Orb)
-	case "pylon":
-		return visitor.VisitPylon(v.Pylon)
-	case "razorpay":
-		return visitor.VisitRazorpay(v.Razorpay)
-	case "repay":
-		return visitor.VisitRepay(v.Repay)
-	case "square":
-		return visitor.VisitSquare(v.Square)
-	case "solidgate":
-		return visitor.VisitSolidgate(v.Solidgate)
-	case "trello":
-		return visitor.VisitTrello(v.Trello)
-	case "ebay":
-		return visitor.VisitEbay(v.Ebay)
-	case "telnyx":
-		return visitor.VisitTelnyx(v.Telnyx)
-	case "discord":
-		return visitor.VisitDiscord(v.Discord)
-	case "tokenio":
-		return visitor.VisitTokenio(v.Tokenio)
-	case "fiserv":
-		return visitor.VisitFiserv(v.Fiserv)
-	case "bondsmith":
-		return visitor.VisitBondsmith(v.Bondsmith)
-	case "vercel_log_drains":
-		return visitor.VisitVercelLogDrains(v.VercelLogDrains)
-	case "vercel":
-		return visitor.VisitVercel(v.Vercel)
-	case "tebex":
-		return visitor.VisitTebex(v.Tebex)
-	case "slack":
-		return visitor.VisitSlack(v.Slack)
-	case "mailchimp":
-		return visitor.VisitMailchimp(v.Mailchimp)
-	case "paddle":
-		return visitor.VisitPaddle(v.Paddle)
-	case "paypal":
-		return visitor.VisitPaypal(v.Paypal)
-	case "treezor":
-		return visitor.VisitTreezor(v.Treezor)
-	case "praxis":
-		return visitor.VisitPraxis(v.Praxis)
-	case "customerio":
-		return visitor.VisitCustomerio(v.Customerio)
-	case "facebook":
-		return visitor.VisitFacebook(v.Facebook)
-	case "whatsapp":
-		return visitor.VisitWhatsapp(v.Whatsapp)
-	case "replicate":
-		return visitor.VisitReplicate(v.Replicate)
-	case "tiktok":
-		return visitor.VisitTiktok(v.Tiktok)
-	case "airwallex":
-		return visitor.VisitAirwallex(v.Airwallex)
-	case "zendesk":
-		return visitor.VisitZendesk(v.Zendesk)
-	case "upollo":
-		return visitor.VisitUpollo(v.Upollo)
-	}
-}
-
-type VerificationCourier struct {
-	Configs *TypeCourierConfig `json:"configs,omitempty" url:"configs,omitempty"`
-
-	extraProperties map[string]interface{}
-	rawJSON         json.RawMessage
-}
-
-func (v *VerificationCourier) GetConfigs() *TypeCourierConfig {
-	if v == nil {
-		return nil
-	}
-	return v.Configs
-}
-
-func (v *VerificationCourier) GetExtraProperties() map[string]interface{} {
-	return v.extraProperties
-}
-
-func (v *VerificationCourier) UnmarshalJSON(data []byte) error {
-	type unmarshaler VerificationCourier
-	var value unmarshaler
-	if err := json.Unmarshal(data, &value); err != nil {
-		return err
-	}
-	*v = VerificationCourier(value)
-	extraProperties, err := internal.ExtractExtraProperties(data, *v)
-	if err != nil {
-		return err
-	}
-	v.extraProperties = extraProperties
-	v.rawJSON = json.RawMessage(data)
-	return nil
-}
-
-func (v *VerificationCourier) String() string {
-	if len(v.rawJSON) > 0 {
-		if value, err := internal.StringifyJSON(v.rawJSON); err == nil {
-			return value
-		}
-	}
-	if value, err := internal.StringifyJSON(v); err == nil {
-		return value
-	}
-	return fmt.Sprintf("%#v", v)
-}
-
-type VerificationCustomerIo struct {
-	Configs *TypeCustomerIoConfig `json:"configs,omitempty" url:"configs,omitempty"`
-
-	extraProperties map[string]interface{}
-	rawJSON         json.RawMessage
-}
-
-func (v *VerificationCustomerIo) GetConfigs() *TypeCustomerIoConfig {
-	if v == nil {
-		return nil
-	}
-	return v.Configs
-}
-
-func (v *VerificationCustomerIo) GetExtraProperties() map[string]interface{} {
-	return v.extraProperties
-}
-
-func (v *VerificationCustomerIo) UnmarshalJSON(data []byte) error {
-	type unmarshaler VerificationCustomerIo
-	var value unmarshaler
-	if err := json.Unmarshal(data, &value); err != nil {
-		return err
-	}
-	*v = VerificationCustomerIo(value)
-	extraProperties, err := internal.ExtractExtraProperties(data, *v)
-	if err != nil {
-		return err
-	}
-	v.extraProperties = extraProperties
-	v.rawJSON = json.RawMessage(data)
-	return nil
-}
-
-func (v *VerificationCustomerIo) String() string {
-	if len(v.rawJSON) > 0 {
-		if value, err := internal.StringifyJSON(v.rawJSON); err == nil {
-			return value
-		}
-	}
-	if value, err := internal.StringifyJSON(v); err == nil {
-		return value
-	}
-	return fmt.Sprintf("%#v", v)
-}
-
-type VerificationDiscord struct {
-	Configs *TypeDiscordConfig `json:"configs,omitempty" url:"configs,omitempty"`
-
-	extraProperties map[string]interface{}
-	rawJSON         json.RawMessage
-}
-
-func (v *VerificationDiscord) GetConfigs() *TypeDiscordConfig {
-	if v == nil {
-		return nil
-	}
-	return v.Configs
-}
-
-func (v *VerificationDiscord) GetExtraProperties() map[string]interface{} {
-	return v.extraProperties
-}
-
-func (v *VerificationDiscord) UnmarshalJSON(data []byte) error {
-	type unmarshaler VerificationDiscord
-	var value unmarshaler
-	if err := json.Unmarshal(data, &value); err != nil {
-		return err
-	}
-	*v = VerificationDiscord(value)
-	extraProperties, err := internal.ExtractExtraProperties(data, *v)
-	if err != nil {
-		return err
-	}
-	v.extraProperties = extraProperties
-	v.rawJSON = json.RawMessage(data)
-	return nil
-}
-
-func (v *VerificationDiscord) String() string {
-	if len(v.rawJSON) > 0 {
-		if value, err := internal.StringifyJSON(v.rawJSON); err == nil {
-			return value
-		}
-	}
-	if value, err := internal.StringifyJSON(v); err == nil {
-		return value
-	}
-	return fmt.Sprintf("%#v", v)
-}
-
-type VerificationEbay struct {
-	Configs *TypeEbayConfig `json:"configs,omitempty" url:"configs,omitempty"`
-
-	extraProperties map[string]interface{}
-	rawJSON         json.RawMessage
-}
-
-func (v *VerificationEbay) GetConfigs() *TypeEbayConfig {
-	if v == nil {
-		return nil
-	}
-	return v.Configs
-}
-
-func (v *VerificationEbay) GetExtraProperties() map[string]interface{} {
-	return v.extraProperties
-}
-
-func (v *VerificationEbay) UnmarshalJSON(data []byte) error {
-	type unmarshaler VerificationEbay
-	var value unmarshaler
-	if err := json.Unmarshal(data, &value); err != nil {
-		return err
-	}
-	*v = VerificationEbay(value)
-	extraProperties, err := internal.ExtractExtraProperties(data, *v)
-	if err != nil {
-		return err
-	}
-	v.extraProperties = extraProperties
-	v.rawJSON = json.RawMessage(data)
-	return nil
-}
-
-func (v *VerificationEbay) String() string {
-	if len(v.rawJSON) > 0 {
-		if value, err := internal.StringifyJSON(v.rawJSON); err == nil {
-			return value
-		}
-	}
-	if value, err := internal.StringifyJSON(v); err == nil {
-		return value
-	}
-	return fmt.Sprintf("%#v", v)
-}
-
-type VerificationEnode struct {
-	Configs *TypeEnodeConfig `json:"configs,omitempty" url:"configs,omitempty"`
-
-	extraProperties map[string]interface{}
-	rawJSON         json.RawMessage
-}
-
-func (v *VerificationEnode) GetConfigs() *TypeEnodeConfig {
-	if v == nil {
-		return nil
-	}
-	return v.Configs
-}
-
-func (v *VerificationEnode) GetExtraProperties() map[string]interface{} {
-	return v.extraProperties
-}
-
-func (v *VerificationEnode) UnmarshalJSON(data []byte) error {
-	type unmarshaler VerificationEnode
-	var value unmarshaler
-	if err := json.Unmarshal(data, &value); err != nil {
-		return err
-	}
-	*v = VerificationEnode(value)
-	extraProperties, err := internal.ExtractExtraProperties(data, *v)
-	if err != nil {
-		return err
-	}
-	v.extraProperties = extraProperties
-	v.rawJSON = json.RawMessage(data)
-	return nil
-}
-
-func (v *VerificationEnode) String() string {
-	if len(v.rawJSON) > 0 {
-		if value, err := internal.StringifyJSON(v.rawJSON); err == nil {
-			return value
-		}
-	}
-	if value, err := internal.StringifyJSON(v); err == nil {
-		return value
-	}
-	return fmt.Sprintf("%#v", v)
-}
-
-type VerificationFacebook struct {
-	Configs *TypeFacebookConfig `json:"configs,omitempty" url:"configs,omitempty"`
-
-	extraProperties map[string]interface{}
-	rawJSON         json.RawMessage
-}
-
-func (v *VerificationFacebook) GetConfigs() *TypeFacebookConfig {
-	if v == nil {
-		return nil
-	}
-	return v.Configs
-}
-
-func (v *VerificationFacebook) GetExtraProperties() map[string]interface{} {
-	return v.extraProperties
-}
-
-func (v *VerificationFacebook) UnmarshalJSON(data []byte) error {
-	type unmarshaler VerificationFacebook
-	var value unmarshaler
-	if err := json.Unmarshal(data, &value); err != nil {
-		return err
-	}
-	*v = VerificationFacebook(value)
-	extraProperties, err := internal.ExtractExtraProperties(data, *v)
-	if err != nil {
-		return err
-	}
-	v.extraProperties = extraProperties
-	v.rawJSON = json.RawMessage(data)
-	return nil
-}
-
-func (v *VerificationFacebook) String() string {
-	if len(v.rawJSON) > 0 {
-		if value, err := internal.StringifyJSON(v.rawJSON); err == nil {
-			return value
-		}
-	}
-	if value, err := internal.StringifyJSON(v); err == nil {
-		return value
-	}
-	return fmt.Sprintf("%#v", v)
-}
-
-type VerificationFavro struct {
-	Configs *TypeFavroConfig `json:"configs,omitempty" url:"configs,omitempty"`
-
-	extraProperties map[string]interface{}
-	rawJSON         json.RawMessage
-}
-
-func (v *VerificationFavro) GetConfigs() *TypeFavroConfig {
-	if v == nil {
-		return nil
-	}
-	return v.Configs
-}
-
-func (v *VerificationFavro) GetExtraProperties() map[string]interface{} {
-	return v.extraProperties
-}
-
-func (v *VerificationFavro) UnmarshalJSON(data []byte) error {
-	type unmarshaler VerificationFavro
-	var value unmarshaler
-	if err := json.Unmarshal(data, &value); err != nil {
-		return err
-	}
-	*v = VerificationFavro(value)
-	extraProperties, err := internal.ExtractExtraProperties(data, *v)
-	if err != nil {
-		return err
-	}
-	v.extraProperties = extraProperties
-	v.rawJSON = json.RawMessage(data)
-	return nil
-}
-
-func (v *VerificationFavro) String() string {
-	if len(v.rawJSON) > 0 {
-		if value, err := internal.StringifyJSON(v.rawJSON); err == nil {
-			return value
-		}
-	}
-	if value, err := internal.StringifyJSON(v); err == nil {
-		return value
-	}
-	return fmt.Sprintf("%#v", v)
-}
-
-type VerificationFiserv struct {
-	Configs *TypeFiservConfig `json:"configs,omitempty" url:"configs,omitempty"`
-
-	extraProperties map[string]interface{}
-	rawJSON         json.RawMessage
-}
-
-func (v *VerificationFiserv) GetConfigs() *TypeFiservConfig {
-	if v == nil {
-		return nil
-	}
-	return v.Configs
-}
-
-func (v *VerificationFiserv) GetExtraProperties() map[string]interface{} {
-	return v.extraProperties
-}
-
-func (v *VerificationFiserv) UnmarshalJSON(data []byte) error {
-	type unmarshaler VerificationFiserv
-	var value unmarshaler
-	if err := json.Unmarshal(data, &value); err != nil {
-		return err
-	}
-	*v = VerificationFiserv(value)
-	extraProperties, err := internal.ExtractExtraProperties(data, *v)
-	if err != nil {
-		return err
-	}
-	v.extraProperties = extraProperties
-	v.rawJSON = json.RawMessage(data)
-	return nil
-}
-
-func (v *VerificationFiserv) String() string {
-	if len(v.rawJSON) > 0 {
-		if value, err := internal.StringifyJSON(v.rawJSON); err == nil {
-			return value
-		}
-	}
-	if value, err := internal.StringifyJSON(v); err == nil {
-		return value
-	}
-	return fmt.Sprintf("%#v", v)
-}
-
-type VerificationFrontApp struct {
-	Configs *TypeFrontAppConfig `json:"configs,omitempty" url:"configs,omitempty"`
-
-	extraProperties map[string]interface{}
-	rawJSON         json.RawMessage
-}
-
-func (v *VerificationFrontApp) GetConfigs() *TypeFrontAppConfig {
-	if v == nil {
-		return nil
-	}
-	return v.Configs
-}
-
-func (v *VerificationFrontApp) GetExtraProperties() map[string]interface{} {
-	return v.extraProperties
-}
-
-func (v *VerificationFrontApp) UnmarshalJSON(data []byte) error {
-	type unmarshaler VerificationFrontApp
-	var value unmarshaler
-	if err := json.Unmarshal(data, &value); err != nil {
-		return err
-	}
-	*v = VerificationFrontApp(value)
-	extraProperties, err := internal.ExtractExtraProperties(data, *v)
-	if err != nil {
-		return err
-	}
-	v.extraProperties = extraProperties
-	v.rawJSON = json.RawMessage(data)
-	return nil
-}
-
-func (v *VerificationFrontApp) String() string {
-	if len(v.rawJSON) > 0 {
-		if value, err := internal.StringifyJSON(v.rawJSON); err == nil {
-			return value
-		}
-	}
-	if value, err := internal.StringifyJSON(v); err == nil {
-		return value
-	}
-	return fmt.Sprintf("%#v", v)
-}
-
-type VerificationGitHub struct {
-	Configs *TypeGitHubConfig `json:"configs,omitempty" url:"configs,omitempty"`
-
-	extraProperties map[string]interface{}
-	rawJSON         json.RawMessage
-}
-
-func (v *VerificationGitHub) GetConfigs() *TypeGitHubConfig {
-	if v == nil {
-		return nil
-	}
-	return v.Configs
-}
-
-func (v *VerificationGitHub) GetExtraProperties() map[string]interface{} {
-	return v.extraProperties
-}
-
-func (v *VerificationGitHub) UnmarshalJSON(data []byte) error {
-	type unmarshaler VerificationGitHub
-	var value unmarshaler
-	if err := json.Unmarshal(data, &value); err != nil {
-		return err
-	}
-	*v = VerificationGitHub(value)
-	extraProperties, err := internal.ExtractExtraProperties(data, *v)
-	if err != nil {
-		return err
-	}
-	v.extraProperties = extraProperties
-	v.rawJSON = json.RawMessage(data)
-	return nil
-}
-
-func (v *VerificationGitHub) String() string {
-	if len(v.rawJSON) > 0 {
-		if value, err := internal.StringifyJSON(v.rawJSON); err == nil {
-			return value
-		}
-	}
-	if value, err := internal.StringifyJSON(v); err == nil {
-		return value
-	}
-	return fmt.Sprintf("%#v", v)
-}
-
-type VerificationGitLab struct {
-	Configs *TypeGitLabConfig `json:"configs,omitempty" url:"configs,omitempty"`
-
-	extraProperties map[string]interface{}
-	rawJSON         json.RawMessage
-}
-
-func (v *VerificationGitLab) GetConfigs() *TypeGitLabConfig {
-	if v == nil {
-		return nil
-	}
-	return v.Configs
-}
-
-func (v *VerificationGitLab) GetExtraProperties() map[string]interface{} {
-	return v.extraProperties
-}
-
-func (v *VerificationGitLab) UnmarshalJSON(data []byte) error {
-	type unmarshaler VerificationGitLab
-	var value unmarshaler
-	if err := json.Unmarshal(data, &value); err != nil {
-		return err
-	}
-	*v = VerificationGitLab(value)
-	extraProperties, err := internal.ExtractExtraProperties(data, *v)
-	if err != nil {
-		return err
-	}
-	v.extraProperties = extraProperties
-	v.rawJSON = json.RawMessage(data)
-	return nil
-}
-
-func (v *VerificationGitLab) String() string {
-	if len(v.rawJSON) > 0 {
-		if value, err := internal.StringifyJSON(v.rawJSON); err == nil {
-			return value
-		}
-	}
-	if value, err := internal.StringifyJSON(v); err == nil {
-		return value
-	}
-	return fmt.Sprintf("%#v", v)
-}
-
-type VerificationHmac struct {
-	Configs *TypeHmacConfig `json:"configs,omitempty" url:"configs,omitempty"`
-
-	extraProperties map[string]interface{}
-	rawJSON         json.RawMessage
-}
-
-func (v *VerificationHmac) GetConfigs() *TypeHmacConfig {
-	if v == nil {
-		return nil
-	}
-	return v.Configs
-}
-
-func (v *VerificationHmac) GetExtraProperties() map[string]interface{} {
-	return v.extraProperties
-}
-
-func (v *VerificationHmac) UnmarshalJSON(data []byte) error {
-	type unmarshaler VerificationHmac
-	var value unmarshaler
-	if err := json.Unmarshal(data, &value); err != nil {
-		return err
-	}
-	*v = VerificationHmac(value)
-	extraProperties, err := internal.ExtractExtraProperties(data, *v)
-	if err != nil {
-		return err
-	}
-	v.extraProperties = extraProperties
-	v.rawJSON = json.RawMessage(data)
-	return nil
-}
-
-func (v *VerificationHmac) String() string {
-	if len(v.rawJSON) > 0 {
-		if value, err := internal.StringifyJSON(v.rawJSON); err == nil {
-			return value
-		}
-	}
-	if value, err := internal.StringifyJSON(v); err == nil {
-		return value
-	}
-	return fmt.Sprintf("%#v", v)
-}
-
-type VerificationHttp struct {
-	Configs *TypeHttpConfig `json:"configs,omitempty" url:"configs,omitempty"`
-
-	extraProperties map[string]interface{}
-	rawJSON         json.RawMessage
-}
-
-func (v *VerificationHttp) GetConfigs() *TypeHttpConfig {
-	if v == nil {
-		return nil
-	}
-	return v.Configs
-}
-
-func (v *VerificationHttp) GetExtraProperties() map[string]interface{} {
-	return v.extraProperties
-}
-
-func (v *VerificationHttp) UnmarshalJSON(data []byte) error {
-	type unmarshaler VerificationHttp
-	var value unmarshaler
-	if err := json.Unmarshal(data, &value); err != nil {
-		return err
-	}
-	*v = VerificationHttp(value)
-	extraProperties, err := internal.ExtractExtraProperties(data, *v)
-	if err != nil {
-		return err
-	}
-	v.extraProperties = extraProperties
-	v.rawJSON = json.RawMessage(data)
-	return nil
-}
-
-func (v *VerificationHttp) String() string {
-	if len(v.rawJSON) > 0 {
-		if value, err := internal.StringifyJSON(v.rawJSON); err == nil {
-			return value
-		}
-	}
-	if value, err := internal.StringifyJSON(v); err == nil {
-		return value
-	}
-	return fmt.Sprintf("%#v", v)
-}
-
-type VerificationHubspot struct {
-	Configs *TypeHubspotConfig `json:"configs,omitempty" url:"configs,omitempty"`
-
-	extraProperties map[string]interface{}
-	rawJSON         json.RawMessage
-}
-
-func (v *VerificationHubspot) GetConfigs() *TypeHubspotConfig {
-	if v == nil {
-		return nil
-	}
-	return v.Configs
-}
-
-func (v *VerificationHubspot) GetExtraProperties() map[string]interface{} {
-	return v.extraProperties
-}
-
-func (v *VerificationHubspot) UnmarshalJSON(data []byte) error {
-	type unmarshaler VerificationHubspot
-	var value unmarshaler
-	if err := json.Unmarshal(data, &value); err != nil {
-		return err
-	}
-	*v = VerificationHubspot(value)
-	extraProperties, err := internal.ExtractExtraProperties(data, *v)
-	if err != nil {
-		return err
-	}
-	v.extraProperties = extraProperties
-	v.rawJSON = json.RawMessage(data)
-	return nil
-}
-
-func (v *VerificationHubspot) String() string {
-	if len(v.rawJSON) > 0 {
-		if value, err := internal.StringifyJSON(v.rawJSON); err == nil {
-			return value
-		}
-	}
-	if value, err := internal.StringifyJSON(v); err == nil {
-		return value
-	}
-	return fmt.Sprintf("%#v", v)
-}
-
-type VerificationLinear struct {
-	Configs *TypeLinearConfig `json:"configs,omitempty" url:"configs,omitempty"`
-
-	extraProperties map[string]interface{}
-	rawJSON         json.RawMessage
-}
-
-func (v *VerificationLinear) GetConfigs() *TypeLinearConfig {
-	if v == nil {
-		return nil
-	}
-	return v.Configs
-}
-
-func (v *VerificationLinear) GetExtraProperties() map[string]interface{} {
-	return v.extraProperties
-}
-
-func (v *VerificationLinear) UnmarshalJSON(data []byte) error {
-	type unmarshaler VerificationLinear
-	var value unmarshaler
-	if err := json.Unmarshal(data, &value); err != nil {
-		return err
-	}
-	*v = VerificationLinear(value)
-	extraProperties, err := internal.ExtractExtraProperties(data, *v)
-	if err != nil {
-		return err
-	}
-	v.extraProperties = extraProperties
-	v.rawJSON = json.RawMessage(data)
-	return nil
-}
-
-func (v *VerificationLinear) String() string {
-	if len(v.rawJSON) > 0 {
-		if value, err := internal.StringifyJSON(v.rawJSON); err == nil {
-			return value
-		}
-	}
-	if value, err := internal.StringifyJSON(v); err == nil {
-		return value
-	}
-	return fmt.Sprintf("%#v", v)
-}
-
-type VerificationMailchimp struct {
-	Configs *TypeMailchimpConfig `json:"configs,omitempty" url:"configs,omitempty"`
-
-	extraProperties map[string]interface{}
-	rawJSON         json.RawMessage
-}
-
-func (v *VerificationMailchimp) GetConfigs() *TypeMailchimpConfig {
-	if v == nil {
-		return nil
-	}
-	return v.Configs
-}
-
-func (v *VerificationMailchimp) GetExtraProperties() map[string]interface{} {
-	return v.extraProperties
-}
-
-func (v *VerificationMailchimp) UnmarshalJSON(data []byte) error {
-	type unmarshaler VerificationMailchimp
-	var value unmarshaler
-	if err := json.Unmarshal(data, &value); err != nil {
-		return err
-	}
-	*v = VerificationMailchimp(value)
-	extraProperties, err := internal.ExtractExtraProperties(data, *v)
-	if err != nil {
-		return err
-	}
-	v.extraProperties = extraProperties
-	v.rawJSON = json.RawMessage(data)
-	return nil
-}
-
-func (v *VerificationMailchimp) String() string {
-	if len(v.rawJSON) > 0 {
-		if value, err := internal.StringifyJSON(v.rawJSON); err == nil {
-			return value
-		}
-	}
-	if value, err := internal.StringifyJSON(v); err == nil {
-		return value
-	}
-	return fmt.Sprintf("%#v", v)
-}
-
-type VerificationMailgun struct {
-	Configs *TypeMailgunConfig `json:"configs,omitempty" url:"configs,omitempty"`
-
-	extraProperties map[string]interface{}
-	rawJSON         json.RawMessage
-}
-
-func (v *VerificationMailgun) GetConfigs() *TypeMailgunConfig {
-	if v == nil {
-		return nil
-	}
-	return v.Configs
-}
-
-func (v *VerificationMailgun) GetExtraProperties() map[string]interface{} {
-	return v.extraProperties
-}
-
-func (v *VerificationMailgun) UnmarshalJSON(data []byte) error {
-	type unmarshaler VerificationMailgun
-	var value unmarshaler
-	if err := json.Unmarshal(data, &value); err != nil {
-		return err
-	}
-	*v = VerificationMailgun(value)
-	extraProperties, err := internal.ExtractExtraProperties(data, *v)
-	if err != nil {
-		return err
-	}
-	v.extraProperties = extraProperties
-	v.rawJSON = json.RawMessage(data)
-	return nil
-}
-
-func (v *VerificationMailgun) String() string {
-	if len(v.rawJSON) > 0 {
-		if value, err := internal.StringifyJSON(v.rawJSON); err == nil {
-			return value
-		}
-	}
-	if value, err := internal.StringifyJSON(v); err == nil {
-		return value
-	}
-	return fmt.Sprintf("%#v", v)
-}
-
-type VerificationNmiPaymentGateway struct {
-	Configs *TypeNmiPaymentGatewayConfig `json:"configs,omitempty" url:"configs,omitempty"`
-
-	extraProperties map[string]interface{}
-	rawJSON         json.RawMessage
-}
-
-func (v *VerificationNmiPaymentGateway) GetConfigs() *TypeNmiPaymentGatewayConfig {
-	if v == nil {
-		return nil
-	}
-	return v.Configs
-}
-
-func (v *VerificationNmiPaymentGateway) GetExtraProperties() map[string]interface{} {
-	return v.extraProperties
-}
-
-func (v *VerificationNmiPaymentGateway) UnmarshalJSON(data []byte) error {
-	type unmarshaler VerificationNmiPaymentGateway
-	var value unmarshaler
-	if err := json.Unmarshal(data, &value); err != nil {
-		return err
-	}
-	*v = VerificationNmiPaymentGateway(value)
-	extraProperties, err := internal.ExtractExtraProperties(data, *v)
-	if err != nil {
-		return err
-	}
-	v.extraProperties = extraProperties
-	v.rawJSON = json.RawMessage(data)
-	return nil
-}
-
-func (v *VerificationNmiPaymentGateway) String() string {
-	if len(v.rawJSON) > 0 {
-		if value, err := internal.StringifyJSON(v.rawJSON); err == nil {
-			return value
-		}
-	}
-	if value, err := internal.StringifyJSON(v); err == nil {
-		return value
-	}
-	return fmt.Sprintf("%#v", v)
-}
-
-type VerificationOrb struct {
-	Configs *TypeOrbConfig `json:"configs,omitempty" url:"configs,omitempty"`
-
-	extraProperties map[string]interface{}
-	rawJSON         json.RawMessage
-}
-
-func (v *VerificationOrb) GetConfigs() *TypeOrbConfig {
-	if v == nil {
-		return nil
-	}
-	return v.Configs
-}
-
-func (v *VerificationOrb) GetExtraProperties() map[string]interface{} {
-	return v.extraProperties
-}
-
-func (v *VerificationOrb) UnmarshalJSON(data []byte) error {
-	type unmarshaler VerificationOrb
-	var value unmarshaler
-	if err := json.Unmarshal(data, &value); err != nil {
-		return err
-	}
-	*v = VerificationOrb(value)
-	extraProperties, err := internal.ExtractExtraProperties(data, *v)
-	if err != nil {
-		return err
-	}
-	v.extraProperties = extraProperties
-	v.rawJSON = json.RawMessage(data)
-	return nil
-}
-
-func (v *VerificationOrb) String() string {
-	if len(v.rawJSON) > 0 {
-		if value, err := internal.StringifyJSON(v.rawJSON); err == nil {
-			return value
-		}
-	}
-	if value, err := internal.StringifyJSON(v); err == nil {
-		return value
-	}
-	return fmt.Sprintf("%#v", v)
-}
-
-type VerificationOura struct {
-	Configs *TypeOuraConfig `json:"configs,omitempty" url:"configs,omitempty"`
-
-	extraProperties map[string]interface{}
-	rawJSON         json.RawMessage
-}
-
-func (v *VerificationOura) GetConfigs() *TypeOuraConfig {
-	if v == nil {
-		return nil
-	}
-	return v.Configs
-}
-
-func (v *VerificationOura) GetExtraProperties() map[string]interface{} {
-	return v.extraProperties
-}
-
-func (v *VerificationOura) UnmarshalJSON(data []byte) error {
-	type unmarshaler VerificationOura
-	var value unmarshaler
-	if err := json.Unmarshal(data, &value); err != nil {
-		return err
-	}
-	*v = VerificationOura(value)
-	extraProperties, err := internal.ExtractExtraProperties(data, *v)
-	if err != nil {
-		return err
-	}
-	v.extraProperties = extraProperties
-	v.rawJSON = json.RawMessage(data)
-	return nil
-}
-
-func (v *VerificationOura) String() string {
-	if len(v.rawJSON) > 0 {
-		if value, err := internal.StringifyJSON(v.rawJSON); err == nil {
-			return value
-		}
-	}
-	if value, err := internal.StringifyJSON(v); err == nil {
-		return value
-	}
-	return fmt.Sprintf("%#v", v)
-}
-
-type VerificationPaddle struct {
-	Configs *TypePaddleConfig `json:"configs,omitempty" url:"configs,omitempty"`
-
-	extraProperties map[string]interface{}
-	rawJSON         json.RawMessage
-}
-
-func (v *VerificationPaddle) GetConfigs() *TypePaddleConfig {
-	if v == nil {
-		return nil
-	}
-	return v.Configs
-}
-
-func (v *VerificationPaddle) GetExtraProperties() map[string]interface{} {
-	return v.extraProperties
-}
-
-func (v *VerificationPaddle) UnmarshalJSON(data []byte) error {
-	type unmarshaler VerificationPaddle
-	var value unmarshaler
-	if err := json.Unmarshal(data, &value); err != nil {
-		return err
-	}
-	*v = VerificationPaddle(value)
-	extraProperties, err := internal.ExtractExtraProperties(data, *v)
-	if err != nil {
-		return err
-	}
-	v.extraProperties = extraProperties
-	v.rawJSON = json.RawMessage(data)
-	return nil
-}
-
-func (v *VerificationPaddle) String() string {
-	if len(v.rawJSON) > 0 {
-		if value, err := internal.StringifyJSON(v.rawJSON); err == nil {
-			return value
-		}
-	}
-	if value, err := internal.StringifyJSON(v); err == nil {
-		return value
-	}
-	return fmt.Sprintf("%#v", v)
-}
-
-type VerificationPaypal struct {
-	Configs *TypePaypalConfig `json:"configs,omitempty" url:"configs,omitempty"`
-
-	extraProperties map[string]interface{}
-	rawJSON         json.RawMessage
-}
-
-func (v *VerificationPaypal) GetConfigs() *TypePaypalConfig {
-	if v == nil {
-		return nil
-	}
-	return v.Configs
-}
-
-func (v *VerificationPaypal) GetExtraProperties() map[string]interface{} {
-	return v.extraProperties
-}
-
-func (v *VerificationPaypal) UnmarshalJSON(data []byte) error {
-	type unmarshaler VerificationPaypal
-	var value unmarshaler
-	if err := json.Unmarshal(data, &value); err != nil {
-		return err
-	}
-	*v = VerificationPaypal(value)
-	extraProperties, err := internal.ExtractExtraProperties(data, *v)
-	if err != nil {
-		return err
-	}
-	v.extraProperties = extraProperties
-	v.rawJSON = json.RawMessage(data)
-	return nil
-}
-
-func (v *VerificationPaypal) String() string {
-	if len(v.rawJSON) > 0 {
-		if value, err := internal.StringifyJSON(v.rawJSON); err == nil {
-			return value
-		}
-	}
-	if value, err := internal.StringifyJSON(v); err == nil {
-		return value
-	}
-	return fmt.Sprintf("%#v", v)
-}
-
-type VerificationPersona struct {
-	Configs *TypePersonaConfig `json:"configs,omitempty" url:"configs,omitempty"`
-
-	extraProperties map[string]interface{}
-	rawJSON         json.RawMessage
-}
-
-func (v *VerificationPersona) GetConfigs() *TypePersonaConfig {
-	if v == nil {
-		return nil
-	}
-	return v.Configs
-}
-
-func (v *VerificationPersona) GetExtraProperties() map[string]interface{} {
-	return v.extraProperties
-}
-
-func (v *VerificationPersona) UnmarshalJSON(data []byte) error {
-	type unmarshaler VerificationPersona
-	var value unmarshaler
-	if err := json.Unmarshal(data, &value); err != nil {
-		return err
-	}
-	*v = VerificationPersona(value)
-	extraProperties, err := internal.ExtractExtraProperties(data, *v)
-	if err != nil {
-		return err
-	}
-	v.extraProperties = extraProperties
-	v.rawJSON = json.RawMessage(data)
-	return nil
-}
-
-func (v *VerificationPersona) String() string {
-	if len(v.rawJSON) > 0 {
-		if value, err := internal.StringifyJSON(v.rawJSON); err == nil {
-			return value
-		}
-	}
-	if value, err := internal.StringifyJSON(v); err == nil {
-		return value
-	}
-	return fmt.Sprintf("%#v", v)
-}
-
-type VerificationPipedrive struct {
-	Configs *TypePipedriveConfig `json:"configs,omitempty" url:"configs,omitempty"`
-
-	extraProperties map[string]interface{}
-	rawJSON         json.RawMessage
-}
-
-func (v *VerificationPipedrive) GetConfigs() *TypePipedriveConfig {
-	if v == nil {
-		return nil
-	}
-	return v.Configs
-}
-
-func (v *VerificationPipedrive) GetExtraProperties() map[string]interface{} {
-	return v.extraProperties
-}
-
-func (v *VerificationPipedrive) UnmarshalJSON(data []byte) error {
-	type unmarshaler VerificationPipedrive
-	var value unmarshaler
-	if err := json.Unmarshal(data, &value); err != nil {
-		return err
-	}
-	*v = VerificationPipedrive(value)
-	extraProperties, err := internal.ExtractExtraProperties(data, *v)
-	if err != nil {
-		return err
-	}
-	v.extraProperties = extraProperties
-	v.rawJSON = json.RawMessage(data)
-	return nil
-}
-
-func (v *VerificationPipedrive) String() string {
-	if len(v.rawJSON) > 0 {
-		if value, err := internal.StringifyJSON(v.rawJSON); err == nil {
-			return value
-		}
-	}
-	if value, err := internal.StringifyJSON(v); err == nil {
-		return value
-	}
-	return fmt.Sprintf("%#v", v)
-}
-
-type VerificationPostmark struct {
-	Configs *TypePostmarkConfig `json:"configs,omitempty" url:"configs,omitempty"`
-
-	extraProperties map[string]interface{}
-	rawJSON         json.RawMessage
-}
-
-func (v *VerificationPostmark) GetConfigs() *TypePostmarkConfig {
-	if v == nil {
-		return nil
-	}
-	return v.Configs
-}
-
-func (v *VerificationPostmark) GetExtraProperties() map[string]interface{} {
-	return v.extraProperties
-}
-
-func (v *VerificationPostmark) UnmarshalJSON(data []byte) error {
-	type unmarshaler VerificationPostmark
-	var value unmarshaler
-	if err := json.Unmarshal(data, &value); err != nil {
-		return err
-	}
-	*v = VerificationPostmark(value)
-	extraProperties, err := internal.ExtractExtraProperties(data, *v)
-	if err != nil {
-		return err
-	}
-	v.extraProperties = extraProperties
-	v.rawJSON = json.RawMessage(data)
-	return nil
-}
-
-func (v *VerificationPostmark) String() string {
-	if len(v.rawJSON) > 0 {
-		if value, err := internal.StringifyJSON(v.rawJSON); err == nil {
-			return value
-		}
-	}
-	if value, err := internal.StringifyJSON(v); err == nil {
-		return value
-	}
-	return fmt.Sprintf("%#v", v)
-}
-
-type VerificationPraxis struct {
-	Configs *TypePraxisConfig `json:"configs,omitempty" url:"configs,omitempty"`
-
-	extraProperties map[string]interface{}
-	rawJSON         json.RawMessage
-}
-
-func (v *VerificationPraxis) GetConfigs() *TypePraxisConfig {
-	if v == nil {
-		return nil
-	}
-	return v.Configs
-}
-
-func (v *VerificationPraxis) GetExtraProperties() map[string]interface{} {
-	return v.extraProperties
-}
-
-func (v *VerificationPraxis) UnmarshalJSON(data []byte) error {
-	type unmarshaler VerificationPraxis
-	var value unmarshaler
-	if err := json.Unmarshal(data, &value); err != nil {
-		return err
-	}
-	*v = VerificationPraxis(value)
-	extraProperties, err := internal.ExtractExtraProperties(data, *v)
-	if err != nil {
-		return err
-	}
-	v.extraProperties = extraProperties
-	v.rawJSON = json.RawMessage(data)
-	return nil
-}
-
-func (v *VerificationPraxis) String() string {
-	if len(v.rawJSON) > 0 {
-		if value, err := internal.StringifyJSON(v.rawJSON); err == nil {
-			return value
-		}
-	}
-	if value, err := internal.StringifyJSON(v); err == nil {
-		return value
-	}
-	return fmt.Sprintf("%#v", v)
-}
-
-type VerificationPropertyFinder struct {
-	Configs *TypePropertyFinderConfig `json:"configs,omitempty" url:"configs,omitempty"`
-
-	extraProperties map[string]interface{}
-	rawJSON         json.RawMessage
-}
-
-func (v *VerificationPropertyFinder) GetConfigs() *TypePropertyFinderConfig {
-	if v == nil {
-		return nil
-	}
-	return v.Configs
 }
 
 func (v *VerificationPropertyFinder) GetExtraProperties() map[string]interface{} {
@@ -26560,1662 +23538,6 @@ func (v *VerificationPropertyFinder) UnmarshalJSON(data []byte) error {
 }
 
 func (v *VerificationPropertyFinder) String() string {
-	if len(v.rawJSON) > 0 {
-		if value, err := internal.StringifyJSON(v.rawJSON); err == nil {
-			return value
-		}
-	}
-	if value, err := internal.StringifyJSON(v); err == nil {
-		return value
-	}
-	return fmt.Sprintf("%#v", v)
-}
-
-type VerificationPylon struct {
-	Configs *TypePylonConfig `json:"configs,omitempty" url:"configs,omitempty"`
-
-	extraProperties map[string]interface{}
-	rawJSON         json.RawMessage
-}
-
-func (v *VerificationPylon) GetConfigs() *TypePylonConfig {
-	if v == nil {
-		return nil
-	}
-	return v.Configs
-}
-
-func (v *VerificationPylon) GetExtraProperties() map[string]interface{} {
-	return v.extraProperties
-}
-
-func (v *VerificationPylon) UnmarshalJSON(data []byte) error {
-	type unmarshaler VerificationPylon
-	var value unmarshaler
-	if err := json.Unmarshal(data, &value); err != nil {
-		return err
-	}
-	*v = VerificationPylon(value)
-	extraProperties, err := internal.ExtractExtraProperties(data, *v)
-	if err != nil {
-		return err
-	}
-	v.extraProperties = extraProperties
-	v.rawJSON = json.RawMessage(data)
-	return nil
-}
-
-func (v *VerificationPylon) String() string {
-	if len(v.rawJSON) > 0 {
-		if value, err := internal.StringifyJSON(v.rawJSON); err == nil {
-			return value
-		}
-	}
-	if value, err := internal.StringifyJSON(v); err == nil {
-		return value
-	}
-	return fmt.Sprintf("%#v", v)
-}
-
-type VerificationRazorpay struct {
-	Configs *TypeRazorpayConfig `json:"configs,omitempty" url:"configs,omitempty"`
-
-	extraProperties map[string]interface{}
-	rawJSON         json.RawMessage
-}
-
-func (v *VerificationRazorpay) GetConfigs() *TypeRazorpayConfig {
-	if v == nil {
-		return nil
-	}
-	return v.Configs
-}
-
-func (v *VerificationRazorpay) GetExtraProperties() map[string]interface{} {
-	return v.extraProperties
-}
-
-func (v *VerificationRazorpay) UnmarshalJSON(data []byte) error {
-	type unmarshaler VerificationRazorpay
-	var value unmarshaler
-	if err := json.Unmarshal(data, &value); err != nil {
-		return err
-	}
-	*v = VerificationRazorpay(value)
-	extraProperties, err := internal.ExtractExtraProperties(data, *v)
-	if err != nil {
-		return err
-	}
-	v.extraProperties = extraProperties
-	v.rawJSON = json.RawMessage(data)
-	return nil
-}
-
-func (v *VerificationRazorpay) String() string {
-	if len(v.rawJSON) > 0 {
-		if value, err := internal.StringifyJSON(v.rawJSON); err == nil {
-			return value
-		}
-	}
-	if value, err := internal.StringifyJSON(v); err == nil {
-		return value
-	}
-	return fmt.Sprintf("%#v", v)
-}
-
-type VerificationRecharge struct {
-	Configs *TypeRechargeConfig `json:"configs,omitempty" url:"configs,omitempty"`
-
-	extraProperties map[string]interface{}
-	rawJSON         json.RawMessage
-}
-
-func (v *VerificationRecharge) GetConfigs() *TypeRechargeConfig {
-	if v == nil {
-		return nil
-	}
-	return v.Configs
-}
-
-func (v *VerificationRecharge) GetExtraProperties() map[string]interface{} {
-	return v.extraProperties
-}
-
-func (v *VerificationRecharge) UnmarshalJSON(data []byte) error {
-	type unmarshaler VerificationRecharge
-	var value unmarshaler
-	if err := json.Unmarshal(data, &value); err != nil {
-		return err
-	}
-	*v = VerificationRecharge(value)
-	extraProperties, err := internal.ExtractExtraProperties(data, *v)
-	if err != nil {
-		return err
-	}
-	v.extraProperties = extraProperties
-	v.rawJSON = json.RawMessage(data)
-	return nil
-}
-
-func (v *VerificationRecharge) String() string {
-	if len(v.rawJSON) > 0 {
-		if value, err := internal.StringifyJSON(v.rawJSON); err == nil {
-			return value
-		}
-	}
-	if value, err := internal.StringifyJSON(v); err == nil {
-		return value
-	}
-	return fmt.Sprintf("%#v", v)
-}
-
-type VerificationRepay struct {
-	Configs *TypeRepayConfig `json:"configs,omitempty" url:"configs,omitempty"`
-
-	extraProperties map[string]interface{}
-	rawJSON         json.RawMessage
-}
-
-func (v *VerificationRepay) GetConfigs() *TypeRepayConfig {
-	if v == nil {
-		return nil
-	}
-	return v.Configs
-}
-
-func (v *VerificationRepay) GetExtraProperties() map[string]interface{} {
-	return v.extraProperties
-}
-
-func (v *VerificationRepay) UnmarshalJSON(data []byte) error {
-	type unmarshaler VerificationRepay
-	var value unmarshaler
-	if err := json.Unmarshal(data, &value); err != nil {
-		return err
-	}
-	*v = VerificationRepay(value)
-	extraProperties, err := internal.ExtractExtraProperties(data, *v)
-	if err != nil {
-		return err
-	}
-	v.extraProperties = extraProperties
-	v.rawJSON = json.RawMessage(data)
-	return nil
-}
-
-func (v *VerificationRepay) String() string {
-	if len(v.rawJSON) > 0 {
-		if value, err := internal.StringifyJSON(v.rawJSON); err == nil {
-			return value
-		}
-	}
-	if value, err := internal.StringifyJSON(v); err == nil {
-		return value
-	}
-	return fmt.Sprintf("%#v", v)
-}
-
-type VerificationReplicate struct {
-	Configs *TypeReplicateConfig `json:"configs,omitempty" url:"configs,omitempty"`
-
-	extraProperties map[string]interface{}
-	rawJSON         json.RawMessage
-}
-
-func (v *VerificationReplicate) GetConfigs() *TypeReplicateConfig {
-	if v == nil {
-		return nil
-	}
-	return v.Configs
-}
-
-func (v *VerificationReplicate) GetExtraProperties() map[string]interface{} {
-	return v.extraProperties
-}
-
-func (v *VerificationReplicate) UnmarshalJSON(data []byte) error {
-	type unmarshaler VerificationReplicate
-	var value unmarshaler
-	if err := json.Unmarshal(data, &value); err != nil {
-		return err
-	}
-	*v = VerificationReplicate(value)
-	extraProperties, err := internal.ExtractExtraProperties(data, *v)
-	if err != nil {
-		return err
-	}
-	v.extraProperties = extraProperties
-	v.rawJSON = json.RawMessage(data)
-	return nil
-}
-
-func (v *VerificationReplicate) String() string {
-	if len(v.rawJSON) > 0 {
-		if value, err := internal.StringifyJSON(v.rawJSON); err == nil {
-			return value
-		}
-	}
-	if value, err := internal.StringifyJSON(v); err == nil {
-		return value
-	}
-	return fmt.Sprintf("%#v", v)
-}
-
-type VerificationSanity struct {
-	Configs *TypeSanityConfig `json:"configs,omitempty" url:"configs,omitempty"`
-
-	extraProperties map[string]interface{}
-	rawJSON         json.RawMessage
-}
-
-func (v *VerificationSanity) GetConfigs() *TypeSanityConfig {
-	if v == nil {
-		return nil
-	}
-	return v.Configs
-}
-
-func (v *VerificationSanity) GetExtraProperties() map[string]interface{} {
-	return v.extraProperties
-}
-
-func (v *VerificationSanity) UnmarshalJSON(data []byte) error {
-	type unmarshaler VerificationSanity
-	var value unmarshaler
-	if err := json.Unmarshal(data, &value); err != nil {
-		return err
-	}
-	*v = VerificationSanity(value)
-	extraProperties, err := internal.ExtractExtraProperties(data, *v)
-	if err != nil {
-		return err
-	}
-	v.extraProperties = extraProperties
-	v.rawJSON = json.RawMessage(data)
-	return nil
-}
-
-func (v *VerificationSanity) String() string {
-	if len(v.rawJSON) > 0 {
-		if value, err := internal.StringifyJSON(v.rawJSON); err == nil {
-			return value
-		}
-	}
-	if value, err := internal.StringifyJSON(v); err == nil {
-		return value
-	}
-	return fmt.Sprintf("%#v", v)
-}
-
-type VerificationSendgrid struct {
-	Configs *TypeSendgridConfig `json:"configs,omitempty" url:"configs,omitempty"`
-
-	extraProperties map[string]interface{}
-	rawJSON         json.RawMessage
-}
-
-func (v *VerificationSendgrid) GetConfigs() *TypeSendgridConfig {
-	if v == nil {
-		return nil
-	}
-	return v.Configs
-}
-
-func (v *VerificationSendgrid) GetExtraProperties() map[string]interface{} {
-	return v.extraProperties
-}
-
-func (v *VerificationSendgrid) UnmarshalJSON(data []byte) error {
-	type unmarshaler VerificationSendgrid
-	var value unmarshaler
-	if err := json.Unmarshal(data, &value); err != nil {
-		return err
-	}
-	*v = VerificationSendgrid(value)
-	extraProperties, err := internal.ExtractExtraProperties(data, *v)
-	if err != nil {
-		return err
-	}
-	v.extraProperties = extraProperties
-	v.rawJSON = json.RawMessage(data)
-	return nil
-}
-
-func (v *VerificationSendgrid) String() string {
-	if len(v.rawJSON) > 0 {
-		if value, err := internal.StringifyJSON(v.rawJSON); err == nil {
-			return value
-		}
-	}
-	if value, err := internal.StringifyJSON(v); err == nil {
-		return value
-	}
-	return fmt.Sprintf("%#v", v)
-}
-
-type VerificationShopify struct {
-	Configs *TypeShopifyConfig `json:"configs,omitempty" url:"configs,omitempty"`
-
-	extraProperties map[string]interface{}
-	rawJSON         json.RawMessage
-}
-
-func (v *VerificationShopify) GetConfigs() *TypeShopifyConfig {
-	if v == nil {
-		return nil
-	}
-	return v.Configs
-}
-
-func (v *VerificationShopify) GetExtraProperties() map[string]interface{} {
-	return v.extraProperties
-}
-
-func (v *VerificationShopify) UnmarshalJSON(data []byte) error {
-	type unmarshaler VerificationShopify
-	var value unmarshaler
-	if err := json.Unmarshal(data, &value); err != nil {
-		return err
-	}
-	*v = VerificationShopify(value)
-	extraProperties, err := internal.ExtractExtraProperties(data, *v)
-	if err != nil {
-		return err
-	}
-	v.extraProperties = extraProperties
-	v.rawJSON = json.RawMessage(data)
-	return nil
-}
-
-func (v *VerificationShopify) String() string {
-	if len(v.rawJSON) > 0 {
-		if value, err := internal.StringifyJSON(v.rawJSON); err == nil {
-			return value
-		}
-	}
-	if value, err := internal.StringifyJSON(v); err == nil {
-		return value
-	}
-	return fmt.Sprintf("%#v", v)
-}
-
-type VerificationShopline struct {
-	Configs *TypeShoplineConfig `json:"configs,omitempty" url:"configs,omitempty"`
-
-	extraProperties map[string]interface{}
-	rawJSON         json.RawMessage
-}
-
-func (v *VerificationShopline) GetConfigs() *TypeShoplineConfig {
-	if v == nil {
-		return nil
-	}
-	return v.Configs
-}
-
-func (v *VerificationShopline) GetExtraProperties() map[string]interface{} {
-	return v.extraProperties
-}
-
-func (v *VerificationShopline) UnmarshalJSON(data []byte) error {
-	type unmarshaler VerificationShopline
-	var value unmarshaler
-	if err := json.Unmarshal(data, &value); err != nil {
-		return err
-	}
-	*v = VerificationShopline(value)
-	extraProperties, err := internal.ExtractExtraProperties(data, *v)
-	if err != nil {
-		return err
-	}
-	v.extraProperties = extraProperties
-	v.rawJSON = json.RawMessage(data)
-	return nil
-}
-
-func (v *VerificationShopline) String() string {
-	if len(v.rawJSON) > 0 {
-		if value, err := internal.StringifyJSON(v.rawJSON); err == nil {
-			return value
-		}
-	}
-	if value, err := internal.StringifyJSON(v); err == nil {
-		return value
-	}
-	return fmt.Sprintf("%#v", v)
-}
-
-type VerificationSlack struct {
-	Configs *TypeSlackConfig `json:"configs,omitempty" url:"configs,omitempty"`
-
-	extraProperties map[string]interface{}
-	rawJSON         json.RawMessage
-}
-
-func (v *VerificationSlack) GetConfigs() *TypeSlackConfig {
-	if v == nil {
-		return nil
-	}
-	return v.Configs
-}
-
-func (v *VerificationSlack) GetExtraProperties() map[string]interface{} {
-	return v.extraProperties
-}
-
-func (v *VerificationSlack) UnmarshalJSON(data []byte) error {
-	type unmarshaler VerificationSlack
-	var value unmarshaler
-	if err := json.Unmarshal(data, &value); err != nil {
-		return err
-	}
-	*v = VerificationSlack(value)
-	extraProperties, err := internal.ExtractExtraProperties(data, *v)
-	if err != nil {
-		return err
-	}
-	v.extraProperties = extraProperties
-	v.rawJSON = json.RawMessage(data)
-	return nil
-}
-
-func (v *VerificationSlack) String() string {
-	if len(v.rawJSON) > 0 {
-		if value, err := internal.StringifyJSON(v.rawJSON); err == nil {
-			return value
-		}
-	}
-	if value, err := internal.StringifyJSON(v); err == nil {
-		return value
-	}
-	return fmt.Sprintf("%#v", v)
-}
-
-type VerificationSolidgate struct {
-	Configs *TypeSolidgateConfig `json:"configs,omitempty" url:"configs,omitempty"`
-
-	extraProperties map[string]interface{}
-	rawJSON         json.RawMessage
-}
-
-func (v *VerificationSolidgate) GetConfigs() *TypeSolidgateConfig {
-	if v == nil {
-		return nil
-	}
-	return v.Configs
-}
-
-func (v *VerificationSolidgate) GetExtraProperties() map[string]interface{} {
-	return v.extraProperties
-}
-
-func (v *VerificationSolidgate) UnmarshalJSON(data []byte) error {
-	type unmarshaler VerificationSolidgate
-	var value unmarshaler
-	if err := json.Unmarshal(data, &value); err != nil {
-		return err
-	}
-	*v = VerificationSolidgate(value)
-	extraProperties, err := internal.ExtractExtraProperties(data, *v)
-	if err != nil {
-		return err
-	}
-	v.extraProperties = extraProperties
-	v.rawJSON = json.RawMessage(data)
-	return nil
-}
-
-func (v *VerificationSolidgate) String() string {
-	if len(v.rawJSON) > 0 {
-		if value, err := internal.StringifyJSON(v.rawJSON); err == nil {
-			return value
-		}
-	}
-	if value, err := internal.StringifyJSON(v); err == nil {
-		return value
-	}
-	return fmt.Sprintf("%#v", v)
-}
-
-type VerificationSquare struct {
-	Configs *TypeSquareConfig `json:"configs,omitempty" url:"configs,omitempty"`
-
-	extraProperties map[string]interface{}
-	rawJSON         json.RawMessage
-}
-
-func (v *VerificationSquare) GetConfigs() *TypeSquareConfig {
-	if v == nil {
-		return nil
-	}
-	return v.Configs
-}
-
-func (v *VerificationSquare) GetExtraProperties() map[string]interface{} {
-	return v.extraProperties
-}
-
-func (v *VerificationSquare) UnmarshalJSON(data []byte) error {
-	type unmarshaler VerificationSquare
-	var value unmarshaler
-	if err := json.Unmarshal(data, &value); err != nil {
-		return err
-	}
-	*v = VerificationSquare(value)
-	extraProperties, err := internal.ExtractExtraProperties(data, *v)
-	if err != nil {
-		return err
-	}
-	v.extraProperties = extraProperties
-	v.rawJSON = json.RawMessage(data)
-	return nil
-}
-
-func (v *VerificationSquare) String() string {
-	if len(v.rawJSON) > 0 {
-		if value, err := internal.StringifyJSON(v.rawJSON); err == nil {
-			return value
-		}
-	}
-	if value, err := internal.StringifyJSON(v); err == nil {
-		return value
-	}
-	return fmt.Sprintf("%#v", v)
-}
-
-type VerificationStripe struct {
-	Configs *TypeStripeConfig `json:"configs,omitempty" url:"configs,omitempty"`
-
-	extraProperties map[string]interface{}
-	rawJSON         json.RawMessage
-}
-
-func (v *VerificationStripe) GetConfigs() *TypeStripeConfig {
-	if v == nil {
-		return nil
-	}
-	return v.Configs
-}
-
-func (v *VerificationStripe) GetExtraProperties() map[string]interface{} {
-	return v.extraProperties
-}
-
-func (v *VerificationStripe) UnmarshalJSON(data []byte) error {
-	type unmarshaler VerificationStripe
-	var value unmarshaler
-	if err := json.Unmarshal(data, &value); err != nil {
-		return err
-	}
-	*v = VerificationStripe(value)
-	extraProperties, err := internal.ExtractExtraProperties(data, *v)
-	if err != nil {
-		return err
-	}
-	v.extraProperties = extraProperties
-	v.rawJSON = json.RawMessage(data)
-	return nil
-}
-
-func (v *VerificationStripe) String() string {
-	if len(v.rawJSON) > 0 {
-		if value, err := internal.StringifyJSON(v.rawJSON); err == nil {
-			return value
-		}
-	}
-	if value, err := internal.StringifyJSON(v); err == nil {
-		return value
-	}
-	return fmt.Sprintf("%#v", v)
-}
-
-type VerificationSvix struct {
-	Configs *TypeSvixConfig `json:"configs,omitempty" url:"configs,omitempty"`
-
-	extraProperties map[string]interface{}
-	rawJSON         json.RawMessage
-}
-
-func (v *VerificationSvix) GetConfigs() *TypeSvixConfig {
-	if v == nil {
-		return nil
-	}
-	return v.Configs
-}
-
-func (v *VerificationSvix) GetExtraProperties() map[string]interface{} {
-	return v.extraProperties
-}
-
-func (v *VerificationSvix) UnmarshalJSON(data []byte) error {
-	type unmarshaler VerificationSvix
-	var value unmarshaler
-	if err := json.Unmarshal(data, &value); err != nil {
-		return err
-	}
-	*v = VerificationSvix(value)
-	extraProperties, err := internal.ExtractExtraProperties(data, *v)
-	if err != nil {
-		return err
-	}
-	v.extraProperties = extraProperties
-	v.rawJSON = json.RawMessage(data)
-	return nil
-}
-
-func (v *VerificationSvix) String() string {
-	if len(v.rawJSON) > 0 {
-		if value, err := internal.StringifyJSON(v.rawJSON); err == nil {
-			return value
-		}
-	}
-	if value, err := internal.StringifyJSON(v); err == nil {
-		return value
-	}
-	return fmt.Sprintf("%#v", v)
-}
-
-type VerificationSynctera struct {
-	Configs *TypeSyncteraConfig `json:"configs,omitempty" url:"configs,omitempty"`
-
-	extraProperties map[string]interface{}
-	rawJSON         json.RawMessage
-}
-
-func (v *VerificationSynctera) GetConfigs() *TypeSyncteraConfig {
-	if v == nil {
-		return nil
-	}
-	return v.Configs
-}
-
-func (v *VerificationSynctera) GetExtraProperties() map[string]interface{} {
-	return v.extraProperties
-}
-
-func (v *VerificationSynctera) UnmarshalJSON(data []byte) error {
-	type unmarshaler VerificationSynctera
-	var value unmarshaler
-	if err := json.Unmarshal(data, &value); err != nil {
-		return err
-	}
-	*v = VerificationSynctera(value)
-	extraProperties, err := internal.ExtractExtraProperties(data, *v)
-	if err != nil {
-		return err
-	}
-	v.extraProperties = extraProperties
-	v.rawJSON = json.RawMessage(data)
-	return nil
-}
-
-func (v *VerificationSynctera) String() string {
-	if len(v.rawJSON) > 0 {
-		if value, err := internal.StringifyJSON(v.rawJSON); err == nil {
-			return value
-		}
-	}
-	if value, err := internal.StringifyJSON(v); err == nil {
-		return value
-	}
-	return fmt.Sprintf("%#v", v)
-}
-
-type VerificationTebex struct {
-	Configs *TypeTebexConfig `json:"configs,omitempty" url:"configs,omitempty"`
-
-	extraProperties map[string]interface{}
-	rawJSON         json.RawMessage
-}
-
-func (v *VerificationTebex) GetConfigs() *TypeTebexConfig {
-	if v == nil {
-		return nil
-	}
-	return v.Configs
-}
-
-func (v *VerificationTebex) GetExtraProperties() map[string]interface{} {
-	return v.extraProperties
-}
-
-func (v *VerificationTebex) UnmarshalJSON(data []byte) error {
-	type unmarshaler VerificationTebex
-	var value unmarshaler
-	if err := json.Unmarshal(data, &value); err != nil {
-		return err
-	}
-	*v = VerificationTebex(value)
-	extraProperties, err := internal.ExtractExtraProperties(data, *v)
-	if err != nil {
-		return err
-	}
-	v.extraProperties = extraProperties
-	v.rawJSON = json.RawMessage(data)
-	return nil
-}
-
-func (v *VerificationTebex) String() string {
-	if len(v.rawJSON) > 0 {
-		if value, err := internal.StringifyJSON(v.rawJSON); err == nil {
-			return value
-		}
-	}
-	if value, err := internal.StringifyJSON(v); err == nil {
-		return value
-	}
-	return fmt.Sprintf("%#v", v)
-}
-
-type VerificationTelnyx struct {
-	Configs *TypeTelnyxConfig `json:"configs,omitempty" url:"configs,omitempty"`
-
-	extraProperties map[string]interface{}
-	rawJSON         json.RawMessage
-}
-
-func (v *VerificationTelnyx) GetConfigs() *TypeTelnyxConfig {
-	if v == nil {
-		return nil
-	}
-	return v.Configs
-}
-
-func (v *VerificationTelnyx) GetExtraProperties() map[string]interface{} {
-	return v.extraProperties
-}
-
-func (v *VerificationTelnyx) UnmarshalJSON(data []byte) error {
-	type unmarshaler VerificationTelnyx
-	var value unmarshaler
-	if err := json.Unmarshal(data, &value); err != nil {
-		return err
-	}
-	*v = VerificationTelnyx(value)
-	extraProperties, err := internal.ExtractExtraProperties(data, *v)
-	if err != nil {
-		return err
-	}
-	v.extraProperties = extraProperties
-	v.rawJSON = json.RawMessage(data)
-	return nil
-}
-
-func (v *VerificationTelnyx) String() string {
-	if len(v.rawJSON) > 0 {
-		if value, err := internal.StringifyJSON(v.rawJSON); err == nil {
-			return value
-		}
-	}
-	if value, err := internal.StringifyJSON(v); err == nil {
-		return value
-	}
-	return fmt.Sprintf("%#v", v)
-}
-
-type VerificationTikTok struct {
-	Configs *TypeTikTokConfig `json:"configs,omitempty" url:"configs,omitempty"`
-
-	extraProperties map[string]interface{}
-	rawJSON         json.RawMessage
-}
-
-func (v *VerificationTikTok) GetConfigs() *TypeTikTokConfig {
-	if v == nil {
-		return nil
-	}
-	return v.Configs
-}
-
-func (v *VerificationTikTok) GetExtraProperties() map[string]interface{} {
-	return v.extraProperties
-}
-
-func (v *VerificationTikTok) UnmarshalJSON(data []byte) error {
-	type unmarshaler VerificationTikTok
-	var value unmarshaler
-	if err := json.Unmarshal(data, &value); err != nil {
-		return err
-	}
-	*v = VerificationTikTok(value)
-	extraProperties, err := internal.ExtractExtraProperties(data, *v)
-	if err != nil {
-		return err
-	}
-	v.extraProperties = extraProperties
-	v.rawJSON = json.RawMessage(data)
-	return nil
-}
-
-func (v *VerificationTikTok) String() string {
-	if len(v.rawJSON) > 0 {
-		if value, err := internal.StringifyJSON(v.rawJSON); err == nil {
-			return value
-		}
-	}
-	if value, err := internal.StringifyJSON(v); err == nil {
-		return value
-	}
-	return fmt.Sprintf("%#v", v)
-}
-
-type VerificationTokenIo struct {
-	Configs *TypeTokenIoConfig `json:"configs,omitempty" url:"configs,omitempty"`
-
-	extraProperties map[string]interface{}
-	rawJSON         json.RawMessage
-}
-
-func (v *VerificationTokenIo) GetConfigs() *TypeTokenIoConfig {
-	if v == nil {
-		return nil
-	}
-	return v.Configs
-}
-
-func (v *VerificationTokenIo) GetExtraProperties() map[string]interface{} {
-	return v.extraProperties
-}
-
-func (v *VerificationTokenIo) UnmarshalJSON(data []byte) error {
-	type unmarshaler VerificationTokenIo
-	var value unmarshaler
-	if err := json.Unmarshal(data, &value); err != nil {
-		return err
-	}
-	*v = VerificationTokenIo(value)
-	extraProperties, err := internal.ExtractExtraProperties(data, *v)
-	if err != nil {
-		return err
-	}
-	v.extraProperties = extraProperties
-	v.rawJSON = json.RawMessage(data)
-	return nil
-}
-
-func (v *VerificationTokenIo) String() string {
-	if len(v.rawJSON) > 0 {
-		if value, err := internal.StringifyJSON(v.rawJSON); err == nil {
-			return value
-		}
-	}
-	if value, err := internal.StringifyJSON(v); err == nil {
-		return value
-	}
-	return fmt.Sprintf("%#v", v)
-}
-
-type VerificationTreezor struct {
-	Configs *TypeTreezorConfig `json:"configs,omitempty" url:"configs,omitempty"`
-
-	extraProperties map[string]interface{}
-	rawJSON         json.RawMessage
-}
-
-func (v *VerificationTreezor) GetConfigs() *TypeTreezorConfig {
-	if v == nil {
-		return nil
-	}
-	return v.Configs
-}
-
-func (v *VerificationTreezor) GetExtraProperties() map[string]interface{} {
-	return v.extraProperties
-}
-
-func (v *VerificationTreezor) UnmarshalJSON(data []byte) error {
-	type unmarshaler VerificationTreezor
-	var value unmarshaler
-	if err := json.Unmarshal(data, &value); err != nil {
-		return err
-	}
-	*v = VerificationTreezor(value)
-	extraProperties, err := internal.ExtractExtraProperties(data, *v)
-	if err != nil {
-		return err
-	}
-	v.extraProperties = extraProperties
-	v.rawJSON = json.RawMessage(data)
-	return nil
-}
-
-func (v *VerificationTreezor) String() string {
-	if len(v.rawJSON) > 0 {
-		if value, err := internal.StringifyJSON(v.rawJSON); err == nil {
-			return value
-		}
-	}
-	if value, err := internal.StringifyJSON(v); err == nil {
-		return value
-	}
-	return fmt.Sprintf("%#v", v)
-}
-
-type VerificationTrello struct {
-	Configs *TypeTrelloConfig `json:"configs,omitempty" url:"configs,omitempty"`
-
-	extraProperties map[string]interface{}
-	rawJSON         json.RawMessage
-}
-
-func (v *VerificationTrello) GetConfigs() *TypeTrelloConfig {
-	if v == nil {
-		return nil
-	}
-	return v.Configs
-}
-
-func (v *VerificationTrello) GetExtraProperties() map[string]interface{} {
-	return v.extraProperties
-}
-
-func (v *VerificationTrello) UnmarshalJSON(data []byte) error {
-	type unmarshaler VerificationTrello
-	var value unmarshaler
-	if err := json.Unmarshal(data, &value); err != nil {
-		return err
-	}
-	*v = VerificationTrello(value)
-	extraProperties, err := internal.ExtractExtraProperties(data, *v)
-	if err != nil {
-		return err
-	}
-	v.extraProperties = extraProperties
-	v.rawJSON = json.RawMessage(data)
-	return nil
-}
-
-func (v *VerificationTrello) String() string {
-	if len(v.rawJSON) > 0 {
-		if value, err := internal.StringifyJSON(v.rawJSON); err == nil {
-			return value
-		}
-	}
-	if value, err := internal.StringifyJSON(v); err == nil {
-		return value
-	}
-	return fmt.Sprintf("%#v", v)
-}
-
-type VerificationTwilio struct {
-	Configs *TypeTwilioConfig `json:"configs,omitempty" url:"configs,omitempty"`
-
-	extraProperties map[string]interface{}
-	rawJSON         json.RawMessage
-}
-
-func (v *VerificationTwilio) GetConfigs() *TypeTwilioConfig {
-	if v == nil {
-		return nil
-	}
-	return v.Configs
-}
-
-func (v *VerificationTwilio) GetExtraProperties() map[string]interface{} {
-	return v.extraProperties
-}
-
-func (v *VerificationTwilio) UnmarshalJSON(data []byte) error {
-	type unmarshaler VerificationTwilio
-	var value unmarshaler
-	if err := json.Unmarshal(data, &value); err != nil {
-		return err
-	}
-	*v = VerificationTwilio(value)
-	extraProperties, err := internal.ExtractExtraProperties(data, *v)
-	if err != nil {
-		return err
-	}
-	v.extraProperties = extraProperties
-	v.rawJSON = json.RawMessage(data)
-	return nil
-}
-
-func (v *VerificationTwilio) String() string {
-	if len(v.rawJSON) > 0 {
-		if value, err := internal.StringifyJSON(v.rawJSON); err == nil {
-			return value
-		}
-	}
-	if value, err := internal.StringifyJSON(v); err == nil {
-		return value
-	}
-	return fmt.Sprintf("%#v", v)
-}
-
-type VerificationTwitch struct {
-	Configs *TypeTwitchConfig `json:"configs,omitempty" url:"configs,omitempty"`
-
-	extraProperties map[string]interface{}
-	rawJSON         json.RawMessage
-}
-
-func (v *VerificationTwitch) GetConfigs() *TypeTwitchConfig {
-	if v == nil {
-		return nil
-	}
-	return v.Configs
-}
-
-func (v *VerificationTwitch) GetExtraProperties() map[string]interface{} {
-	return v.extraProperties
-}
-
-func (v *VerificationTwitch) UnmarshalJSON(data []byte) error {
-	type unmarshaler VerificationTwitch
-	var value unmarshaler
-	if err := json.Unmarshal(data, &value); err != nil {
-		return err
-	}
-	*v = VerificationTwitch(value)
-	extraProperties, err := internal.ExtractExtraProperties(data, *v)
-	if err != nil {
-		return err
-	}
-	v.extraProperties = extraProperties
-	v.rawJSON = json.RawMessage(data)
-	return nil
-}
-
-func (v *VerificationTwitch) String() string {
-	if len(v.rawJSON) > 0 {
-		if value, err := internal.StringifyJSON(v.rawJSON); err == nil {
-			return value
-		}
-	}
-	if value, err := internal.StringifyJSON(v); err == nil {
-		return value
-	}
-	return fmt.Sprintf("%#v", v)
-}
-
-type VerificationTwitter struct {
-	Configs *TypeTwitterConfig `json:"configs,omitempty" url:"configs,omitempty"`
-
-	extraProperties map[string]interface{}
-	rawJSON         json.RawMessage
-}
-
-func (v *VerificationTwitter) GetConfigs() *TypeTwitterConfig {
-	if v == nil {
-		return nil
-	}
-	return v.Configs
-}
-
-func (v *VerificationTwitter) GetExtraProperties() map[string]interface{} {
-	return v.extraProperties
-}
-
-func (v *VerificationTwitter) UnmarshalJSON(data []byte) error {
-	type unmarshaler VerificationTwitter
-	var value unmarshaler
-	if err := json.Unmarshal(data, &value); err != nil {
-		return err
-	}
-	*v = VerificationTwitter(value)
-	extraProperties, err := internal.ExtractExtraProperties(data, *v)
-	if err != nil {
-		return err
-	}
-	v.extraProperties = extraProperties
-	v.rawJSON = json.RawMessage(data)
-	return nil
-}
-
-func (v *VerificationTwitter) String() string {
-	if len(v.rawJSON) > 0 {
-		if value, err := internal.StringifyJSON(v.rawJSON); err == nil {
-			return value
-		}
-	}
-	if value, err := internal.StringifyJSON(v); err == nil {
-		return value
-	}
-	return fmt.Sprintf("%#v", v)
-}
-
-type VerificationTypeform struct {
-	Configs *TypeTypeformConfig `json:"configs,omitempty" url:"configs,omitempty"`
-
-	extraProperties map[string]interface{}
-	rawJSON         json.RawMessage
-}
-
-func (v *VerificationTypeform) GetConfigs() *TypeTypeformConfig {
-	if v == nil {
-		return nil
-	}
-	return v.Configs
-}
-
-func (v *VerificationTypeform) GetExtraProperties() map[string]interface{} {
-	return v.extraProperties
-}
-
-func (v *VerificationTypeform) UnmarshalJSON(data []byte) error {
-	type unmarshaler VerificationTypeform
-	var value unmarshaler
-	if err := json.Unmarshal(data, &value); err != nil {
-		return err
-	}
-	*v = VerificationTypeform(value)
-	extraProperties, err := internal.ExtractExtraProperties(data, *v)
-	if err != nil {
-		return err
-	}
-	v.extraProperties = extraProperties
-	v.rawJSON = json.RawMessage(data)
-	return nil
-}
-
-func (v *VerificationTypeform) String() string {
-	if len(v.rawJSON) > 0 {
-		if value, err := internal.StringifyJSON(v.rawJSON); err == nil {
-			return value
-		}
-	}
-	if value, err := internal.StringifyJSON(v); err == nil {
-		return value
-	}
-	return fmt.Sprintf("%#v", v)
-}
-
-type VerificationUpollo struct {
-	Configs *TypeUpolloConfig `json:"configs,omitempty" url:"configs,omitempty"`
-
-	extraProperties map[string]interface{}
-	rawJSON         json.RawMessage
-}
-
-func (v *VerificationUpollo) GetConfigs() *TypeUpolloConfig {
-	if v == nil {
-		return nil
-	}
-	return v.Configs
-}
-
-func (v *VerificationUpollo) GetExtraProperties() map[string]interface{} {
-	return v.extraProperties
-}
-
-func (v *VerificationUpollo) UnmarshalJSON(data []byte) error {
-	type unmarshaler VerificationUpollo
-	var value unmarshaler
-	if err := json.Unmarshal(data, &value); err != nil {
-		return err
-	}
-	*v = VerificationUpollo(value)
-	extraProperties, err := internal.ExtractExtraProperties(data, *v)
-	if err != nil {
-		return err
-	}
-	v.extraProperties = extraProperties
-	v.rawJSON = json.RawMessage(data)
-	return nil
-}
-
-func (v *VerificationUpollo) String() string {
-	if len(v.rawJSON) > 0 {
-		if value, err := internal.StringifyJSON(v.rawJSON); err == nil {
-			return value
-		}
-	}
-	if value, err := internal.StringifyJSON(v); err == nil {
-		return value
-	}
-	return fmt.Sprintf("%#v", v)
-}
-
-type VerificationVercelLogDrains struct {
-	Configs *TypeVercelLogDrainsConfig `json:"configs,omitempty" url:"configs,omitempty"`
-
-	extraProperties map[string]interface{}
-	rawJSON         json.RawMessage
-}
-
-func (v *VerificationVercelLogDrains) GetConfigs() *TypeVercelLogDrainsConfig {
-	if v == nil {
-		return nil
-	}
-	return v.Configs
-}
-
-func (v *VerificationVercelLogDrains) GetExtraProperties() map[string]interface{} {
-	return v.extraProperties
-}
-
-func (v *VerificationVercelLogDrains) UnmarshalJSON(data []byte) error {
-	type unmarshaler VerificationVercelLogDrains
-	var value unmarshaler
-	if err := json.Unmarshal(data, &value); err != nil {
-		return err
-	}
-	*v = VerificationVercelLogDrains(value)
-	extraProperties, err := internal.ExtractExtraProperties(data, *v)
-	if err != nil {
-		return err
-	}
-	v.extraProperties = extraProperties
-	v.rawJSON = json.RawMessage(data)
-	return nil
-}
-
-func (v *VerificationVercelLogDrains) String() string {
-	if len(v.rawJSON) > 0 {
-		if value, err := internal.StringifyJSON(v.rawJSON); err == nil {
-			return value
-		}
-	}
-	if value, err := internal.StringifyJSON(v); err == nil {
-		return value
-	}
-	return fmt.Sprintf("%#v", v)
-}
-
-type VerificationVercelWebhooks struct {
-	Configs *TypeVercelWebhooksConfig `json:"configs,omitempty" url:"configs,omitempty"`
-
-	extraProperties map[string]interface{}
-	rawJSON         json.RawMessage
-}
-
-func (v *VerificationVercelWebhooks) GetConfigs() *TypeVercelWebhooksConfig {
-	if v == nil {
-		return nil
-	}
-	return v.Configs
-}
-
-func (v *VerificationVercelWebhooks) GetExtraProperties() map[string]interface{} {
-	return v.extraProperties
-}
-
-func (v *VerificationVercelWebhooks) UnmarshalJSON(data []byte) error {
-	type unmarshaler VerificationVercelWebhooks
-	var value unmarshaler
-	if err := json.Unmarshal(data, &value); err != nil {
-		return err
-	}
-	*v = VerificationVercelWebhooks(value)
-	extraProperties, err := internal.ExtractExtraProperties(data, *v)
-	if err != nil {
-		return err
-	}
-	v.extraProperties = extraProperties
-	v.rawJSON = json.RawMessage(data)
-	return nil
-}
-
-func (v *VerificationVercelWebhooks) String() string {
-	if len(v.rawJSON) > 0 {
-		if value, err := internal.StringifyJSON(v.rawJSON); err == nil {
-			return value
-		}
-	}
-	if value, err := internal.StringifyJSON(v); err == nil {
-		return value
-	}
-	return fmt.Sprintf("%#v", v)
-}
-
-type VerificationWebhook struct {
-	Configs *TypeWebhookConfig `json:"configs,omitempty" url:"configs,omitempty"`
-
-	extraProperties map[string]interface{}
-	rawJSON         json.RawMessage
-}
-
-func (v *VerificationWebhook) GetConfigs() *TypeWebhookConfig {
-	if v == nil {
-		return nil
-	}
-	return v.Configs
-}
-
-func (v *VerificationWebhook) GetExtraProperties() map[string]interface{} {
-	return v.extraProperties
-}
-
-func (v *VerificationWebhook) UnmarshalJSON(data []byte) error {
-	type unmarshaler VerificationWebhook
-	var value unmarshaler
-	if err := json.Unmarshal(data, &value); err != nil {
-		return err
-	}
-	*v = VerificationWebhook(value)
-	extraProperties, err := internal.ExtractExtraProperties(data, *v)
-	if err != nil {
-		return err
-	}
-	v.extraProperties = extraProperties
-	v.rawJSON = json.RawMessage(data)
-	return nil
-}
-
-func (v *VerificationWebhook) String() string {
-	if len(v.rawJSON) > 0 {
-		if value, err := internal.StringifyJSON(v.rawJSON); err == nil {
-			return value
-		}
-	}
-	if value, err := internal.StringifyJSON(v); err == nil {
-		return value
-	}
-	return fmt.Sprintf("%#v", v)
-}
-
-type VerificationWhatsApp struct {
-	Configs *TypeWhatsAppConfig `json:"configs,omitempty" url:"configs,omitempty"`
-
-	extraProperties map[string]interface{}
-	rawJSON         json.RawMessage
-}
-
-func (v *VerificationWhatsApp) GetConfigs() *TypeWhatsAppConfig {
-	if v == nil {
-		return nil
-	}
-	return v.Configs
-}
-
-func (v *VerificationWhatsApp) GetExtraProperties() map[string]interface{} {
-	return v.extraProperties
-}
-
-func (v *VerificationWhatsApp) UnmarshalJSON(data []byte) error {
-	type unmarshaler VerificationWhatsApp
-	var value unmarshaler
-	if err := json.Unmarshal(data, &value); err != nil {
-		return err
-	}
-	*v = VerificationWhatsApp(value)
-	extraProperties, err := internal.ExtractExtraProperties(data, *v)
-	if err != nil {
-		return err
-	}
-	v.extraProperties = extraProperties
-	v.rawJSON = json.RawMessage(data)
-	return nil
-}
-
-func (v *VerificationWhatsApp) String() string {
-	if len(v.rawJSON) > 0 {
-		if value, err := internal.StringifyJSON(v.rawJSON); err == nil {
-			return value
-		}
-	}
-	if value, err := internal.StringifyJSON(v); err == nil {
-		return value
-	}
-	return fmt.Sprintf("%#v", v)
-}
-
-type VerificationWix struct {
-	Configs *TypeWixConfig `json:"configs,omitempty" url:"configs,omitempty"`
-
-	extraProperties map[string]interface{}
-	rawJSON         json.RawMessage
-}
-
-func (v *VerificationWix) GetConfigs() *TypeWixConfig {
-	if v == nil {
-		return nil
-	}
-	return v.Configs
-}
-
-func (v *VerificationWix) GetExtraProperties() map[string]interface{} {
-	return v.extraProperties
-}
-
-func (v *VerificationWix) UnmarshalJSON(data []byte) error {
-	type unmarshaler VerificationWix
-	var value unmarshaler
-	if err := json.Unmarshal(data, &value); err != nil {
-		return err
-	}
-	*v = VerificationWix(value)
-	extraProperties, err := internal.ExtractExtraProperties(data, *v)
-	if err != nil {
-		return err
-	}
-	v.extraProperties = extraProperties
-	v.rawJSON = json.RawMessage(data)
-	return nil
-}
-
-func (v *VerificationWix) String() string {
-	if len(v.rawJSON) > 0 {
-		if value, err := internal.StringifyJSON(v.rawJSON); err == nil {
-			return value
-		}
-	}
-	if value, err := internal.StringifyJSON(v); err == nil {
-		return value
-	}
-	return fmt.Sprintf("%#v", v)
-}
-
-type VerificationWooCommerce struct {
-	Configs *TypeWooCommerceConfig `json:"configs,omitempty" url:"configs,omitempty"`
-
-	extraProperties map[string]interface{}
-	rawJSON         json.RawMessage
-}
-
-func (v *VerificationWooCommerce) GetConfigs() *TypeWooCommerceConfig {
-	if v == nil {
-		return nil
-	}
-	return v.Configs
-}
-
-func (v *VerificationWooCommerce) GetExtraProperties() map[string]interface{} {
-	return v.extraProperties
-}
-
-func (v *VerificationWooCommerce) UnmarshalJSON(data []byte) error {
-	type unmarshaler VerificationWooCommerce
-	var value unmarshaler
-	if err := json.Unmarshal(data, &value); err != nil {
-		return err
-	}
-	*v = VerificationWooCommerce(value)
-	extraProperties, err := internal.ExtractExtraProperties(data, *v)
-	if err != nil {
-		return err
-	}
-	v.extraProperties = extraProperties
-	v.rawJSON = json.RawMessage(data)
-	return nil
-}
-
-func (v *VerificationWooCommerce) String() string {
-	if len(v.rawJSON) > 0 {
-		if value, err := internal.StringifyJSON(v.rawJSON); err == nil {
-			return value
-		}
-	}
-	if value, err := internal.StringifyJSON(v); err == nil {
-		return value
-	}
-	return fmt.Sprintf("%#v", v)
-}
-
-type VerificationWorkOs struct {
-	Configs *TypeWorkOsConfig `json:"configs,omitempty" url:"configs,omitempty"`
-
-	extraProperties map[string]interface{}
-	rawJSON         json.RawMessage
-}
-
-func (v *VerificationWorkOs) GetConfigs() *TypeWorkOsConfig {
-	if v == nil {
-		return nil
-	}
-	return v.Configs
-}
-
-func (v *VerificationWorkOs) GetExtraProperties() map[string]interface{} {
-	return v.extraProperties
-}
-
-func (v *VerificationWorkOs) UnmarshalJSON(data []byte) error {
-	type unmarshaler VerificationWorkOs
-	var value unmarshaler
-	if err := json.Unmarshal(data, &value); err != nil {
-		return err
-	}
-	*v = VerificationWorkOs(value)
-	extraProperties, err := internal.ExtractExtraProperties(data, *v)
-	if err != nil {
-		return err
-	}
-	v.extraProperties = extraProperties
-	v.rawJSON = json.RawMessage(data)
-	return nil
-}
-
-func (v *VerificationWorkOs) String() string {
-	if len(v.rawJSON) > 0 {
-		if value, err := internal.StringifyJSON(v.rawJSON); err == nil {
-			return value
-		}
-	}
-	if value, err := internal.StringifyJSON(v); err == nil {
-		return value
-	}
-	return fmt.Sprintf("%#v", v)
-}
-
-type VerificationXero struct {
-	Configs *TypeXeroConfig `json:"configs,omitempty" url:"configs,omitempty"`
-
-	extraProperties map[string]interface{}
-	rawJSON         json.RawMessage
-}
-
-func (v *VerificationXero) GetConfigs() *TypeXeroConfig {
-	if v == nil {
-		return nil
-	}
-	return v.Configs
-}
-
-func (v *VerificationXero) GetExtraProperties() map[string]interface{} {
-	return v.extraProperties
-}
-
-func (v *VerificationXero) UnmarshalJSON(data []byte) error {
-	type unmarshaler VerificationXero
-	var value unmarshaler
-	if err := json.Unmarshal(data, &value); err != nil {
-		return err
-	}
-	*v = VerificationXero(value)
-	extraProperties, err := internal.ExtractExtraProperties(data, *v)
-	if err != nil {
-		return err
-	}
-	v.extraProperties = extraProperties
-	v.rawJSON = json.RawMessage(data)
-	return nil
-}
-
-func (v *VerificationXero) String() string {
-	if len(v.rawJSON) > 0 {
-		if value, err := internal.StringifyJSON(v.rawJSON); err == nil {
-			return value
-		}
-	}
-	if value, err := internal.StringifyJSON(v); err == nil {
-		return value
-	}
-	return fmt.Sprintf("%#v", v)
-}
-
-type VerificationZendesk struct {
-	Configs *TypeZendeskConfig `json:"configs,omitempty" url:"configs,omitempty"`
-
-	extraProperties map[string]interface{}
-	rawJSON         json.RawMessage
-}
-
-func (v *VerificationZendesk) GetConfigs() *TypeZendeskConfig {
-	if v == nil {
-		return nil
-	}
-	return v.Configs
-}
-
-func (v *VerificationZendesk) GetExtraProperties() map[string]interface{} {
-	return v.extraProperties
-}
-
-func (v *VerificationZendesk) UnmarshalJSON(data []byte) error {
-	type unmarshaler VerificationZendesk
-	var value unmarshaler
-	if err := json.Unmarshal(data, &value); err != nil {
-		return err
-	}
-	*v = VerificationZendesk(value)
-	extraProperties, err := internal.ExtractExtraProperties(data, *v)
-	if err != nil {
-		return err
-	}
-	v.extraProperties = extraProperties
-	v.rawJSON = json.RawMessage(data)
-	return nil
-}
-
-func (v *VerificationZendesk) String() string {
-	if len(v.rawJSON) > 0 {
-		if value, err := internal.StringifyJSON(v.rawJSON); err == nil {
-			return value
-		}
-	}
-	if value, err := internal.StringifyJSON(v); err == nil {
-		return value
-	}
-	return fmt.Sprintf("%#v", v)
-}
-
-type VerificationZoom struct {
-	Configs *TypeZoomConfig `json:"configs,omitempty" url:"configs,omitempty"`
-
-	extraProperties map[string]interface{}
-	rawJSON         json.RawMessage
-}
-
-func (v *VerificationZoom) GetConfigs() *TypeZoomConfig {
-	if v == nil {
-		return nil
-	}
-	return v.Configs
-}
-
-func (v *VerificationZoom) GetExtraProperties() map[string]interface{} {
-	return v.extraProperties
-}
-
-func (v *VerificationZoom) UnmarshalJSON(data []byte) error {
-	type unmarshaler VerificationZoom
-	var value unmarshaler
-	if err := json.Unmarshal(data, &value); err != nil {
-		return err
-	}
-	*v = VerificationZoom(value)
-	extraProperties, err := internal.ExtractExtraProperties(data, *v)
-	if err != nil {
-		return err
-	}
-	v.extraProperties = extraProperties
-	v.rawJSON = json.RawMessage(data)
-	return nil
-}
-
-func (v *VerificationZoom) String() string {
 	if len(v.rawJSON) > 0 {
 		if value, err := internal.StringifyJSON(v.rawJSON); err == nil {
 			return value

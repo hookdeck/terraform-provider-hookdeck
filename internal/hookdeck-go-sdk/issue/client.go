@@ -40,7 +40,7 @@ func (c *Client) List(
 	baseURL := internal.ResolveBaseURL(
 		options.BaseURL,
 		c.baseURL,
-		"https://api.hookdeck.com/2025-01-01-next",
+		"https://api.hookdeck.com/2025-01-01",
 	)
 	endpointURL := baseURL + "/issues"
 	queryParams, err := internal.QueryValues(request)
@@ -96,7 +96,7 @@ func (c *Client) Count(
 	baseURL := internal.ResolveBaseURL(
 		options.BaseURL,
 		c.baseURL,
-		"https://api.hookdeck.com/2025-01-01-next",
+		"https://api.hookdeck.com/2025-01-01",
 	)
 	endpointURL := baseURL + "/issues/count"
 	queryParams, err := internal.QueryValues(request)
@@ -147,7 +147,7 @@ func (c *Client) Retrieve(
 	baseURL := internal.ResolveBaseURL(
 		options.BaseURL,
 		c.baseURL,
-		"https://api.hookdeck.com/2025-01-01-next",
+		"https://api.hookdeck.com/2025-01-01",
 	)
 	endpointURL := internal.EncodeURL(
 		baseURL+"/issues/%v",
@@ -195,7 +195,7 @@ func (c *Client) Update(
 	baseURL := internal.ResolveBaseURL(
 		options.BaseURL,
 		c.baseURL,
-		"https://api.hookdeck.com/2025-01-01-next",
+		"https://api.hookdeck.com/2025-01-01",
 	)
 	endpointURL := internal.EncodeURL(
 		baseURL+"/issues/%v",
@@ -249,7 +249,7 @@ func (c *Client) Dismiss(
 	baseURL := internal.ResolveBaseURL(
 		options.BaseURL,
 		c.baseURL,
-		"https://api.hookdeck.com/2025-01-01-next",
+		"https://api.hookdeck.com/2025-01-01",
 	)
 	endpointURL := internal.EncodeURL(
 		baseURL+"/issues/%v",

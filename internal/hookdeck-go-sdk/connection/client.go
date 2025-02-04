@@ -40,7 +40,7 @@ func (c *Client) List(
 	baseURL := internal.ResolveBaseURL(
 		options.BaseURL,
 		c.baseURL,
-		"https://api.hookdeck.com/2025-01-01-next",
+		"https://api.hookdeck.com/2025-01-01",
 	)
 	endpointURL := baseURL + "/connections"
 	queryParams, err := internal.QueryValues(request)
@@ -96,7 +96,7 @@ func (c *Client) Create(
 	baseURL := internal.ResolveBaseURL(
 		options.BaseURL,
 		c.baseURL,
-		"https://api.hookdeck.com/2025-01-01-next",
+		"https://api.hookdeck.com/2025-01-01",
 	)
 	endpointURL := baseURL + "/connections"
 	headers := internal.MergeHeaders(
@@ -147,7 +147,7 @@ func (c *Client) Upsert(
 	baseURL := internal.ResolveBaseURL(
 		options.BaseURL,
 		c.baseURL,
-		"https://api.hookdeck.com/2025-01-01-next",
+		"https://api.hookdeck.com/2025-01-01",
 	)
 	endpointURL := baseURL + "/connections"
 	headers := internal.MergeHeaders(
@@ -198,7 +198,7 @@ func (c *Client) Count(
 	baseURL := internal.ResolveBaseURL(
 		options.BaseURL,
 		c.baseURL,
-		"https://api.hookdeck.com/2025-01-01-next",
+		"https://api.hookdeck.com/2025-01-01",
 	)
 	endpointURL := baseURL + "/connections/count"
 	queryParams, err := internal.QueryValues(request)
@@ -254,7 +254,7 @@ func (c *Client) Retrieve(
 	baseURL := internal.ResolveBaseURL(
 		options.BaseURL,
 		c.baseURL,
-		"https://api.hookdeck.com/2025-01-01-next",
+		"https://api.hookdeck.com/2025-01-01",
 	)
 	endpointURL := internal.EncodeURL(
 		baseURL+"/connections/%v",
@@ -307,7 +307,7 @@ func (c *Client) Update(
 	baseURL := internal.ResolveBaseURL(
 		options.BaseURL,
 		c.baseURL,
-		"https://api.hookdeck.com/2025-01-01-next",
+		"https://api.hookdeck.com/2025-01-01",
 	)
 	endpointURL := internal.EncodeURL(
 		baseURL+"/connections/%v",
@@ -366,7 +366,7 @@ func (c *Client) Delete(
 	baseURL := internal.ResolveBaseURL(
 		options.BaseURL,
 		c.baseURL,
-		"https://api.hookdeck.com/2025-01-01-next",
+		"https://api.hookdeck.com/2025-01-01",
 	)
 	endpointURL := internal.EncodeURL(
 		baseURL+"/connections/%v",
@@ -413,7 +413,7 @@ func (c *Client) Disable(
 	baseURL := internal.ResolveBaseURL(
 		options.BaseURL,
 		c.baseURL,
-		"https://api.hookdeck.com/2025-01-01-next",
+		"https://api.hookdeck.com/2025-01-01",
 	)
 	endpointURL := internal.EncodeURL(
 		baseURL+"/connections/%v/archive",
@@ -460,7 +460,7 @@ func (c *Client) Enable(
 	baseURL := internal.ResolveBaseURL(
 		options.BaseURL,
 		c.baseURL,
-		"https://api.hookdeck.com/2025-01-01-next",
+		"https://api.hookdeck.com/2025-01-01",
 	)
 	endpointURL := internal.EncodeURL(
 		baseURL+"/connections/%v/unarchive",
@@ -507,7 +507,7 @@ func (c *Client) Pause(
 	baseURL := internal.ResolveBaseURL(
 		options.BaseURL,
 		c.baseURL,
-		"https://api.hookdeck.com/2025-01-01-next",
+		"https://api.hookdeck.com/2025-01-01",
 	)
 	endpointURL := internal.EncodeURL(
 		baseURL+"/connections/%v/pause",
@@ -554,7 +554,7 @@ func (c *Client) Unpause(
 	baseURL := internal.ResolveBaseURL(
 		options.BaseURL,
 		c.baseURL,
-		"https://api.hookdeck.com/2025-01-01-next",
+		"https://api.hookdeck.com/2025-01-01",
 	)
 	endpointURL := internal.EncodeURL(
 		baseURL+"/connections/%v/unpause",

@@ -9,5 +9,5 @@ package api
 var Environments = struct {
 	Default string
 }{
-	Default: "https://api.hookdeck.com/2025-01-01-next",
+	Default: "https://api.hookdeck.com/2025-01-01",
 }

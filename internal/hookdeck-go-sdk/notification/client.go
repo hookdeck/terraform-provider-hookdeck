@@ -40,7 +40,7 @@ func (c *Client) Update(
 	baseURL := internal.ResolveBaseURL(
 		options.BaseURL,
 		c.baseURL,
-		"https://api.hookdeck.com/2025-01-01-next",
+		"https://api.hookdeck.com/2025-01-01",
 	)
 	endpointURL := baseURL + "/notifications/webhooks"
 	headers := internal.MergeHeaders(
