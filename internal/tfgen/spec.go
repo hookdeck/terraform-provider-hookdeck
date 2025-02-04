@@ -3,6 +3,7 @@ package tfgen
 import (
 	"fmt"
 	"slices"
+	"sort"
 	"strings"
 
 	"github.com/getkin/kin-openapi/openapi3"
@@ -128,8 +129,13 @@ func parseSourceConfigAttributes(doc *openapi3.T, sourceTypeName string) ([]reso
 
 	for fieldName, field := range sourceSchema.Properties {
 		if strings.Contains(fieldName, "auth") {
-			attr := parseSchemaField(fieldName, field, getComputedOptionalRequired(sourceSchema.Required, fieldName))
-			authAttributes = append(authAttributes, attr)
+			if field.Value.OneOf != nil {
+				attributes := parseAuthOneOf(fieldName, field, getComputedOptionalRequired(sourceSchema.Required, fieldName))
+				authAttributes = append(authAttributes, attributes...)
+			} else {
+				attr := parseSchemaField(fieldName, field, getComputedOptionalRequired(sourceSchema.Required, fieldName))
+				authAttributes = append(authAttributes, attr)
+			}
 		} else if fieldName == "type" {
 			attr := parseSchemaField(fieldName, field, getComputedOptionalRequired(sourceSchema.Required, fieldName))
 			attr.Name = "auth_type"
@@ -295,4 +301,34 @@ func parseSchemaField(fieldName string, field *openapi3.SchemaRef, computedOptio
 	}
 
 	return attr
+}
+
+func parseAuthOneOf(fieldName string, field *openapi3.SchemaRef, computedOptionalRequired schema.ComputedOptionalRequired) []resource.Attribute {
+	attributes := []resource.Attribute{}
+
+	for _, oneOf := range field.Value.OneOf {
+		attr := parseSchemaField(fieldName, oneOf, computedOptionalRequired)
+		attr.Name = getAuthOneOfName(attr)
+		attributes = append(attributes, attr)
+	}
+
+	return attributes
+}
+
+func getAuthOneOfName(attr resource.Attribute) string {
+	attributeNames := []string{}
+	for _, a := range attr.SingleNested.Attributes {
+		attributeNames = append(attributeNames, a.Name)
+	}
+	sort.Strings(attributeNames)
+	switch attributeNames[0] {
+	case "algorithm":
+		return "auth_hmac"
+	case "password":
+		return "auth_basic"
+	case "api_key":
+		return "auth_api_key"
+	default:
+		panic(fmt.Sprintf("unknown one of: %v", attributeNames))
+	}
 }
