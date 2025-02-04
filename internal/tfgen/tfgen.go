@@ -3,6 +3,7 @@ package tfgen
 import (
 	"fmt"
 
+	"github.com/hashicorp/terraform-plugin-codegen-spec/code"
 	"github.com/hashicorp/terraform-plugin-codegen-spec/resource"
 	"github.com/hashicorp/terraform-plugin-codegen-spec/schema"
 )
@@ -20,7 +21,7 @@ func Generate() error {
 
 	sourceConfigAttributes := []resource.Attribute{}
 	resources := []resource.Resource{}
-	sourceTypeNames = []string{"SourceTypeConfigEbay", "SourceTypeConfigHTTP"}
+	sourceTypeNames = []string{"SourceTypeConfigEbay", "SourceTypeConfigHTTP", "SourceTypeConfigShopify"}
 	for _, sourceTypeName := range sourceTypeNames {
 		fmt.Println(sourceTypeName) // TODO: remove
 		authResource, sourceConfigAttribute := parseSourceConfig(doc, sourceTypeName)
@@ -33,7 +34,19 @@ func Generate() error {
 		Name: "config",
 		SingleNested: &resource.SingleNestedAttribute{
 			Attributes:               sourceConfigAttributes,
-			ComputedOptionalRequired: schema.ComputedOptional,
+			ComputedOptionalRequired: schema.Required,
+			Validators: []schema.ObjectValidator{
+				{
+					Custom: &schema.CustomValidator{
+						Imports: []code.Import{
+							{
+								Path: "terraform-provider-hookdeck/internal/validators",
+							},
+						},
+						SchemaDefinition: "validators.ExactlyOneChild()",
+					},
+				},
+			},
 		},
 	})
 	resources = append(resources, resource.Resource{

@@ -18,6 +18,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	"github.com/hashicorp/terraform-plugin-go/tftypes"
 	"strings"
+	"terraform-provider-hookdeck/internal/validators"
 
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 )
@@ -90,14 +91,25 @@ func SourceResourceSchema(ctx context.Context) schema.Schema {
 						},
 						Optional: true,
 					},
+					"shopify": schema.SingleNestedAttribute{
+						Attributes: map[string]schema.Attribute{},
+						CustomType: ShopifyType{
+							ObjectType: types.ObjectType{
+								AttrTypes: ShopifyValue{}.AttributeTypes(ctx),
+							},
+						},
+						Optional: true,
+					},
 				},
 				CustomType: ConfigType{
 					ObjectType: types.ObjectType{
 						AttrTypes: ConfigValue{}.AttributeTypes(ctx),
 					},
 				},
-				Optional: true,
-				Computed: true,
+				Required: true,
+				Validators: []validator.Object{
+					validators.ExactlyOneChild(),
+				},
 			},
 			"created_at": schema.StringAttribute{
 				Computed: true,
@@ -119,6 +131,9 @@ func SourceResourceSchema(ctx context.Context) schema.Schema {
 			},
 			"id": schema.StringAttribute{
 				Computed: true,
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.UseStateForUnknown(),
+				},
 			},
 			"name": schema.StringAttribute{
 				Required: true,
@@ -218,14 +233,33 @@ func (t ConfigType) ValueFromObject(ctx context.Context, in basetypes.ObjectValu
 			fmt.Sprintf(`http expected to be basetypes.ObjectValue, was: %T`, httpAttribute))
 	}
 
+	shopifyAttribute, ok := attributes["shopify"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`shopify is missing from object`)
+
+		return nil, diags
+	}
+
+	shopifyVal, ok := shopifyAttribute.(basetypes.ObjectValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`shopify expected to be basetypes.ObjectValue, was: %T`, shopifyAttribute))
+	}
+
 	if diags.HasError() {
 		return nil, diags
 	}
 
 	return ConfigValue{
-		Ebay:  ebayVal,
-		Http:  httpVal,
-		state: attr.ValueStateKnown,
+		Ebay:    ebayVal,
+		Http:    httpVal,
+		Shopify: shopifyVal,
+		state:   attr.ValueStateKnown,
 	}, diags
 }
 
@@ -328,14 +362,33 @@ func NewConfigValue(attributeTypes map[string]attr.Type, attributes map[string]a
 			fmt.Sprintf(`http expected to be basetypes.ObjectValue, was: %T`, httpAttribute))
 	}
 
+	shopifyAttribute, ok := attributes["shopify"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`shopify is missing from object`)
+
+		return NewConfigValueUnknown(), diags
+	}
+
+	shopifyVal, ok := shopifyAttribute.(basetypes.ObjectValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`shopify expected to be basetypes.ObjectValue, was: %T`, shopifyAttribute))
+	}
+
 	if diags.HasError() {
 		return NewConfigValueUnknown(), diags
 	}
 
 	return ConfigValue{
-		Ebay:  ebayVal,
-		Http:  httpVal,
-		state: attr.ValueStateKnown,
+		Ebay:    ebayVal,
+		Http:    httpVal,
+		Shopify: shopifyVal,
+		state:   attr.ValueStateKnown,
 	}, diags
 }
 
@@ -407,13 +460,14 @@ func (t ConfigType) ValueType(ctx context.Context) attr.Value {
 var _ basetypes.ObjectValuable = ConfigValue{}
 
 type ConfigValue struct {
-	Ebay  basetypes.ObjectValue `tfsdk:"ebay"`
-	Http  basetypes.ObjectValue `tfsdk:"http"`
-	state attr.ValueState
+	Ebay    basetypes.ObjectValue `tfsdk:"ebay"`
+	Http    basetypes.ObjectValue `tfsdk:"http"`
+	Shopify basetypes.ObjectValue `tfsdk:"shopify"`
+	state   attr.ValueState
 }
 
 func (v ConfigValue) ToTerraformValue(ctx context.Context) (tftypes.Value, error) {
-	attrTypes := make(map[string]tftypes.Type, 2)
+	attrTypes := make(map[string]tftypes.Type, 3)
 
 	var val tftypes.Value
 	var err error
@@ -424,12 +478,15 @@ func (v ConfigValue) ToTerraformValue(ctx context.Context) (tftypes.Value, error
 	attrTypes["http"] = basetypes.ObjectType{
 		AttrTypes: HttpValue{}.AttributeTypes(ctx),
 	}.TerraformType(ctx)
+	attrTypes["shopify"] = basetypes.ObjectType{
+		AttrTypes: ShopifyValue{}.AttributeTypes(ctx),
+	}.TerraformType(ctx)
 
 	objectType := tftypes.Object{AttributeTypes: attrTypes}
 
 	switch v.state {
 	case attr.ValueStateKnown:
-		vals := make(map[string]tftypes.Value, 2)
+		vals := make(map[string]tftypes.Value, 3)
 
 		val, err = v.Ebay.ToTerraformValue(ctx)
 
@@ -446,6 +503,14 @@ func (v ConfigValue) ToTerraformValue(ctx context.Context) (tftypes.Value, error
 		}
 
 		vals["http"] = val
+
+		val, err = v.Shopify.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["shopify"] = val
 
 		if err := tftypes.ValidateValue(objectType, vals); err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
@@ -518,12 +583,36 @@ func (v ConfigValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValue, 
 		)
 	}
 
+	var shopify basetypes.ObjectValue
+
+	if v.Shopify.IsNull() {
+		shopify = types.ObjectNull(
+			ShopifyValue{}.AttributeTypes(ctx),
+		)
+	}
+
+	if v.Shopify.IsUnknown() {
+		shopify = types.ObjectUnknown(
+			ShopifyValue{}.AttributeTypes(ctx),
+		)
+	}
+
+	if !v.Shopify.IsNull() && !v.Shopify.IsUnknown() {
+		shopify = types.ObjectValueMust(
+			ShopifyValue{}.AttributeTypes(ctx),
+			v.Shopify.Attributes(),
+		)
+	}
+
 	attributeTypes := map[string]attr.Type{
 		"ebay": basetypes.ObjectType{
 			AttrTypes: EbayValue{}.AttributeTypes(ctx),
 		},
 		"http": basetypes.ObjectType{
 			AttrTypes: HttpValue{}.AttributeTypes(ctx),
+		},
+		"shopify": basetypes.ObjectType{
+			AttrTypes: ShopifyValue{}.AttributeTypes(ctx),
 		},
 	}
 
@@ -538,8 +627,9 @@ func (v ConfigValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValue, 
 	objVal, diags := types.ObjectValue(
 		attributeTypes,
 		map[string]attr.Value{
-			"ebay": ebay,
-			"http": http,
+			"ebay":    ebay,
+			"http":    http,
+			"shopify": shopify,
 		})
 
 	return objVal, diags
@@ -568,6 +658,10 @@ func (v ConfigValue) Equal(o attr.Value) bool {
 		return false
 	}
 
+	if !v.Shopify.Equal(other.Shopify) {
+		return false
+	}
+
 	return true
 }
 
@@ -586,6 +680,9 @@ func (v ConfigValue) AttributeTypes(ctx context.Context) map[string]attr.Type {
 		},
 		"http": basetypes.ObjectType{
 			AttrTypes: HttpValue{}.AttributeTypes(ctx),
+		},
+		"shopify": basetypes.ObjectType{
+			AttrTypes: ShopifyValue{}.AttributeTypes(ctx),
 		},
 	}
 }
@@ -1662,4 +1759,264 @@ func (v CustomResponseValue) AttributeTypes(ctx context.Context) map[string]attr
 		"body":         basetypes.StringType{},
 		"content_type": basetypes.StringType{},
 	}
+}
+
+var _ basetypes.ObjectTypable = ShopifyType{}
+
+type ShopifyType struct {
+	basetypes.ObjectType
+}
+
+func (t ShopifyType) Equal(o attr.Type) bool {
+	other, ok := o.(ShopifyType)
+
+	if !ok {
+		return false
+	}
+
+	return t.ObjectType.Equal(other.ObjectType)
+}
+
+func (t ShopifyType) String() string {
+	return "ShopifyType"
+}
+
+func (t ShopifyType) ValueFromObject(ctx context.Context, in basetypes.ObjectValue) (basetypes.ObjectValuable, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	if diags.HasError() {
+		return nil, diags
+	}
+
+	return ShopifyValue{
+		state: attr.ValueStateKnown,
+	}, diags
+}
+
+func NewShopifyValueNull() ShopifyValue {
+	return ShopifyValue{
+		state: attr.ValueStateNull,
+	}
+}
+
+func NewShopifyValueUnknown() ShopifyValue {
+	return ShopifyValue{
+		state: attr.ValueStateUnknown,
+	}
+}
+
+func NewShopifyValue(attributeTypes map[string]attr.Type, attributes map[string]attr.Value) (ShopifyValue, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	// Reference: https://github.com/hashicorp/terraform-plugin-framework/issues/521
+	ctx := context.Background()
+
+	for name, attributeType := range attributeTypes {
+		attribute, ok := attributes[name]
+
+		if !ok {
+			diags.AddError(
+				"Missing ShopifyValue Attribute Value",
+				"While creating a ShopifyValue value, a missing attribute value was detected. "+
+					"A ShopifyValue must contain values for all attributes, even if null or unknown. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("ShopifyValue Attribute Name (%s) Expected Type: %s", name, attributeType.String()),
+			)
+
+			continue
+		}
+
+		if !attributeType.Equal(attribute.Type(ctx)) {
+			diags.AddError(
+				"Invalid ShopifyValue Attribute Type",
+				"While creating a ShopifyValue value, an invalid attribute value was detected. "+
+					"A ShopifyValue must use a matching attribute type for the value. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("ShopifyValue Attribute Name (%s) Expected Type: %s\n", name, attributeType.String())+
+					fmt.Sprintf("ShopifyValue Attribute Name (%s) Given Type: %s", name, attribute.Type(ctx)),
+			)
+		}
+	}
+
+	for name := range attributes {
+		_, ok := attributeTypes[name]
+
+		if !ok {
+			diags.AddError(
+				"Extra ShopifyValue Attribute Value",
+				"While creating a ShopifyValue value, an extra attribute value was detected. "+
+					"A ShopifyValue must not contain values beyond the expected attribute types. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("Extra ShopifyValue Attribute Name: %s", name),
+			)
+		}
+	}
+
+	if diags.HasError() {
+		return NewShopifyValueUnknown(), diags
+	}
+
+	if diags.HasError() {
+		return NewShopifyValueUnknown(), diags
+	}
+
+	return ShopifyValue{
+		state: attr.ValueStateKnown,
+	}, diags
+}
+
+func NewShopifyValueMust(attributeTypes map[string]attr.Type, attributes map[string]attr.Value) ShopifyValue {
+	object, diags := NewShopifyValue(attributeTypes, attributes)
+
+	if diags.HasError() {
+		// This could potentially be added to the diag package.
+		diagsStrings := make([]string, 0, len(diags))
+
+		for _, diagnostic := range diags {
+			diagsStrings = append(diagsStrings, fmt.Sprintf(
+				"%s | %s | %s",
+				diagnostic.Severity(),
+				diagnostic.Summary(),
+				diagnostic.Detail()))
+		}
+
+		panic("NewShopifyValueMust received error(s): " + strings.Join(diagsStrings, "\n"))
+	}
+
+	return object
+}
+
+func (t ShopifyType) ValueFromTerraform(ctx context.Context, in tftypes.Value) (attr.Value, error) {
+	if in.Type() == nil {
+		return NewShopifyValueNull(), nil
+	}
+
+	if !in.Type().Equal(t.TerraformType(ctx)) {
+		return nil, fmt.Errorf("expected %s, got %s", t.TerraformType(ctx), in.Type())
+	}
+
+	if !in.IsKnown() {
+		return NewShopifyValueUnknown(), nil
+	}
+
+	if in.IsNull() {
+		return NewShopifyValueNull(), nil
+	}
+
+	attributes := map[string]attr.Value{}
+
+	val := map[string]tftypes.Value{}
+
+	err := in.As(&val)
+
+	if err != nil {
+		return nil, err
+	}
+
+	for k, v := range val {
+		a, err := t.AttrTypes[k].ValueFromTerraform(ctx, v)
+
+		if err != nil {
+			return nil, err
+		}
+
+		attributes[k] = a
+	}
+
+	return NewShopifyValueMust(ShopifyValue{}.AttributeTypes(ctx), attributes), nil
+}
+
+func (t ShopifyType) ValueType(ctx context.Context) attr.Value {
+	return ShopifyValue{}
+}
+
+var _ basetypes.ObjectValuable = ShopifyValue{}
+
+type ShopifyValue struct {
+	state attr.ValueState
+}
+
+func (v ShopifyValue) ToTerraformValue(ctx context.Context) (tftypes.Value, error) {
+	attrTypes := make(map[string]tftypes.Type, 0)
+
+	objectType := tftypes.Object{AttributeTypes: attrTypes}
+
+	switch v.state {
+	case attr.ValueStateKnown:
+		vals := make(map[string]tftypes.Value, 0)
+
+		if err := tftypes.ValidateValue(objectType, vals); err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		return tftypes.NewValue(objectType, vals), nil
+	case attr.ValueStateNull:
+		return tftypes.NewValue(objectType, nil), nil
+	case attr.ValueStateUnknown:
+		return tftypes.NewValue(objectType, tftypes.UnknownValue), nil
+	default:
+		panic(fmt.Sprintf("unhandled Object state in ToTerraformValue: %s", v.state))
+	}
+}
+
+func (v ShopifyValue) IsNull() bool {
+	return v.state == attr.ValueStateNull
+}
+
+func (v ShopifyValue) IsUnknown() bool {
+	return v.state == attr.ValueStateUnknown
+}
+
+func (v ShopifyValue) String() string {
+	return "ShopifyValue"
+}
+
+func (v ShopifyValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValue, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	attributeTypes := map[string]attr.Type{}
+
+	if v.IsNull() {
+		return types.ObjectNull(attributeTypes), diags
+	}
+
+	if v.IsUnknown() {
+		return types.ObjectUnknown(attributeTypes), diags
+	}
+
+	objVal, diags := types.ObjectValue(
+		attributeTypes,
+		map[string]attr.Value{})
+
+	return objVal, diags
+}
+
+func (v ShopifyValue) Equal(o attr.Value) bool {
+	other, ok := o.(ShopifyValue)
+
+	if !ok {
+		return false
+	}
+
+	if v.state != other.state {
+		return false
+	}
+
+	if v.state != attr.ValueStateKnown {
+		return true
+	}
+
+	return true
+}
+
+func (v ShopifyValue) Type(ctx context.Context) attr.Type {
+	return ShopifyType{
+		basetypes.ObjectType{
+			AttrTypes: v.AttributeTypes(ctx),
+		},
+	}
+}
+
+func (v ShopifyValue) AttributeTypes(ctx context.Context) map[string]attr.Type {
+	return map[string]attr.Type{}
 }

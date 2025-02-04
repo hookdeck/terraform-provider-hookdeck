@@ -13,12 +13,6 @@
 							"computed_optional_required": "required",
 							"attributes": [
 								{
-									"name": "dev_id",
-									"string": {
-										"computed_optional_required": "required"
-									}
-								},
-								{
 									"name": "client_id",
 									"string": {
 										"computed_optional_required": "required"
@@ -52,6 +46,12 @@
 												}
 											}
 										]
+									}
+								},
+								{
+									"name": "dev_id",
+									"string": {
+										"computed_optional_required": "required"
 									}
 								}
 							]
@@ -266,19 +266,88 @@
 			}
 		},
 		{
+			"name": "source_config_shopify",
+			"schema": {
+				"attributes": [
+					{
+						"name": "auth",
+						"single_nested": {
+							"computed_optional_required": "computed_optional",
+							"attributes": [
+								{
+									"name": "webhook_secret_key",
+									"string": {
+										"computed_optional_required": "required"
+									}
+								}
+							],
+							"plan_modifiers": [
+								{
+									"custom": {
+										"imports": [
+											{
+												"path": "github.com/hashicorp/terraform-plugin-framework/resource/schema/objectplanmodifier"
+											}
+										],
+										"schema_definition": "objectplanmodifier.UseStateForUnknown()"
+									}
+								}
+							]
+						}
+					},
+					{
+						"name": "source_id",
+						"string": {
+							"computed_optional_required": "required"
+						}
+					}
+				]
+			}
+		},
+		{
 			"name": "source",
 			"schema": {
 				"attributes": [
 					{
-						"name": "id",
+						"name": "disabled_at",
 						"string": {
-							"computed_optional_required": "computed"
+							"computed_optional_required": "computed",
+							"plan_modifiers": [
+								{
+									"custom": {
+										"imports": [
+											{
+												"path": "github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
+											}
+										],
+										"schema_definition": "stringplanmodifier.UseStateForUnknown()"
+									}
+								}
+							]
 						}
 					},
 					{
 						"name": "name",
 						"string": {
 							"computed_optional_required": "required"
+						}
+					},
+					{
+						"name": "description",
+						"string": {
+							"computed_optional_required": "optional",
+							"plan_modifiers": [
+								{
+									"custom": {
+										"imports": [
+											{
+												"path": "github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
+											}
+										],
+										"schema_definition": "stringplanmodifier.UseStateForUnknown()"
+									}
+								}
+							]
 						}
 					},
 					{
@@ -300,7 +369,7 @@
 						}
 					},
 					{
-						"name": "disabled_at",
+						"name": "url",
 						"string": {
 							"computed_optional_required": "computed",
 							"plan_modifiers": [
@@ -336,25 +405,7 @@
 						}
 					},
 					{
-						"name": "description",
-						"string": {
-							"computed_optional_required": "optional",
-							"plan_modifiers": [
-								{
-									"custom": {
-										"imports": [
-											{
-												"path": "github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
-											}
-										],
-										"schema_definition": "stringplanmodifier.UseStateForUnknown()"
-									}
-								}
-							]
-						}
-					},
-					{
-						"name": "url",
+						"name": "created_at",
 						"string": {
 							"computed_optional_required": "computed",
 							"plan_modifiers": [
@@ -372,7 +423,7 @@
 						}
 					},
 					{
-						"name": "created_at",
+						"name": "id",
 						"string": {
 							"computed_optional_required": "computed",
 							"plan_modifiers": [
@@ -392,7 +443,7 @@
 					{
 						"name": "config",
 						"single_nested": {
-							"computed_optional_required": "computed_optional",
+							"computed_optional_required": "required",
 							"attributes": [
 								{
 									"name": "ebay",
@@ -484,6 +535,24 @@
 												}
 											}
 										]
+									}
+								},
+								{
+									"name": "shopify",
+									"single_nested": {
+										"computed_optional_required": "optional"
+									}
+								}
+							],
+							"validators": [
+								{
+									"custom": {
+										"imports": [
+											{
+												"path": "terraform-provider-hookdeck/internal/validators"
+											}
+										],
+										"schema_definition": "validators.ExactlyOneChild()"
 									}
 								}
 							]

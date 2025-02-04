@@ -31,13 +31,6 @@ func makeSpec(resources []resource.Resource) spec.Specification {
 func parseSourceAttributes(doc *openapi3.T) []resource.Attribute {
 	attributes := []resource.Attribute{}
 
-	attributes = append(attributes, resource.Attribute{
-		Name: "id",
-		String: &resource.StringAttribute{
-			ComputedOptionalRequired: schema.Computed,
-		},
-	})
-
 	sourceSchemaAny, err := doc.Components.Schemas.JSONLookup("Source")
 	if err != nil {
 		panic(err)
@@ -51,6 +44,7 @@ func parseSourceAttributes(doc *openapi3.T) []resource.Attribute {
 		fieldName                string
 		computedOptionalRequired schema.ComputedOptionalRequired
 	}{
+		{"id", schema.Computed},
 		{"name", schema.Required},
 		{"description", schema.Optional},
 		{"team_id", schema.Computed},
