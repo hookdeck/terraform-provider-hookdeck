@@ -107,7 +107,7 @@ func parseSchemaField(fieldName string, field *openapi3.SchemaRef, required []st
 		switch {
 		case field.Value.Type.Is("string"):
 			stringAttr := &resource.StringAttribute{
-				ComputedOptionalRequired: schema.Optional,
+				ComputedOptionalRequired: schema.ComputedOptional,
 			}
 			if len(field.Value.Enum) > 0 {
 				enumVals := make([]string, 0, len(field.Value.Enum))
@@ -154,14 +154,14 @@ func parseSchemaField(fieldName string, field *openapi3.SchemaRef, required []st
 						NestedObject: resource.NestedAttributeObject{
 							Attributes: nestedAttrs,
 						},
-						ComputedOptionalRequired: schema.Optional,
+						ComputedOptionalRequired: schema.ComputedOptional,
 					}
 					if isRequired {
 						attr.ListNested.ComputedOptionalRequired = schema.Required
 					}
 				} else {
 					listAttr := &resource.ListAttribute{
-						ComputedOptionalRequired: schema.Optional,
+						ComputedOptionalRequired: schema.ComputedOptional,
 						ElementType:              getElementType(items),
 					}
 
@@ -215,11 +215,24 @@ func parseSchemaField(fieldName string, field *openapi3.SchemaRef, required []st
 			}
 			attr.SingleNested = &resource.SingleNestedAttribute{
 				Attributes:               nestedAttrs,
-				ComputedOptionalRequired: schema.Optional,
+				ComputedOptionalRequired: schema.ComputedOptional,
 			}
 			if isRequired {
 				attr.SingleNested.ComputedOptionalRequired = schema.Required
 			}
+		}
+	}
+
+	if fieldName == "allowed_http_methods" {
+		attr.List.Default = &schema.ListDefault{
+			Custom: &schema.CustomDefault{
+				Imports: []code.Import{
+					{
+						Path: "github.com/hashicorp/terraform-plugin-framework/resource/schema/listdefault",
+					},
+				},
+				SchemaDefinition: "listdefault.StaticValue(types.ListValueMust(types.StringType, []attr.Value{types.StringValue(\"POST\"), types.StringValue(\"PUT\"), types.StringValue(\"PATCH\"), types.StringValue(\"GET\")}))",
+			},
 		}
 	}
 
