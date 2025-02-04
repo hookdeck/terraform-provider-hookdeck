@@ -16,6 +16,8 @@ require (
 	golang.org/x/sys v0.29.0
 )
 
+replace github.com/hookdeck/hookdeck-go-sdk => ./internal/hookdeck-go-sdk
+
 require (
 	github.com/BurntSushi/toml v1.2.1 // indirect
 	github.com/Kunde21/markdownfmt/v3 v3.1.0 // indirect
