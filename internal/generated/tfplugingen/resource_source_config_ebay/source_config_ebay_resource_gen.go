@@ -49,8 +49,7 @@ func SourceConfigEbayResourceSchema(ctx context.Context) schema.Schema {
 						AttrTypes: AuthValue{}.AttributeTypes(ctx),
 					},
 				},
-				Optional: true,
-				Computed: true,
+				Required: true,
 			},
 			"source_id": schema.StringAttribute{
 				Required: true,

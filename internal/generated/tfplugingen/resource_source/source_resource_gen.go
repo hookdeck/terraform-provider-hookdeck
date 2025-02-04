@@ -10,6 +10,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/listdefault"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/objectplanmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
@@ -25,34 +28,15 @@ func SourceResourceSchema(ctx context.Context) schema.Schema {
 			"config": schema.SingleNestedAttribute{
 				Attributes: map[string]schema.Attribute{
 					"ebay": schema.SingleNestedAttribute{
-						Attributes: map[string]schema.Attribute{
-							"allowed_http_methods": schema.ListAttribute{
-								ElementType: types.StringType,
-								Optional:    true,
-								Computed:    true,
-								Validators: []validator.List{
-									listvalidator.ValueStringsAre(
-										stringvalidator.OneOf(
-											"GET",
-											"POST",
-											"PUT",
-											"PATCH",
-											"DELETE",
-										),
-									),
-								},
-								Default: listdefault.StaticValue(types.ListValueMust(types.StringType, []attr.Value{types.StringValue("POST"), types.StringValue("PUT"), types.StringValue("PATCH"), types.StringValue("DELETE")})),
-							},
-						},
+						Attributes: map[string]schema.Attribute{},
 						CustomType: EbayType{
 							ObjectType: types.ObjectType{
 								AttrTypes: EbayValue{}.AttributeTypes(ctx),
 							},
 						},
 						Optional: true,
-						Computed: true,
 					},
-					"webhook": schema.SingleNestedAttribute{
+					"http": schema.SingleNestedAttribute{
 						Attributes: map[string]schema.Attribute{
 							"allowed_http_methods": schema.ListAttribute{
 								ElementType: types.StringType,
@@ -77,8 +61,7 @@ func SourceResourceSchema(ctx context.Context) schema.Schema {
 										Required: true,
 									},
 									"content_type": schema.StringAttribute{
-										Optional: true,
-										Computed: true,
+										Required: true,
 										Validators: []validator.String{
 											stringvalidator.OneOf(
 												"json",
@@ -95,15 +78,17 @@ func SourceResourceSchema(ctx context.Context) schema.Schema {
 								},
 								Optional: true,
 								Computed: true,
+								PlanModifiers: []planmodifier.Object{
+									objectplanmodifier.UseStateForUnknown(),
+								},
 							},
 						},
-						CustomType: WebhookType{
+						CustomType: HttpType{
 							ObjectType: types.ObjectType{
-								AttrTypes: WebhookValue{}.AttributeTypes(ctx),
+								AttrTypes: HttpValue{}.AttributeTypes(ctx),
 							},
 						},
 						Optional: true,
-						Computed: true,
 					},
 				},
 				CustomType: ConfigType{
@@ -116,13 +101,21 @@ func SourceResourceSchema(ctx context.Context) schema.Schema {
 			},
 			"created_at": schema.StringAttribute{
 				Computed: true,
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.UseStateForUnknown(),
+				},
 			},
 			"description": schema.StringAttribute{
 				Optional: true,
-				Computed: true,
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.UseStateForUnknown(),
+				},
 			},
 			"disabled_at": schema.StringAttribute{
 				Computed: true,
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.UseStateForUnknown(),
+				},
 			},
 			"id": schema.StringAttribute{
 				Computed: true,
@@ -132,12 +125,21 @@ func SourceResourceSchema(ctx context.Context) schema.Schema {
 			},
 			"team_id": schema.StringAttribute{
 				Computed: true,
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.UseStateForUnknown(),
+				},
 			},
 			"updated_at": schema.StringAttribute{
 				Computed: true,
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.UseStateForUnknown(),
+				},
 			},
 			"url": schema.StringAttribute{
 				Computed: true,
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.UseStateForUnknown(),
+				},
 			},
 		},
 	}
@@ -198,22 +200,22 @@ func (t ConfigType) ValueFromObject(ctx context.Context, in basetypes.ObjectValu
 			fmt.Sprintf(`ebay expected to be basetypes.ObjectValue, was: %T`, ebayAttribute))
 	}
 
-	webhookAttribute, ok := attributes["webhook"]
+	httpAttribute, ok := attributes["http"]
 
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`webhook is missing from object`)
+			`http is missing from object`)
 
 		return nil, diags
 	}
 
-	webhookVal, ok := webhookAttribute.(basetypes.ObjectValue)
+	httpVal, ok := httpAttribute.(basetypes.ObjectValue)
 
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`webhook expected to be basetypes.ObjectValue, was: %T`, webhookAttribute))
+			fmt.Sprintf(`http expected to be basetypes.ObjectValue, was: %T`, httpAttribute))
 	}
 
 	if diags.HasError() {
@@ -221,9 +223,9 @@ func (t ConfigType) ValueFromObject(ctx context.Context, in basetypes.ObjectValu
 	}
 
 	return ConfigValue{
-		Ebay:    ebayVal,
-		Webhook: webhookVal,
-		state:   attr.ValueStateKnown,
+		Ebay:  ebayVal,
+		Http:  httpVal,
+		state: attr.ValueStateKnown,
 	}, diags
 }
 
@@ -308,22 +310,22 @@ func NewConfigValue(attributeTypes map[string]attr.Type, attributes map[string]a
 			fmt.Sprintf(`ebay expected to be basetypes.ObjectValue, was: %T`, ebayAttribute))
 	}
 
-	webhookAttribute, ok := attributes["webhook"]
+	httpAttribute, ok := attributes["http"]
 
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`webhook is missing from object`)
+			`http is missing from object`)
 
 		return NewConfigValueUnknown(), diags
 	}
 
-	webhookVal, ok := webhookAttribute.(basetypes.ObjectValue)
+	httpVal, ok := httpAttribute.(basetypes.ObjectValue)
 
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`webhook expected to be basetypes.ObjectValue, was: %T`, webhookAttribute))
+			fmt.Sprintf(`http expected to be basetypes.ObjectValue, was: %T`, httpAttribute))
 	}
 
 	if diags.HasError() {
@@ -331,9 +333,9 @@ func NewConfigValue(attributeTypes map[string]attr.Type, attributes map[string]a
 	}
 
 	return ConfigValue{
-		Ebay:    ebayVal,
-		Webhook: webhookVal,
-		state:   attr.ValueStateKnown,
+		Ebay:  ebayVal,
+		Http:  httpVal,
+		state: attr.ValueStateKnown,
 	}, diags
 }
 
@@ -405,9 +407,9 @@ func (t ConfigType) ValueType(ctx context.Context) attr.Value {
 var _ basetypes.ObjectValuable = ConfigValue{}
 
 type ConfigValue struct {
-	Ebay    basetypes.ObjectValue `tfsdk:"ebay"`
-	Webhook basetypes.ObjectValue `tfsdk:"webhook"`
-	state   attr.ValueState
+	Ebay  basetypes.ObjectValue `tfsdk:"ebay"`
+	Http  basetypes.ObjectValue `tfsdk:"http"`
+	state attr.ValueState
 }
 
 func (v ConfigValue) ToTerraformValue(ctx context.Context) (tftypes.Value, error) {
@@ -419,8 +421,8 @@ func (v ConfigValue) ToTerraformValue(ctx context.Context) (tftypes.Value, error
 	attrTypes["ebay"] = basetypes.ObjectType{
 		AttrTypes: EbayValue{}.AttributeTypes(ctx),
 	}.TerraformType(ctx)
-	attrTypes["webhook"] = basetypes.ObjectType{
-		AttrTypes: WebhookValue{}.AttributeTypes(ctx),
+	attrTypes["http"] = basetypes.ObjectType{
+		AttrTypes: HttpValue{}.AttributeTypes(ctx),
 	}.TerraformType(ctx)
 
 	objectType := tftypes.Object{AttributeTypes: attrTypes}
@@ -437,13 +439,13 @@ func (v ConfigValue) ToTerraformValue(ctx context.Context) (tftypes.Value, error
 
 		vals["ebay"] = val
 
-		val, err = v.Webhook.ToTerraformValue(ctx)
+		val, err = v.Http.ToTerraformValue(ctx)
 
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
 
-		vals["webhook"] = val
+		vals["http"] = val
 
 		if err := tftypes.ValidateValue(objectType, vals); err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
@@ -495,24 +497,24 @@ func (v ConfigValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValue, 
 		)
 	}
 
-	var webhook basetypes.ObjectValue
+	var http basetypes.ObjectValue
 
-	if v.Webhook.IsNull() {
-		webhook = types.ObjectNull(
-			WebhookValue{}.AttributeTypes(ctx),
+	if v.Http.IsNull() {
+		http = types.ObjectNull(
+			HttpValue{}.AttributeTypes(ctx),
 		)
 	}
 
-	if v.Webhook.IsUnknown() {
-		webhook = types.ObjectUnknown(
-			WebhookValue{}.AttributeTypes(ctx),
+	if v.Http.IsUnknown() {
+		http = types.ObjectUnknown(
+			HttpValue{}.AttributeTypes(ctx),
 		)
 	}
 
-	if !v.Webhook.IsNull() && !v.Webhook.IsUnknown() {
-		webhook = types.ObjectValueMust(
-			WebhookValue{}.AttributeTypes(ctx),
-			v.Webhook.Attributes(),
+	if !v.Http.IsNull() && !v.Http.IsUnknown() {
+		http = types.ObjectValueMust(
+			HttpValue{}.AttributeTypes(ctx),
+			v.Http.Attributes(),
 		)
 	}
 
@@ -520,8 +522,8 @@ func (v ConfigValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValue, 
 		"ebay": basetypes.ObjectType{
 			AttrTypes: EbayValue{}.AttributeTypes(ctx),
 		},
-		"webhook": basetypes.ObjectType{
-			AttrTypes: WebhookValue{}.AttributeTypes(ctx),
+		"http": basetypes.ObjectType{
+			AttrTypes: HttpValue{}.AttributeTypes(ctx),
 		},
 	}
 
@@ -536,8 +538,8 @@ func (v ConfigValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValue, 
 	objVal, diags := types.ObjectValue(
 		attributeTypes,
 		map[string]attr.Value{
-			"ebay":    ebay,
-			"webhook": webhook,
+			"ebay": ebay,
+			"http": http,
 		})
 
 	return objVal, diags
@@ -562,7 +564,7 @@ func (v ConfigValue) Equal(o attr.Value) bool {
 		return false
 	}
 
-	if !v.Webhook.Equal(other.Webhook) {
+	if !v.Http.Equal(other.Http) {
 		return false
 	}
 
@@ -582,8 +584,8 @@ func (v ConfigValue) AttributeTypes(ctx context.Context) map[string]attr.Type {
 		"ebay": basetypes.ObjectType{
 			AttrTypes: EbayValue{}.AttributeTypes(ctx),
 		},
-		"webhook": basetypes.ObjectType{
-			AttrTypes: WebhookValue{}.AttributeTypes(ctx),
+		"http": basetypes.ObjectType{
+			AttrTypes: HttpValue{}.AttributeTypes(ctx),
 		},
 	}
 }
@@ -611,33 +613,12 @@ func (t EbayType) String() string {
 func (t EbayType) ValueFromObject(ctx context.Context, in basetypes.ObjectValue) (basetypes.ObjectValuable, diag.Diagnostics) {
 	var diags diag.Diagnostics
 
-	attributes := in.Attributes()
-
-	allowedHttpMethodsAttribute, ok := attributes["allowed_http_methods"]
-
-	if !ok {
-		diags.AddError(
-			"Attribute Missing",
-			`allowed_http_methods is missing from object`)
-
-		return nil, diags
-	}
-
-	allowedHttpMethodsVal, ok := allowedHttpMethodsAttribute.(basetypes.ListValue)
-
-	if !ok {
-		diags.AddError(
-			"Attribute Wrong Type",
-			fmt.Sprintf(`allowed_http_methods expected to be basetypes.ListValue, was: %T`, allowedHttpMethodsAttribute))
-	}
-
 	if diags.HasError() {
 		return nil, diags
 	}
 
 	return EbayValue{
-		AllowedHttpMethods: allowedHttpMethodsVal,
-		state:              attr.ValueStateKnown,
+		state: attr.ValueStateKnown,
 	}, diags
 }
 
@@ -704,31 +685,12 @@ func NewEbayValue(attributeTypes map[string]attr.Type, attributes map[string]att
 		return NewEbayValueUnknown(), diags
 	}
 
-	allowedHttpMethodsAttribute, ok := attributes["allowed_http_methods"]
-
-	if !ok {
-		diags.AddError(
-			"Attribute Missing",
-			`allowed_http_methods is missing from object`)
-
-		return NewEbayValueUnknown(), diags
-	}
-
-	allowedHttpMethodsVal, ok := allowedHttpMethodsAttribute.(basetypes.ListValue)
-
-	if !ok {
-		diags.AddError(
-			"Attribute Wrong Type",
-			fmt.Sprintf(`allowed_http_methods expected to be basetypes.ListValue, was: %T`, allowedHttpMethodsAttribute))
-	}
-
 	if diags.HasError() {
 		return NewEbayValueUnknown(), diags
 	}
 
 	return EbayValue{
-		AllowedHttpMethods: allowedHttpMethodsVal,
-		state:              attr.ValueStateKnown,
+		state: attr.ValueStateKnown,
 	}, diags
 }
 
@@ -800,33 +762,17 @@ func (t EbayType) ValueType(ctx context.Context) attr.Value {
 var _ basetypes.ObjectValuable = EbayValue{}
 
 type EbayValue struct {
-	AllowedHttpMethods basetypes.ListValue `tfsdk:"allowed_http_methods"`
-	state              attr.ValueState
+	state attr.ValueState
 }
 
 func (v EbayValue) ToTerraformValue(ctx context.Context) (tftypes.Value, error) {
-	attrTypes := make(map[string]tftypes.Type, 1)
-
-	var val tftypes.Value
-	var err error
-
-	attrTypes["allowed_http_methods"] = basetypes.ListType{
-		ElemType: types.StringType,
-	}.TerraformType(ctx)
+	attrTypes := make(map[string]tftypes.Type, 0)
 
 	objectType := tftypes.Object{AttributeTypes: attrTypes}
 
 	switch v.state {
 	case attr.ValueStateKnown:
-		vals := make(map[string]tftypes.Value, 1)
-
-		val, err = v.AllowedHttpMethods.ToTerraformValue(ctx)
-
-		if err != nil {
-			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
-		}
-
-		vals["allowed_http_methods"] = val
+		vals := make(map[string]tftypes.Value, 0)
 
 		if err := tftypes.ValidateValue(objectType, vals); err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
@@ -857,31 +803,7 @@ func (v EbayValue) String() string {
 func (v EbayValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValue, diag.Diagnostics) {
 	var diags diag.Diagnostics
 
-	var allowedHttpMethodsVal basetypes.ListValue
-	switch {
-	case v.AllowedHttpMethods.IsUnknown():
-		allowedHttpMethodsVal = types.ListUnknown(types.StringType)
-	case v.AllowedHttpMethods.IsNull():
-		allowedHttpMethodsVal = types.ListNull(types.StringType)
-	default:
-		var d diag.Diagnostics
-		allowedHttpMethodsVal, d = types.ListValue(types.StringType, v.AllowedHttpMethods.Elements())
-		diags.Append(d...)
-	}
-
-	if diags.HasError() {
-		return types.ObjectUnknown(map[string]attr.Type{
-			"allowed_http_methods": basetypes.ListType{
-				ElemType: types.StringType,
-			},
-		}), diags
-	}
-
-	attributeTypes := map[string]attr.Type{
-		"allowed_http_methods": basetypes.ListType{
-			ElemType: types.StringType,
-		},
-	}
+	attributeTypes := map[string]attr.Type{}
 
 	if v.IsNull() {
 		return types.ObjectNull(attributeTypes), diags
@@ -893,9 +815,7 @@ func (v EbayValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValue, di
 
 	objVal, diags := types.ObjectValue(
 		attributeTypes,
-		map[string]attr.Value{
-			"allowed_http_methods": allowedHttpMethodsVal,
-		})
+		map[string]attr.Value{})
 
 	return objVal, diags
 }
@@ -915,10 +835,6 @@ func (v EbayValue) Equal(o attr.Value) bool {
 		return true
 	}
 
-	if !v.AllowedHttpMethods.Equal(other.AllowedHttpMethods) {
-		return false
-	}
-
 	return true
 }
 
@@ -931,21 +847,17 @@ func (v EbayValue) Type(ctx context.Context) attr.Type {
 }
 
 func (v EbayValue) AttributeTypes(ctx context.Context) map[string]attr.Type {
-	return map[string]attr.Type{
-		"allowed_http_methods": basetypes.ListType{
-			ElemType: types.StringType,
-		},
-	}
+	return map[string]attr.Type{}
 }
 
-var _ basetypes.ObjectTypable = WebhookType{}
+var _ basetypes.ObjectTypable = HttpType{}
 
-type WebhookType struct {
+type HttpType struct {
 	basetypes.ObjectType
 }
 
-func (t WebhookType) Equal(o attr.Type) bool {
-	other, ok := o.(WebhookType)
+func (t HttpType) Equal(o attr.Type) bool {
+	other, ok := o.(HttpType)
 
 	if !ok {
 		return false
@@ -954,11 +866,11 @@ func (t WebhookType) Equal(o attr.Type) bool {
 	return t.ObjectType.Equal(other.ObjectType)
 }
 
-func (t WebhookType) String() string {
-	return "WebhookType"
+func (t HttpType) String() string {
+	return "HttpType"
 }
 
-func (t WebhookType) ValueFromObject(ctx context.Context, in basetypes.ObjectValue) (basetypes.ObjectValuable, diag.Diagnostics) {
+func (t HttpType) ValueFromObject(ctx context.Context, in basetypes.ObjectValue) (basetypes.ObjectValuable, diag.Diagnostics) {
 	var diags diag.Diagnostics
 
 	attributes := in.Attributes()
@@ -1003,26 +915,26 @@ func (t WebhookType) ValueFromObject(ctx context.Context, in basetypes.ObjectVal
 		return nil, diags
 	}
 
-	return WebhookValue{
+	return HttpValue{
 		AllowedHttpMethods: allowedHttpMethodsVal,
 		CustomResponse:     customResponseVal,
 		state:              attr.ValueStateKnown,
 	}, diags
 }
 
-func NewWebhookValueNull() WebhookValue {
-	return WebhookValue{
+func NewHttpValueNull() HttpValue {
+	return HttpValue{
 		state: attr.ValueStateNull,
 	}
 }
 
-func NewWebhookValueUnknown() WebhookValue {
-	return WebhookValue{
+func NewHttpValueUnknown() HttpValue {
+	return HttpValue{
 		state: attr.ValueStateUnknown,
 	}
 }
 
-func NewWebhookValue(attributeTypes map[string]attr.Type, attributes map[string]attr.Value) (WebhookValue, diag.Diagnostics) {
+func NewHttpValue(attributeTypes map[string]attr.Type, attributes map[string]attr.Value) (HttpValue, diag.Diagnostics) {
 	var diags diag.Diagnostics
 
 	// Reference: https://github.com/hashicorp/terraform-plugin-framework/issues/521
@@ -1033,11 +945,11 @@ func NewWebhookValue(attributeTypes map[string]attr.Type, attributes map[string]
 
 		if !ok {
 			diags.AddError(
-				"Missing WebhookValue Attribute Value",
-				"While creating a WebhookValue value, a missing attribute value was detected. "+
-					"A WebhookValue must contain values for all attributes, even if null or unknown. "+
+				"Missing HttpValue Attribute Value",
+				"While creating a HttpValue value, a missing attribute value was detected. "+
+					"A HttpValue must contain values for all attributes, even if null or unknown. "+
 					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
-					fmt.Sprintf("WebhookValue Attribute Name (%s) Expected Type: %s", name, attributeType.String()),
+					fmt.Sprintf("HttpValue Attribute Name (%s) Expected Type: %s", name, attributeType.String()),
 			)
 
 			continue
@@ -1045,12 +957,12 @@ func NewWebhookValue(attributeTypes map[string]attr.Type, attributes map[string]
 
 		if !attributeType.Equal(attribute.Type(ctx)) {
 			diags.AddError(
-				"Invalid WebhookValue Attribute Type",
-				"While creating a WebhookValue value, an invalid attribute value was detected. "+
-					"A WebhookValue must use a matching attribute type for the value. "+
+				"Invalid HttpValue Attribute Type",
+				"While creating a HttpValue value, an invalid attribute value was detected. "+
+					"A HttpValue must use a matching attribute type for the value. "+
 					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
-					fmt.Sprintf("WebhookValue Attribute Name (%s) Expected Type: %s\n", name, attributeType.String())+
-					fmt.Sprintf("WebhookValue Attribute Name (%s) Given Type: %s", name, attribute.Type(ctx)),
+					fmt.Sprintf("HttpValue Attribute Name (%s) Expected Type: %s\n", name, attributeType.String())+
+					fmt.Sprintf("HttpValue Attribute Name (%s) Given Type: %s", name, attribute.Type(ctx)),
 			)
 		}
 	}
@@ -1060,17 +972,17 @@ func NewWebhookValue(attributeTypes map[string]attr.Type, attributes map[string]
 
 		if !ok {
 			diags.AddError(
-				"Extra WebhookValue Attribute Value",
-				"While creating a WebhookValue value, an extra attribute value was detected. "+
-					"A WebhookValue must not contain values beyond the expected attribute types. "+
+				"Extra HttpValue Attribute Value",
+				"While creating a HttpValue value, an extra attribute value was detected. "+
+					"A HttpValue must not contain values beyond the expected attribute types. "+
 					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
-					fmt.Sprintf("Extra WebhookValue Attribute Name: %s", name),
+					fmt.Sprintf("Extra HttpValue Attribute Name: %s", name),
 			)
 		}
 	}
 
 	if diags.HasError() {
-		return NewWebhookValueUnknown(), diags
+		return NewHttpValueUnknown(), diags
 	}
 
 	allowedHttpMethodsAttribute, ok := attributes["allowed_http_methods"]
@@ -1080,7 +992,7 @@ func NewWebhookValue(attributeTypes map[string]attr.Type, attributes map[string]
 			"Attribute Missing",
 			`allowed_http_methods is missing from object`)
 
-		return NewWebhookValueUnknown(), diags
+		return NewHttpValueUnknown(), diags
 	}
 
 	allowedHttpMethodsVal, ok := allowedHttpMethodsAttribute.(basetypes.ListValue)
@@ -1098,7 +1010,7 @@ func NewWebhookValue(attributeTypes map[string]attr.Type, attributes map[string]
 			"Attribute Missing",
 			`custom_response is missing from object`)
 
-		return NewWebhookValueUnknown(), diags
+		return NewHttpValueUnknown(), diags
 	}
 
 	customResponseVal, ok := customResponseAttribute.(basetypes.ObjectValue)
@@ -1110,18 +1022,18 @@ func NewWebhookValue(attributeTypes map[string]attr.Type, attributes map[string]
 	}
 
 	if diags.HasError() {
-		return NewWebhookValueUnknown(), diags
+		return NewHttpValueUnknown(), diags
 	}
 
-	return WebhookValue{
+	return HttpValue{
 		AllowedHttpMethods: allowedHttpMethodsVal,
 		CustomResponse:     customResponseVal,
 		state:              attr.ValueStateKnown,
 	}, diags
 }
 
-func NewWebhookValueMust(attributeTypes map[string]attr.Type, attributes map[string]attr.Value) WebhookValue {
-	object, diags := NewWebhookValue(attributeTypes, attributes)
+func NewHttpValueMust(attributeTypes map[string]attr.Type, attributes map[string]attr.Value) HttpValue {
+	object, diags := NewHttpValue(attributeTypes, attributes)
 
 	if diags.HasError() {
 		// This could potentially be added to the diag package.
@@ -1135,15 +1047,15 @@ func NewWebhookValueMust(attributeTypes map[string]attr.Type, attributes map[str
 				diagnostic.Detail()))
 		}
 
-		panic("NewWebhookValueMust received error(s): " + strings.Join(diagsStrings, "\n"))
+		panic("NewHttpValueMust received error(s): " + strings.Join(diagsStrings, "\n"))
 	}
 
 	return object
 }
 
-func (t WebhookType) ValueFromTerraform(ctx context.Context, in tftypes.Value) (attr.Value, error) {
+func (t HttpType) ValueFromTerraform(ctx context.Context, in tftypes.Value) (attr.Value, error) {
 	if in.Type() == nil {
-		return NewWebhookValueNull(), nil
+		return NewHttpValueNull(), nil
 	}
 
 	if !in.Type().Equal(t.TerraformType(ctx)) {
@@ -1151,11 +1063,11 @@ func (t WebhookType) ValueFromTerraform(ctx context.Context, in tftypes.Value) (
 	}
 
 	if !in.IsKnown() {
-		return NewWebhookValueUnknown(), nil
+		return NewHttpValueUnknown(), nil
 	}
 
 	if in.IsNull() {
-		return NewWebhookValueNull(), nil
+		return NewHttpValueNull(), nil
 	}
 
 	attributes := map[string]attr.Value{}
@@ -1178,22 +1090,22 @@ func (t WebhookType) ValueFromTerraform(ctx context.Context, in tftypes.Value) (
 		attributes[k] = a
 	}
 
-	return NewWebhookValueMust(WebhookValue{}.AttributeTypes(ctx), attributes), nil
+	return NewHttpValueMust(HttpValue{}.AttributeTypes(ctx), attributes), nil
 }
 
-func (t WebhookType) ValueType(ctx context.Context) attr.Value {
-	return WebhookValue{}
+func (t HttpType) ValueType(ctx context.Context) attr.Value {
+	return HttpValue{}
 }
 
-var _ basetypes.ObjectValuable = WebhookValue{}
+var _ basetypes.ObjectValuable = HttpValue{}
 
-type WebhookValue struct {
+type HttpValue struct {
 	AllowedHttpMethods basetypes.ListValue   `tfsdk:"allowed_http_methods"`
 	CustomResponse     basetypes.ObjectValue `tfsdk:"custom_response"`
 	state              attr.ValueState
 }
 
-func (v WebhookValue) ToTerraformValue(ctx context.Context) (tftypes.Value, error) {
+func (v HttpValue) ToTerraformValue(ctx context.Context) (tftypes.Value, error) {
 	attrTypes := make(map[string]tftypes.Type, 2)
 
 	var val tftypes.Value
@@ -1242,19 +1154,19 @@ func (v WebhookValue) ToTerraformValue(ctx context.Context) (tftypes.Value, erro
 	}
 }
 
-func (v WebhookValue) IsNull() bool {
+func (v HttpValue) IsNull() bool {
 	return v.state == attr.ValueStateNull
 }
 
-func (v WebhookValue) IsUnknown() bool {
+func (v HttpValue) IsUnknown() bool {
 	return v.state == attr.ValueStateUnknown
 }
 
-func (v WebhookValue) String() string {
-	return "WebhookValue"
+func (v HttpValue) String() string {
+	return "HttpValue"
 }
 
-func (v WebhookValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValue, diag.Diagnostics) {
+func (v HttpValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValue, diag.Diagnostics) {
 	var diags diag.Diagnostics
 
 	var customResponse basetypes.ObjectValue
@@ -1328,8 +1240,8 @@ func (v WebhookValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValue,
 	return objVal, diags
 }
 
-func (v WebhookValue) Equal(o attr.Value) bool {
-	other, ok := o.(WebhookValue)
+func (v HttpValue) Equal(o attr.Value) bool {
+	other, ok := o.(HttpValue)
 
 	if !ok {
 		return false
@@ -1354,15 +1266,15 @@ func (v WebhookValue) Equal(o attr.Value) bool {
 	return true
 }
 
-func (v WebhookValue) Type(ctx context.Context) attr.Type {
-	return WebhookType{
+func (v HttpValue) Type(ctx context.Context) attr.Type {
+	return HttpType{
 		basetypes.ObjectType{
 			AttrTypes: v.AttributeTypes(ctx),
 		},
 	}
 }
 
-func (v WebhookValue) AttributeTypes(ctx context.Context) map[string]attr.Type {
+func (v HttpValue) AttributeTypes(ctx context.Context) map[string]attr.Type {
 	return map[string]attr.Type{
 		"allowed_http_methods": basetypes.ListType{
 			ElemType: types.StringType,

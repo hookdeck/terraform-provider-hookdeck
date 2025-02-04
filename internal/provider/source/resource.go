@@ -195,6 +195,7 @@ func (r *sourceResource) dataToUpdatePayload(_ context.Context, data *resource_s
 	return payload, nil
 }
 
+// TODO: dynamic config
 func (r *sourceResource) refreshData(ctx context.Context, data *resource_source.SourceModel, source *hookdeck.Source) diag.Diagnostics {
 	data.CreatedAt = types.StringValue(source.CreatedAt.Format(time.RFC3339))
 	if source.DisabledAt != nil {
@@ -207,8 +208,6 @@ func (r *sourceResource) refreshData(ctx context.Context, data *resource_source.
 	data.TeamId = types.StringValue(source.TeamId)
 	data.UpdatedAt = types.StringValue(source.UpdatedAt.Format(time.RFC3339))
 	data.Url = types.StringValue(source.Url)
-
-	// TODO: config
 
 	return nil
 }

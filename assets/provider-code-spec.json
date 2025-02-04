@@ -10,26 +10,8 @@
 					{
 						"name": "auth",
 						"single_nested": {
-							"computed_optional_required": "computed_optional",
+							"computed_optional_required": "required",
 							"attributes": [
-								{
-									"name": "environment",
-									"string": {
-										"computed_optional_required": "required",
-										"validators": [
-											{
-												"custom": {
-													"imports": [
-														{
-															"path": "github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
-														}
-													],
-													"schema_definition": "stringvalidator.OneOf(\n\"PRODUCTION\",\n\"SANDBOX\",\n)"
-												}
-											}
-										]
-									}
-								},
 								{
 									"name": "dev_id",
 									"string": {
@@ -53,6 +35,24 @@
 									"string": {
 										"computed_optional_required": "required"
 									}
+								},
+								{
+									"name": "environment",
+									"string": {
+										"computed_optional_required": "required",
+										"validators": [
+											{
+												"custom": {
+													"imports": [
+														{
+															"path": "github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
+														}
+													],
+													"schema_definition": "stringvalidator.OneOf(\n\"PRODUCTION\",\n\"SANDBOX\",\n)"
+												}
+											}
+										]
+									}
 								}
 							]
 						}
@@ -67,13 +67,25 @@
 			}
 		},
 		{
-			"name": "source_config_webhook",
+			"name": "source_config_http",
 			"schema": {
 				"attributes": [
 					{
 						"name": "auth_type",
 						"string": {
 							"computed_optional_required": "computed_optional",
+							"plan_modifiers": [
+								{
+									"custom": {
+										"imports": [
+											{
+												"path": "github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
+											}
+										],
+										"schema_definition": "stringplanmodifier.UseStateForUnknown()"
+									}
+								}
+							],
 							"validators": [
 								{
 									"custom": {
@@ -93,12 +105,6 @@
 						"single_nested": {
 							"computed_optional_required": "computed_optional",
 							"attributes": [
-								{
-									"name": "webhook_secret_key",
-									"string": {
-										"computed_optional_required": "required"
-									}
-								},
 								{
 									"name": "algorithm",
 									"string": {
@@ -140,6 +146,24 @@
 									"string": {
 										"computed_optional_required": "required"
 									}
+								},
+								{
+									"name": "webhook_secret_key",
+									"string": {
+										"computed_optional_required": "required"
+									}
+								}
+							],
+							"plan_modifiers": [
+								{
+									"custom": {
+										"imports": [
+											{
+												"path": "github.com/hashicorp/terraform-plugin-framework/resource/schema/objectplanmodifier"
+											}
+										],
+										"schema_definition": "objectplanmodifier.UseStateForUnknown()"
+									}
 								}
 							]
 						}
@@ -152,13 +176,49 @@
 								{
 									"name": "username",
 									"string": {
-										"computed_optional_required": "computed_optional"
+										"computed_optional_required": "computed_optional",
+										"plan_modifiers": [
+											{
+												"custom": {
+													"imports": [
+														{
+															"path": "github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
+														}
+													],
+													"schema_definition": "stringplanmodifier.UseStateForUnknown()"
+												}
+											}
+										]
 									}
 								},
 								{
 									"name": "password",
 									"string": {
-										"computed_optional_required": "computed_optional"
+										"computed_optional_required": "computed_optional",
+										"plan_modifiers": [
+											{
+												"custom": {
+													"imports": [
+														{
+															"path": "github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
+														}
+													],
+													"schema_definition": "stringplanmodifier.UseStateForUnknown()"
+												}
+											}
+										]
+									}
+								}
+							],
+							"plan_modifiers": [
+								{
+									"custom": {
+										"imports": [
+											{
+												"path": "github.com/hashicorp/terraform-plugin-framework/resource/schema/objectplanmodifier"
+											}
+										],
+										"schema_definition": "objectplanmodifier.UseStateForUnknown()"
 									}
 								}
 							]
@@ -179,6 +239,18 @@
 									"name": "api_key",
 									"string": {
 										"computed_optional_required": "required"
+									}
+								}
+							],
+							"plan_modifiers": [
+								{
+									"custom": {
+										"imports": [
+											{
+												"path": "github.com/hashicorp/terraform-plugin-framework/resource/schema/objectplanmodifier"
+											}
+										],
+										"schema_definition": "objectplanmodifier.UseStateForUnknown()"
 									}
 								}
 							]
@@ -210,39 +282,111 @@
 						}
 					},
 					{
-						"name": "description",
-						"string": {
-							"computed_optional_required": "computed_optional"
-						}
-					},
-					{
-						"name": "url",
-						"string": {
-							"computed_optional_required": "computed"
-						}
-					},
-					{
-						"name": "created_at",
-						"string": {
-							"computed_optional_required": "computed"
-						}
-					},
-					{
 						"name": "team_id",
 						"string": {
-							"computed_optional_required": "computed"
+							"computed_optional_required": "computed",
+							"plan_modifiers": [
+								{
+									"custom": {
+										"imports": [
+											{
+												"path": "github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
+											}
+										],
+										"schema_definition": "stringplanmodifier.UseStateForUnknown()"
+									}
+								}
+							]
 						}
 					},
 					{
 						"name": "disabled_at",
 						"string": {
-							"computed_optional_required": "computed"
+							"computed_optional_required": "computed",
+							"plan_modifiers": [
+								{
+									"custom": {
+										"imports": [
+											{
+												"path": "github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
+											}
+										],
+										"schema_definition": "stringplanmodifier.UseStateForUnknown()"
+									}
+								}
+							]
 						}
 					},
 					{
 						"name": "updated_at",
 						"string": {
-							"computed_optional_required": "computed"
+							"computed_optional_required": "computed",
+							"plan_modifiers": [
+								{
+									"custom": {
+										"imports": [
+											{
+												"path": "github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
+											}
+										],
+										"schema_definition": "stringplanmodifier.UseStateForUnknown()"
+									}
+								}
+							]
+						}
+					},
+					{
+						"name": "description",
+						"string": {
+							"computed_optional_required": "optional",
+							"plan_modifiers": [
+								{
+									"custom": {
+										"imports": [
+											{
+												"path": "github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
+											}
+										],
+										"schema_definition": "stringplanmodifier.UseStateForUnknown()"
+									}
+								}
+							]
+						}
+					},
+					{
+						"name": "url",
+						"string": {
+							"computed_optional_required": "computed",
+							"plan_modifiers": [
+								{
+									"custom": {
+										"imports": [
+											{
+												"path": "github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
+											}
+										],
+										"schema_definition": "stringplanmodifier.UseStateForUnknown()"
+									}
+								}
+							]
+						}
+					},
+					{
+						"name": "created_at",
+						"string": {
+							"computed_optional_required": "computed",
+							"plan_modifiers": [
+								{
+									"custom": {
+										"imports": [
+											{
+												"path": "github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
+											}
+										],
+										"schema_definition": "stringplanmodifier.UseStateForUnknown()"
+									}
+								}
+							]
 						}
 					},
 					{
@@ -253,49 +397,13 @@
 								{
 									"name": "ebay",
 									"single_nested": {
-										"computed_optional_required": "computed_optional",
-										"attributes": [
-											{
-												"name": "allowed_http_methods",
-												"list": {
-													"computed_optional_required": "computed_optional",
-													"element_type": {
-														"string": {}
-													},
-													"default": {
-														"custom": {
-															"imports": [
-																{
-																	"path": "github.com/hashicorp/terraform-plugin-framework/resource/schema/listdefault"
-																}
-															],
-															"schema_definition": "listdefault.StaticValue(types.ListValueMust(types.StringType, []attr.Value{types.StringValue(\"POST\"), types.StringValue(\"PUT\"), types.StringValue(\"PATCH\"), types.StringValue(\"DELETE\")}))"
-														}
-													},
-													"validators": [
-														{
-															"custom": {
-																"imports": [
-																	{
-																		"path": "github.com/hashicorp/terraform-plugin-framework-validators/listvalidator"
-																	},
-																	{
-																		"path": "github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
-																	}
-																],
-																"schema_definition": "listvalidator.ValueStringsAre(\n\tstringvalidator.OneOf(\n\t\t\"GET\",\n\t\t\"POST\",\n\t\t\"PUT\",\n\t\t\"PATCH\",\n\t\t\"DELETE\",\n\t),\n)"
-															}
-														}
-													]
-												}
-											}
-										]
+										"computed_optional_required": "optional"
 									}
 								},
 								{
-									"name": "webhook",
+									"name": "http",
 									"single_nested": {
-										"computed_optional_required": "computed_optional",
+										"computed_optional_required": "optional",
 										"attributes": [
 											{
 												"name": "allowed_http_methods",
@@ -339,7 +447,7 @@
 														{
 															"name": "content_type",
 															"string": {
-																"computed_optional_required": "computed_optional",
+																"computed_optional_required": "required",
 																"validators": [
 																	{
 																		"custom": {
@@ -358,6 +466,18 @@
 															"name": "body",
 															"string": {
 																"computed_optional_required": "required"
+															}
+														}
+													],
+													"plan_modifiers": [
+														{
+															"custom": {
+																"imports": [
+																	{
+																		"path": "github.com/hashicorp/terraform-plugin-framework/resource/schema/objectplanmodifier"
+																	}
+																],
+																"schema_definition": "objectplanmodifier.UseStateForUnknown()"
 															}
 														}
 													]

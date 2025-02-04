@@ -20,7 +20,7 @@ func Generate() error {
 
 	sourceConfigAttributes := []resource.Attribute{}
 	resources := []resource.Resource{}
-	sourceTypeNames = []string{"SourceTypeConfigEbay", "SourceTypeConfigWebhook"}
+	sourceTypeNames = []string{"SourceTypeConfigEbay", "SourceTypeConfigHTTP"}
 	for _, sourceTypeName := range sourceTypeNames {
 		fmt.Println(sourceTypeName) // TODO: remove
 		authResource, sourceConfigAttribute := parseSourceConfig(doc, sourceTypeName)

@@ -52,7 +52,7 @@ func parseSourceAttributes(doc *openapi3.T) []resource.Attribute {
 		computedOptionalRequired schema.ComputedOptionalRequired
 	}{
 		{"name", schema.Required},
-		{"description", schema.ComputedOptional},
+		{"description", schema.Optional},
 		{"team_id", schema.Computed},
 		{"url", schema.Computed},
 		{"disabled_at", schema.Computed},
@@ -78,7 +78,7 @@ func parseSourceAttributes(doc *openapi3.T) []resource.Attribute {
 		if !ok {
 			continue
 		}
-		attr := parseSchemaField(fieldName, field, includedField.computedOptionalRequired)
+		attr := parseSchemaField(doc, fieldName, field.Value, includedField.computedOptionalRequired)
 		attributes = append(attributes, attr)
 	}
 
@@ -110,7 +110,7 @@ func parseSourceConfig(doc *openapi3.T, sourceTypeName string) (resource.Resourc
 		Name: nameSnake,
 		SingleNested: &resource.SingleNestedAttribute{
 			Attributes:               sourceAttributes,
-			ComputedOptionalRequired: schema.ComputedOptional,
+			ComputedOptionalRequired: schema.Optional,
 		},
 	}
 }
@@ -131,18 +131,31 @@ func parseSourceConfigAttributes(doc *openapi3.T, sourceTypeName string) ([]reso
 	for fieldName, field := range sourceSchema.Properties {
 		if strings.Contains(fieldName, "auth") {
 			if field.Value.OneOf != nil {
-				attributes := parseAuthOneOf(fieldName, field, getComputedOptionalRequired(sourceSchema.Required, fieldName))
+				attributes := parseAuthOneOf(doc, fieldName, field, getComputedOptionalRequired(sourceSchema.Required, fieldName))
 				authAttributes = append(authAttributes, attributes...)
+			} else if field.Value == nil {
+				ref, err := doc.Components.Schemas.JSONLookup(getNameFromRef(field.Ref))
+				if err != nil {
+					fmt.Println(fieldName)
+					fmt.Printf("error looking up ref: %v", err)
+					panic(err)
+				}
+				refSchema, ok := ref.(*openapi3.Schema)
+				if !ok {
+					panic(fmt.Sprintf("expected schema, got %T", ref))
+				}
+				attr := parseSchemaField(doc, fieldName, refSchema, getComputedOptionalRequired(sourceSchema.Required, fieldName))
+				authAttributes = append(authAttributes, attr)
 			} else {
-				attr := parseSchemaField(fieldName, field, getComputedOptionalRequired(sourceSchema.Required, fieldName))
+				attr := parseSchemaField(doc, fieldName, field.Value, getComputedOptionalRequired(sourceSchema.Required, fieldName))
 				authAttributes = append(authAttributes, attr)
 			}
 		} else if fieldName == "type" {
-			attr := parseSchemaField(fieldName, field, getComputedOptionalRequired(sourceSchema.Required, fieldName))
+			attr := parseSchemaField(doc, fieldName, field.Value, getComputedOptionalRequired(sourceSchema.Required, fieldName))
 			attr.Name = "auth_type"
 			authAttributes = append(authAttributes, attr)
 		} else {
-			attr := parseSchemaField(fieldName, field, getComputedOptionalRequired(sourceSchema.Required, fieldName))
+			attr := parseSchemaField(doc, fieldName, field.Value, getComputedOptionalRequired(sourceSchema.Required, fieldName))
 			sourceAttributes = append(sourceAttributes, attr)
 		}
 	}
@@ -177,113 +190,139 @@ func getElementType(field *openapi3.SchemaRef) schema.ElementType {
 	return elementType
 }
 
-func parseSchemaField(fieldName string, field *openapi3.SchemaRef, computedOptionalRequired schema.ComputedOptionalRequired) resource.Attribute {
+func parseSchemaField(doc *openapi3.T, fieldName string, field *openapi3.Schema, computedOptionalRequired schema.ComputedOptionalRequired) resource.Attribute {
 	attr := resource.Attribute{Name: fieldName}
 
-	if field.Value != nil {
-		switch {
-		case field.Value.Type.Is("string"):
-			stringAttr := &resource.StringAttribute{
-				ComputedOptionalRequired: computedOptionalRequired,
-			}
-			if len(field.Value.Enum) > 0 {
-				enumVals := make([]string, 0, len(field.Value.Enum))
-				for _, enum := range field.Value.Enum {
-					if str, ok := enum.(string); ok {
-						enumVals = append(enumVals, str)
-					}
-				}
-				if len(enumVals) > 0 {
-					var enumDef strings.Builder
-					enumDef.WriteString("stringvalidator.OneOf(\n")
-					for _, val := range enumVals {
-						enumDef.WriteString(fmt.Sprintf("%q,\n", val))
-					}
-					enumDef.WriteString(")")
-
-					stringAttr.Validators = []schema.StringValidator{
-						{
-							Custom: &schema.CustomValidator{
-								Imports: []code.Import{
-									{
-										Path: "github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator",
-									},
-								},
-								SchemaDefinition: enumDef.String(),
+	switch {
+	case field.Type.Is("string"):
+		stringAttr := &resource.StringAttribute{}
+		stringAttr.ComputedOptionalRequired = computedOptionalRequired
+		if computedOptionalRequired != schema.Required {
+			stringAttr.PlanModifiers = []schema.StringPlanModifier{
+				{
+					Custom: &schema.CustomPlanModifier{
+						Imports: []code.Import{
+							{
+								Path: "github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier",
 							},
 						},
-					}
+						SchemaDefinition: "stringplanmodifier.UseStateForUnknown()",
+					},
+				},
+			}
+		}
+
+		if len(field.Enum) > 0 {
+			enumVals := make([]string, 0, len(field.Enum))
+			for _, enum := range field.Enum {
+				if str, ok := enum.(string); ok {
+					enumVals = append(enumVals, str)
 				}
 			}
-			attr.String = stringAttr
-		case field.Value.Type.Is("array"):
-			if items := field.Value.Items; items != nil {
-				if items.Value.Type.Is("object") {
-					nestedAttrs := []resource.Attribute{}
-					for propName, prop := range items.Value.Properties {
-						nestedAttr := parseSchemaField(propName, prop, getComputedOptionalRequired(items.Value.Required, propName))
-						nestedAttrs = append(nestedAttrs, nestedAttr)
-					}
-					attr.ListNested = &resource.ListNestedAttribute{
-						NestedObject: resource.NestedAttributeObject{
-							Attributes: nestedAttrs,
-						},
-						ComputedOptionalRequired: computedOptionalRequired,
-					}
-				} else {
-					listAttr := &resource.ListAttribute{
-						ComputedOptionalRequired: computedOptionalRequired,
-						ElementType:              getElementType(items),
-					}
+			if len(enumVals) > 0 {
+				var enumDef strings.Builder
+				enumDef.WriteString("stringvalidator.OneOf(\n")
+				for _, val := range enumVals {
+					enumDef.WriteString(fmt.Sprintf("%q,\n", val))
+				}
+				enumDef.WriteString(")")
 
-					// Add enum validation for string arrays
-					if items.Value.Type.Is("string") && len(items.Value.Enum) > 0 {
-						enumVals := make([]string, 0, len(items.Value.Enum))
-						for _, enum := range items.Value.Enum {
-							if str, ok := enum.(string); ok {
-								enumVals = append(enumVals, str)
-							}
-						}
-						if len(enumVals) > 0 {
-							var enumDef strings.Builder
-							enumDef.WriteString("listvalidator.ValueStringsAre(\n")
-							enumDef.WriteString("\tstringvalidator.OneOf(\n")
-							for _, val := range enumVals {
-								enumDef.WriteString(fmt.Sprintf("\t\t%q,\n", val))
-							}
-							enumDef.WriteString("\t),\n")
-							enumDef.WriteString(")")
-
-							listAttr.Validators = []schema.ListValidator{
+				stringAttr.Validators = []schema.StringValidator{
+					{
+						Custom: &schema.CustomValidator{
+							Imports: []code.Import{
 								{
-									Custom: &schema.CustomValidator{
-										Imports: []code.Import{
-											{
-												Path: "github.com/hashicorp/terraform-plugin-framework-validators/listvalidator",
-											},
-											{
-												Path: "github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator",
-											},
-										},
-										SchemaDefinition: enumDef.String(),
-									},
+									Path: "github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator",
 								},
-							}
-						}
-					}
-
-					attr.List = listAttr
+							},
+							SchemaDefinition: enumDef.String(),
+						},
+					},
 				}
 			}
-		case field.Value.Type.Is("object"):
-			nestedAttrs := []resource.Attribute{}
-			for propName, prop := range field.Value.Properties {
-				nestedAttr := parseSchemaField(propName, prop, getComputedOptionalRequired(field.Value.Required, propName))
-				nestedAttrs = append(nestedAttrs, nestedAttr)
+		}
+		attr.String = stringAttr
+	case field.Type.Is("array"):
+		if items := field.Items; items != nil {
+			if items.Value.Type.Is("object") {
+				nestedAttrs := []resource.Attribute{}
+				for propName, prop := range items.Value.Properties {
+					nestedAttr := parseSchemaField(doc, propName, prop.Value, getComputedOptionalRequired(items.Value.Required, propName))
+					nestedAttrs = append(nestedAttrs, nestedAttr)
+				}
+				attr.ListNested = &resource.ListNestedAttribute{
+					NestedObject: resource.NestedAttributeObject{
+						Attributes: nestedAttrs,
+					},
+					ComputedOptionalRequired: computedOptionalRequired,
+				}
+			} else {
+				listAttr := &resource.ListAttribute{
+					ComputedOptionalRequired: computedOptionalRequired,
+					ElementType:              getElementType(items),
+				}
+
+				// Add enum validation for string arrays
+				if items.Value.Type.Is("string") && len(items.Value.Enum) > 0 {
+					enumVals := make([]string, 0, len(items.Value.Enum))
+					for _, enum := range items.Value.Enum {
+						if str, ok := enum.(string); ok {
+							enumVals = append(enumVals, str)
+						}
+					}
+					if len(enumVals) > 0 {
+						var enumDef strings.Builder
+						enumDef.WriteString("listvalidator.ValueStringsAre(\n")
+						enumDef.WriteString("\tstringvalidator.OneOf(\n")
+						for _, val := range enumVals {
+							enumDef.WriteString(fmt.Sprintf("\t\t%q,\n", val))
+						}
+						enumDef.WriteString("\t),\n")
+						enumDef.WriteString(")")
+
+						listAttr.Validators = []schema.ListValidator{
+							{
+								Custom: &schema.CustomValidator{
+									Imports: []code.Import{
+										{
+											Path: "github.com/hashicorp/terraform-plugin-framework-validators/listvalidator",
+										},
+										{
+											Path: "github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator",
+										},
+									},
+									SchemaDefinition: enumDef.String(),
+								},
+							},
+						}
+					}
+				}
+
+				attr.List = listAttr
 			}
-			attr.SingleNested = &resource.SingleNestedAttribute{
-				Attributes:               nestedAttrs,
-				ComputedOptionalRequired: computedOptionalRequired,
+		}
+	case field.Type.Is("object"):
+		nestedAttrs := []resource.Attribute{}
+		for propName, prop := range field.Properties {
+			nestedAttr := parseSchemaField(doc, propName, prop.Value, getComputedOptionalRequired(field.Required, propName))
+			nestedAttrs = append(nestedAttrs, nestedAttr)
+		}
+		attr.SingleNested = &resource.SingleNestedAttribute{
+			Attributes:               nestedAttrs,
+			ComputedOptionalRequired: computedOptionalRequired,
+		}
+		if computedOptionalRequired != schema.Required {
+			attr.SingleNested.PlanModifiers = []schema.ObjectPlanModifier{
+				{
+					Custom: &schema.CustomPlanModifier{
+						Imports: []code.Import{
+							{
+								Path: "github.com/hashicorp/terraform-plugin-framework/resource/schema/objectplanmodifier",
+							},
+						},
+						SchemaDefinition: "objectplanmodifier.UseStateForUnknown()",
+					},
+				},
 			}
 		}
 	}
@@ -304,11 +343,11 @@ func parseSchemaField(fieldName string, field *openapi3.SchemaRef, computedOptio
 	return attr
 }
 
-func parseAuthOneOf(fieldName string, field *openapi3.SchemaRef, computedOptionalRequired schema.ComputedOptionalRequired) []resource.Attribute {
+func parseAuthOneOf(doc *openapi3.T, fieldName string, field *openapi3.SchemaRef, computedOptionalRequired schema.ComputedOptionalRequired) []resource.Attribute {
 	attributes := []resource.Attribute{}
 
 	for _, oneOf := range field.Value.OneOf {
-		attr := parseSchemaField(fieldName, oneOf, computedOptionalRequired)
+		attr := parseSchemaField(doc, fieldName, oneOf.Value, computedOptionalRequired)
 		attr.Name = getAuthOneOfName(attr)
 		attributes = append(attributes, attr)
 	}
@@ -332,4 +371,8 @@ func getAuthOneOfName(attr resource.Attribute) string {
 	default:
 		panic(fmt.Sprintf("unknown one of: %v", attributeNames))
 	}
+}
+
+func getNameFromRef(ref string) string {
+	return strings.TrimPrefix(ref, "#/components/schemas/")
 }
