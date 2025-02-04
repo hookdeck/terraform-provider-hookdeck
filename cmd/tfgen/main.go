@@ -13,3 +13,7 @@ func main() {
 		os.Exit(1)
 	}
 }
+
+// tfplugingen-framework generate resources \
+//   --input ./assets/provider-code-spec.json \
+//   --output ./internal/generated/tfplugingen
