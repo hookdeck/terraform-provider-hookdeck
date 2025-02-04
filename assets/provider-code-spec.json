@@ -13,18 +13,6 @@
 							"computed_optional_required": "computed_optional",
 							"attributes": [
 								{
-									"name": "client_secret",
-									"string": {
-										"computed_optional_required": "required"
-									}
-								},
-								{
-									"name": "verification_token",
-									"string": {
-										"computed_optional_required": "required"
-									}
-								},
-								{
 									"name": "environment",
 									"string": {
 										"computed_optional_required": "required",
@@ -53,6 +41,18 @@
 									"string": {
 										"computed_optional_required": "required"
 									}
+								},
+								{
+									"name": "client_secret",
+									"string": {
+										"computed_optional_required": "required"
+									}
+								},
+								{
+									"name": "verification_token",
+									"string": {
+										"computed_optional_required": "required"
+									}
 								}
 							]
 						}
@@ -71,34 +71,28 @@
 			"schema": {
 				"attributes": [
 					{
+						"name": "auth_type",
+						"string": {
+							"computed_optional_required": "computed_optional",
+							"validators": [
+								{
+									"custom": {
+										"imports": [
+											{
+												"path": "github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
+											}
+										],
+										"schema_definition": "stringvalidator.OneOf(\n\"HMAC\",\n\"BASIC_AUTH\",\n\"API_KEY\",\n)"
+									}
+								}
+							]
+						}
+					},
+					{
 						"name": "auth_hmac",
 						"single_nested": {
 							"computed_optional_required": "computed_optional",
 							"attributes": [
-								{
-									"name": "encoding",
-									"string": {
-										"computed_optional_required": "required",
-										"validators": [
-											{
-												"custom": {
-													"imports": [
-														{
-															"path": "github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
-														}
-													],
-													"schema_definition": "stringvalidator.OneOf(\n\"base64\",\n\"base64url\",\n\"hex\",\n)"
-												}
-											}
-										]
-									}
-								},
-								{
-									"name": "header_key",
-									"string": {
-										"computed_optional_required": "required"
-									}
-								},
 								{
 									"name": "webhook_secret_key",
 									"string": {
@@ -121,6 +115,30 @@
 												}
 											}
 										]
+									}
+								},
+								{
+									"name": "encoding",
+									"string": {
+										"computed_optional_required": "required",
+										"validators": [
+											{
+												"custom": {
+													"imports": [
+														{
+															"path": "github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
+														}
+													],
+													"schema_definition": "stringvalidator.OneOf(\n\"base64\",\n\"base64url\",\n\"hex\",\n)"
+												}
+											}
+										]
+									}
+								},
+								{
+									"name": "header_key",
+									"string": {
+										"computed_optional_required": "required"
 									}
 								}
 							]
@@ -167,24 +185,6 @@
 						}
 					},
 					{
-						"name": "auth_type",
-						"string": {
-							"computed_optional_required": "computed_optional",
-							"validators": [
-								{
-									"custom": {
-										"imports": [
-											{
-												"path": "github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
-											}
-										],
-										"schema_definition": "stringvalidator.OneOf(\n\"HMAC\",\n\"BASIC_AUTH\",\n\"API_KEY\",\n)"
-									}
-								}
-							]
-						}
-					},
-					{
 						"name": "source_id",
 						"string": {
 							"computed_optional_required": "required"
@@ -216,19 +216,7 @@
 						}
 					},
 					{
-						"name": "disabled_at",
-						"string": {
-							"computed_optional_required": "computed"
-						}
-					},
-					{
 						"name": "url",
-						"string": {
-							"computed_optional_required": "computed"
-						}
-					},
-					{
-						"name": "updated_at",
 						"string": {
 							"computed_optional_required": "computed"
 						}
@@ -246,14 +234,26 @@
 						}
 					},
 					{
+						"name": "disabled_at",
+						"string": {
+							"computed_optional_required": "computed"
+						}
+					},
+					{
+						"name": "updated_at",
+						"string": {
+							"computed_optional_required": "computed"
+						}
+					},
+					{
 						"name": "config",
 						"single_nested": {
-							"computed_optional_required": "",
+							"computed_optional_required": "computed_optional",
 							"attributes": [
 								{
 									"name": "ebay",
 									"single_nested": {
-										"computed_optional_required": "",
+										"computed_optional_required": "computed_optional",
 										"attributes": [
 											{
 												"name": "allowed_http_methods",
@@ -295,7 +295,7 @@
 								{
 									"name": "webhook",
 									"single_nested": {
-										"computed_optional_required": "",
+										"computed_optional_required": "computed_optional",
 										"attributes": [
 											{
 												"name": "allowed_http_methods",

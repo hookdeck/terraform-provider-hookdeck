@@ -109,7 +109,8 @@ func parseSourceConfig(doc *openapi3.T, sourceTypeName string) (resource.Resourc
 	return authResource, resource.Attribute{
 		Name: nameSnake,
 		SingleNested: &resource.SingleNestedAttribute{
-			Attributes: sourceAttributes,
+			Attributes:               sourceAttributes,
+			ComputedOptionalRequired: schema.ComputedOptional,
 		},
 	}
 }

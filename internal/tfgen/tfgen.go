@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-codegen-spec/resource"
+	"github.com/hashicorp/terraform-plugin-codegen-spec/schema"
 )
 
 func Generate() error {
@@ -31,7 +32,8 @@ func Generate() error {
 	sourceAttributes = append(sourceAttributes, resource.Attribute{
 		Name: "config",
 		SingleNested: &resource.SingleNestedAttribute{
-			Attributes: sourceConfigAttributes,
+			Attributes:               sourceConfigAttributes,
+			ComputedOptionalRequired: schema.ComputedOptional,
 		},
 	})
 	resources = append(resources, resource.Resource{
