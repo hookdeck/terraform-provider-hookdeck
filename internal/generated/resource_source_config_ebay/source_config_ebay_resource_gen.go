@@ -69,6 +69,7 @@ func SourceConfigEbayResourceSchema(ctx context.Context) schema.Schema {
 					},
 				},
 				Optional: true,
+				Computed: true,
 			},
 			"source_id": schema.StringAttribute{
 				Required: true,

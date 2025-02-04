@@ -20,7 +20,7 @@ func Generate() error {
 	}
 
 	resources := []resource.Resource{}
-	sourceTypeNames = []string{"SourceTypeConfigEbay"}
+	sourceTypeNames = []string{"SourceTypeConfigEbay", "SourceTypeConfigWebhook"}
 	for _, sourceTypeName := range sourceTypeNames {
 		log.Println(sourceTypeName)
 		sourceResource := parseSourceConfig(doc, sourceTypeName)

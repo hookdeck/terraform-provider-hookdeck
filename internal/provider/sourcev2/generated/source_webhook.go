@@ -4,7 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"terraform-provider-hookdeck/internal/generated/resource_source_config_ebay"
+	"terraform-provider-hookdeck/internal/generated/resource_source_config_webhook"
 
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
@@ -21,32 +21,32 @@ import (
 
 // Source Config Resource
 var (
-	_ resource.Resource                = &ebaySourceConfigResource{}
-	_ resource.ResourceWithConfigure   = &ebaySourceConfigResource{}
-	_ resource.ResourceWithImportState = &ebaySourceConfigResource{}
+	_ resource.Resource                = &webhookSourceConfigResource{}
+	_ resource.ResourceWithConfigure   = &webhookSourceConfigResource{}
+	_ resource.ResourceWithImportState = &webhookSourceConfigResource{}
 )
 
 func init() {
-	newResources = append(newResources, NewEbaySourceConfigResource)
+	newResources = append(newResources, NewWebhookSourceConfigResource)
 }
 
-func NewEbaySourceConfigResource() resource.Resource {
-	return &ebaySourceConfigResource{}
+func NewWebhookSourceConfigResource() resource.Resource {
+	return &webhookSourceConfigResource{}
 }
 
-type ebaySourceConfigResource struct {
+type webhookSourceConfigResource struct {
 	client hookdeckClient.Client
 }
 
-func (r *ebaySourceConfigResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
-	resp.TypeName = req.ProviderTypeName + "_source_config_ebay"
+func (r *webhookSourceConfigResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
+	resp.TypeName = req.ProviderTypeName + "_source_config_webhook"
 }
 
-func (r *ebaySourceConfigResource) Schema(ctx context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
-	resp.Schema = resource_source_config_ebay.SourceConfigEbayResourceSchema(ctx)
+func (r *webhookSourceConfigResource) Schema(ctx context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
+	resp.Schema = resource_source_config_webhook.SourceConfigWebhookResourceSchema(ctx)
 }
 
-func (r *ebaySourceConfigResource) Configure(_ context.Context, req resource.ConfigureRequest, resp *resource.ConfigureResponse) {
+func (r *webhookSourceConfigResource) Configure(_ context.Context, req resource.ConfigureRequest, resp *resource.ConfigureResponse) {
 	if req.ProviderData == nil {
 		return
 	}
@@ -63,8 +63,8 @@ func (r *ebaySourceConfigResource) Configure(_ context.Context, req resource.Con
 	r.client = *client
 }
 
-func (r *ebaySourceConfigResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
-	var data resource_source_config_ebay.SourceConfigEbayModel
+func (r *webhookSourceConfigResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
+	var data resource_source_config_webhook.SourceConfigWebhookModel
 	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
 	if resp.Diagnostics.HasError() {
 		return
@@ -78,8 +78,8 @@ func (r *ebaySourceConfigResource) Read(ctx context.Context, req resource.ReadRe
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
-func (r *ebaySourceConfigResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
-	var data resource_source_config_ebay.SourceConfigEbayModel
+func (r *webhookSourceConfigResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
+	var data resource_source_config_webhook.SourceConfigWebhookModel
 
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
 	if resp.Diagnostics.HasError() {
@@ -94,8 +94,8 @@ func (r *ebaySourceConfigResource) Create(ctx context.Context, req resource.Crea
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
-func (r *ebaySourceConfigResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
-	var data resource_source_config_ebay.SourceConfigEbayModel
+func (r *webhookSourceConfigResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
+	var data resource_source_config_webhook.SourceConfigWebhookModel
 
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
 	if resp.Diagnostics.HasError() {
@@ -110,8 +110,8 @@ func (r *ebaySourceConfigResource) Update(ctx context.Context, req resource.Upda
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
-func (r *ebaySourceConfigResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
-	var data resource_source_config_ebay.SourceConfigEbayModel
+func (r *webhookSourceConfigResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
+	var data resource_source_config_webhook.SourceConfigWebhookModel
 
 	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
 	if resp.Diagnostics.HasError() {
@@ -127,11 +127,11 @@ func (r *ebaySourceConfigResource) Delete(ctx context.Context, req resource.Dele
 	}
 }
 
-func (r *ebaySourceConfigResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
+func (r *webhookSourceConfigResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
 }
 
-func (r *ebaySourceConfigResource) readSourceConfig(ctx context.Context, data *resource_source_config_ebay.SourceConfigEbayModel) diag.Diagnostics {
+func (r *webhookSourceConfigResource) readSourceConfig(ctx context.Context, data *resource_source_config_webhook.SourceConfigWebhookModel) diag.Diagnostics {
 	source, err := r.client.Source.Retrieve(context.Background(), data.SourceId.ValueString(), &hookdeck.SourceRetrieveRequest{
 		Include: hookdeck.String("verification.configs"),
 	})
@@ -141,11 +141,11 @@ func (r *ebaySourceConfigResource) readSourceConfig(ctx context.Context, data *r
 		return diags
 	}
 
-	return refreshData(ctx, data, source)
+	return r.refreshData(ctx, data, source)
 }
 
-func (r *ebaySourceConfigResource) updateSourceConfig(ctx context.Context, data *resource_source_config_ebay.SourceConfigEbayModel) diag.Diagnostics {
-	payload, diags := dataToUpdatePayload(data)
+func (r *webhookSourceConfigResource) updateSourceConfig(ctx context.Context, data *resource_source_config_webhook.SourceConfigWebhookModel) diag.Diagnostics {
+	payload, diags := r.dataToUpdatePayload(data)
 	if diags.HasError() {
 		return diags
 	}
@@ -166,10 +166,10 @@ func (r *ebaySourceConfigResource) updateSourceConfig(ctx context.Context, data 
 		return diags
 	}
 
-	return refreshData(ctx, data, source)
+	return r.refreshData(ctx, data, source)
 }
 
-func (r *ebaySourceConfigResource) deleteSourceConfig(ctx context.Context, data *resource_source_config_ebay.SourceConfigEbayModel) diag.Diagnostics {
+func (r *webhookSourceConfigResource) deleteSourceConfig(ctx context.Context, data *resource_source_config_webhook.SourceConfigWebhookModel) diag.Diagnostics {
 	if _, err := r.client.Source.Update(context.Background(), data.SourceId.ValueString(), &hookdeck.SourceUpdateRequest{
 		Verification: hookdeck.Null[hookdeck.VerificationConfig](),
 	}); err != nil {
@@ -181,15 +181,15 @@ func (r *ebaySourceConfigResource) deleteSourceConfig(ctx context.Context, data 
 	return nil
 }
 
-func dataToUpdatePayload(data *resource_source_config_ebay.SourceConfigEbayModel) (*hookdeck.SourceUpdateRequest, diag.Diagnostics) {
-	config := &hookdeck.SourceTypeConfigEbay{}
+func (r *webhookSourceConfigResource) dataToUpdatePayload(data *resource_source_config_webhook.SourceConfigWebhookModel) (*hookdeck.SourceUpdateRequest, diag.Diagnostics) {
+	config := &hookdeck.SourceTypeConfigWebhook{}
 
 	if !data.Auth.IsUnknown() && !data.Auth.IsNull() {
 		object, diags := data.Auth.ToObjectValue(context.Background())
 		if diags.HasError() {
 			return nil, diags
 		}
-		var auth hookdeck.SourceTypeConfigEbayAuth
+		var auth hookdeck.SourceTypeConfigWebhookAuth
 		if err := json.Unmarshal([]byte(object.String()), &auth); err != nil {
 			var diags diag.Diagnostics
 			diags.AddError("Error unmarshalling auth", err.Error())
@@ -200,17 +200,31 @@ func dataToUpdatePayload(data *resource_source_config_ebay.SourceConfigEbayModel
 
 	if !data.AllowedHttpMethods.IsUnknown() && !data.AllowedHttpMethods.IsNull() {
 		for _, method := range data.AllowedHttpMethods.Elements() {
-			method, err := hookdeck.NewSourceTypeConfigEbayAllowedHttpMethodsItemFromString(method.(types.String).ValueString())
+			method, err := hookdeck.NewSourceTypeConfigWebhookAllowedHttpMethodsItemFromString(method.(types.String).ValueString())
 			if err != nil {
 				var diags diag.Diagnostics
-				diags.AddError("Error converting allowed http method to SourceTypeConfigEbayAllowedHttpMethodsItem", err.Error())
+				diags.AddError("Error converting allowed http method to SourceTypeConfigWebhookAllowedHttpMethodsItem", err.Error())
 				return nil, diags
 			}
 			config.AllowedHttpMethods = append(config.AllowedHttpMethods, method)
 		}
 	}
 
-	sourceType, err := hookdeck.NewSourceUpdateRequestTypeFromString("EBAY")
+	if !data.CustomResponse.IsUnknown() && !data.CustomResponse.IsNull() {
+		object, diags := data.CustomResponse.ToObjectValue(context.Background())
+		if diags.HasError() {
+			return nil, diags
+		}
+		var apiObject hookdeck.SourceTypeConfigWebhookCustomResponse
+		if err := json.Unmarshal([]byte(object.String()), &apiObject); err != nil {
+			var diags diag.Diagnostics
+			diags.AddError("Error unmarshalling custom_response", err.Error())
+			return nil, diags
+		}
+		config.CustomResponse = &apiObject
+	}
+
+	sourceType, err := hookdeck.NewSourceUpdateRequestTypeFromString("WEBHOOK")
 	if err != nil {
 		var diags diag.Diagnostics
 		diags.AddError("Error converting source type to SourceUpdateRequestType", err.Error())
@@ -220,12 +234,12 @@ func dataToUpdatePayload(data *resource_source_config_ebay.SourceConfigEbayModel
 	return &hookdeck.SourceUpdateRequest{
 		Type: hookdeck.Optional(sourceType),
 		Config: hookdeck.Optional(hookdeck.SourceTypeConfig{
-			SourceTypeConfigEbay: config,
+			SourceTypeConfigWebhook: config,
 		}),
 	}, nil
 }
 
-func refreshData(ctx context.Context, data *resource_source_config_ebay.SourceConfigEbayModel, source *hookdeck.Source) diag.Diagnostics {
+func (r *webhookSourceConfigResource) refreshData(ctx context.Context, data *resource_source_config_webhook.SourceConfigWebhookModel, source *hookdeck.Source) diag.Diagnostics {
 	var diags diag.Diagnostics
 
 	if source.AllowedHttpMethods != nil {
@@ -242,11 +256,12 @@ func refreshData(ctx context.Context, data *resource_source_config_ebay.SourceCo
 			return diags
 		}
 		authConfig := getAuthConfig(sourceData)
-		data.Auth.ClientSecret = types.StringValue(authConfig["client_secret"].(string))
-		data.Auth.VerificationToken = types.StringValue(authConfig["verification_token"].(string))
-		data.Auth.Environment = types.StringValue(authConfig["environment"].(string))
-		data.Auth.DevId = types.StringValue(authConfig["dev_id"].(string))
-		data.Auth.ClientId = types.StringValue(authConfig["client_id"].(string))
+		data.Type = types.StringValue(authConfig["type"].(string))
+	}
+
+	if source.CustomResponse != nil {
+		data.CustomResponse.Body = types.StringValue(source.CustomResponse.Body)
+		data.CustomResponse.ContentType = types.StringValue(string(source.CustomResponse.ContentType))
 	}
 
 	return nil

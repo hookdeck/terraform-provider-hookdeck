@@ -231,7 +231,7 @@ func parseSchemaField(fieldName string, field *openapi3.SchemaRef, required []st
 						Path: "github.com/hashicorp/terraform-plugin-framework/resource/schema/listdefault",
 					},
 				},
-				SchemaDefinition: "listdefault.StaticValue(types.ListValueMust(types.StringType, []attr.Value{types.StringValue(\"POST\"), types.StringValue(\"PUT\"), types.StringValue(\"PATCH\"), types.StringValue(\"GET\")}))",
+				SchemaDefinition: "listdefault.StaticValue(types.ListValueMust(types.StringType, []attr.Value{types.StringValue(\"POST\"), types.StringValue(\"PUT\"), types.StringValue(\"PATCH\"), types.StringValue(\"DELETE\")}))",
 			},
 		}
 	}
