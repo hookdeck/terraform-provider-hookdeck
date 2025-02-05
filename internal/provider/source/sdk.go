@@ -3,11 +3,12 @@ package source
 import (
 	"time"
 
+	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	hookdeck "github.com/hookdeck/hookdeck-go-sdk"
 )
 
-func (m *sourceResourceModel) Refresh(source *hookdeck.Source) {
+func (m *sourceResourceModel) Refresh(source *hookdeck.Source) diag.Diagnostics {
 	m.CreatedAt = types.StringValue(source.CreatedAt.Format(time.RFC3339))
 	if source.DisabledAt != nil {
 		m.DisabledAt = types.StringValue(source.DisabledAt.Format(time.RFC3339))
@@ -19,6 +20,7 @@ func (m *sourceResourceModel) Refresh(source *hookdeck.Source) {
 	m.TeamID = types.StringValue(source.TeamId)
 	m.UpdatedAt = types.StringValue(source.UpdatedAt.Format(time.RFC3339))
 	m.URL = types.StringValue(source.Url)
+	return nil
 }
 
 func (m *sourceResourceModel) ToCreatePayload() *hookdeck.SourceCreateRequest {

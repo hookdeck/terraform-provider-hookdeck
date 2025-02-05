@@ -3,12 +3,12 @@ package source
 import (
 	"context"
 	"fmt"
-	schemaHelpers "terraform-provider-hookdeck/internal/schemahelpers"
+	"terraform-provider-hookdeck/internal/schemahelpers"
+	"terraform-provider-hookdeck/internal/sdkclient"
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	hookdeck "github.com/hookdeck/hookdeck-go-sdk"
-	hookdeckClient "github.com/hookdeck/hookdeck-go-sdk/client"
 )
 
 // Ensure the implementation satisfies the expected interfaces.
@@ -24,7 +24,7 @@ func NewSourceDataSource() datasource.DataSource {
 
 // sourceDataSource is the datasource implementation.
 type sourceDataSource struct {
-	client hookdeckClient.Client
+	client sdkclient.Client
 }
 
 // Metadata returns the datasource type name.
@@ -36,7 +36,7 @@ func (r *sourceDataSource) Metadata(_ context.Context, req datasource.MetadataRe
 func (r *sourceDataSource) Schema(_ context.Context, _ datasource.SchemaRequest, resp *datasource.SchemaResponse) {
 	resp.Schema = schema.Schema{
 		Description: "Source Data Source",
-		Attributes:  schemaHelpers.DataSourceSchemaFromResourceSchema(schemaAttributes(), "id"),
+		Attributes:  schemahelpers.DataSourceSchemaFromResourceSchema(schemaAttributes(), "id"),
 	}
 }
 
@@ -46,18 +46,18 @@ func (r *sourceDataSource) Configure(_ context.Context, req datasource.Configure
 		return
 	}
 
-	client, ok := req.ProviderData.(*hookdeckClient.Client)
+	client, ok := req.ProviderData.(sdkclient.Client)
 
 	if !ok {
 		resp.Diagnostics.AddError(
 			"Unexpected Data Source Configure Type",
-			fmt.Sprintf("Expected *hookdeckClient.Client, got: %T. Please report this issue to the provider developers.", req.ProviderData),
+			fmt.Sprintf("Expected sdkclient.Client, got: %T. Please report this issue to the provider developers.", req.ProviderData),
 		)
 
 		return
 	}
 
-	r.client = *client
+	r.client = client
 }
 
 // Read refreshes the Terraform state with the latest data.

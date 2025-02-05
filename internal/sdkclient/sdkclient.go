@@ -7,13 +7,18 @@ import (
 	"github.com/hookdeck/hookdeck-go-sdk/option"
 )
 
-func InitHookdeckSDKClient(apiBase string, apiKey string, maxAttempts int, providerVersion string) *client.Client {
+type Client struct {
+	*client.Client
+}
+
+func InitHookdeckSDKClient(apiBase string, apiKey string, maxAttempts int, providerVersion string) Client {
 	header := http.Header{}
 	initUserAgentHeader(header, providerVersion)
-	return client.NewClient(
+	hookdeckClient := client.NewClient(
 		option.WithBaseURL(apiBase),
 		option.WithToken(apiKey),
 		option.WithHTTPHeader(header),
 		option.WithMaxAttempts(uint(maxAttempts)),
 	)
+	return Client{hookdeckClient}
 }
