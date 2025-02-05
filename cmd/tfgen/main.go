@@ -14,6 +14,6 @@ func main() {
 	}
 }
 
-// tfplugingen-framework generate resources \
-//   --input ./assets/provider-code-spec.json \
-//   --output ./internal/generated/tfplugingen
+//go:generate go run .
+
+//go:generate tfplugingen-framework generate resources --input ../../assets/provider-code-spec.json --output ../../internal/generated/tfplugingen

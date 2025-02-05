@@ -10,7 +10,7 @@ import (
 )
 
 // const hookdeckOpenAPISchemaURI = "https://raw.githubusercontent.com/hookdeck/hookdeck-api-schema/refs/heads/main/openapi.json"
-const hookdeckOpenAPISchemaURI = "internal/tfgen/openapi.json"
+const hookdeckOpenAPISchemaURI = "../../internal/tfgen/openapi.json"
 
 func loadOpenAPISchema() (*openapi3.T, error) {
 	loader := openapi3.NewLoader()

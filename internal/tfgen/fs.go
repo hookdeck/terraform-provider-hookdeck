@@ -13,5 +13,5 @@ func writeTFCodeSpec(spec spec.Specification) error {
 	if err != nil {
 		return fmt.Errorf("error marshalling provider code spec to JSON: %w", err)
 	}
-	return os.WriteFile("assets/provider-code-spec.json", bytes, 0644)
+	return os.WriteFile("../../assets/provider-code-spec.json", bytes, 0644)
 }
