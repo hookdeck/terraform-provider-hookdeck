@@ -217,6 +217,8 @@ func (r *sourceResource) dataToUpdatePayload(_ context.Context, data *resource_s
 
 // TODO: dynamic config
 func (r *sourceResource) refreshData(ctx context.Context, data *resource_source.SourceModel, source *hookdeck.Source) diag.Diagnostics {
+	var diags diag.Diagnostics
+
 	data.CreatedAt = types.StringValue(source.CreatedAt.Format(time.RFC3339))
 	if source.DisabledAt != nil {
 		data.DisabledAt = types.StringValue(source.DisabledAt.Format(time.RFC3339))
@@ -229,25 +231,14 @@ func (r *sourceResource) refreshData(ctx context.Context, data *resource_source.
 	data.UpdatedAt = types.StringValue(source.UpdatedAt.Format(time.RFC3339))
 	data.Url = types.StringValue(source.Url)
 
-	// Hacky way to create a non-null ConfigValue.
-	// This will result in an error but we can ignore it.
-	obj := types.ObjectValueMust(resource_source.ConfigValue{}.AttributeTypes(ctx),
-		map[string]attr.Value{
-			"ebay":    types.ObjectNull(resource_source.EbayValue{}.AttributeTypes(ctx)),
-			"shopify": types.ObjectNull(resource_source.ShopifyValue{}.AttributeTypes(ctx)),
-			"http":    types.ObjectNull(resource_source.HttpValue{}.AttributeTypes(ctx)),
-		})
-	config, diags := resource_source.ConfigType{}.ValueFromObject(ctx, obj)
+	nullConfigValue, diags := resource_source.NewConfigValueNull().ToObjectValue(ctx)
 	if diags.HasError() {
 		return diags
 	}
-	configValue, ok := config.(resource_source.ConfigValue)
-	if !ok {
-		var diags diag.Diagnostics
-		diags.AddError("config is not a ConfigValue", "config is not a ConfigValue")
+	data.Config, diags = resource_source.NewConfigValue(resource_source.ConfigValue{}.AttributeTypes(ctx), nullConfigValue.Attributes())
+	if diags.HasError() {
 		return diags
 	}
-	data.Config = configValue
 
 	switch source.Type {
 	case "EBAY":
@@ -259,7 +250,6 @@ func (r *sourceResource) refreshData(ctx context.Context, data *resource_source.
 		configData := map[string]attr.Value{}
 		allowedHttpMethodStrings, ok := config["allowed_http_methods"].([]interface{})
 		if !ok {
-			var diags diag.Diagnostics
 			diags.AddError("allowed_http_methods is not a list", "allowed_http_methods is not a list")
 			return diags
 		}
@@ -286,6 +276,8 @@ func (r *sourceResource) refreshData(ctx context.Context, data *resource_source.
 func getConfig(source *hookdeck.Source) map[string]interface{} {
 	sourceBytes, _ := source.MarshalJSON()
 	var sourceData map[string]interface{}
-	json.Unmarshal(sourceBytes, &sourceData)
+	if err := json.Unmarshal(sourceBytes, &sourceData); err != nil {
+		panic(err)
+	}
 	return sourceData["config"].(map[string]interface{})
 }
