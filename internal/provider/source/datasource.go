@@ -8,7 +8,6 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
-	hookdeck "github.com/hookdeck/hookdeck-go-sdk"
 )
 
 // Ensure the implementation satisfies the expected interfaces.
@@ -62,21 +61,16 @@ func (r *sourceDataSource) Configure(_ context.Context, req datasource.Configure
 
 // Read refreshes the Terraform state with the latest data.
 func (r *sourceDataSource) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {
-	// Get data from Terraform state
 	var data *sourceResourceModel
 	resp.Diagnostics.Append(req.Config.Get(ctx, &data)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	// Get refreshed datasource value
-	source, err := r.client.Source.Retrieve(context.Background(), data.ID.ValueString(), &hookdeck.SourceRetrieveRequest{})
-	if err != nil {
-		resp.Diagnostics.AddError("Error reading source", err.Error())
+	resp.Diagnostics.Append(data.Retrieve(ctx, &r.client)...)
+	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	// Save refreshed data into Terraform state
-	data.Refresh(source)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }

@@ -8,7 +8,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
-	hookdeck "github.com/hookdeck/hookdeck-go-sdk"
 )
 
 // Ensure the implementation satisfies the expected interfaces.
@@ -63,89 +62,63 @@ func (r *sourceResource) Configure(_ context.Context, req resource.ConfigureRequ
 
 // Create creates the resource and sets the initial Terraform state.
 func (r *sourceResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
-	// Get data from Terraform plan
 	var data *sourceResourceModel
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	// Create resource
-	source, err := r.client.Source.Create(context.Background(), data.ToCreatePayload())
-	if err != nil {
-		resp.Diagnostics.AddError("Error creating source", err.Error())
-		return
-	}
-
-	// Save updated data into Terraform state
-	resp.Diagnostics.Append(data.Refresh(source)...)
+	resp.Diagnostics.Append(data.Create(ctx, &r.client)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
+
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
 // Read refreshes the Terraform state with the latest data.
 func (r *sourceResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
-	// Get data from Terraform state
 	var data *sourceResourceModel
 	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	// Get refreshed resource value
-	source, err := r.client.Source.Retrieve(context.Background(), data.ID.ValueString(), &hookdeck.SourceRetrieveRequest{})
-	if err != nil {
-		resp.Diagnostics.AddError("Error reading source", err.Error())
-		return
-	}
-
-	// Save refreshed data into Terraform state
-	resp.Diagnostics.Append(data.Refresh(source)...)
+	resp.Diagnostics.Append(data.Retrieve(ctx, &r.client)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
+
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
 // Update updates the resource and sets the updated Terraform state on success.
 func (r *sourceResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
-	// Get data from Terraform plan
 	var data *sourceResourceModel
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	// Update existing resource
-	source, err := r.client.Source.Update(context.Background(), data.ID.ValueString(), data.ToUpdatePayload())
-	if err != nil {
-		resp.Diagnostics.AddError("Error updating source", err.Error())
-		return
-	}
-
-	// Save updated data into Terraform state
-	resp.Diagnostics.Append(data.Refresh(source)...)
+	resp.Diagnostics.Append(data.Update(ctx, &r.client)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
+
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
 // Delete deletes the resource and removes the Terraform state on success.
 func (r *sourceResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
-	// Get data from Terraform state
 	var data *sourceResourceModel
 	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	// Delete existing resource
-	_, err := r.client.Source.Delete(context.Background(), data.ID.ValueString())
-	if err != nil {
-		resp.Diagnostics.AddError("Error deleting source", err.Error())
+	resp.Diagnostics.Append(data.Delete(ctx, &r.client)...)
+	if resp.Diagnostics.HasError() {
+		return
 	}
 }
 
