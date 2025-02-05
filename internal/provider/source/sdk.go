@@ -30,6 +30,11 @@ func (m *sourceResourceModel) Refresh(source map[string]interface{}) diag.Diagno
 	m.ID = types.StringValue(source["id"].(string))
 	m.Name = types.StringValue(source["name"].(string))
 	m.TeamID = types.StringValue(source["team_id"].(string))
+	if source["type"] != nil {
+		m.Type = types.StringValue(source["type"].(string))
+	} else {
+		m.Type = types.StringNull()
+	}
 	m.UpdatedAt = types.StringValue(source["updated_at"].(string))
 	m.URL = types.StringValue(source["url"].(string))
 	return nil
@@ -75,12 +80,9 @@ func (m *sourceResourceModel) Retrieve(ctx context.Context, client *sdkclient.Cl
 func (m *sourceResourceModel) Create(ctx context.Context, client *sdkclient.Client) diag.Diagnostics {
 	var diags diag.Diagnostics
 
-	payload := map[string]interface{}{}
-	payload["name"] = m.Name.ValueString()
-	if m.Description.ValueString() != "" {
-		payload["description"] = m.Description.ValueString()
-	} else {
-		payload["description"] = (*string)(nil)
+	payload, diags := m.toPayload()
+	if diags.HasError() {
+		return diags
 	}
 
 	jsonData, err := json.Marshal(payload)
@@ -128,12 +130,9 @@ func (m *sourceResourceModel) Create(ctx context.Context, client *sdkclient.Clie
 func (m *sourceResourceModel) Update(ctx context.Context, client *sdkclient.Client) diag.Diagnostics {
 	var diags diag.Diagnostics
 
-	payload := map[string]interface{}{}
-	payload["name"] = m.Name.ValueString()
-	if m.Description.ValueString() != "" {
-		payload["description"] = m.Description.ValueString()
-	} else {
-		payload["description"] = (*string)(nil)
+	payload, diags := m.toPayload()
+	if diags.HasError() {
+		return diags
 	}
 
 	jsonData, err := json.Marshal(payload)
@@ -197,4 +196,31 @@ func (m *sourceResourceModel) Delete(ctx context.Context, client *sdkclient.Clie
 	}
 
 	return nil
+}
+
+func (m *sourceResourceModel) toPayload() (map[string]interface{}, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	payload := map[string]interface{}{}
+	payload["name"] = m.Name.ValueString()
+	if m.Config.ValueString() != "" {
+		var payloadConfig map[string]interface{}
+		err := json.Unmarshal([]byte(m.Config.ValueString()), &payloadConfig)
+		if err != nil {
+			var diags diag.Diagnostics
+			diags.AddError("Error creating source", err.Error())
+			return nil, diags
+		}
+		payload["config"] = payloadConfig
+	}
+	if m.Description.ValueString() != "" {
+		payload["description"] = m.Description.ValueString()
+	} else {
+		payload["description"] = (*string)(nil)
+	}
+	if m.Type.ValueString() != "" {
+		payload["type"] = m.Type.ValueString()
+	}
+
+	return payload, diags
 }

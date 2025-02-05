@@ -8,6 +8,7 @@ require (
 	github.com/getkin/kin-openapi v0.128.0
 	github.com/hashicorp/terraform-plugin-docs v0.19.2
 	github.com/hashicorp/terraform-plugin-framework v1.13.0
+	github.com/hashicorp/terraform-plugin-framework-jsontypes v0.2.0
 	github.com/hashicorp/terraform-plugin-framework-validators v0.16.0
 	github.com/hashicorp/terraform-plugin-log v0.9.0
 	github.com/hookdeck/hookdeck-go-sdk v0.7.0
