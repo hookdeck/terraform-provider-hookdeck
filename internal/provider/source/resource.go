@@ -2,12 +2,10 @@ package source
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"terraform-provider-hookdeck/internal/generated/tfplugingen/resource_source"
 	"time"
 
-	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
@@ -173,52 +171,33 @@ func (r *sourceResource) deleteSource(ctx context.Context, data *resource_source
 	return nil
 }
 
-// TODO: config
-func (r *sourceResource) dataToCreatePayload(_ context.Context, data *resource_source.SourceModel) (*hookdeck.SourceCreateRequest, diag.Diagnostics) {
+func (r *sourceResource) dataToCreatePayload(ctx context.Context, data *resource_source.SourceModel) (*hookdeck.SourceCreateRequest, diag.Diagnostics) {
 	payload := &hookdeck.SourceCreateRequest{
 		Name:        data.Name.ValueString(),
 		Description: hookdeck.OptionalOrNull(data.Description.ValueStringPointer()),
 	}
 
-	config := hookdeck.SourceTypeConfig{}
-	var sourceType hookdeck.SourceCreateRequestType
-	var err error
-	if !data.Config.Ebay.IsUnknown() && !data.Config.Ebay.IsNull() {
-		sourceType, err = hookdeck.NewSourceCreateRequestTypeFromString("EBAY")
-		config.SourceTypeConfigEbay = &hookdeck.SourceTypeConfigEbay{}
-	} else if !data.Config.Shopify.IsUnknown() && !data.Config.Shopify.IsNull() {
-		sourceType, err = hookdeck.NewSourceCreateRequestTypeFromString("SHOPIFY")
-		config.SourceTypeConfigShopify = &hookdeck.SourceTypeConfigShopify{}
-	} else if !data.Config.Http.IsUnknown() && !data.Config.Http.IsNull() {
-		sourceType, err = hookdeck.NewSourceCreateRequestTypeFromString("HTTP")
-		config.SourceTypeConfigHttp = &hookdeck.SourceTypeConfigHttp{}
-	}
-	if err != nil {
-		var diags diag.Diagnostics
-		diags.AddError("Error creating source type", err.Error())
+	if diags := configCreatePayload(ctx, data, payload); diags.HasError() {
 		return nil, diags
 	}
-	payload.Type = hookdeck.OptionalOrNull(&sourceType)
-	payload.Config = hookdeck.OptionalOrNull(&config)
 
 	return payload, nil
 }
 
-func (r *sourceResource) dataToUpdatePayload(_ context.Context, data *resource_source.SourceModel) (*hookdeck.SourceUpdateRequest, diag.Diagnostics) {
+func (r *sourceResource) dataToUpdatePayload(ctx context.Context, data *resource_source.SourceModel) (*hookdeck.SourceUpdateRequest, diag.Diagnostics) {
 	payload := &hookdeck.SourceUpdateRequest{
 		Name:        hookdeck.OptionalOrNull(data.Name.ValueStringPointer()),
 		Description: hookdeck.OptionalOrNull(data.Description.ValueStringPointer()),
 	}
 
-	// TODO: config
+	if diags := configUpdatePayload(ctx, data, payload); diags.HasError() {
+		return nil, diags
+	}
 
 	return payload, nil
 }
 
-// TODO: dynamic config
 func (r *sourceResource) refreshData(ctx context.Context, data *resource_source.SourceModel, source *hookdeck.Source) diag.Diagnostics {
-	var diags diag.Diagnostics
-
 	data.CreatedAt = types.StringValue(source.CreatedAt.Format(time.RFC3339))
 	if source.DisabledAt != nil {
 		data.DisabledAt = types.StringValue(source.DisabledAt.Format(time.RFC3339))
@@ -231,53 +210,9 @@ func (r *sourceResource) refreshData(ctx context.Context, data *resource_source.
 	data.UpdatedAt = types.StringValue(source.UpdatedAt.Format(time.RFC3339))
 	data.Url = types.StringValue(source.Url)
 
-	nullConfigValue, diags := resource_source.NewConfigValueNull().ToObjectValue(ctx)
-	if diags.HasError() {
+	if diags := refreshSourceConfig(ctx, data, source); diags.HasError() {
 		return diags
-	}
-	data.Config, diags = resource_source.NewConfigValue(resource_source.ConfigValue{}.AttributeTypes(ctx), nullConfigValue.Attributes())
-	if diags.HasError() {
-		return diags
-	}
-
-	switch source.Type {
-	case "EBAY":
-		data.Config.Ebay, _ = resource_source.NewEbayValueMust(map[string]attr.Type{}, map[string]attr.Value{}).ToObjectValue(ctx)
-	case "SHOPIFY":
-		data.Config.Shopify, _ = resource_source.NewShopifyValueMust(map[string]attr.Type{}, map[string]attr.Value{}).ToObjectValue(ctx)
-	case "HTTP":
-		config := getConfig(source)
-		configData := map[string]attr.Value{}
-		allowedHttpMethodStrings, ok := config["allowed_http_methods"].([]interface{})
-		if !ok {
-			diags.AddError("allowed_http_methods is not a list", "allowed_http_methods is not a list")
-			return diags
-		}
-		allowedHttpMethods := []attr.Value{}
-		for _, header := range allowedHttpMethodStrings {
-			allowedHttpMethods = append(allowedHttpMethods, types.StringValue(header.(string)))
-		}
-		configData["allowed_http_methods"] = types.ListValueMust(types.StringType, allowedHttpMethods)
-		customResponse := map[string]attr.Value{}
-		customResponseData, ok := config["custom_response"].(map[string]interface{})
-		if !ok {
-			configData["custom_response"] = types.ObjectNull(resource_source.CustomResponseValue{}.AttributeTypes(ctx))
-		} else {
-			customResponse["body"] = types.StringValue(customResponseData["body"].(string))
-			customResponse["content_type"] = types.StringValue(customResponseData["content_type"].(string))
-			configData["custom_response"] = types.ObjectValueMust(resource_source.CustomResponseValue{}.AttributeTypes(ctx), customResponse)
-		}
-		data.Config.Http, _ = resource_source.NewHttpValueMust(resource_source.HttpValue{}.AttributeTypes(ctx), configData).ToObjectValue(ctx)
 	}
 
 	return nil
-}
-
-func getConfig(source *hookdeck.Source) map[string]interface{} {
-	sourceBytes, _ := source.MarshalJSON()
-	var sourceData map[string]interface{}
-	if err := json.Unmarshal(sourceBytes, &sourceData); err != nil {
-		panic(err)
-	}
-	return sourceData["config"].(map[string]interface{})
 }
