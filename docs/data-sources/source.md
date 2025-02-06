@@ -27,21 +27,12 @@ data "hookdeck_source" "example" {
 
 ### Read-Only
 
-- `allowed_http_methods` (List of String) List of allowed HTTP methods. Defaults to PUT, POST, PATCH, DELETE.
+- `config` (String) Source configuration
 - `created_at` (String) Date the source was created
-- `custom_response` (Attributes) Custom response object (see [below for nested schema](#nestedatt--custom_response))
 - `description` (String) Description for the source
 - `disabled_at` (String) Date the source was disabled
 - `name` (String) A unique, human-friendly name for the source
 - `team_id` (String) ID of the workspace
+- `type` (String) Type of the source
 - `updated_at` (String) Date the source was last updated
 - `url` (String) A unique URL that must be supplied to your webhook's provider
-
-<a id="nestedatt--custom_response"></a>
-### Nested Schema for `custom_response`
-
-Read-Only:
-
-- `body` (String) Body of the custom response
-- `content_type` (String) must be one of [json, text, xml]
-Content type of the custom response
