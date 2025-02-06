@@ -16,28 +16,69 @@ import (
 )
 
 func (m *sourceResourceModel) Refresh(source map[string]interface{}) diag.Diagnostics {
-	m.CreatedAt = types.StringValue(source["created_at"].(string))
-	if source["description"] != nil {
-		m.Description = types.StringValue(source["description"].(string))
+	var diags diag.Diagnostics
+
+	if createdAt, ok := source["created_at"].(string); ok {
+		m.CreatedAt = types.StringValue(createdAt)
+	} else {
+		diags.AddError("Error parsing created_at", "Expected string value")
+		return diags
+	}
+
+	if description, ok := source["description"].(string); source["description"] != nil && ok {
+		m.Description = types.StringValue(description)
 	} else {
 		m.Description = types.StringNull()
 	}
-	if source["disabled_at"] != nil {
-		m.DisabledAt = types.StringValue(source["disabled_at"].(string))
+
+	if disabledAt, ok := source["disabled_at"].(string); source["disabled_at"] != nil && ok {
+		m.DisabledAt = types.StringValue(disabledAt)
 	} else {
 		m.DisabledAt = types.StringNull()
 	}
-	m.ID = types.StringValue(source["id"].(string))
-	m.Name = types.StringValue(source["name"].(string))
-	m.TeamID = types.StringValue(source["team_id"].(string))
-	if source["type"] != nil {
-		m.Type = types.StringValue(source["type"].(string))
+
+	if id, ok := source["id"].(string); ok {
+		m.ID = types.StringValue(id)
+	} else {
+		diags.AddError("Error parsing id", "Expected string value")
+		return diags
+	}
+
+	if name, ok := source["name"].(string); ok {
+		m.Name = types.StringValue(name)
+	} else {
+		diags.AddError("Error parsing name", "Expected string value")
+		return diags
+	}
+
+	if teamID, ok := source["team_id"].(string); ok {
+		m.TeamID = types.StringValue(teamID)
+	} else {
+		diags.AddError("Error parsing team_id", "Expected string value")
+		return diags
+	}
+
+	if sourceType, ok := source["type"].(string); source["type"] != nil && ok {
+		m.Type = types.StringValue(sourceType)
 	} else {
 		m.Type = types.StringNull()
 	}
-	m.UpdatedAt = types.StringValue(source["updated_at"].(string))
-	m.URL = types.StringValue(source["url"].(string))
-	return nil
+
+	if updatedAt, ok := source["updated_at"].(string); ok {
+		m.UpdatedAt = types.StringValue(updatedAt)
+	} else {
+		diags.AddError("Error parsing updated_at", "Expected string value")
+		return diags
+	}
+
+	if url, ok := source["url"].(string); ok {
+		m.URL = types.StringValue(url)
+	} else {
+		diags.AddError("Error parsing url", "Expected string value")
+		return diags
+	}
+
+	return diags
 }
 
 func (m *sourceResourceModel) Retrieve(ctx context.Context, client *sdkclient.Client) diag.Diagnostics {

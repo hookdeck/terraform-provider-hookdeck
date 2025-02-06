@@ -17,16 +17,23 @@ import (
 )
 
 func (m *sourceAuthResourceModel) Refresh(source map[string]interface{}) diag.Diagnostics {
-	config := source["config"].(map[string]interface{})
-	if config["auth_type"] != nil {
-		m.AuthType = types.StringValue(config["auth_type"].(string))
+	var diags diag.Diagnostics
+
+	config, ok := source["config"].(map[string]interface{})
+	if !ok {
+		diags.AddError("Error parsing config", "Expected map[string]interface{} value")
+		return diags
+	}
+
+	if authType, ok := config["auth_type"].(string); config["auth_type"] != nil && ok {
+		m.AuthType = types.StringValue(authType)
 	} else {
 		m.AuthType = types.StringNull()
 	}
+
 	if config["auth"] != nil {
 		auth, err := json.Marshal(config["auth"])
 		if err != nil {
-			var diags diag.Diagnostics
 			diags.AddError("Error marshalling auth", err.Error())
 			return diags
 		}
@@ -35,10 +42,10 @@ func (m *sourceAuthResourceModel) Refresh(source map[string]interface{}) diag.Di
 		m.Auth = jsontypes.NewNormalizedValue("{}")
 	}
 
-	return nil
+	return diags
 }
 
-func (m *sourceAuthResourceModel) doRetrieve(ctx context.Context, client *sdkclient.Client) (map[string]interface{}, diag.Diagnostics) {
+func (m *sourceAuthResourceModel) doRetrieve(_ context.Context, client *sdkclient.Client) (map[string]interface{}, diag.Diagnostics) {
 	var diags diag.Diagnostics
 	response, err := client.RawClient.SendRequest("GET", fmt.Sprintf("/sources/%s", m.SourceID.ValueString()), &sdkclient.RequestOptions{
 		QueryParams: url.Values{
@@ -151,7 +158,12 @@ func (m *sourceAuthResourceModel) Delete(ctx context.Context, client *sdkclient.
 		return diags
 	}
 
-	config := initSource["config"].(map[string]interface{})
+	config, ok := initSource["config"].(map[string]interface{})
+	if !ok {
+		diags.AddError("Error parsing config", "Expected map[string]interface{} value")
+		return diags
+	}
+
 	config["auth"] = (*map[string]interface{})(nil)
 	config["auth_type"] = (*string)(nil)
 	payload := map[string]interface{}{
@@ -191,7 +203,12 @@ func (m *sourceAuthResourceModel) Delete(ctx context.Context, client *sdkclient.
 func (m *sourceAuthResourceModel) toPayload(source map[string]interface{}) (map[string]interface{}, diag.Diagnostics) {
 	var diags diag.Diagnostics
 
-	config := source["config"].(map[string]interface{})
+	config, ok := source["config"].(map[string]interface{})
+	if !ok {
+		diags.AddError("Error parsing config", "Expected map[string]interface{} value")
+		return nil, diags
+	}
+
 	delete(config, "auth")
 	delete(config, "auth_type")
 
