@@ -9,6 +9,7 @@ import (
 	"terraform-provider-hookdeck/internal/provider/connection"
 	"terraform-provider-hookdeck/internal/provider/destination"
 	"terraform-provider-hookdeck/internal/provider/source"
+	"terraform-provider-hookdeck/internal/provider/sourceauth"
 	"terraform-provider-hookdeck/internal/provider/transformation"
 	"terraform-provider-hookdeck/internal/provider/webhookregistration"
 	"terraform-provider-hookdeck/internal/sdkclient"
@@ -182,6 +183,7 @@ func (p *hookdeckProvider) Resources(ctx context.Context) []func() resource.Reso
 		connection.NewConnectionResource,
 		destination.NewDestinationResource,
 		source.NewSourceResource,
+		sourceauth.NewSourceAuthResource,
 		transformation.NewTransformationResource,
 		webhookregistration.NewWebhookRegistrationResource,
 	}
