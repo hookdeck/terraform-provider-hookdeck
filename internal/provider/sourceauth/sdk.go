@@ -16,7 +16,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-const apiVersion = "2025-01-01-next"
+const apiVersion = "2025-01-01"
 
 func (m *sourceAuthResourceModel) Refresh(source map[string]interface{}) diag.Diagnostics {
 	var diags diag.Diagnostics
