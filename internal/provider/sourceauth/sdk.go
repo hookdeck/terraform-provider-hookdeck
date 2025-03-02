@@ -16,6 +16,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
+const apiVersion = "2025-01-01"
+
 func (m *sourceAuthResourceModel) Refresh(source map[string]interface{}) diag.Diagnostics {
 	var diags diag.Diagnostics
 
@@ -47,7 +49,7 @@ func (m *sourceAuthResourceModel) Refresh(source map[string]interface{}) diag.Di
 
 func (m *sourceAuthResourceModel) doRetrieve(_ context.Context, client *sdkclient.Client) (map[string]interface{}, diag.Diagnostics) {
 	var diags diag.Diagnostics
-	response, err := client.RawClient.SendRequest("GET", fmt.Sprintf("/sources/%s", m.SourceID.ValueString()), &sdkclient.RequestOptions{
+	response, err := client.RawClient.SendRequest("GET", fmt.Sprintf("/%s/sources/%s", apiVersion, m.SourceID.ValueString()), &sdkclient.RequestOptions{
 		QueryParams: url.Values{
 			"include": []string{"config.auth"},
 		},
@@ -114,7 +116,7 @@ func (m *sourceAuthResourceModel) Update(ctx context.Context, client *sdkclient.
 		return diags
 	}
 
-	response, err := client.RawClient.SendRequest("PUT", fmt.Sprintf("/sources/%s", m.SourceID.ValueString()), &sdkclient.RequestOptions{
+	response, err := client.RawClient.SendRequest("PUT", fmt.Sprintf("/%s/sources/%s", apiVersion, m.SourceID.ValueString()), &sdkclient.RequestOptions{
 		Body: bytes.NewReader(jsonData),
 		Headers: http.Header{
 			"Content-Type": []string{"application/json"},

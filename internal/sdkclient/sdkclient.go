@@ -5,6 +5,7 @@ import (
 	"io"
 	"net/http"
 	"net/url"
+	"strings"
 
 	"github.com/hookdeck/hookdeck-go-sdk/client"
 	"github.com/hookdeck/hookdeck-go-sdk/option"
@@ -17,6 +18,9 @@ type Client struct {
 }
 
 func InitHookdeckSDKClient(apiBase string, apiKey string, maxAttempts int, providerVersion string) Client {
+	if !strings.HasPrefix(apiBase, "http") {
+		apiBase = "https://" + apiBase
+	}
 	header := http.Header{}
 	initUserAgentHeader(header, providerVersion)
 	hookdeckClient := client.NewClient(
