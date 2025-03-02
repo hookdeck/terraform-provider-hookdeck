@@ -61,21 +61,16 @@ func (r *destinationDataSource) Configure(_ context.Context, req datasource.Conf
 
 // Read refreshes the Terraform state with the latest data.
 func (r *destinationDataSource) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {
-	// Get data from Terraform state
 	var data *destinationResourceModel
 	resp.Diagnostics.Append(req.Config.Get(ctx, &data)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	// Get refreshed datasource value
-	destination, err := r.client.Destination.Retrieve(context.Background(), data.ID.ValueString())
-	if err != nil {
-		resp.Diagnostics.AddError("Error reading destination", err.Error())
+	resp.Diagnostics.Append(data.Retrieve(ctx, &r.client)...)
+	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	// Save refreshed data into Terraform state
-	data.Refresh(destination)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }

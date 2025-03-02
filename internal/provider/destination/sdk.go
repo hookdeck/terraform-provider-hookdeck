@@ -1,179 +1,262 @@
 package destination
 
 import (
-	"time"
+	"bytes"
+	"context"
+	"encoding/json"
+	"fmt"
+	"io"
+	"net/http"
+	"net/url"
+	"strconv"
+	"terraform-provider-hookdeck/internal/sdkclient"
 
+	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	hookdeck "github.com/hookdeck/hookdeck-go-sdk"
-	hookdeckcore "github.com/hookdeck/hookdeck-go-sdk/core"
 )
 
-func (m *destinationResourceModel) Refresh(destination *hookdeck.Destination) {
-	if destination.AuthMethod != nil {
-		m.refreshAuthMethod(destination)
-	}
-	if destination.CliPath != nil {
-		m.CliPath = types.StringValue(*destination.CliPath)
+const apiVersion = "2025-01-01"
+
+func (m *destinationResourceModel) Refresh(destination map[string]interface{}) diag.Diagnostics {
+	var diags diag.Diagnostics
+
+	if createdAt, ok := destination["created_at"].(string); ok {
+		m.CreatedAt = types.StringValue(createdAt)
 	} else {
-		m.CliPath = types.StringNull()
+		diags.AddError("Error parsing created_at", "Expected string value")
+		return diags
 	}
-	m.CreatedAt = types.StringValue(destination.CreatedAt.Format(time.RFC3339))
-	if destination.DisabledAt != nil {
-		m.DisabledAt = types.StringValue(destination.DisabledAt.Format(time.RFC3339))
+
+	if description, ok := destination["description"].(string); destination["description"] != nil && ok {
+		m.Description = types.StringValue(description)
+	} else {
+		m.Description = types.StringNull()
+	}
+
+	if disabledAt, ok := destination["disabled_at"].(string); destination["disabled_at"] != nil && ok {
+		m.DisabledAt = types.StringValue(disabledAt)
 	} else {
 		m.DisabledAt = types.StringNull()
 	}
-	if destination.HttpMethod != nil {
-		m.HTTPMethod = types.StringValue(string(*destination.HttpMethod))
+
+	if id, ok := destination["id"].(string); ok {
+		m.ID = types.StringValue(id)
 	} else {
-		m.HTTPMethod = types.StringNull()
+		diags.AddError("Error parsing id", "Expected string value")
+		return diags
 	}
-	m.ID = types.StringValue(destination.Id)
-	m.Name = types.StringValue(destination.Name)
-	if destination.PathForwardingDisabled != nil {
-		m.PathForwardingDisabled = types.BoolValue(*destination.PathForwardingDisabled)
+
+	if name, ok := destination["name"].(string); ok {
+		m.Name = types.StringValue(name)
 	} else {
-		m.PathForwardingDisabled = types.BoolNull()
+		diags.AddError("Error parsing name", "Expected string value")
+		return diags
 	}
-	if destination.RateLimit != nil {
-		m.RateLimit = &rateLimit{}
-		m.RateLimit.Limit = types.Int64Value(int64(*destination.RateLimit))
-		m.RateLimit.Period = types.StringValue(string(*destination.RateLimitPeriod))
-	}
-	m.TeamID = types.StringValue(destination.TeamId)
-	m.UpdatedAt = types.StringValue(destination.UpdatedAt.Format(time.RFC3339))
-	if destination.Url != nil {
-		m.URL = types.StringValue(*destination.Url)
+
+	if teamID, ok := destination["team_id"].(string); ok {
+		m.TeamID = types.StringValue(teamID)
 	} else {
-		m.URL = types.StringNull()
+		diags.AddError("Error parsing team_id", "Expected string value")
+		return diags
 	}
+
+	if destinationType, ok := destination["type"].(string); destination["type"] != nil && ok {
+		m.Type = types.StringValue(destinationType)
+	} else {
+		m.Type = types.StringNull()
+	}
+
+	if updatedAt, ok := destination["updated_at"].(string); ok {
+		m.UpdatedAt = types.StringValue(updatedAt)
+	} else {
+		diags.AddError("Error parsing updated_at", "Expected string value")
+		return diags
+	}
+
+	return diags
 }
 
-func (m *destinationResourceModel) ToCreatePayload() *hookdeck.DestinationCreateRequest {
-	authMethod := m.getAuthMethod()
-	cliPath := new(string)
-	if !m.CliPath.IsUnknown() && !m.CliPath.IsNull() {
-		*cliPath = m.CliPath.ValueString()
-	} else {
-		cliPath = nil
-	}
-	httpMethod := new(hookdeck.DestinationHttpMethod)
-	if !m.HTTPMethod.IsUnknown() && !m.HTTPMethod.IsNull() {
-		*httpMethod = hookdeck.DestinationHttpMethod(m.HTTPMethod.ValueString())
-	} else {
-		httpMethod = nil
-	}
-	var pathForwardingDisabled *hookdeckcore.Optional[bool]
-	if !m.PathForwardingDisabled.IsUnknown() && !m.PathForwardingDisabled.IsNull() {
-		pathForwardingDisabled = hookdeck.Optional(m.PathForwardingDisabled.ValueBool())
-	} else {
-		pathForwardingDisabled = nil
-	}
-	rateLimit := new(int)
-	rateLimitPeriod := new(hookdeck.DestinationCreateRequestRateLimitPeriod)
-	if m.RateLimit != nil {
-		*rateLimit = int(m.RateLimit.Limit.ValueInt64())
-		*rateLimitPeriod = hookdeck.DestinationCreateRequestRateLimitPeriod(m.RateLimit.Period.ValueString())
-	} else {
-		rateLimit = nil
-		rateLimitPeriod = nil
-	}
-	url := new(string)
-	if !m.URL.IsUnknown() && !m.URL.IsNull() {
-		*url = m.URL.ValueString()
-	} else {
-		url = nil
-	}
-	return &hookdeck.DestinationCreateRequest{
-		AuthMethod:             hookdeck.OptionalOrNull(authMethod),
-		CliPath:                hookdeck.OptionalOrNull(cliPath),
-		Description:            hookdeck.OptionalOrNull(m.Description.ValueStringPointer()),
-		HttpMethod:             hookdeck.OptionalOrNull(httpMethod),
-		Name:                   m.Name.ValueString(),
-		PathForwardingDisabled: pathForwardingDisabled,
-		RateLimit:              hookdeck.OptionalOrNull(rateLimit),
-		RateLimitPeriod:        hookdeck.OptionalOrNull(rateLimitPeriod),
-		Url:                    hookdeck.OptionalOrNull(url),
-	}
-}
-
-func (m *destinationResourceModel) ToUpdatePayload() *hookdeck.DestinationUpdateRequest {
-	authMethod := m.getAuthMethod()
-	cliPath := new(string)
-	if !m.CliPath.IsUnknown() && !m.CliPath.IsNull() {
-		*cliPath = m.CliPath.ValueString()
-	} else {
-		cliPath = nil
-	}
-	httpMethod := new(hookdeck.DestinationHttpMethod)
-	if !m.HTTPMethod.IsUnknown() && !m.HTTPMethod.IsNull() {
-		*httpMethod = hookdeck.DestinationHttpMethod(m.HTTPMethod.ValueString())
-	} else {
-		httpMethod = nil
-	}
-	pathForwardingDisabled := new(bool)
-	if !m.PathForwardingDisabled.IsUnknown() && !m.PathForwardingDisabled.IsNull() {
-		*pathForwardingDisabled = m.PathForwardingDisabled.ValueBool()
-	} else {
-		pathForwardingDisabled = nil
-	}
-	rateLimit := new(int)
-	rateLimitPeriod := new(hookdeck.DestinationUpdateRequestRateLimitPeriod)
-	if m.RateLimit != nil {
-		*rateLimit = int(m.RateLimit.Limit.ValueInt64())
-		*rateLimitPeriod = hookdeck.DestinationUpdateRequestRateLimitPeriod(m.RateLimit.Period.ValueString())
-	} else {
-		rateLimit = nil
-		rateLimitPeriod = nil
-	}
-	url := new(string)
-	if !m.URL.IsUnknown() && !m.URL.IsNull() {
-		*url = m.URL.ValueString()
-	} else {
-		url = nil
-	}
-	return &hookdeck.DestinationUpdateRequest{
-		AuthMethod:             hookdeck.OptionalOrNull(authMethod),
-		CliPath:                hookdeck.OptionalOrNull(cliPath),
-		Description:            hookdeck.OptionalOrNull(m.Description.ValueStringPointer()),
-		HttpMethod:             hookdeck.OptionalOrNull(httpMethod),
-		Name:                   hookdeck.OptionalOrNull(m.Name.ValueStringPointer()),
-		PathForwardingDisabled: hookdeck.OptionalOrNull(pathForwardingDisabled),
-		RateLimit:              hookdeck.OptionalOrNull(rateLimit),
-		RateLimitPeriod:        hookdeck.OptionalOrNull(rateLimitPeriod),
-		Url:                    hookdeck.OptionalOrNull(url),
-	}
-}
-
-func (m *destinationResourceModel) getAuthMethod() *hookdeck.DestinationAuthMethodConfig {
-	if m.AuthMethod == nil {
-		return nil
+func (m *destinationResourceModel) Retrieve(ctx context.Context, client *sdkclient.Client) diag.Diagnostics {
+	var diags diag.Diagnostics
+	response, err := client.RawClient.SendRequest("GET", fmt.Sprintf("/%s/destinations/%s", apiVersion, m.ID.ValueString()), &sdkclient.RequestOptions{
+		QueryParams: url.Values{
+			"include": []string{"config.auth"},
+		},
+	})
+	if err != nil {
+		diags.AddError("Error reading destination", err.Error())
+		return diags
 	}
 
-	var destinationAuthMethodConfig *hookdeck.DestinationAuthMethodConfig
-	for _, method := range authenticationMethods {
-		if destinationAuthMethodConfig == nil {
-			destinationAuthMethodConfig = method.toPayload(m.AuthMethod)
+	if response.StatusCode > 299 {
+		if body, err := io.ReadAll(response.Body); err == nil {
+			diags.AddError("Error reading destination", string(body))
+		} else {
+			diags.AddError("Error reading destination", "Status code: "+strconv.Itoa(response.StatusCode))
 		}
+		return diags
 	}
 
-	return destinationAuthMethodConfig
+	body, err := io.ReadAll(response.Body)
+	if err != nil {
+		diags.AddError("Error reading destination", err.Error())
+		return diags
+	}
+
+	var destination map[string]interface{}
+	err = json.Unmarshal(body, &destination)
+	if err != nil {
+		diags.AddError("Error reading destination", err.Error())
+		return diags
+	}
+
+	return m.Refresh(destination)
 }
 
-func (m *destinationResourceModel) refreshAuthMethod(destination *hookdeck.Destination) {
-	if destination.AuthMethod == nil {
-		return
+func (m *destinationResourceModel) Create(ctx context.Context, client *sdkclient.Client) diag.Diagnostics {
+	var diags diag.Diagnostics
+
+	payload, diags := m.toPayload()
+	if diags.HasError() {
+		return diags
 	}
 
-	// If users are utilizing a custom JSON payload, the provider should not touch the Terraform state
-	// or it will cause conflicts between state & Terraform code.
-	if m.AuthMethod != nil && !m.AuthMethod.JSON.IsNull() && !m.AuthMethod.JSON.IsUnknown() {
-		return
+	jsonData, err := json.Marshal(payload)
+	if err != nil {
+		diags.AddError("Error creating destination", err.Error())
+		return diags
 	}
 
-	m.AuthMethod = &destinationAuthMethodConfig{}
-
-	for _, method := range authenticationMethods {
-		method.refresh(m, destination)
+	response, err := client.RawClient.SendRequest("POST", fmt.Sprintf("/%s/destinations", apiVersion), &sdkclient.RequestOptions{
+		Body: bytes.NewReader(jsonData),
+		Headers: http.Header{
+			"Content-Type": []string{"application/json"},
+		},
+	})
+	if err != nil {
+		diags.AddError("Error creating destination", err.Error())
+		return diags
 	}
+
+	if response.StatusCode > 299 {
+		if body, err := io.ReadAll(response.Body); err == nil {
+			diags.AddError("Error creating destination", string(body))
+		} else {
+			diags.AddError("Error creating destination", "Status code: "+strconv.Itoa(response.StatusCode))
+		}
+		return diags
+	}
+
+	body, err := io.ReadAll(response.Body)
+	if err != nil {
+		diags.AddError("Error creating destination", err.Error())
+		return diags
+	}
+
+	var destination map[string]interface{}
+	err = json.Unmarshal(body, &destination)
+	if err != nil {
+		diags.AddError("Error creating destination", err.Error())
+		return diags
+	}
+
+	return m.Refresh(destination)
+}
+
+func (m *destinationResourceModel) Update(ctx context.Context, client *sdkclient.Client) diag.Diagnostics {
+	var diags diag.Diagnostics
+
+	payload, diags := m.toPayload()
+	if diags.HasError() {
+		return diags
+	}
+
+	jsonData, err := json.Marshal(payload)
+	if err != nil {
+		diags.AddError("Error updating destination", err.Error())
+		return diags
+	}
+
+	response, err := client.RawClient.SendRequest("PUT", fmt.Sprintf("/%s/destinations/%s", apiVersion, m.ID.ValueString()), &sdkclient.RequestOptions{
+		Body: bytes.NewReader(jsonData),
+		Headers: http.Header{
+			"Content-Type": []string{"application/json"},
+		},
+	})
+	if err != nil {
+		diags.AddError("Error updating destination", err.Error())
+		return diags
+	}
+
+	if response.StatusCode > 299 {
+		if body, err := io.ReadAll(response.Body); err == nil {
+			diags.AddError("Error updating destination", string(body))
+		} else {
+			diags.AddError("Error updating destination", "Status code: "+strconv.Itoa(response.StatusCode))
+		}
+		return diags
+	}
+
+	body, err := io.ReadAll(response.Body)
+	if err != nil {
+		diags.AddError("Error updating destination", err.Error())
+		return diags
+	}
+
+	var destination map[string]interface{}
+	err = json.Unmarshal(body, &destination)
+	if err != nil {
+		diags.AddError("Error updating destination", err.Error())
+		return diags
+	}
+
+	return m.Refresh(destination)
+}
+
+func (m *destinationResourceModel) Delete(ctx context.Context, client *sdkclient.Client) diag.Diagnostics {
+	var diags diag.Diagnostics
+
+	response, err := client.RawClient.SendRequest("DELETE", fmt.Sprintf("/%s/destinations/%s", apiVersion, m.ID.ValueString()), &sdkclient.RequestOptions{})
+	if err != nil {
+		diags.AddError("Error deleting destination", err.Error())
+		return diags
+	}
+
+	if response.StatusCode > 299 {
+		if body, err := io.ReadAll(response.Body); err == nil {
+			diags.AddError("Error deleting destination", string(body))
+		} else {
+			diags.AddError("Error deleting destination", "Status code: "+strconv.Itoa(response.StatusCode))
+		}
+		return diags
+	}
+
+	return nil
+}
+
+func (m *destinationResourceModel) toPayload() (map[string]interface{}, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	payload := map[string]interface{}{}
+	payload["name"] = m.Name.ValueString()
+	if m.Config.ValueString() != "" {
+		var payloadConfig map[string]interface{}
+		err := json.Unmarshal([]byte(m.Config.ValueString()), &payloadConfig)
+		if err != nil {
+			var diags diag.Diagnostics
+			diags.AddError("Error creating destination", err.Error())
+			return nil, diags
+		}
+		payload["config"] = payloadConfig
+	}
+	if m.Description.ValueString() != "" {
+		payload["description"] = m.Description.ValueString()
+	} else {
+		payload["description"] = (*string)(nil)
+	}
+	if m.Type.ValueString() != "" {
+		payload["type"] = m.Type.ValueString()
+	}
+
+	return payload, diags
 }

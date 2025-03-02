@@ -17,6 +17,8 @@ type Client struct {
 	RawClient *RawClient
 }
 
+const apiVersion = "2025-01-01"
+
 func InitHookdeckSDKClient(apiBase string, apiKey string, maxAttempts int, providerVersion string) Client {
 	if !strings.HasPrefix(apiBase, "http") {
 		apiBase = "https://" + apiBase
@@ -24,7 +26,7 @@ func InitHookdeckSDKClient(apiBase string, apiKey string, maxAttempts int, provi
 	header := http.Header{}
 	initUserAgentHeader(header, providerVersion)
 	hookdeckClient := client.NewClient(
-		option.WithBaseURL(apiBase),
+		option.WithBaseURL(baseWithVersion(apiBase)),
 		option.WithToken(apiKey),
 		option.WithHTTPHeader(header),
 		option.WithMaxAttempts(uint(maxAttempts)),
@@ -73,4 +75,11 @@ func (c *RawClient) SendRequest(method, path string, opts *RequestOptions) (*htt
 	}
 
 	return http.DefaultClient.Do(req)
+}
+
+func baseWithVersion(apiBase string) string {
+	if !strings.HasSuffix(apiBase, "/") {
+		return apiBase + "/" + apiVersion
+	}
+	return apiBase + apiVersion
 }
