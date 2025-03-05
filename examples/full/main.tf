@@ -6,81 +6,85 @@ variable "HEADER_FILTER_VALUES" {
   type = list(string)
 }
 
+variable "STRIPE_SECRET_KEY" {
+  type = string
+}
+
 terraform {
   required_providers {
     hookdeck = {
-      source  = "hookdeck/hookdeck"
-      version = "0.5.0-beta.1"
+      source = "hookdeck/hookdeck"
     }
   }
 }
 
 provider "hookdeck" {
   api_key = var.HOOKDECK_API_KEY
+  api_base = "api.hookdeck.com"
+}
+
+resource "hookdeck_source" "standalone_source" {
+  name = "untyped_source"
 }
 
 resource "hookdeck_source" "first_source" {
   name = "first_source"
-}
-
-resource "hookdeck_source" "second_source" {
-  name = "my_source"
-}
-
-resource "hookdeck_source_verification" "named_basic_auth_verification" {
-  source_id = hookdeck_source.first_source.id
-  verification = {
-    basic_auth = {
+  type = "HTTP"
+  config = jsonencode({
+    auth_type = "BASIC_AUTH"
+    auth = {
       username = "example-username"
       password = "example-password"
     }
-  }
+  })
 }
 
-resource "hookdeck_source_verification" "json_basic_auth_verification" {
-  source_id = hookdeck_source.second_source.id
-  verification = {
-    json = jsonencode({
-      type = "basic_auth"
-      configs = {
-        username = "some-username"
-        password = "blah-blah-blah"
-      }
-    })
-  }
+resource "hookdeck_source" "second_source" {
+  name = "second_source"
+  type = "HTTP"
+  config = jsonencode({
+    url       = "https://mock.hookdeck.com"
+    auth_type = "BASIC_AUTH"
+    auth = {
+      username = "some-username"
+      password = "blah-blah-blah"
+    }
+  })
 }
 
 resource "hookdeck_destination" "first_destination" {
   name = "first_destination"
-  url  = "https://mock.hookdeck.com"
+  type = "MOCK_API"
 }
 
 resource "hookdeck_destination" "second_destination" {
   name = "second_destination"
-  url  = "https://mock.hookdeck.com"
-  auth_method = {
-    basic_auth = {
-      username = "some-username"
-      password = "blah-blah-blah"
+  type = "HTTP"
+  config = jsonencode({
+    url       = "https://mock.hookdeck.com"
+    auth_type = "BASIC_AUTH"
+    auth = {
+      username = "username"
+      password = "password"
     }
-  }
-  rate_limit = {
-    period = "concurrent"
-    limit  = 10
-  }
+    rate_limit = 10
+    rate_limit_period = "concurrent"
+  })
 }
 
 resource "hookdeck_destination" "aws_destination" {
   name = "aws_destination"
-  url  = "https://mock.hookdeck.com"
-  auth_method = {
-    aws_signature = {
-      access_key_id     = "some-access"
-      secret_access_key = "some-secret"
-      region            = "us-west-2"
-      service           = "lambda"
+  config = jsonencode({
+    url = "https://mock.hookdeck.com"
+    auth_method = {
+      aws_signature = {
+        access_key_id     = "some-access"
+        secret_access_key = "some-secret"
+        region            = "us-west-2"
+        service           = "lambda"
+      }
     }
-  }
+  })
 }
 
 resource "hookdeck_connection" "first_connection" {
@@ -126,4 +130,47 @@ resource "hookdeck_connection" "second_connection_using_data_sources" {
   name           = "second_connection_using_data_sources"
   source_id      = data.hookdeck_connection.manually_created_connection.source_id
   destination_id = data.hookdeck_connection.manually_created_connection.destination_id
+}
+
+resource "hookdeck_source" "stripe_source" {
+  name = "stripe"
+  type = "STRIPE"
+}
+
+resource "hookdeck_webhook_registration" "stripe_registration" {
+  provider = hookdeck
+
+  register = {
+    request = {
+      method = "POST"
+      url    = "https://api.stripe.com/v1/webhook_endpoints"
+      headers = jsonencode({
+        "content-type" = "application/json"
+        authorization  = "Bearer ${var.STRIPE_SECRET_KEY}"
+      })
+      body = jsonencode({
+        url = hookdeck_source.stripe_source.url
+        enabled_events = [
+          "charge.failed",
+          "charge.succeeded"
+        ]
+      })
+    }
+  }
+  unregister = {
+    request = {
+      method = "DELETE"
+      url    = "https://api.stripe.com/v1/webhook_endpoints/{{.register.response.body.id}}"
+      headers = jsonencode({
+        authorization  = "Bearer ${var.STRIPE_SECRET_KEY}"
+      })
+    }
+  }
+}
+
+resource "hookdeck_source_auth" "stripe_source_auth" {
+  source_id = hookdeck_source.stripe_source.id
+  auth = jsonencode({
+    webhook_secret_key = jsondecode(hookdeck_webhook_registration.stripe_registration.register.response).body.secret
+  })
 }

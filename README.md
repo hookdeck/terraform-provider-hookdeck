@@ -16,7 +16,6 @@ terraform {
   required_providers {
     hookdeck = {
       source  = "hookdeck/hookdeck"
-      version = "~> 0.2"
     }
   }
 }
@@ -40,7 +39,10 @@ resource "hookdeck_source" "my_source" {
 # Configure a destination
 resource "hookdeck_destination" "my_destination" {
   name = "my_destination"
-  url  = "https://mock.hookdeck.com"
+  type = "HTTP"
+  config = jsonencode({
+    url  = "https://myapp.example.com/api"
+  })
 }
 
 # Configure a connection
@@ -50,9 +52,11 @@ resource "hookdeck_connection" "my_connection" {
 }
 ```
 
+For [Source `config`](https://hookdeck.com/docs/api#source-object) and [Destination `config`](https://hookdeck.com/docs/api#destination-object) you must provide a JSON object. This means you do not get validation on the `config` property within your IDE or when running `terraform plan`. However, when running `terraform apply` the Hookdeck API will provide error responses if invalid configuration is received.
+
 ## Dependencies
 
-This provider uses [Hookdeck API](https://hookdeck.com/docs/api) and [Hookdeck Go SDK](https://github.com/hookdeck/hookdeck-go-sdk) under the hood.
+This provider is built on top of the [Hookdeck API](https://hookdeck.com/docs/api).
 
 ## Development
 
@@ -67,6 +71,36 @@ The underlying Hookdeck API interactions use the [Hookdeck Go SDK](https://githu
 Code generation was [introduced in October 2024](https://github.com/hookdeck/terraform-provider-hookdeck/pull/100) and creates Source Verification Provider code from the Hookdeck OpenAPI specification (https://raw.githubusercontent.com/hookdeck/hookdeck-api-schema/refs/heads/main/openapi.json).
 
 The Hookdeck Go SDK is generated using the Hookdeck Open API spec. Therefore, Hookdeck Terraform Provider code generation must be based on the same OpenAPI spec version used to generate the Go SDK.
+
+### Running locally
+
+See https://developer.hashicorp.com/terraform/tutorials/providers-plugin-framework/providers-plugin-framework-provider#prepare-terraform-for-local-provider-install
+
+### Brief details
+
+Build and install:
+
+```
+go build
+go install
+```
+
+Override the provider in a `~/.terraformrc`:
+
+```
+provider_installation {
+
+  dev_overrides {
+      "hookdeck/hookdeck" = "/Users/leggetter/go/bin"
+  }
+
+  # For all other providers, install them directly from their origin provider
+  # registries as normal. If you omit this, Terraform will _only_ use
+  # the dev_overrides block, and so no other providers will be available.
+  direct {}
+}
+```
+
 
 ### Release
 
