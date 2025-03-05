@@ -16,6 +16,7 @@ Let's start with a Hookdeck connection to start listening to incoming webhooks f
 ```hcl
 resource "hookdeck_source" "stripe" {
   name = "stripe"
+  type = "STRIPE"
 }
 
 resource "hookdeck_destination" "payment_service" {
@@ -42,16 +43,9 @@ resource "hookdeck_webhook_registration" "stripe_webhook_registration" {
       method = "POST"
       url    = "https://api.stripe.com/v1/webhook_endpoints"
       headers = jsonencode({
-        "content-type" = "application/json"
         authorization  = "Bearer <STRIPE_SECRET_KEY>"
       })
-      body = jsonencode({
-        url = hookdeck_source.stripe.url
-        enabled_events = [
-          "charge.failed",
-          "charge.succeeded"
-        ]
-      })
+      body = "url=${hookdeck_source.stripe.url}&enabled_events[]=charge.failed&enabled_events[]=charge.succeeded"
     }
   }
   unregister = {
@@ -90,6 +84,7 @@ Putting everything together to register Stripe webhook with Hookdeck source with
 
 resource "hookdeck_source" "stripe" {
   name = "stripe"
+  type = "STRIPE"
 }
 
 resource "hookdeck_destination" "payment_service" {
@@ -104,7 +99,7 @@ resource "hookdeck_connection" "stripe_payment_service" {
 
 # Register Stripe webhook
 
-resource "hookdeck_webhook_registration" "stripe" {
+resource "hookdeck_webhook_registration" "stripe_webhook_registration" {
   provider = hookdeck
 
   register = {
@@ -112,16 +107,9 @@ resource "hookdeck_webhook_registration" "stripe" {
       method = "POST"
       url    = "https://api.stripe.com/v1/webhook_endpoints"
       headers = jsonencode({
-        "content-type" = "application/json"
         authorization  = "Bearer <STRIPE_SECRET_KEY>"
       })
-      body = jsonencode({
-        url = hookdeck_source.stripe.url
-        enabled_events = [
-          "charge.failed",
-          "charge.succeeded"
-        ]
-      })
+      body = "url=${hookdeck_source.stripe.url}&enabled_events[]=charge.failed&enabled_events[]=charge.succeeded"
     }
   }
   unregister = {
@@ -137,12 +125,10 @@ resource "hookdeck_webhook_registration" "stripe" {
 
 # Configure source verification
 
-resource "hookdeck_source_verification" "stripe_verification" {
+resource "hookdeck_source_auth" "stripe_source_auth" {
   source_id = hookdeck_source.stripe.id
-  verification = {
-    stripe = {
-      webhook_secret_key = jsondecode(hookdeck_webhook_registration.stripe.register.response).body.secret
-    }
-  }
+  auth = jsonencode({
+    webhook_secret_key = jsondecode(hookdeck_webhook_registration.stripe_webhook_registration.register.response).body.secret
+  })
 }
 ```

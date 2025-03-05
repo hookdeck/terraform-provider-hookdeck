@@ -145,16 +145,9 @@ resource "hookdeck_webhook_registration" "stripe_registration" {
       method = "POST"
       url    = "https://api.stripe.com/v1/webhook_endpoints"
       headers = jsonencode({
-        "content-type" = "application/json"
-        authorization  = "Bearer ${var.STRIPE_SECRET_KEY}"
+        authorization = "Bearer ${var.STRIPE_SECRET_KEY}"
       })
-      body = jsonencode({
-        url = hookdeck_source.stripe_source.url
-        enabled_events = [
-          "charge.failed",
-          "charge.succeeded"
-        ]
-      })
+      body = "url=${hookdeck_source.stripe_source.url}&enabled_events[]=charge.failed&enabled_events[]=charge.succeeded"
     }
   }
   unregister = {
