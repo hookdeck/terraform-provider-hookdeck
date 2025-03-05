@@ -1,7 +1,6 @@
 module terraform-provider-hookdeck
 
 go 1.22.0
-
 toolchain go1.23.2
 
 require (
@@ -13,7 +12,7 @@ require (
 	github.com/hookdeck/hookdeck-go-sdk v0.7.0
 	github.com/iancoleman/strcase v0.3.0
 	golang.org/x/exp v0.0.0-20240808152545-0cdaa3abc0fa
-	golang.org/x/sys v0.29.0
+	golang.org/x/sys v0.31.0
 )
 
 require (
