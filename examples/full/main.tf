@@ -52,6 +52,20 @@ resource "hookdeck_source" "second_source" {
   })
 }
 
+resource "hookdeck_source" "third_source" {
+  name = "third_source"
+  type = "HTTP"
+}
+
+resource "hookdeck_source_auth" "third_source_auth" {
+  source_id = hookdeck_source.third_source.id
+  auth_type = "BASIC_AUTH"
+  auth = jsonencode({
+    username = "some-username"
+    password = "blah-blah-blah"
+  })
+}
+
 resource "hookdeck_destination" "first_destination" {
   name = "first_destination"
   type = "MOCK_API"
