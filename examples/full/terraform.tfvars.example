@@ -11,3 +11,5 @@ HEADER_FILTER_VALUES = [
   "account.funds_invested.v1",
   "account.funds_redeemed.v1",
 ]
+
+STRIPE_SECRET_KEY = "<YOUR_STRIPE_SECRET_KEY>"
