@@ -34,7 +34,7 @@ resource "hookdeck_connection" "stripe_payment_service" {
 Stripe provides API endpoints to [create a new webhook](https://stripe.com/docs/api/webhook_endpoints/create) and [delete an existing webhook](https://stripe.com/docs/api/webhook_endpoints/delete), which we will use in this example.
 
 ```hcl
-resource "webhook_registration" "stripe" {
+resource "hookdeck_webhook_registration" "stripe_webhook_registration" {
   provider = hookdeck
 
   register = {
@@ -70,16 +70,14 @@ For many APIs, you will need the ID of the registered webhook to unregister. You
 
 ## Use webhook secret to verify with Hookdeck
 
-Another way you can use the `webhook_registration` resource is to configure Hookdeck [source verification](https://hookdeck.com/docs/signature-verification) as part of your Terraform workflow. With the `webhook_registration` resource above, you can now configure Hookdeck verification like so:
+Another way you can use the `hookdeck_webhook_registration` resource is to configure Hookdeck [source verification](https://hookdeck.com/docs/signature-verification) as part of your Terraform workflow. With the `hookdeck_webhook_registration` resource above, you can now configure Hookdeck verification like so:
 
 ```hcl
-resource "hookdeck_source_verification" "stripe_verification" {
+resource "hookdeck_source_auth" "stripe_source_auth" {
   source_id = hookdeck_source.stripe.id
-  verification = {
-    stripe = {
-      webhook_secret_key = jsondecode(webhook_registration.stripe.register.response).body.secret
-    }
-  }
+  auth = jsonencode({
+    webhook_secret_key = jsondecode(hookdeck_webhook_registration.stripe_webhook_registration.register.response).body.secret
+  })
 }
 ```
 
@@ -106,7 +104,7 @@ resource "hookdeck_connection" "stripe_payment_service" {
 
 # Register Stripe webhook
 
-resource "webhook_registration" "stripe" {
+resource "hookdeck_webhook_registration" "stripe" {
   provider = hookdeck
 
   register = {
@@ -143,7 +141,7 @@ resource "hookdeck_source_verification" "stripe_verification" {
   source_id = hookdeck_source.stripe.id
   verification = {
     stripe = {
-      webhook_secret_key = jsondecode(webhook_registration.stripe.register.response).body.secret
+      webhook_secret_key = jsondecode(hookdeck_webhook_registration.stripe.register.response).body.secret
     }
   }
 }

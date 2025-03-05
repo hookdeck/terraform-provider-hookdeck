@@ -19,7 +19,7 @@ terraform {
 }
 
 provider "hookdeck" {
-  api_key = var.HOOKDECK_API_KEY
+  api_key  = var.HOOKDECK_API_KEY
   api_base = "api.hookdeck.com"
 }
 
@@ -67,7 +67,7 @@ resource "hookdeck_destination" "second_destination" {
       username = "username"
       password = "password"
     }
-    rate_limit = 10
+    rate_limit        = 10
     rate_limit_period = "concurrent"
   })
 }
@@ -162,7 +162,7 @@ resource "hookdeck_webhook_registration" "stripe_registration" {
       method = "DELETE"
       url    = "https://api.stripe.com/v1/webhook_endpoints/{{.register.response.body.id}}"
       headers = jsonencode({
-        authorization  = "Bearer ${var.STRIPE_SECRET_KEY}"
+        authorization = "Bearer ${var.STRIPE_SECRET_KEY}"
       })
     }
   }
