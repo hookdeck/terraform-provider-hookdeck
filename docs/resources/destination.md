@@ -40,7 +40,7 @@ resource "hookdeck_destination" "example" {
 
 ### Optional
 
-- `config` (String) Destination configuration
+- `config` (String, Sensitive) Destination configuration
 - `description` (String) Description for the destination
 - `disabled_at` (String) Date the destination was disabled
 - `type` (String) Type of the destination

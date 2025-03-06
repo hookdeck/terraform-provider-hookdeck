@@ -8,9 +8,6 @@ testacc:
 generate:
 	go generate ./...
 
-generate-codegen:
-	go generate ./cmd/codegen/...
-
 generate-tfdocs:
 	go generate ./cmd/tfdocs/...
 

@@ -11,6 +11,7 @@ func schemaAttributes() map[string]schema.Attribute {
 	return map[string]schema.Attribute{
 		"auth": schema.StringAttribute{
 			Required:    true,
+			Sensitive:   true,
 			Description: "Source auth",
 			PlanModifiers: []planmodifier.String{
 				stringplanmodifier.UseStateForUnknown(),
