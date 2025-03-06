@@ -17,7 +17,7 @@ Source Auth Resource
 
 ### Required
 
-- `auth` (String) Source auth
+- `auth` (String, Sensitive) Source auth
 - `source_id` (String) ID of the source
 
 ### Optional

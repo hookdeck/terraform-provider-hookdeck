@@ -27,7 +27,7 @@ data "hookdeck_destination" "example" {
 
 ### Read-Only
 
-- `config` (String) Destination configuration
+- `config` (String, Sensitive) Destination configuration
 - `created_at` (String) Date the destination was created
 - `description` (String) Description for the destination
 - `disabled_at` (String) Date the destination was disabled

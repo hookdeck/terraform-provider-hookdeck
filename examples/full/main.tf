@@ -19,7 +19,7 @@ terraform {
 }
 
 provider "hookdeck" {
-  api_key  = var.HOOKDECK_API_KEY
+  api_key = var.HOOKDECK_API_KEY
 }
 
 resource "hookdeck_source" "standalone_source" {
