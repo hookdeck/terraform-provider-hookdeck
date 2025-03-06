@@ -33,7 +33,7 @@ resource "hookdeck_source" "example" {
 
 ### Optional
 
-- `config` (String) Source configuration
+- `config` (String, Sensitive) Source configuration
 - `description` (String) Description for the source
 - `type` (String) Type of the source
 
