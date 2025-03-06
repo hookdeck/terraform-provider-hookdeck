@@ -17,6 +17,7 @@ func schemaAttributes() map[string]schema.Attribute {
 			// Cannot be computed because some destinations may have default config value,
 			// leading a conflict between the initial state & computed state after creation.
 			Computed:    false,
+			Sensitive:   true,
 			Description: "Destination configuration",
 			PlanModifiers: []planmodifier.String{
 				stringplanmodifier.UseStateForUnknown(),
