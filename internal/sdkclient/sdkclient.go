@@ -17,9 +17,15 @@ type Client struct {
 	RawClient *RawClient
 }
 
-const apiVersion = "2025-01-01"
+const (
+	defaultAPIBase = "api.hookdeck.com"
+	apiVersion     = "2025-01-01"
+)
 
 func InitHookdeckSDKClient(apiBase string, apiKey string, maxAttempts int, providerVersion string) Client {
+	if apiBase == "" {
+		apiBase = defaultAPIBase
+	}
 	if !strings.HasPrefix(apiBase, "http") {
 		apiBase = "https://" + apiBase
 	}
