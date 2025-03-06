@@ -20,7 +20,6 @@ terraform {
 
 provider "hookdeck" {
   api_key  = var.HOOKDECK_API_KEY
-  api_base = "api.hookdeck.com"
 }
 
 resource "hookdeck_source" "standalone_source" {
@@ -43,7 +42,7 @@ resource "hookdeck_source" "second_source" {
   name = "second_source"
   type = "HTTP"
   config = jsonencode({
-    url       = "https://mock.hookdeck.com"
+    url       = "https://mock.hookdeck.com/test"
     auth_type = "BASIC_AUTH"
     auth = {
       username = "some-username"
