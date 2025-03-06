@@ -1,40 +1,28 @@
 package source
 
 import (
-	"context"
-
 	"terraform-provider-hookdeck/internal/validators"
 
-	"github.com/hashicorp/terraform-plugin-framework-validators/listvalidator"
-	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
+	"github.com/hashicorp/terraform-plugin-framework-jsontypes/jsontypes"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/listdefault"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/objectplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
-	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
 func schemaAttributes() map[string]schema.Attribute {
-	defaultAllowedHttpMethods, _ := types.ListValueFrom(context.Background(), types.StringType, []string{"POST", "PUT", "PATCH", "DELETE"})
-
 	return map[string]schema.Attribute{
-		"allowed_http_methods": schema.ListAttribute{
-			Computed:    true,
-			Optional:    true,
-			ElementType: types.StringType,
-			Validators: []validator.List{
-				listvalidator.ValueStringsAre(stringvalidator.OneOf(
-					"GET",
-					"POST",
-					"PUT",
-					"PATCH",
-					"DELETE",
-				)),
+		"config": schema.StringAttribute{
+			Optional: true,
+			// Cannot be computed because some sources may have default config value,
+			// leading a conflict between the initial state & computed state after creation.
+			Computed:    false,
+			Sensitive:   true,
+			Description: "Source configuration",
+			PlanModifiers: []planmodifier.String{
+				stringplanmodifier.UseStateForUnknown(),
 			},
-			Default:     listdefault.StaticValue(defaultAllowedHttpMethods),
-			Description: "List of allowed HTTP methods. Defaults to PUT, POST, PATCH, DELETE.",
+			CustomType: jsontypes.NormalizedType{},
 		},
 		"created_at": schema.StringAttribute{
 			Computed: true,
@@ -46,31 +34,6 @@ func schemaAttributes() map[string]schema.Attribute {
 			},
 			Description: "Date the source was created",
 		},
-		"custom_response": schema.SingleNestedAttribute{
-			Optional: true,
-			PlanModifiers: []planmodifier.Object{
-				objectplanmodifier.UseStateForUnknown(),
-			},
-			Attributes: map[string]schema.Attribute{
-				"body": schema.StringAttribute{
-					Required:    true,
-					Description: "Body of the custom response",
-				},
-				"content_type": schema.StringAttribute{
-					Required: true,
-					Validators: []validator.String{
-						stringvalidator.OneOf(
-							"json",
-							"text",
-							"xml",
-						),
-					},
-					MarkdownDescription: "must be one of [json, text, xml]" + "\n" +
-						"Content type of the custom response",
-				},
-			},
-			Description: "Custom response object",
-		},
 		"description": schema.StringAttribute{
 			Optional: true,
 			PlanModifiers: []planmodifier.String{
@@ -80,7 +43,6 @@ func schemaAttributes() map[string]schema.Attribute {
 		},
 		"disabled_at": schema.StringAttribute{
 			Computed: true,
-			Optional: true,
 			Validators: []validator.String{
 				validators.IsRFC3339(),
 			},
@@ -103,6 +65,14 @@ func schemaAttributes() map[string]schema.Attribute {
 				stringplanmodifier.UseStateForUnknown(),
 			},
 			Description: "ID of the workspace",
+		},
+		"type": schema.StringAttribute{
+			Optional:    true,
+			Computed:    true,
+			Description: "Type of the source",
+			PlanModifiers: []planmodifier.String{
+				stringplanmodifier.UseStateForUnknown(),
+			},
 		},
 		"updated_at": schema.StringAttribute{
 			Computed: true,

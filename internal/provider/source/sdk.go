@@ -1,81 +1,269 @@
 package source
 
 import (
-	"time"
+	"bytes"
+	"context"
+	"encoding/json"
+	"fmt"
+	"io"
+	"net/http"
+	"net/url"
+	"strconv"
+	"terraform-provider-hookdeck/internal/sdkclient"
 
+	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	hookdeck "github.com/hookdeck/hookdeck-go-sdk"
 )
 
-func (m *sourceResourceModel) Refresh(source *hookdeck.Source) {
-	m.AllowedHTTPMethods = nil
-	for _, v := range *source.AllowedHttpMethods {
-		m.AllowedHTTPMethods = append(m.AllowedHTTPMethods, types.StringValue(string(v)))
-	}
-	m.CreatedAt = types.StringValue(source.CreatedAt.Format(time.RFC3339))
-	if m.CustomResponse == nil {
-		m.CustomResponse = &sourceCustomResponse{}
-	}
-	if source.CustomResponse == nil {
-		m.CustomResponse = nil
+const apiVersion = "2025-01-01"
+
+func (m *sourceResourceModel) Refresh(source map[string]interface{}) diag.Diagnostics {
+	var diags diag.Diagnostics
+
+	if createdAt, ok := source["created_at"].(string); ok {
+		m.CreatedAt = types.StringValue(createdAt)
 	} else {
-		m.CustomResponse = &sourceCustomResponse{}
-		m.CustomResponse.Body = types.StringValue(source.CustomResponse.Body)
-		m.CustomResponse.ContentType = types.StringValue(string(source.CustomResponse.ContentType))
+		diags.AddError("Error parsing created_at", "Expected string value")
+		return diags
 	}
-	if source.DisabledAt != nil {
-		m.DisabledAt = types.StringValue(source.DisabledAt.Format(time.RFC3339))
+
+	if description, ok := source["description"].(string); source["description"] != nil && ok {
+		m.Description = types.StringValue(description)
+	} else {
+		m.Description = types.StringNull()
+	}
+
+	if disabledAt, ok := source["disabled_at"].(string); source["disabled_at"] != nil && ok {
+		m.DisabledAt = types.StringValue(disabledAt)
 	} else {
 		m.DisabledAt = types.StringNull()
 	}
-	m.ID = types.StringValue(source.Id)
-	m.Name = types.StringValue(source.Name)
-	m.TeamID = types.StringValue(source.TeamId)
-	m.UpdatedAt = types.StringValue(source.UpdatedAt.Format(time.RFC3339))
-	m.URL = types.StringValue(source.Url)
+
+	if id, ok := source["id"].(string); ok {
+		m.ID = types.StringValue(id)
+	} else {
+		diags.AddError("Error parsing id", "Expected string value")
+		return diags
+	}
+
+	if name, ok := source["name"].(string); ok {
+		m.Name = types.StringValue(name)
+	} else {
+		diags.AddError("Error parsing name", "Expected string value")
+		return diags
+	}
+
+	if teamID, ok := source["team_id"].(string); ok {
+		m.TeamID = types.StringValue(teamID)
+	} else {
+		diags.AddError("Error parsing team_id", "Expected string value")
+		return diags
+	}
+
+	if sourceType, ok := source["type"].(string); source["type"] != nil && ok {
+		m.Type = types.StringValue(sourceType)
+	} else {
+		m.Type = types.StringNull()
+	}
+
+	if updatedAt, ok := source["updated_at"].(string); ok {
+		m.UpdatedAt = types.StringValue(updatedAt)
+	} else {
+		diags.AddError("Error parsing updated_at", "Expected string value")
+		return diags
+	}
+
+	if url, ok := source["url"].(string); ok {
+		m.URL = types.StringValue(url)
+	} else {
+		diags.AddError("Error parsing url", "Expected string value")
+		return diags
+	}
+
+	return diags
 }
 
-func (m *sourceResourceModel) ToCreatePayload() *hookdeck.SourceCreateRequest {
-	var allowedHTTPMethods []hookdeck.SourceAllowedHttpMethodItem = nil
-	for _, allowedHTTPMethodsItem := range m.AllowedHTTPMethods {
-		allowedHTTPMethods = append(allowedHTTPMethods, hookdeck.SourceAllowedHttpMethodItem(allowedHTTPMethodsItem.ValueString()))
+func (m *sourceResourceModel) Retrieve(ctx context.Context, client *sdkclient.Client) diag.Diagnostics {
+	var diags diag.Diagnostics
+	response, err := client.RawClient.SendRequest("GET", fmt.Sprintf("/%s/sources/%s", apiVersion, m.ID.ValueString()), &sdkclient.RequestOptions{
+		QueryParams: url.Values{
+			"include": []string{"config.auth"},
+		},
+	})
+	if err != nil {
+		diags.AddError("Error reading source", err.Error())
+		return diags
 	}
-	var customResponse *hookdeck.SourceCustomResponse
-	if m.CustomResponse != nil {
-		body := m.CustomResponse.Body.ValueString()
-		contentType := hookdeck.SourceCustomResponseContentType(m.CustomResponse.ContentType.ValueString())
-		customResponse = &hookdeck.SourceCustomResponse{
-			Body:        body,
-			ContentType: contentType,
+
+	if response.StatusCode > 299 {
+		if body, err := io.ReadAll(response.Body); err == nil {
+			diags.AddError("Error reading source", string(body))
+		} else {
+			diags.AddError("Error reading source", "Status code: "+strconv.Itoa(response.StatusCode))
 		}
+		return diags
 	}
-	return &hookdeck.SourceCreateRequest{
-		AllowedHttpMethods: hookdeck.OptionalOrNull(&allowedHTTPMethods),
-		CustomResponse:     hookdeck.OptionalOrNull(customResponse),
-		Description:        hookdeck.OptionalOrNull(m.Description.ValueStringPointer()),
-		Name:               m.Name.ValueString(),
+
+	body, err := io.ReadAll(response.Body)
+	if err != nil {
+		diags.AddError("Error reading source", err.Error())
+		return diags
 	}
+
+	var source map[string]interface{}
+	err = json.Unmarshal(body, &source)
+	if err != nil {
+		diags.AddError("Error reading source", err.Error())
+		return diags
+	}
+
+	return m.Refresh(source)
 }
 
-func (m *sourceResourceModel) ToUpdatePayload() *hookdeck.SourceUpdateRequest {
-	var allowedHTTPMethods []hookdeck.SourceAllowedHttpMethodItem = nil
-	for _, allowedHTTPMethodsItem := range m.AllowedHTTPMethods {
-		allowedHTTPMethods = append(allowedHTTPMethods, hookdeck.SourceAllowedHttpMethodItem(allowedHTTPMethodsItem.ValueString()))
-	}
-	var customResponse *hookdeck.SourceCustomResponse = nil
-	if m.CustomResponse != nil {
-		body := m.CustomResponse.Body.ValueString()
-		contentType := hookdeck.SourceCustomResponseContentType(m.CustomResponse.ContentType.ValueString())
-		customResponse = &hookdeck.SourceCustomResponse{
-			Body:        body,
-			ContentType: contentType,
-		}
+func (m *sourceResourceModel) Create(ctx context.Context, client *sdkclient.Client) diag.Diagnostics {
+	var diags diag.Diagnostics
+
+	payload, diags := m.toPayload()
+	if diags.HasError() {
+		return diags
 	}
 
-	return &hookdeck.SourceUpdateRequest{
-		AllowedHttpMethods: hookdeck.OptionalOrNull(&allowedHTTPMethods),
-		CustomResponse:     hookdeck.OptionalOrNull(customResponse),
-		Description:        hookdeck.OptionalOrNull(m.Description.ValueStringPointer()),
-		Name:               hookdeck.OptionalOrNull(m.Name.ValueStringPointer()),
+	jsonData, err := json.Marshal(payload)
+	if err != nil {
+		diags.AddError("Error creating source", err.Error())
+		return diags
 	}
+
+	response, err := client.RawClient.SendRequest("POST", fmt.Sprintf("/%s/sources", apiVersion), &sdkclient.RequestOptions{
+		Body: bytes.NewReader(jsonData),
+		Headers: http.Header{
+			"Content-Type": []string{"application/json"},
+		},
+	})
+	if err != nil {
+		diags.AddError("Error creating source", err.Error())
+		return diags
+	}
+
+	if response.StatusCode > 299 {
+		if body, err := io.ReadAll(response.Body); err == nil {
+			diags.AddError("Error creating source", string(body))
+		} else {
+			diags.AddError("Error creating source", "Status code: "+strconv.Itoa(response.StatusCode))
+		}
+		return diags
+	}
+
+	body, err := io.ReadAll(response.Body)
+	if err != nil {
+		diags.AddError("Error creating source", err.Error())
+		return diags
+	}
+
+	var source map[string]interface{}
+	err = json.Unmarshal(body, &source)
+	if err != nil {
+		diags.AddError("Error creating source", err.Error())
+		return diags
+	}
+
+	return m.Refresh(source)
+}
+
+func (m *sourceResourceModel) Update(ctx context.Context, client *sdkclient.Client) diag.Diagnostics {
+	var diags diag.Diagnostics
+
+	payload, diags := m.toPayload()
+	if diags.HasError() {
+		return diags
+	}
+
+	jsonData, err := json.Marshal(payload)
+	if err != nil {
+		diags.AddError("Error updating source", err.Error())
+		return diags
+	}
+
+	response, err := client.RawClient.SendRequest("PUT", fmt.Sprintf("/%s/sources/%s", apiVersion, m.ID.ValueString()), &sdkclient.RequestOptions{
+		Body: bytes.NewReader(jsonData),
+		Headers: http.Header{
+			"Content-Type": []string{"application/json"},
+		},
+	})
+	if err != nil {
+		diags.AddError("Error updating source", err.Error())
+		return diags
+	}
+
+	if response.StatusCode > 299 {
+		if body, err := io.ReadAll(response.Body); err == nil {
+			diags.AddError("Error updating source", string(body))
+		} else {
+			diags.AddError("Error updating source", "Status code: "+strconv.Itoa(response.StatusCode))
+		}
+		return diags
+	}
+
+	body, err := io.ReadAll(response.Body)
+	if err != nil {
+		diags.AddError("Error updating source", err.Error())
+		return diags
+	}
+
+	var source map[string]interface{}
+	err = json.Unmarshal(body, &source)
+	if err != nil {
+		diags.AddError("Error updating source", err.Error())
+		return diags
+	}
+
+	return m.Refresh(source)
+}
+
+func (m *sourceResourceModel) Delete(ctx context.Context, client *sdkclient.Client) diag.Diagnostics {
+	var diags diag.Diagnostics
+
+	response, err := client.RawClient.SendRequest("DELETE", fmt.Sprintf("/%s/sources/%s", apiVersion, m.ID.ValueString()), &sdkclient.RequestOptions{})
+	if err != nil {
+		diags.AddError("Error deleting source", err.Error())
+		return diags
+	}
+
+	if response.StatusCode > 299 {
+		if body, err := io.ReadAll(response.Body); err == nil {
+			diags.AddError("Error deleting source", string(body))
+		} else {
+			diags.AddError("Error deleting source", "Status code: "+strconv.Itoa(response.StatusCode))
+		}
+		return diags
+	}
+
+	return nil
+}
+
+func (m *sourceResourceModel) toPayload() (map[string]interface{}, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	payload := map[string]interface{}{}
+	payload["name"] = m.Name.ValueString()
+	if m.Config.ValueString() != "" {
+		var payloadConfig map[string]interface{}
+		err := json.Unmarshal([]byte(m.Config.ValueString()), &payloadConfig)
+		if err != nil {
+			var diags diag.Diagnostics
+			diags.AddError("Error creating source", err.Error())
+			return nil, diags
+		}
+		payload["config"] = payloadConfig
+	}
+	if m.Description.ValueString() != "" {
+		payload["description"] = m.Description.ValueString()
+	} else {
+		payload["description"] = (*string)(nil)
+	}
+	if m.Type.ValueString() != "" {
+		payload["type"] = m.Type.ValueString()
+	}
+
+	return payload, diags
 }

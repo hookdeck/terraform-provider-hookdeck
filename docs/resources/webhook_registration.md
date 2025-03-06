@@ -22,10 +22,7 @@ resource "hookdeck_webhook_registration" "webhook_stripe" {
         "content-type" = "application/json"
         authorization  = "Bearer ${var.stripe_secret_key}"
       })
-      body = jsonencode({
-        url            = hookdeck_source.source_example.url
-        enabled_events = ["charge.failed", "charge.succeeded"]
-      })
+      body = "url=${hookdeck_source.source_example.url}&enabled_events[]=charge.failed&enabled_events[]=charge.succeeded"
     }
   }
   unregister = {

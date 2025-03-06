@@ -16,6 +16,7 @@ Let's start with a Hookdeck connection to start listening to incoming webhooks f
 ```hcl
 resource "hookdeck_source" "stripe" {
   name = "stripe"
+  type = "STRIPE"
 }
 
 resource "hookdeck_destination" "payment_service" {
@@ -34,7 +35,7 @@ resource "hookdeck_connection" "stripe_payment_service" {
 Stripe provides API endpoints to [create a new webhook](https://stripe.com/docs/api/webhook_endpoints/create) and [delete an existing webhook](https://stripe.com/docs/api/webhook_endpoints/delete), which we will use in this example.
 
 ```hcl
-resource "webhook_registration" "stripe" {
+resource "hookdeck_webhook_registration" "stripe_webhook_registration" {
   provider = hookdeck
 
   register = {
@@ -42,16 +43,9 @@ resource "webhook_registration" "stripe" {
       method = "POST"
       url    = "https://api.stripe.com/v1/webhook_endpoints"
       headers = jsonencode({
-        "content-type" = "application/json"
         authorization  = "Bearer <STRIPE_SECRET_KEY>"
       })
-      body = jsonencode({
-        url = hookdeck_source.stripe.url
-        enabled_events = [
-          "charge.failed",
-          "charge.succeeded"
-        ]
-      })
+      body = "url=${hookdeck_source.stripe.url}&enabled_events[]=charge.failed&enabled_events[]=charge.succeeded"
     }
   }
   unregister = {
@@ -70,16 +64,14 @@ For many APIs, you will need the ID of the registered webhook to unregister. You
 
 ## Use webhook secret to verify with Hookdeck
 
-Another way you can use the `webhook_registration` resource is to configure Hookdeck [source verification](https://hookdeck.com/docs/signature-verification) as part of your Terraform workflow. With the `webhook_registration` resource above, you can now configure Hookdeck verification like so:
+Another way you can use the `hookdeck_webhook_registration` resource is to configure Hookdeck [source verification](https://hookdeck.com/docs/signature-verification) as part of your Terraform workflow. With the `hookdeck_webhook_registration` resource above, you can now configure Hookdeck verification like so:
 
 ```hcl
-resource "hookdeck_source_verification" "stripe_verification" {
+resource "hookdeck_source_auth" "stripe_source_auth" {
   source_id = hookdeck_source.stripe.id
-  verification = {
-    stripe = {
-      webhook_secret_key = jsondecode(webhook_registration.stripe.register.response).body.secret
-    }
-  }
+  auth = jsonencode({
+    webhook_secret_key = jsondecode(hookdeck_webhook_registration.stripe_webhook_registration.register.response).body.secret
+  })
 }
 ```
 
@@ -92,6 +84,7 @@ Putting everything together to register Stripe webhook with Hookdeck source with
 
 resource "hookdeck_source" "stripe" {
   name = "stripe"
+  type = "STRIPE"
 }
 
 resource "hookdeck_destination" "payment_service" {
@@ -106,7 +99,7 @@ resource "hookdeck_connection" "stripe_payment_service" {
 
 # Register Stripe webhook
 
-resource "webhook_registration" "stripe" {
+resource "hookdeck_webhook_registration" "stripe_webhook_registration" {
   provider = hookdeck
 
   register = {
@@ -114,16 +107,9 @@ resource "webhook_registration" "stripe" {
       method = "POST"
       url    = "https://api.stripe.com/v1/webhook_endpoints"
       headers = jsonencode({
-        "content-type" = "application/json"
         authorization  = "Bearer <STRIPE_SECRET_KEY>"
       })
-      body = jsonencode({
-        url = hookdeck_source.stripe.url
-        enabled_events = [
-          "charge.failed",
-          "charge.succeeded"
-        ]
-      })
+      body = "url=${hookdeck_source.stripe.url}&enabled_events[]=charge.failed&enabled_events[]=charge.succeeded"
     }
   }
   unregister = {
@@ -139,12 +125,10 @@ resource "webhook_registration" "stripe" {
 
 # Configure source verification
 
-resource "hookdeck_source_verification" "stripe_verification" {
+resource "hookdeck_source_auth" "stripe_source_auth" {
   source_id = hookdeck_source.stripe.id
-  verification = {
-    stripe = {
-      webhook_secret_key = jsondecode(webhook_registration.stripe.register.response).body.secret
-    }
-  }
+  auth = jsonencode({
+    webhook_secret_key = jsondecode(hookdeck_webhook_registration.stripe_webhook_registration.register.response).body.secret
+  })
 }
 ```

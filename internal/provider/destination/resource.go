@@ -3,11 +3,11 @@ package destination
 import (
 	"context"
 	"fmt"
+	"terraform-provider-hookdeck/internal/sdkclient"
 
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
-	hookdeckClient "github.com/hookdeck/hookdeck-go-sdk/client"
 )
 
 // Ensure the implementation satisfies the expected interfaces.
@@ -24,7 +24,7 @@ func NewDestinationResource() resource.Resource {
 
 // destinationResource is the resource implementation.
 type destinationResource struct {
-	client hookdeckClient.Client
+	client sdkclient.Client
 }
 
 // Metadata returns the resource type name.
@@ -46,96 +46,79 @@ func (r *destinationResource) Configure(_ context.Context, req resource.Configur
 		return
 	}
 
-	client, ok := req.ProviderData.(*hookdeckClient.Client)
+	client, ok := req.ProviderData.(sdkclient.Client)
 
 	if !ok {
 		resp.Diagnostics.AddError(
-			"Unexpected Data Destination Configure Type",
-			fmt.Sprintf("Expected *hookdeckClient.Client, got: %T. Please report this issue to the provider developers.", req.ProviderData),
+			"Unexpected Resource Configure Type",
+			fmt.Sprintf("Expected sdkclient.Client, got: %T. Please report this issue to the provider developers.", req.ProviderData),
 		)
 
 		return
 	}
 
-	r.client = *client
+	r.client = client
 }
 
 // Create creates the resource and sets the initial Terraform state.
 func (r *destinationResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
-	// Get data from Terraform plan
 	var data *destinationResourceModel
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	// Create resource
-	destination, err := r.client.Destination.Create(context.Background(), data.ToCreatePayload())
-	if err != nil {
-		resp.Diagnostics.AddError("Error creating destination", err.Error())
+	resp.Diagnostics.Append(data.Create(ctx, &r.client)...)
+	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	// Save updated data into Terraform state
-	data.Refresh(destination)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
 // Read refreshes the Terraform state with the latest data.
 func (r *destinationResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
-	// Get data from Terraform state
 	var data *destinationResourceModel
 	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	// Get refreshed resource value
-	destination, err := r.client.Destination.Retrieve(context.Background(), data.ID.ValueString())
-	if err != nil {
-		resp.Diagnostics.AddError("Error reading destination", err.Error())
+	resp.Diagnostics.Append(data.Retrieve(ctx, &r.client)...)
+	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	// Save refreshed data into Terraform state
-	data.Refresh(destination)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
 // Update updates the resource and sets the updated Terraform state on success.
 func (r *destinationResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
-	// Get data from Terraform plan
 	var data *destinationResourceModel
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	// Update existing resource
-	destination, err := r.client.Destination.Update(context.Background(), data.ID.ValueString(), data.ToUpdatePayload())
-	if err != nil {
-		resp.Diagnostics.AddError("Error updating destination", err.Error())
+	resp.Diagnostics.Append(data.Update(ctx, &r.client)...)
+	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	// Save updated data into Terraform state
-	data.Refresh(destination)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
 // Delete deletes the resource and removes the Terraform state on success.
 func (r *destinationResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
-	// Get data from Terraform state
 	var data *destinationResourceModel
 	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	// Delete existing resource
-	_, err := r.client.Destination.Delete(context.Background(), data.ID.ValueString())
-	if err != nil {
-		resp.Diagnostics.AddError("Error deleting destination", err.Error())
+	resp.Diagnostics.Append(data.Delete(ctx, &r.client)...)
+	if resp.Diagnostics.HasError() {
+		return
 	}
 }
 

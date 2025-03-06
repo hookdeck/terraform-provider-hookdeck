@@ -1,4 +1,4 @@
-package source
+package sourceauth
 
 import (
 	"context"
@@ -12,36 +12,36 @@ import (
 
 // Ensure the implementation satisfies the expected interfaces.
 var (
-	_ resource.Resource                = &sourceResource{}
-	_ resource.ResourceWithConfigure   = &sourceResource{}
-	_ resource.ResourceWithImportState = &sourceResource{}
+	_ resource.Resource                = &sourceAuthResource{}
+	_ resource.ResourceWithConfigure   = &sourceAuthResource{}
+	_ resource.ResourceWithImportState = &sourceAuthResource{}
 )
 
-// NewSourceResource is a helper function to simplify the provider implementation.
-func NewSourceResource() resource.Resource {
-	return &sourceResource{}
+// NewSourceAuthResource is a helper function to simplify the provider implementation.
+func NewSourceAuthResource() resource.Resource {
+	return &sourceAuthResource{}
 }
 
-// sourceResource is the resource implementation.
-type sourceResource struct {
+// sourceAuthResource is the resource implementation.
+type sourceAuthResource struct {
 	client sdkclient.Client
 }
 
 // Metadata returns the resource type name.
-func (r *sourceResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
-	resp.TypeName = req.ProviderTypeName + "_source"
+func (r *sourceAuthResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
+	resp.TypeName = req.ProviderTypeName + "_source_auth"
 }
 
 // Schema returns the resource schema.
-func (r *sourceResource) Schema(_ context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
+func (r *sourceAuthResource) Schema(_ context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
-		Description: "Source Resource",
+		Description: "Source Auth Resource",
 		Attributes:  schemaAttributes(),
 	}
 }
 
 // Configure adds the provider configured client to the resource.
-func (r *sourceResource) Configure(_ context.Context, req resource.ConfigureRequest, resp *resource.ConfigureResponse) {
+func (r *sourceAuthResource) Configure(_ context.Context, req resource.ConfigureRequest, resp *resource.ConfigureResponse) {
 	if req.ProviderData == nil {
 		return
 	}
@@ -61,8 +61,8 @@ func (r *sourceResource) Configure(_ context.Context, req resource.ConfigureRequ
 }
 
 // Create creates the resource and sets the initial Terraform state.
-func (r *sourceResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
-	var data *sourceResourceModel
+func (r *sourceAuthResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
+	var data *sourceAuthResourceModel
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
 	if resp.Diagnostics.HasError() {
 		return
@@ -77,8 +77,8 @@ func (r *sourceResource) Create(ctx context.Context, req resource.CreateRequest,
 }
 
 // Read refreshes the Terraform state with the latest data.
-func (r *sourceResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
-	var data *sourceResourceModel
+func (r *sourceAuthResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
+	var data *sourceAuthResourceModel
 	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
 	if resp.Diagnostics.HasError() {
 		return
@@ -93,8 +93,8 @@ func (r *sourceResource) Read(ctx context.Context, req resource.ReadRequest, res
 }
 
 // Update updates the resource and sets the updated Terraform state on success.
-func (r *sourceResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
-	var data *sourceResourceModel
+func (r *sourceAuthResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
+	var data *sourceAuthResourceModel
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
 	if resp.Diagnostics.HasError() {
 		return
@@ -109,8 +109,8 @@ func (r *sourceResource) Update(ctx context.Context, req resource.UpdateRequest,
 }
 
 // Delete deletes the resource and removes the Terraform state on success.
-func (r *sourceResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
-	var data *sourceResourceModel
+func (r *sourceAuthResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
+	var data *sourceAuthResourceModel
 	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
 	if resp.Diagnostics.HasError() {
 		return
@@ -122,7 +122,7 @@ func (r *sourceResource) Delete(ctx context.Context, req resource.DeleteRequest,
 	}
 }
 
-func (r *sourceResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
+func (r *sourceAuthResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	// Retrieve import ID and save to id attribute
 	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
 }

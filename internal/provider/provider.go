@@ -9,16 +9,18 @@ import (
 	"terraform-provider-hookdeck/internal/provider/connection"
 	"terraform-provider-hookdeck/internal/provider/destination"
 	"terraform-provider-hookdeck/internal/provider/source"
-	"terraform-provider-hookdeck/internal/provider/sourceverification"
+	"terraform-provider-hookdeck/internal/provider/sourceauth"
 	"terraform-provider-hookdeck/internal/provider/transformation"
 	"terraform-provider-hookdeck/internal/provider/webhookregistration"
 	"terraform-provider-hookdeck/internal/sdkclient"
+	"terraform-provider-hookdeck/internal/validators"
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/provider"
 	"github.com/hashicorp/terraform-plugin-framework/provider/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
+	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 )
@@ -52,6 +54,9 @@ func (p *hookdeckProvider) Schema(ctx context.Context, req provider.SchemaReques
 			"api_base": schema.StringAttribute{
 				Optional:            true,
 				MarkdownDescription: fmt.Sprintf("Hookdeck API Base URL. Alternatively, can be configured using the `%s` environment variable.", apiBaseEnvVarKey),
+				Validators: []validator.String{
+					validators.NewHookdeckAPIBaseURLValidator(),
+				},
 			},
 			"api_key": schema.StringAttribute{
 				Optional:            true,
@@ -183,7 +188,7 @@ func (p *hookdeckProvider) Resources(ctx context.Context) []func() resource.Reso
 		connection.NewConnectionResource,
 		destination.NewDestinationResource,
 		source.NewSourceResource,
-		sourceverification.NewSourceVerificationResource,
+		sourceauth.NewSourceAuthResource,
 		transformation.NewTransformationResource,
 		webhookregistration.NewWebhookRegistrationResource,
 	}

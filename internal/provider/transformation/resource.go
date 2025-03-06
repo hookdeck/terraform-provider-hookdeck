@@ -4,12 +4,12 @@ import (
 	"context"
 	"crypto/rand"
 	"fmt"
+	"terraform-provider-hookdeck/internal/sdkclient"
 
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	hookdeck "github.com/hookdeck/hookdeck-go-sdk"
-	hookdeckClient "github.com/hookdeck/hookdeck-go-sdk/client"
 )
 
 // Ensure the implementation satisfies the expected interfaces.
@@ -26,7 +26,7 @@ func NewTransformationResource() resource.Resource {
 
 // transformationResource is the resource implementation.
 type transformationResource struct {
-	client hookdeckClient.Client
+	client sdkclient.Client
 }
 
 // Metadata returns the resource type name.
@@ -48,18 +48,18 @@ func (r *transformationResource) Configure(_ context.Context, req resource.Confi
 		return
 	}
 
-	client, ok := req.ProviderData.(*hookdeckClient.Client)
+	client, ok := req.ProviderData.(sdkclient.Client)
 
 	if !ok {
 		resp.Diagnostics.AddError(
-			"Unexpected Data Source Configure Type",
-			fmt.Sprintf("Expected *hookdeckClient.Client, got: %T. Please report this issue to the provider developers.", req.ProviderData),
+			"Unexpected Resource Configure Type",
+			fmt.Sprintf("Expected sdkclient.Client, got: %T. Please report this issue to the provider developers.", req.ProviderData),
 		)
 
 		return
 	}
 
-	r.client = *client
+	r.client = client
 }
 
 // Create creates the resource and sets the initial Terraform state.
