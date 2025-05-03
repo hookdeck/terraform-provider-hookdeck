@@ -1,16 +1,14 @@
 resource "hookdeck_destination" "example" {
-  name        = "example"
-  description = "example destination"
-  url         = "https://mock.hookdeck.com"
-  http_method = "POST"
-  rate_limit = {
-    limit  = 10
-    period = "second"
-  }
-  auth_method = {
-    api_key = {
-      api_key = var.destination_api_key
-      key     = "x-webhook-key"
+  name = "example"
+  type = "HTTP"
+  config = jsonencode({
+    url       = "https://example.test/webhook"
+    auth_type = "BASIC_AUTH"
+    auth = {
+      username = "username"
+      password = "password"
     }
-  }
+    rate_limit        = 10
+    rate_limit_period = "concurrent"
+  })
 }
