@@ -179,7 +179,7 @@ func (m *sourceAuthResourceModel) Delete(ctx context.Context, client *sdkclient.
 		return diags
 	}
 
-	response, err := client.RawClient.SendRequest("PUT", fmt.Sprintf("/sources/%s", m.SourceID.ValueString()), &sdkclient.RequestOptions{
+	response, err := client.RawClient.SendRequest("PUT", fmt.Sprintf("/%s/sources/%s", apiVersion, m.SourceID.ValueString()), &sdkclient.RequestOptions{
 		Body: bytes.NewReader(jsonData),
 		Headers: http.Header{
 			"Content-Type": []string{"application/json"},
