@@ -32,7 +32,7 @@ jobs:
       - name: Run linters
         uses: golangci/golangci-lint-action@v8
         with:
-          version: latest
+          version: v2.1.6
 
   generate:
     runs-on: ubuntu-latest
@@ -80,3 +80,4 @@ jobs:
           TF_ACC: "1"
         run: go test -v -cover ./internal/provider/
         timeout-minutes: 10
+
