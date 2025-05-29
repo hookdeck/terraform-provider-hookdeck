@@ -55,6 +55,7 @@ func (m *connectionResourceModel) ToUpdatePayload() *hookdeck.ConnectionUpdateRe
 }
 
 func (m *connectionResourceModel) getRules() *[]*hookdeck.Rule {
+	//nolint:staticcheck // keep explicit type for readability
 	var rules []*hookdeck.Rule = []*hookdeck.Rule{}
 
 	for _, ruleItem := range m.Rules {
@@ -131,6 +132,7 @@ func transformFilterRuleProperty(property *filterRuleProperty) *hookdeck.FilterR
 }
 
 func refreshRules(connection *hookdeck.Connection) []rule {
+	//nolint:staticcheck
 	var rules []rule = []rule{}
 
 	for _, ruleItem := range connection.Rules {

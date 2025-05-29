@@ -92,6 +92,7 @@ func (m *webhookRegistrationResourceModel) DoRequest(request *http.Request, shou
 	}
 
 	if shouldClose {
+		//nolint:errcheck // intentionally ignoring close error
 		defer resp.Body.Close()
 	}
 
@@ -110,6 +111,7 @@ func (m *webhookRegistrationResourceModel) DoRequest(request *http.Request, shou
 }
 
 func (m *webhookRegistrationResourceModel) ParseRegisterResponse(response *http.Response) (*string, error) {
+	//nolint:errcheck // intentionally ignoring close error
 	defer response.Body.Close()
 
 	responseBodyBytes, err := io.ReadAll(response.Body)
@@ -158,6 +160,7 @@ func (m *webhookRegistrationResourceModel) ExecuteRegistrationResponseTemplate(t
 	var data bytes.Buffer
 	registrationReponseTemplate := m.CreateRegistrationResponseTemplate(text)
 
+	//nolint:staticcheck
 	var templateData map[string]any = map[string]any{
 		"register": map[string]any{
 			"response": responseJSON,
