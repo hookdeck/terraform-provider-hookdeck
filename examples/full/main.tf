@@ -10,6 +10,21 @@ variable "STRIPE_SECRET_KEY" {
   type = string
 }
 
+variable "EXISTING_SOURCE_ID" {
+  type    = string
+  default = null
+}
+
+variable "EXISTING_DESTINATION_ID" {
+  type    = string
+  default = null
+}
+
+variable "EXISTING_CONNECTION_ID" {
+  type    = string
+  default = null
+}
+
 terraform {
   required_providers {
     hookdeck = {
@@ -122,15 +137,15 @@ resource "hookdeck_connection" "second_connection" {
 }
 
 data "hookdeck_source" "manually_created_source" {
-  id = "src_112rkwa855tb0z"
+  id = var.EXISTING_SOURCE_ID
 }
 
 data "hookdeck_destination" "manually_created_destination" {
-  id = "des_tsrZIbyk0JBB"
+  id = var.EXISTING_DESTINATION_ID
 }
 
 data "hookdeck_connection" "manually_created_connection" {
-  id = "web_xDRnu9yq9GMl"
+  id = var.EXISTING_CONNECTION_ID
 }
 
 resource "hookdeck_connection" "first_connection_using_data_sources" {
