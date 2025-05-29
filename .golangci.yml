@@ -1,20 +1,9 @@
-version: 2
+version: "2"
 
 run:
   timeout: 5m
 
-issues:
-  max-issues-per-linter: 0
-  max-same-issues: 0
-  exclude:
-    - 'Error return value of `resp.Body.Close` is not checked'
-    - 'Error return value of `response.Body.Close` is not checked'
-    - 'ST1023: should omit type []*hookdeck.Rule from declaration; it will be inferred from the right-hand side'
-    - 'ST1023: should omit type []rule from declaration; it will be inferred from the right-hand side'
-    - 'ST1023: should omit type map[string]any from declaration; it will be inferred from the right-hand side'
-
 linters:
-  disable-all: true
   enable:
     - copyloopvar
     - durationcheck
@@ -30,12 +19,9 @@ linters:
     - staticcheck
     - unconvert
     - unparam
+    - unused
     - usetesting
 
-format:
-  enable:
-    - gofmt
-
-output:
-  format: colored-line-number
-  sort-results: true
+issues:
+  max-issues-per-linter: 0
+  max-same-issues: 0
