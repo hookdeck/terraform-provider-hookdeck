@@ -28,7 +28,7 @@ resource "hookdeck_connection" "connection_example" {
       filter_rule = {
         body = {
           # you can use a file for the filter JSON
-          json = file("${path.module}/filter_body.json")
+          json = jsonencode(jsondecode(file("${path.module}/filter_body.json")))
         }
         headers = {
           # or use Terraform's `jsonencode` to inline the JSON
