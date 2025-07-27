@@ -52,7 +52,7 @@ func (r *connectionResource) UpgradeState(ctx context.Context) map[int64]resourc
 	}
 }
 
-// getRulePriority returns the priority for sorting rules during migration: Transform > Filter > Retry > Delay
+// getRulePriority returns the priority for sorting rules during migration: Transform > Filter > Delay > Retry
 func getRulePriority(r *rule) int {
 	if r.TransformRule != nil {
 		return 1
@@ -60,10 +60,10 @@ func getRulePriority(r *rule) int {
 	if r.FilterRule != nil {
 		return 2
 	}
-	if r.RetryRule != nil {
+	if r.DelayRule != nil {
 		return 3
 	}
-	if r.DelayRule != nil {
+	if r.RetryRule != nil {
 		return 4
 	}
 	return 5 // Unknown rule type
