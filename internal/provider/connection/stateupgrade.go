@@ -10,7 +10,7 @@ import (
 
 var _ resource.ResourceWithUpgradeState = &connectionResource{}
 
-// UpgradeState handles the migration from schema version 0 (Set) to version 1 (List)
+// UpgradeState handles the migration from schema version 0 (Set) to version 1 (List).
 func (r *connectionResource) UpgradeState(ctx context.Context) map[int64]resource.StateUpgrader {
 	return map[int64]resource.StateUpgrader{
 		// Migrate from version 0 (SetNestedAttribute) to version 1 (ListNestedAttribute)
@@ -52,7 +52,7 @@ func (r *connectionResource) UpgradeState(ctx context.Context) map[int64]resourc
 	}
 }
 
-// getRulePriority returns the priority for sorting rules during migration: Transform > Filter > Delay > Retry
+// getRulePriority returns the priority for sorting rules during migration: Transform > Filter > Delay > Retry.
 func getRulePriority(r *rule) int {
 	if r.TransformRule != nil {
 		return 1
