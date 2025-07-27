@@ -35,6 +35,7 @@ func (r *connectionResource) Metadata(_ context.Context, req resource.MetadataRe
 // Schema returns the resource schema.
 func (r *connectionResource) Schema(_ context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
+		Version:             1,
 		MarkdownDescription: "Connection Resource",
 		Attributes:          schemaAttributes(),
 	}

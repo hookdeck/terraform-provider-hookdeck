@@ -19,7 +19,7 @@ type Client struct {
 
 const (
 	defaultAPIBase = "api.hookdeck.com"
-	apiVersion     = "2025-01-01"
+	apiVersion     = "2025-07-01"
 )
 
 func InitHookdeckSDKClient(apiBase string, apiKey string, maxAttempts int, providerVersion string) Client {

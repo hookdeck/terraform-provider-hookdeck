@@ -71,7 +71,7 @@ resource "hookdeck_connection" "connection_example" {
 - `description` (String) Description for the connection
 - `disabled_at` (String) Date the connection was disabled
 - `name` (String) A unique, human-friendly name for the connection
-- `rules` (Attributes Set) (see [below for nested schema](#nestedatt--rules))
+- `rules` (Attributes List) (see [below for nested schema](#nestedatt--rules))
 
 ### Read-Only
 
