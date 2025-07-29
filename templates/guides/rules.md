@@ -6,7 +6,37 @@ description: "Connection Rules"
 # Hookdeck Rules
 
 A rule is a piece of instructional logic that dictates the behavior of events
-routed through a connection. There are 4 types of rules in Hookdeck:
+routed through a connection.
+
+### Rule Execution Order
+
+The order of rules in the `rules` list matters. `filter_rule` and `transform_rule` blocks are executed sequentially in the order they are defined. This allows you to create powerful workflows, such as filtering a request *before* transforming it to avoid unnecessary processing.
+
+Other rule types, like `retry_rule` and `delay_rule`, are not affected by ordering, as their execution is not sequential.
+
+For example, you can define a `filter_rule` to run before a `transform_rule`:
+
+```hcl
+resource "hookdeck_connection" "my_connection" {
+  # ...
+  rules = [
+    {
+      filter_rule = {
+        body = {
+          json = jsonencode({ "status" = "active" })
+        }
+      }
+    },
+    {
+      transform_rule = {
+        transformation_id = hookdeck_transformation.my_transformation.id
+      }
+    }
+  ]
+}
+```
+
+There are 4 types of rules in Hookdeck:
 
 ## Retry rule
 
