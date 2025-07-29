@@ -42,9 +42,14 @@ func (r *connectionResource) UpgradeState(ctx context.Context) map[int64]resourc
 				if len(oldState.Rules) > 0 {
 					resp.Diagnostics.AddWarning(
 						"Connection Rules Migrated",
-						"Connection rules have been migrated from an unordered set to an ordered list. "+
-							"Transform rules now appear before filter rules by default. "+
-							"You can reorder rules in your configuration as needed.",
+						"Hookdeck has migrated all existing connection rules to an ordered list format. "+
+							"Only Transform and Filter rules now execute in the order they appear. "+
+							"To maintain existing behaviour, the platform has placed Transform rules before Filter rules. "+
+							"However, Terraform will detect any difference in rule order as a change. "+
+							"To avoid unnecessary diffs, ensure your Transform and Filter rules are ordered as intended—"+
+							"with Transform rules before Filter rules to match previous behaviour."+
+							""+
+							"See https://hkdk.link/hkdk-rf-v1-v2-migration-guide for more details.",
 					)
 				}
 			},
