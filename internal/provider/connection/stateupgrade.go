@@ -41,14 +41,13 @@ func (r *connectionResource) UpgradeState(ctx context.Context) map[int64]resourc
 				// Add a warning to inform the user
 				if len(oldState.Rules) > 0 {
 					resp.Diagnostics.AddWarning(
-						"Connection Rules Migrated",
-						"Hookdeck has migrated all existing connection rules to an ordered list format. "+
-							"Only Transform and Filter rules now execute in the order they appear. "+
-							"To maintain existing behaviour, the platform has placed Transform rules before Filter rules. "+
-							"However, Terraform will detect any difference in rule order as a change. "+
-							"To avoid unnecessary diffs, ensure your Transform and Filter rules are ordered as intended—"+
-							"with Transform rules before Filter rules to match previous behaviour."+
-							""+
+						"Potential Action Required: Connection Rules Ordering",
+						"Hookdeck has migrated all existing connection rules to an ordered list format.\n"+
+							"Only Transform and Filter rules now execute in the order they appear.\n"+
+							"To maintain existing behaviour, the platform has placed Transform rules before Filter rules.\n"+
+							"Therefore, Terraform will detect any difference in rule order as a change.\n"+
+							"To avoid unwanted changes, ensure your Transform and Filter rules are ordered as intended—"+
+							"with Transform rules before Filter rules to match previous behaviour.\n\n"+
 							"See https://hkdk.link/tf-v1-v2-migration-guide for more details.",
 					)
 				}
