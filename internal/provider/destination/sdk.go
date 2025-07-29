@@ -15,7 +15,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-const apiVersion = "2025-01-01"
+const apiVersion = "2025-07-01"
 
 func (m *destinationResourceModel) Refresh(destination map[string]interface{}) diag.Diagnostics {
 	var diags diag.Diagnostics

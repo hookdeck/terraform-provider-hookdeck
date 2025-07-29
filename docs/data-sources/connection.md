@@ -33,7 +33,7 @@ data "hookdeck_connection" "example" {
 - `disabled_at` (String) Date the connection was disabled
 - `name` (String) A unique, human-friendly name for the connection
 - `paused_at` (String) Date the connection was paused
-- `rules` (Attributes Set) (see [below for nested schema](#nestedatt--rules))
+- `rules` (Attributes List) (see [below for nested schema](#nestedatt--rules))
 - `source_id` (String) ID of a source to bind to the connection
 - `team_id` (String) ID of the workspace
 - `updated_at` (String) Date the connection was last updated

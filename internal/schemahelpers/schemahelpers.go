@@ -130,6 +130,22 @@ func DataSourceSchemaFromResourceSchema(resourceSchema map[string]resource_schem
 				Required:            required,
 				Computed:            computed,
 			}
+		case resource_schema.ListNestedAttribute:
+			datasourceSchema[name] = datasource_schema.ListNestedAttribute{
+				NestedObject: datasource_schema.NestedAttributeObject{
+					Attributes: DataSourceSchemaFromResourceSchema(srcAttrTyped.NestedObject.Attributes, ""),
+					CustomType: srcAttrTyped.NestedObject.CustomType,
+					Validators: srcAttrTyped.NestedObject.Validators,
+				},
+				Validators:          srcAttrTyped.Validators,
+				Description:         srcAttrTyped.Description,
+				MarkdownDescription: srcAttrTyped.MarkdownDescription,
+				CustomType:          srcAttrTyped.CustomType,
+				Sensitive:           srcAttrTyped.Sensitive,
+				Optional:            optional,
+				Required:            required,
+				Computed:            computed,
+			}
 		case resource_schema.ObjectAttribute:
 			datasourceSchema[name] = datasource_schema.ObjectAttribute{
 				AttributeTypes:      srcAttrTyped.AttributeTypes,
