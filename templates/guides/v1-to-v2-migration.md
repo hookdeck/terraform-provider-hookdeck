@@ -106,5 +106,6 @@ If you're intentionally using the new ordering capability, no migration is neede
 
 - The Hookdeck provider does **not** modify rule order—your configuration must match your intended logic.
 - If you see diffs after upgrading, they are likely due to mismatched rule order and can be resolved by reordering locally.
+- The provider will output a warning message if it detects that your existing rule definitions have a filter rule before a transformation rule.
 
 For questions or help migrating, please [raise an issue on the Hookdeck Terraform Provider GitHub repo](https://github.com/hookdeck/terraform-provider-hookdeck/issues).
