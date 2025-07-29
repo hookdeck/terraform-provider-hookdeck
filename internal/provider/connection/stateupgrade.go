@@ -49,7 +49,7 @@ func (r *connectionResource) UpgradeState(ctx context.Context) map[int64]resourc
 							"To avoid unnecessary diffs, ensure your Transform and Filter rules are ordered as intended—"+
 							"with Transform rules before Filter rules to match previous behaviour."+
 							""+
-							"See https://hkdk.link/hkdk-rf-v1-v2-migration-guide for more details.",
+							"See https://hkdk.link/tf-v1-v2-migration-guide for more details.",
 					)
 				}
 			},
