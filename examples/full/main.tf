@@ -115,10 +115,25 @@ resource "hookdeck_destination" "aws_destination" {
   })
 }
 
+resource "hookdeck_transformation" "example_transformation" {
+  name = "example_transformation"
+  code = <<EOT
+addHandler("transform", (request, context) => {
+  request.headers["example-header"] = "Hello World";
+  return request;
+});
+EOT
+}
+
 resource "hookdeck_connection" "first_connection" {
   source_id      = hookdeck_source.first_source.id
   destination_id = hookdeck_destination.first_destination.id
   rules = [
+    {
+      transform_rule = {
+        transformation_id = hookdeck_transformation.example_transformation.id
+      }
+    },
     {
       filter_rule = {
         headers = {
@@ -127,7 +142,7 @@ resource "hookdeck_connection" "first_connection" {
           })
         }
       }
-    }
+    },
   ]
 }
 
