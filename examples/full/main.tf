@@ -103,14 +103,13 @@ resource "hookdeck_destination" "second_destination" {
 resource "hookdeck_destination" "aws_destination" {
   name = "aws_destination"
   config = jsonencode({
-    url = "https://mock.hookdeck.com"
-    auth_method = {
-      aws_signature = {
-        access_key_id     = "some-access"
-        secret_access_key = "some-secret"
-        region            = "us-west-2"
-        service           = "lambda"
-      }
+    url       = "https://mock.hookdeck.com"
+    auth_type = "AWS_SIGNATURE"
+    auth = {
+      access_key_id     = "some-access"
+      secret_access_key = "some-secret"
+      region            = "us-west-2"
+      service           = "lambda"
     }
   })
 }
