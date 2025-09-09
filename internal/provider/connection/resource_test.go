@@ -24,6 +24,22 @@ func testAccPreCheck(t *testing.T) {
 	}
 }
 
+func loadTestConfigFormatted(filename string, rName string) string {
+	path := filepath.Join("testdata", filename)
+	content, err := os.ReadFile(path)
+	if err != nil {
+		panic(err)
+	}
+	// Format the template with the random suffix
+	return fmt.Sprintf(string(content), rName)
+}
+
+func loadTestConfigFormattedWithUpdate(filename string, rName string, oldName string, newName string) string {
+	config := loadTestConfigFormatted(filename, rName)
+	// Replace the connection name for update tests
+	return strings.ReplaceAll(config, oldName, newName)
+}
+
 func TestAccConnectionResource(t *testing.T) {
 	rName := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
 	resourceName := fmt.Sprintf("hookdeck_connection.test_%s", rName)
@@ -121,18 +137,66 @@ func TestAccConnectionResourceWithRules(t *testing.T) {
 	})
 }
 
-func loadTestConfigFormatted(filename string, rName string) string {
-	path := filepath.Join("testdata", filename)
-	content, err := os.ReadFile(path)
-	if err != nil {
-		panic(err)
-	}
-	// Format the template with the random suffix
-	return fmt.Sprintf(string(content), rName)
-}
+func TestAccConnectionResourceRuleOrdering(t *testing.T) {
+	rName := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
+	resourceName := fmt.Sprintf("hookdeck_connection.test_%s", rName)
 
-func loadTestConfigFormattedWithUpdate(filename string, rName string, oldName string, newName string) string {
-	config := loadTestConfigFormatted(filename, rName)
-	// Replace the connection name for update tests
-	return strings.ReplaceAll(config, oldName, newName)
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { testAccPreCheck(t) },
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			// Test all rule types maintain order: filter -> delay -> transform -> retry
+			{
+				Config: loadTestConfigFormatted("with_all_rules_ordered.tf", rName),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr(resourceName, "name", fmt.Sprintf("test-connection-ordered-%s", rName)),
+					resource.TestCheckResourceAttr(resourceName, "rules.#", "4"),
+					// Verify exact order is preserved
+					// Position 0: Filter rule
+					resource.TestCheckResourceAttr(resourceName, "rules.0.filter_rule.headers.json", `{"x-webhook-type":"order.created"}`),
+					resource.TestCheckNoResourceAttr(resourceName, "rules.0.delay_rule"),
+					resource.TestCheckNoResourceAttr(resourceName, "rules.0.transform_rule"),
+					resource.TestCheckNoResourceAttr(resourceName, "rules.0.retry_rule"),
+					// Position 1: Delay rule
+					resource.TestCheckResourceAttr(resourceName, "rules.1.delay_rule.delay", "2000"),
+					resource.TestCheckNoResourceAttr(resourceName, "rules.1.filter_rule"),
+					resource.TestCheckNoResourceAttr(resourceName, "rules.1.transform_rule"),
+					resource.TestCheckNoResourceAttr(resourceName, "rules.1.retry_rule"),
+					// Position 2: Transform rule
+					resource.TestCheckResourceAttrSet(resourceName, "rules.2.transform_rule.transformation_id"),
+					resource.TestCheckNoResourceAttr(resourceName, "rules.2.filter_rule"),
+					resource.TestCheckNoResourceAttr(resourceName, "rules.2.delay_rule"),
+					resource.TestCheckNoResourceAttr(resourceName, "rules.2.retry_rule"),
+					// Position 3: Retry rule
+					resource.TestCheckResourceAttr(resourceName, "rules.3.retry_rule.strategy", "exponential"),
+					resource.TestCheckResourceAttr(resourceName, "rules.3.retry_rule.count", "3"),
+					resource.TestCheckResourceAttr(resourceName, "rules.3.retry_rule.interval", "5000"),
+					resource.TestCheckNoResourceAttr(resourceName, "rules.3.filter_rule"),
+					resource.TestCheckNoResourceAttr(resourceName, "rules.3.delay_rule"),
+					resource.TestCheckNoResourceAttr(resourceName, "rules.3.transform_rule"),
+				),
+			},
+			// Update with different order: retry -> transform -> delay -> filter
+			{
+				Config: loadTestConfigFormatted("with_rules_reordered.tf", rName),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr(resourceName, "name", fmt.Sprintf("test-connection-reordered-%s", rName)),
+					resource.TestCheckResourceAttr(resourceName, "rules.#", "4"),
+					// Verify new order is applied
+					// Position 0: Now Retry rule
+					resource.TestCheckResourceAttr(resourceName, "rules.0.retry_rule.strategy", "exponential"),
+					resource.TestCheckNoResourceAttr(resourceName, "rules.0.filter_rule"),
+					// Position 1: Now Transform rule
+					resource.TestCheckResourceAttrSet(resourceName, "rules.1.transform_rule.transformation_id"),
+					resource.TestCheckNoResourceAttr(resourceName, "rules.1.retry_rule"),
+					// Position 2: Now Delay rule
+					resource.TestCheckResourceAttr(resourceName, "rules.2.delay_rule.delay", "2000"),
+					resource.TestCheckNoResourceAttr(resourceName, "rules.2.transform_rule"),
+					// Position 3: Now Filter rule
+					resource.TestCheckResourceAttr(resourceName, "rules.3.filter_rule.headers.json", `{"x-webhook-type":"order.created"}`),
+					resource.TestCheckNoResourceAttr(resourceName, "rules.3.retry_rule"),
+				),
+			},
+		},
+	})
 }
