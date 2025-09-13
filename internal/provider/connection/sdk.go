@@ -1,209 +1,499 @@
 package connection
 
 import (
+	"bytes"
+	"context"
 	"encoding/json"
+	"fmt"
+	"io"
 	"math/big"
-	"time"
+	"net/http"
+	"strconv"
+	"terraform-provider-hookdeck/internal/sdkclient"
 
+	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	hookdeck "github.com/hookdeck/hookdeck-go-sdk"
 )
 
-func (m *connectionResourceModel) Refresh(connection *hookdeck.Connection) {
-	m.CreatedAt = types.StringValue(connection.CreatedAt.Format(time.RFC3339))
-	m.DestinationID = types.StringValue(connection.Destination.Id)
-	if connection.DisabledAt != nil {
-		m.DisabledAt = types.StringValue(connection.DisabledAt.Format(time.RFC3339))
+const apiVersion = "2025-07-01"
+
+func (m *connectionResourceModel) Refresh(connection map[string]interface{}) diag.Diagnostics {
+	var diags diag.Diagnostics
+
+	// Required fields
+	if createdAt, ok := connection["created_at"].(string); ok {
+		m.CreatedAt = types.StringValue(createdAt)
 	} else {
-		m.DisabledAt = types.StringNull()
+		diags.AddError("Error parsing created_at", "Expected string value")
+		return diags
 	}
-	m.ID = types.StringValue(connection.Id)
-	if connection.Name != nil {
-		m.Name = types.StringValue(*connection.Name)
+
+	if id, ok := connection["id"].(string); ok {
+		m.ID = types.StringValue(id)
+	} else {
+		diags.AddError("Error parsing id", "Expected string value")
+		return diags
+	}
+
+	if teamID, ok := connection["team_id"].(string); ok {
+		m.TeamID = types.StringValue(teamID)
+	} else {
+		diags.AddError("Error parsing team_id", "Expected string value")
+		return diags
+	}
+
+	if updatedAt, ok := connection["updated_at"].(string); ok {
+		m.UpdatedAt = types.StringValue(updatedAt)
+	} else {
+		diags.AddError("Error parsing updated_at", "Expected string value")
+		return diags
+	}
+
+	// Handle destination - can be string ID or object
+	if destination, ok := connection["destination"]; ok {
+		switch v := destination.(type) {
+		case string:
+			m.DestinationID = types.StringValue(v)
+		case map[string]interface{}:
+			if id, ok := v["id"].(string); ok {
+				m.DestinationID = types.StringValue(id)
+			}
+		}
+	}
+
+	// Handle source - can be string ID or object
+	if source, ok := connection["source"]; ok {
+		switch v := source.(type) {
+		case string:
+			m.SourceID = types.StringValue(v)
+		case map[string]interface{}:
+			if id, ok := v["id"].(string); ok {
+				m.SourceID = types.StringValue(id)
+			}
+		}
+	}
+
+	// Optional fields
+	if name, ok := connection["name"].(string); connection["name"] != nil && ok {
+		m.Name = types.StringValue(name)
 	} else {
 		m.Name = types.StringNull()
 	}
-	if connection.PausedAt != nil {
-		m.PausedAt = types.StringValue(connection.PausedAt.Format(time.RFC3339))
+
+	if description, ok := connection["description"].(string); connection["description"] != nil && ok {
+		m.Description = types.StringValue(description)
+	} else {
+		m.Description = types.StringNull()
+	}
+
+	if disabledAt, ok := connection["disabled_at"].(string); connection["disabled_at"] != nil && ok {
+		m.DisabledAt = types.StringValue(disabledAt)
+	} else {
+		m.DisabledAt = types.StringNull()
+	}
+
+	if pausedAt, ok := connection["paused_at"].(string); connection["paused_at"] != nil && ok {
+		m.PausedAt = types.StringValue(pausedAt)
 	} else {
 		m.PausedAt = types.StringNull()
 	}
-	m.SourceID = types.StringValue(connection.Source.Id)
-	m.TeamID = types.StringValue(connection.TeamId)
-	m.UpdatedAt = types.StringValue(connection.UpdatedAt.Format(time.RFC3339))
-	if len(connection.Rules) > 0 {
-		m.Rules = refreshRules(connection)
+
+	// Handle rules
+	if rules, ok := connection["rules"].([]interface{}); ok && len(rules) > 0 {
+		m.Rules = rulesFromAPI(rules)
 	}
+	// Keep rules as nil if not present or empty to maintain consistency with Terraform state
+
+	return diags
 }
 
-func (m *connectionResourceModel) ToCreatePayload() *hookdeck.ConnectionCreateRequest {
-	return &hookdeck.ConnectionCreateRequest{
-		Name:          hookdeck.OptionalOrNull(m.Name.ValueStringPointer()),
-		Description:   hookdeck.OptionalOrNull(m.Description.ValueStringPointer()),
-		DestinationId: hookdeck.OptionalOrNull(m.DestinationID.ValueStringPointer()),
-		Rules:         hookdeck.OptionalOrNull(m.getRules()),
-		SourceId:      hookdeck.OptionalOrNull(m.SourceID.ValueStringPointer()),
+func (m *connectionResourceModel) Retrieve(ctx context.Context, client *sdkclient.Client) diag.Diagnostics {
+	var diags diag.Diagnostics
+
+	response, err := client.RawClient.SendRequest("GET", fmt.Sprintf("/%s/connections/%s", apiVersion, m.ID.ValueString()), &sdkclient.RequestOptions{})
+	if err != nil {
+		diags.AddError("Error reading connection", err.Error())
+		return diags
 	}
+
+	if response.StatusCode > 299 {
+		if body, err := io.ReadAll(response.Body); err == nil {
+			diags.AddError("Error reading connection", string(body))
+		} else {
+			diags.AddError("Error reading connection", "Status code: "+strconv.Itoa(response.StatusCode))
+		}
+		return diags
+	}
+
+	body, err := io.ReadAll(response.Body)
+	if err != nil {
+		diags.AddError("Error reading connection", err.Error())
+		return diags
+	}
+
+	var connection map[string]interface{}
+	err = json.Unmarshal(body, &connection)
+	if err != nil {
+		diags.AddError("Error reading connection", err.Error())
+		return diags
+	}
+
+	return m.Refresh(connection)
 }
 
-func (m *connectionResourceModel) ToUpdatePayload() *hookdeck.ConnectionUpdateRequest {
-	return &hookdeck.ConnectionUpdateRequest{
-		Name:        hookdeck.OptionalOrNull(m.Name.ValueStringPointer()),
-		Description: hookdeck.OptionalOrNull(m.Description.ValueStringPointer()),
-		Rules:       hookdeck.OptionalOrNull(m.getRules()),
+func (m *connectionResourceModel) Create(ctx context.Context, client *sdkclient.Client) diag.Diagnostics {
+	var diags diag.Diagnostics
+
+	payload := m.toCreatePayload()
+
+	jsonData, err := json.Marshal(payload)
+	if err != nil {
+		diags.AddError("Error creating connection", err.Error())
+		return diags
 	}
+
+	response, err := client.RawClient.SendRequest("POST", fmt.Sprintf("/%s/connections", apiVersion), &sdkclient.RequestOptions{
+		Body: bytes.NewReader(jsonData),
+		Headers: http.Header{
+			"Content-Type": []string{"application/json"},
+		},
+	})
+	if err != nil {
+		diags.AddError("Error creating connection", err.Error())
+		return diags
+	}
+
+	if response.StatusCode > 299 {
+		if body, err := io.ReadAll(response.Body); err == nil {
+			diags.AddError("Error creating connection", string(body))
+		} else {
+			diags.AddError("Error creating connection", "Status code: "+strconv.Itoa(response.StatusCode))
+		}
+		return diags
+	}
+
+	body, err := io.ReadAll(response.Body)
+	if err != nil {
+		diags.AddError("Error creating connection", err.Error())
+		return diags
+	}
+
+	var connection map[string]interface{}
+	err = json.Unmarshal(body, &connection)
+	if err != nil {
+		diags.AddError("Error creating connection", err.Error())
+		return diags
+	}
+
+	return m.Refresh(connection)
 }
 
-func (m *connectionResourceModel) getRules() *[]*hookdeck.Rule {
-	//nolint:staticcheck // keep explicit type for readability
-	var rules []*hookdeck.Rule = []*hookdeck.Rule{}
+func (m *connectionResourceModel) Update(ctx context.Context, client *sdkclient.Client) diag.Diagnostics {
+	var diags diag.Diagnostics
 
-	for _, ruleItem := range m.Rules {
-		if ruleItem.DelayRule != nil {
-			delayRule := hookdeck.DelayRule{
-				Delay: int(ruleItem.DelayRule.Delay.ValueInt64()),
-			}
-			rules = append(rules, hookdeck.NewRuleFromDelay(&delayRule))
-		}
-		if ruleItem.FilterRule != nil {
-			filterRule := hookdeck.FilterRule{
-				Body:    transformFilterRuleProperty(ruleItem.FilterRule.Body),
-				Headers: transformFilterRuleProperty(ruleItem.FilterRule.Headers),
-				Path:    transformFilterRuleProperty(ruleItem.FilterRule.Path),
-				Query:   transformFilterRuleProperty(ruleItem.FilterRule.Query),
-			}
-			rules = append(rules, hookdeck.NewRuleFromFilter(&filterRule))
-		}
-		if ruleItem.RetryRule != nil {
-			count := new(int)
-			if !ruleItem.RetryRule.Count.IsUnknown() && !ruleItem.RetryRule.Count.IsNull() {
-				*count = int(ruleItem.RetryRule.Count.ValueInt64())
-			} else {
-				count = nil
-			}
-			interval := new(int)
-			if !ruleItem.RetryRule.Interval.IsUnknown() && !ruleItem.RetryRule.Interval.IsNull() {
-				*interval = int(ruleItem.RetryRule.Interval.ValueInt64())
-			} else {
-				interval = nil
-			}
-			retryRule := hookdeck.RetryRule{
-				Strategy: hookdeck.RetryStrategy(ruleItem.RetryRule.Strategy.ValueString()),
-				Interval: interval,
-				Count:    count,
-			}
-			rules = append(rules, hookdeck.NewRuleFromRetry(&retryRule))
-		}
-		if ruleItem.TransformRule != nil {
-			transformRule := hookdeck.TransformRule{
-				TransformationId: ruleItem.TransformRule.TransformationID.ValueStringPointer(),
-			}
-			rules = append(rules, hookdeck.NewRuleFromTransform(&transformRule))
-		}
+	payload := m.toUpdatePayload()
+
+	jsonData, err := json.Marshal(payload)
+	if err != nil {
+		diags.AddError("Error updating connection", err.Error())
+		return diags
 	}
 
-	return &rules
+	response, err := client.RawClient.SendRequest("PUT", fmt.Sprintf("/%s/connections/%s", apiVersion, m.ID.ValueString()), &sdkclient.RequestOptions{
+		Body: bytes.NewReader(jsonData),
+		Headers: http.Header{
+			"Content-Type": []string{"application/json"},
+		},
+	})
+	if err != nil {
+		diags.AddError("Error updating connection", err.Error())
+		return diags
+	}
+
+	if response.StatusCode > 299 {
+		if body, err := io.ReadAll(response.Body); err == nil {
+			diags.AddError("Error updating connection", string(body))
+		} else {
+			diags.AddError("Error updating connection", "Status code: "+strconv.Itoa(response.StatusCode))
+		}
+		return diags
+	}
+
+	body, err := io.ReadAll(response.Body)
+	if err != nil {
+		diags.AddError("Error updating connection", err.Error())
+		return diags
+	}
+
+	var connection map[string]interface{}
+	err = json.Unmarshal(body, &connection)
+	if err != nil {
+		diags.AddError("Error updating connection", err.Error())
+		return diags
+	}
+
+	return m.Refresh(connection)
 }
 
-func transformFilterRuleProperty(property *filterRuleProperty) *hookdeck.FilterRuleProperty {
-	if property == nil {
-		return nil
+func (m *connectionResourceModel) Delete(ctx context.Context, client *sdkclient.Client) diag.Diagnostics {
+	var diags diag.Diagnostics
+
+	response, err := client.RawClient.SendRequest("DELETE", fmt.Sprintf("/%s/connections/%s", apiVersion, m.ID.ValueString()), &sdkclient.RequestOptions{})
+	if err != nil {
+		diags.AddError("Error deleting connection", err.Error())
+		return diags
 	}
-	if !property.Boolean.IsUnknown() && !property.Boolean.IsNull() {
-		return hookdeck.NewFilterRulePropertyFromBooleanOptional(property.Boolean.ValueBoolPointer())
-	}
-	if !property.JSON.IsUnknown() && !property.JSON.IsNull() {
-		// parse string to JSON
-		var jsonData map[string]any
-		jsonBytes := []byte(property.JSON.ValueString())
-		if err := json.Unmarshal(jsonBytes, &jsonData); err != nil {
-			return nil
+
+	if response.StatusCode > 299 {
+		if body, err := io.ReadAll(response.Body); err == nil {
+			diags.AddError("Error deleting connection", string(body))
+		} else {
+			diags.AddError("Error deleting connection", "Status code: "+strconv.Itoa(response.StatusCode))
 		}
-		return hookdeck.NewFilterRulePropertyFromStringUnknownMapOptional(jsonData)
+		return diags
 	}
-	if !property.Number.IsUnknown() && !property.Number.IsNull() {
-		float, _ := property.Number.ValueBigFloat().Float64()
-		return hookdeck.NewFilterRulePropertyFromDoubleOptional(&float)
-	}
-	if !property.String.IsUnknown() && !property.String.IsNull() {
-		return hookdeck.NewFilterRulePropertyFromStringOptional(property.String.ValueStringPointer())
-	}
+
 	return nil
 }
 
-func refreshRules(connection *hookdeck.Connection) []rule {
-	//nolint:staticcheck
-	var rules []rule = []rule{}
+// toCreatePayload converts the model to API create payload
+func (m *connectionResourceModel) toCreatePayload() map[string]interface{} {
+	payload := map[string]interface{}{}
 
-	for _, ruleItem := range connection.Rules {
-		if ruleItem.Delay != nil {
-			delayRule := delayRule{
-				Delay: types.Int64Value(int64(ruleItem.Delay.Delay)),
-			}
-			rules = append(rules, rule{DelayRule: &delayRule})
-		}
-		if ruleItem.Filter != nil {
-			filterRule := filterRule{}
-			if ruleItem.Filter.Body != nil {
-				filterRule.Body = refreshFilterRuleProperty(ruleItem.Filter.Body)
-			}
-			if ruleItem.Filter.Headers != nil {
-				filterRule.Headers = refreshFilterRuleProperty(ruleItem.Filter.Headers)
-			}
-			if ruleItem.Filter.Path != nil {
-				filterRule.Path = refreshFilterRuleProperty(ruleItem.Filter.Path)
-			}
-			if ruleItem.Filter.Query != nil {
-				filterRule.Query = refreshFilterRuleProperty(ruleItem.Filter.Query)
-			}
-			rules = append(rules, rule{FilterRule: &filterRule})
-		}
-		if ruleItem.Retry != nil {
-			retryRule := retryRule{}
-			if ruleItem.Retry.Count != nil {
-				retryRule.Count = types.Int64Value(int64(*ruleItem.Retry.Count))
-			}
-			if ruleItem.Retry.Interval != nil {
-				retryRule.Interval = types.Int64Value(int64(*ruleItem.Retry.Interval))
-			}
-			retryRule.Strategy = types.StringValue((string)(ruleItem.Retry.Strategy))
-			rules = append(rules, rule{RetryRule: &retryRule})
-		}
-		if ruleItem.Transform != nil {
-			transformRule := transformRule{
-				// in this case (refresh), the ID should always exist
-				// so we don't have to worry the ruleItem.Transform.TransformationId is nil
-				TransformationID: types.StringValue(*ruleItem.Transform.TransformationId),
-			}
-			rules = append(rules, rule{TransformRule: &transformRule})
+	if !m.Name.IsNull() && !m.Name.IsUnknown() {
+		payload["name"] = m.Name.ValueString()
+	}
+	if !m.Description.IsNull() && !m.Description.IsUnknown() {
+		payload["description"] = m.Description.ValueString()
+	}
+	if !m.DestinationID.IsNull() && !m.DestinationID.IsUnknown() {
+		payload["destination_id"] = m.DestinationID.ValueString()
+	}
+	if !m.SourceID.IsNull() && !m.SourceID.IsUnknown() {
+		payload["source_id"] = m.SourceID.ValueString()
+	}
+
+	// Convert rules - only include if not nil
+	if m.Rules != nil {
+		payload["rules"] = rulesToAPI(m.Rules)
+	}
+
+	return payload
+}
+
+// toUpdatePayload converts the model to API update payload
+func (m *connectionResourceModel) toUpdatePayload() map[string]interface{} {
+	payload := map[string]interface{}{}
+
+	if !m.Name.IsNull() && !m.Name.IsUnknown() {
+		payload["name"] = m.Name.ValueString()
+	} else {
+		payload["name"] = nil
+	}
+
+	if !m.Description.IsNull() && !m.Description.IsUnknown() {
+		payload["description"] = m.Description.ValueString()
+	} else {
+		payload["description"] = nil
+	}
+
+	// Convert rules - only include if not nil
+	if m.Rules != nil {
+		if len(m.Rules) > 0 {
+			payload["rules"] = rulesToAPI(m.Rules)
+		} else {
+			payload["rules"] = []interface{}{}
 		}
 	}
 
-	return rules
+	return payload
 }
 
-func refreshFilterRuleProperty(property *hookdeck.FilterRuleProperty) *filterRuleProperty {
+// rulesToAPI converts rules to API format
+func rulesToAPI(rules []rule) []interface{} {
+	result := []interface{}{}
+
+	for _, ruleItem := range rules {
+		if ruleItem.DelayRule != nil {
+			rule := map[string]interface{}{
+				"type":  "delay",
+				"delay": ruleItem.DelayRule.Delay.ValueInt64(),
+			}
+			result = append(result, rule)
+		}
+
+		if ruleItem.FilterRule != nil {
+			rule := map[string]interface{}{
+				"type": "filter",
+			}
+
+			if ruleItem.FilterRule.Body != nil {
+				rule["body"] = filterRulePropertyToAPI(ruleItem.FilterRule.Body)
+			}
+			if ruleItem.FilterRule.Headers != nil {
+				rule["headers"] = filterRulePropertyToAPI(ruleItem.FilterRule.Headers)
+			}
+			if ruleItem.FilterRule.Path != nil {
+				rule["path"] = filterRulePropertyToAPI(ruleItem.FilterRule.Path)
+			}
+			if ruleItem.FilterRule.Query != nil {
+				rule["query"] = filterRulePropertyToAPI(ruleItem.FilterRule.Query)
+			}
+
+			result = append(result, rule)
+		}
+
+		if ruleItem.RetryRule != nil {
+			rule := map[string]interface{}{
+				"type":     "retry",
+				"strategy": ruleItem.RetryRule.Strategy.ValueString(),
+			}
+
+			if !ruleItem.RetryRule.Count.IsNull() && !ruleItem.RetryRule.Count.IsUnknown() {
+				rule["count"] = ruleItem.RetryRule.Count.ValueInt64()
+			}
+			if !ruleItem.RetryRule.Interval.IsNull() && !ruleItem.RetryRule.Interval.IsUnknown() {
+				rule["interval"] = ruleItem.RetryRule.Interval.ValueInt64()
+			}
+
+			result = append(result, rule)
+		}
+
+		if ruleItem.TransformRule != nil {
+			rule := map[string]interface{}{
+				"type":              "transform",
+				"transformation_id": ruleItem.TransformRule.TransformationID.ValueString(),
+			}
+			result = append(result, rule)
+		}
+	}
+
+	return result
+}
+
+// filterRulePropertyToAPI converts filter rule property to API format
+func filterRulePropertyToAPI(property *filterRuleProperty) interface{} {
 	if property == nil {
 		return nil
 	}
 
-	var filterRuleProperty = filterRuleProperty{}
-
-	if property.BooleanOptional != nil {
-		filterRuleProperty.Boolean = types.BoolValue(*property.BooleanOptional)
-	}
-	if property.DoubleOptional != nil {
-		number := new(big.Float)
-		number.SetFloat64(*property.DoubleOptional)
-		filterRuleProperty.Number = types.NumberValue(number)
-	}
-	if property.StringOptional != nil {
-		filterRuleProperty.String = types.StringValue(*property.StringOptional)
-	}
-	if property.StringUnknownMapOptional != nil {
-		marshalledJSON, _ := json.Marshal(property.StringUnknownMapOptional)
-		filterRuleProperty.JSON = types.StringValue(string(marshalledJSON))
+	if !property.Boolean.IsNull() && !property.Boolean.IsUnknown() {
+		return property.Boolean.ValueBool()
 	}
 
-	return &filterRuleProperty
+	if !property.JSON.IsNull() && !property.JSON.IsUnknown() {
+		var jsonData interface{}
+		if err := json.Unmarshal([]byte(property.JSON.ValueString()), &jsonData); err == nil {
+			return jsonData
+		}
+	}
+
+	if !property.Number.IsNull() && !property.Number.IsUnknown() {
+		if float, _ := property.Number.ValueBigFloat().Float64(); true {
+			return float
+		}
+	}
+
+	if !property.String.IsNull() && !property.String.IsUnknown() {
+		return property.String.ValueString()
+	}
+
+	return nil
+}
+
+// rulesFromAPI converts API rules to model format
+func rulesFromAPI(rules []interface{}) []rule {
+	var result []rule
+
+	for _, r := range rules {
+		ruleMap, ok := r.(map[string]interface{})
+		if !ok {
+			continue
+		}
+
+		ruleType, _ := ruleMap["type"].(string)
+
+		switch ruleType {
+		case "delay":
+			if delay, ok := ruleMap["delay"].(float64); ok {
+				result = append(result, rule{
+					DelayRule: &delayRule{
+						Delay: types.Int64Value(int64(delay)),
+					},
+				})
+			}
+
+		case "filter":
+			filterRule := &filterRule{}
+
+			if body := ruleMap["body"]; body != nil {
+				filterRule.Body = filterRulePropertyFromAPI(body)
+			}
+			if headers := ruleMap["headers"]; headers != nil {
+				filterRule.Headers = filterRulePropertyFromAPI(headers)
+			}
+			if path := ruleMap["path"]; path != nil {
+				filterRule.Path = filterRulePropertyFromAPI(path)
+			}
+			if query := ruleMap["query"]; query != nil {
+				filterRule.Query = filterRulePropertyFromAPI(query)
+			}
+
+			result = append(result, rule{FilterRule: filterRule})
+
+		case "retry":
+			retryRule := &retryRule{}
+
+			if strategy, ok := ruleMap["strategy"].(string); ok {
+				retryRule.Strategy = types.StringValue(strategy)
+			}
+			if count, ok := ruleMap["count"].(float64); ok {
+				retryRule.Count = types.Int64Value(int64(count))
+			} else {
+				retryRule.Count = types.Int64Null()
+			}
+			if interval, ok := ruleMap["interval"].(float64); ok {
+				retryRule.Interval = types.Int64Value(int64(interval))
+			} else {
+				retryRule.Interval = types.Int64Null()
+			}
+
+			result = append(result, rule{RetryRule: retryRule})
+
+		case "transform":
+			if transformationID, ok := ruleMap["transformation_id"].(string); ok {
+				result = append(result, rule{
+					TransformRule: &transformRule{
+						TransformationID: types.StringValue(transformationID),
+					},
+				})
+			}
+		}
+	}
+
+	return result
+}
+
+// filterRulePropertyFromAPI converts API filter rule property to model format
+func filterRulePropertyFromAPI(property interface{}) *filterRuleProperty {
+	if property == nil {
+		return nil
+	}
+
+	result := &filterRuleProperty{}
+
+	switch v := property.(type) {
+	case bool:
+		result.Boolean = types.BoolValue(v)
+	case float64:
+		result.Number = types.NumberValue(big.NewFloat(v))
+	case string:
+		result.String = types.StringValue(v)
+	case map[string]interface{}, []interface{}:
+		if jsonBytes, err := json.Marshal(v); err == nil {
+			result.JSON = types.StringValue(string(jsonBytes))
+		}
+	}
+
+	return result
 }

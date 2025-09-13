@@ -63,80 +63,63 @@ func (r *connectionResource) Configure(_ context.Context, req resource.Configure
 
 // Create creates the resource and sets the initial Terraform state.
 func (r *connectionResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
-	// Get data from Terraform plan
 	var data *connectionResourceModel
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	// Create resource
-	connection, err := r.client.Connection.Create(context.Background(), data.ToCreatePayload())
-	if err != nil {
-		resp.Diagnostics.AddError("Error creating connection", err.Error())
+	resp.Diagnostics.Append(data.Create(ctx, &r.client)...)
+	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	// Save updated data into Terraform state
-	data.Refresh(connection)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
 // Read refreshes the Terraform state with the latest data.
 func (r *connectionResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
-	// Get data from Terraform state
 	var data *connectionResourceModel
 	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	// Get refreshed resource value
-	connection, err := r.client.Connection.Retrieve(context.Background(), data.ID.ValueString())
-	if err != nil {
-		resp.Diagnostics.AddError("Error reading connection", err.Error())
+	resp.Diagnostics.Append(data.Retrieve(ctx, &r.client)...)
+	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	// Save refreshed data into Terraform state
-	data.Refresh(connection)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
 // Update updates the resource and sets the updated Terraform state on success.
 func (r *connectionResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
-	// Get data from Terraform plan
 	var data *connectionResourceModel
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	// Update existing resource
-	connection, err := r.client.Connection.Update(context.Background(), data.ID.ValueString(), data.ToUpdatePayload())
-	if err != nil {
-		resp.Diagnostics.AddError("Error updating connection", err.Error())
+	resp.Diagnostics.Append(data.Update(ctx, &r.client)...)
+	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	// Save updated data into Terraform state
-	data.Refresh(connection)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
 // Delete deletes the resource and removes the Terraform state on success.
 func (r *connectionResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
-	// Get data from Terraform state
 	var data *connectionResourceModel
 	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	// Delete existing resource
-	_, err := r.client.Connection.Delete(context.Background(), data.ID.ValueString())
-	if err != nil {
-		resp.Diagnostics.AddError("Error deleting connection", err.Error())
+	resp.Diagnostics.Append(data.Delete(ctx, &r.client)...)
+	if resp.Diagnostics.HasError() {
+		return
 	}
 }
 

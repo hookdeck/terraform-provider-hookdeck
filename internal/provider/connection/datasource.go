@@ -69,13 +69,11 @@ func (r *connectionDataSource) Read(ctx context.Context, req datasource.ReadRequ
 	}
 
 	// Get refreshed datasource value
-	connection, err := r.client.Connection.Retrieve(context.Background(), data.ID.ValueString())
-	if err != nil {
-		resp.Diagnostics.AddError("Error reading connection", err.Error())
+	resp.Diagnostics.Append(data.Retrieve(ctx, &r.client)...)
+	if resp.Diagnostics.HasError() {
 		return
 	}
 
 	// Save refreshed data into Terraform state
-	data.Refresh(connection)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
