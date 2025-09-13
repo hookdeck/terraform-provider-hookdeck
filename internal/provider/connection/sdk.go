@@ -314,6 +314,33 @@ func rulesToAPI(rules []rule) []interface{} {
 	result := []interface{}{}
 
 	for _, ruleItem := range rules {
+		if ruleItem.DeduplicateRule != nil {
+			rule := map[string]interface{}{
+				"type":   "deduplicate",
+				"window": ruleItem.DeduplicateRule.Window.ValueInt64(),
+			}
+
+			// Add include_fields if present
+			if !ruleItem.DeduplicateRule.IncludeFields.IsNull() && !ruleItem.DeduplicateRule.IncludeFields.IsUnknown() {
+				includeFields := []string{}
+				ruleItem.DeduplicateRule.IncludeFields.ElementsAs(context.Background(), &includeFields, false)
+				if len(includeFields) > 0 {
+					rule["include_fields"] = includeFields
+				}
+			}
+
+			// Add exclude_fields if present
+			if !ruleItem.DeduplicateRule.ExcludeFields.IsNull() && !ruleItem.DeduplicateRule.ExcludeFields.IsUnknown() {
+				excludeFields := []string{}
+				ruleItem.DeduplicateRule.ExcludeFields.ElementsAs(context.Background(), &excludeFields, false)
+				if len(excludeFields) > 0 {
+					rule["exclude_fields"] = excludeFields
+				}
+			}
+
+			result = append(result, rule)
+		}
+
 		if ruleItem.DelayRule != nil {
 			rule := map[string]interface{}{
 				"type":  "delay",
@@ -414,6 +441,49 @@ func rulesFromAPI(rules []interface{}) []rule {
 		ruleType, _ := ruleMap["type"].(string)
 
 		switch ruleType {
+		case "deduplicate":
+			deduplicateRule := &deduplicateRule{}
+
+			if window, ok := ruleMap["window"].(float64); ok {
+				deduplicateRule.Window = types.Int64Value(int64(window))
+			}
+
+			// Parse include_fields if present
+			if includeFields, ok := ruleMap["include_fields"].([]interface{}); ok {
+				fields := []types.String{}
+				for _, field := range includeFields {
+					if fieldStr, ok := field.(string); ok {
+						fields = append(fields, types.StringValue(fieldStr))
+					}
+				}
+				if len(fields) > 0 {
+					deduplicateRule.IncludeFields, _ = types.ListValueFrom(context.Background(), types.StringType, fields)
+				} else {
+					deduplicateRule.IncludeFields = types.ListNull(types.StringType)
+				}
+			} else {
+				deduplicateRule.IncludeFields = types.ListNull(types.StringType)
+			}
+
+			// Parse exclude_fields if present
+			if excludeFields, ok := ruleMap["exclude_fields"].([]interface{}); ok {
+				fields := []types.String{}
+				for _, field := range excludeFields {
+					if fieldStr, ok := field.(string); ok {
+						fields = append(fields, types.StringValue(fieldStr))
+					}
+				}
+				if len(fields) > 0 {
+					deduplicateRule.ExcludeFields, _ = types.ListValueFrom(context.Background(), types.StringType, fields)
+				} else {
+					deduplicateRule.ExcludeFields = types.ListNull(types.StringType)
+				}
+			} else {
+				deduplicateRule.ExcludeFields = types.ListNull(types.StringType)
+			}
+
+			result = append(result, rule{DeduplicateRule: deduplicateRule})
+
 		case "delay":
 			if delay, ok := ruleMap["delay"].(float64); ok {
 				result = append(result, rule{

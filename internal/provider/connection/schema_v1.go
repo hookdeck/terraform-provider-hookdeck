@@ -8,6 +8,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
+	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
 func schemaAttributesV1() map[string]schema.Attribute {
@@ -142,6 +143,25 @@ func schemaAttributesV1() map[string]schema.Attribute {
 							"transformation_id": schema.StringAttribute{
 								Required:    true,
 								Description: `ID of the attached transformation object.`,
+							},
+						},
+					},
+					"deduplicate_rule": schema.SingleNestedAttribute{
+						Optional: true,
+						Attributes: map[string]schema.Attribute{
+							"window": schema.Int64Attribute{
+								Required:    true,
+								Description: `Time window in milliseconds for deduplication (1000 to 3600000)`,
+							},
+							"include_fields": schema.ListAttribute{
+								Optional:    true,
+								ElementType: types.StringType,
+								Description: `Field paths to include for field-based deduplication`,
+							},
+							"exclude_fields": schema.ListAttribute{
+								Optional:    true,
+								ElementType: types.StringType,
+								Description: `Field paths to exclude for field-based deduplication`,
 							},
 						},
 					},
