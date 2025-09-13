@@ -25,6 +25,12 @@ resource "hookdeck_connection" "test_%[1]s" {
       }
     },
     {
+      deduplicate_rule = {
+        window = 15000
+        exclude_fields = ["headers.x-timestamp", "body.created_at"]
+      }
+    },
+    {
       retry_rule = {
         strategy = "linear"
         count    = 3

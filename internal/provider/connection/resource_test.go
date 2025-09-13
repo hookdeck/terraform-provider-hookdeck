@@ -140,7 +140,7 @@ func TestAccConnectionResourceWithRules(t *testing.T) {
 				Config: loadTestConfigFormatted("with_multiple_rules.tf", rName),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceName, "name", fmt.Sprintf("test-connection-multi-%s", rName)),
-					resource.TestCheckResourceAttr(resourceName, "rules.#", "2"),
+					resource.TestCheckResourceAttr(resourceName, "rules.#", "3"),
 				),
 			},
 		},
@@ -241,35 +241,48 @@ func TestAccConnectionResourceRuleOrdering(t *testing.T) {
 		PreCheck:                 func() { testAccPreCheck(t) },
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
-			// Test all rule types maintain order: filter -> delay -> transform -> retry
+			// Test all rule types maintain order: filter -> deduplicate -> delay -> transform -> retry
 			{
 				Config: loadTestConfigFormatted("with_all_rules_ordered.tf", rName),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceName, "name", fmt.Sprintf("test-connection-ordered-%s", rName)),
-					resource.TestCheckResourceAttr(resourceName, "rules.#", "4"),
+					resource.TestCheckResourceAttr(resourceName, "rules.#", "5"),
 					// Verify exact order is preserved
 					// Position 0: Filter rule
 					resource.TestCheckResourceAttr(resourceName, "rules.0.filter_rule.headers.json", `{"x-webhook-type":"order.created"}`),
+					resource.TestCheckNoResourceAttr(resourceName, "rules.0.deduplicate_rule"),
 					resource.TestCheckNoResourceAttr(resourceName, "rules.0.delay_rule"),
 					resource.TestCheckNoResourceAttr(resourceName, "rules.0.transform_rule"),
 					resource.TestCheckNoResourceAttr(resourceName, "rules.0.retry_rule"),
-					// Position 1: Delay rule
-					resource.TestCheckResourceAttr(resourceName, "rules.1.delay_rule.delay", "2000"),
+					// Position 1: Deduplicate rule
+					resource.TestCheckResourceAttr(resourceName, "rules.1.deduplicate_rule.window", "30000"),
+					resource.TestCheckResourceAttr(resourceName, "rules.1.deduplicate_rule.include_fields.#", "2"),
+					resource.TestCheckResourceAttr(resourceName, "rules.1.deduplicate_rule.include_fields.0", "body.order_id"),
+					resource.TestCheckResourceAttr(resourceName, "rules.1.deduplicate_rule.include_fields.1", "body.customer_id"),
 					resource.TestCheckNoResourceAttr(resourceName, "rules.1.filter_rule"),
+					resource.TestCheckNoResourceAttr(resourceName, "rules.1.delay_rule"),
 					resource.TestCheckNoResourceAttr(resourceName, "rules.1.transform_rule"),
 					resource.TestCheckNoResourceAttr(resourceName, "rules.1.retry_rule"),
-					// Position 2: Transform rule
-					resource.TestCheckResourceAttrSet(resourceName, "rules.2.transform_rule.transformation_id"),
+					// Position 2: Delay rule
+					resource.TestCheckResourceAttr(resourceName, "rules.2.delay_rule.delay", "2000"),
 					resource.TestCheckNoResourceAttr(resourceName, "rules.2.filter_rule"),
-					resource.TestCheckNoResourceAttr(resourceName, "rules.2.delay_rule"),
+					resource.TestCheckNoResourceAttr(resourceName, "rules.2.deduplicate_rule"),
+					resource.TestCheckNoResourceAttr(resourceName, "rules.2.transform_rule"),
 					resource.TestCheckNoResourceAttr(resourceName, "rules.2.retry_rule"),
-					// Position 3: Retry rule
-					resource.TestCheckResourceAttr(resourceName, "rules.3.retry_rule.strategy", "exponential"),
-					resource.TestCheckResourceAttr(resourceName, "rules.3.retry_rule.count", "3"),
-					resource.TestCheckResourceAttr(resourceName, "rules.3.retry_rule.interval", "5000"),
+					// Position 3: Transform rule
+					resource.TestCheckResourceAttrSet(resourceName, "rules.3.transform_rule.transformation_id"),
 					resource.TestCheckNoResourceAttr(resourceName, "rules.3.filter_rule"),
+					resource.TestCheckNoResourceAttr(resourceName, "rules.3.deduplicate_rule"),
 					resource.TestCheckNoResourceAttr(resourceName, "rules.3.delay_rule"),
-					resource.TestCheckNoResourceAttr(resourceName, "rules.3.transform_rule"),
+					resource.TestCheckNoResourceAttr(resourceName, "rules.3.retry_rule"),
+					// Position 4: Retry rule
+					resource.TestCheckResourceAttr(resourceName, "rules.4.retry_rule.strategy", "exponential"),
+					resource.TestCheckResourceAttr(resourceName, "rules.4.retry_rule.count", "3"),
+					resource.TestCheckResourceAttr(resourceName, "rules.4.retry_rule.interval", "5000"),
+					resource.TestCheckNoResourceAttr(resourceName, "rules.4.filter_rule"),
+					resource.TestCheckNoResourceAttr(resourceName, "rules.4.deduplicate_rule"),
+					resource.TestCheckNoResourceAttr(resourceName, "rules.4.delay_rule"),
+					resource.TestCheckNoResourceAttr(resourceName, "rules.4.transform_rule"),
 				),
 			},
 			// Update with different order: retry -> transform -> delay -> filter
