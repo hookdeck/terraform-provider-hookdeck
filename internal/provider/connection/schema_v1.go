@@ -168,6 +168,9 @@ func schemaAttributesV1() map[string]schema.Attribute {
 								Description: `Field paths to exclude for field-based deduplication`,
 							},
 						},
+						Validators: []validator.Object{
+							validators.AtMostOneOf("include_fields", "exclude_fields"),
+						},
 					},
 				},
 				Validators: []validator.Object{

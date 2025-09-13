@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"regexp"
 	"strings"
 	"terraform-provider-hookdeck/internal/provider"
 	"testing"
@@ -24,14 +25,14 @@ func testAccPreCheck(t *testing.T) {
 	}
 }
 
-func loadTestConfigFormatted(filename string, rName string) string {
+func loadTestConfigFormatted(filename string, args ...interface{}) string {
 	path := filepath.Join("testdata", filename)
 	content, err := os.ReadFile(path)
 	if err != nil {
 		panic(err)
 	}
-	// Format the template with the random suffix
-	return fmt.Sprintf(string(content), rName)
+	// Format the template with provided arguments
+	return fmt.Sprintf(string(content), args...)
 }
 
 func loadTestConfigFormattedWithUpdate(filename string, rName string, oldName string, newName string) string {
@@ -141,6 +142,92 @@ func TestAccConnectionResourceWithRules(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceName, "name", fmt.Sprintf("test-connection-multi-%s", rName)),
 					resource.TestCheckResourceAttr(resourceName, "rules.#", "2"),
 				),
+			},
+		},
+	})
+}
+
+func TestAccConnectionResourceDeduplicationRule(t *testing.T) {
+	rName := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
+	resourceName := fmt.Sprintf("hookdeck_connection.test_%s", rName)
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { testAccPreCheck(t) },
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			// Test exact deduplication (no fields)
+			{
+				Config: loadTestConfigFormatted("with_deduplicate_rule.tf", rName),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr(resourceName, "name", fmt.Sprintf("test-connection-deduplicate-%s", rName)),
+					resource.TestCheckResourceAttr(resourceName, "rules.#", "1"),
+					resource.TestCheckResourceAttr(resourceName, "rules.0.deduplicate_rule.window", "60000"),
+					resource.TestCheckNoResourceAttr(resourceName, "rules.0.deduplicate_rule.include_fields"),
+					resource.TestCheckNoResourceAttr(resourceName, "rules.0.deduplicate_rule.exclude_fields"),
+				),
+			},
+			// Test field-based deduplication with include_fields
+			{
+				Config: loadTestConfigFormatted("with_deduplicate_include_fields.tf", rName),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr(resourceName, "name", fmt.Sprintf("test-connection-deduplicate-include-%s", rName)),
+					resource.TestCheckResourceAttr(resourceName, "rules.#", "1"),
+					resource.TestCheckResourceAttr(resourceName, "rules.0.deduplicate_rule.window", "30000"),
+					resource.TestCheckResourceAttr(resourceName, "rules.0.deduplicate_rule.include_fields.#", "2"),
+					resource.TestCheckResourceAttr(resourceName, "rules.0.deduplicate_rule.include_fields.0", "body.id"),
+					resource.TestCheckResourceAttr(resourceName, "rules.0.deduplicate_rule.include_fields.1", "headers.x-request-id"),
+					resource.TestCheckNoResourceAttr(resourceName, "rules.0.deduplicate_rule.exclude_fields"),
+				),
+			},
+			// Test field-based deduplication with exclude_fields
+			{
+				Config: loadTestConfigFormatted("with_deduplicate_exclude_fields.tf", rName),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr(resourceName, "name", fmt.Sprintf("test-connection-deduplicate-exclude-%s", rName)),
+					resource.TestCheckResourceAttr(resourceName, "rules.#", "1"),
+					resource.TestCheckResourceAttr(resourceName, "rules.0.deduplicate_rule.window", "45000"),
+					resource.TestCheckResourceAttr(resourceName, "rules.0.deduplicate_rule.exclude_fields.#", "2"),
+					resource.TestCheckResourceAttr(resourceName, "rules.0.deduplicate_rule.exclude_fields.0", "body.timestamp"),
+					resource.TestCheckResourceAttr(resourceName, "rules.0.deduplicate_rule.exclude_fields.1", "headers.x-trace-id"),
+					resource.TestCheckNoResourceAttr(resourceName, "rules.0.deduplicate_rule.include_fields"),
+				),
+			},
+			// Test switching back to exact deduplication
+			{
+				Config: loadTestConfigFormatted("with_deduplicate_rule.tf", rName),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr(resourceName, "name", fmt.Sprintf("test-connection-deduplicate-%s", rName)),
+					resource.TestCheckResourceAttr(resourceName, "rules.#", "1"),
+					resource.TestCheckResourceAttr(resourceName, "rules.0.deduplicate_rule.window", "60000"),
+					resource.TestCheckNoResourceAttr(resourceName, "rules.0.deduplicate_rule.include_fields"),
+					resource.TestCheckNoResourceAttr(resourceName, "rules.0.deduplicate_rule.exclude_fields"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccConnectionResourceDeduplicationValidation(t *testing.T) {
+	rName := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { testAccPreCheck(t) },
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			// Test window validation - too small (< 1000ms)
+			{
+				Config:      loadTestConfigFormatted("with_deduplicate_invalid_window.tf", rName, 500),
+				ExpectError: regexp.MustCompile(`value must be between 1000 and\s+3600000, got: 500`),
+			},
+			// Test window validation - too large (> 3600000ms)
+			{
+				Config:      loadTestConfigFormatted("with_deduplicate_invalid_window.tf", rName, 3600001),
+				ExpectError: regexp.MustCompile(`value must be between 1000 and\s+3600000, got: 3600001`),
+			},
+			// Test mutual exclusivity - both include_fields and exclude_fields set
+			{
+				Config:      loadTestConfigFormatted("with_deduplicate_both_fields.tf", rName),
+				ExpectError: regexp.MustCompile(`Only one of \[include_fields, exclude_fields\] can be specified`),
 			},
 		},
 	})
