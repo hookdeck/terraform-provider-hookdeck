@@ -3,6 +3,7 @@ package connection
 import (
 	"terraform-provider-hookdeck/internal/validators"
 
+	"github.com/hashicorp/terraform-plugin-framework-validators/int64validator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
@@ -152,6 +153,9 @@ func schemaAttributesV1() map[string]schema.Attribute {
 							"window": schema.Int64Attribute{
 								Required:    true,
 								Description: `Time window in milliseconds for deduplication (1000 to 3600000)`,
+								Validators: []validator.Int64{
+									int64validator.Between(1000, 3600000),
+								},
 							},
 							"include_fields": schema.ListAttribute{
 								Optional:    true,
