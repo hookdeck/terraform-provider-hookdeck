@@ -125,6 +125,15 @@ func TestAccConnectionResourceWithRules(t *testing.T) {
 					resource.TestCheckResourceAttrSet(resourceName, "rules.0.transform_rule.transformation_id"),
 				),
 			},
+			// Update with deduplicate rule
+			{
+				Config: loadTestConfigFormatted("with_deduplicate_rule.tf", rName),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr(resourceName, "name", fmt.Sprintf("test-connection-deduplicate-%s", rName)),
+					resource.TestCheckResourceAttr(resourceName, "rules.#", "1"),
+					resource.TestCheckResourceAttr(resourceName, "rules.0.deduplicate_rule.window", "60000"),
+				),
+			},
 			// Update with multiple rules
 			{
 				Config: loadTestConfigFormatted("with_multiple_rules.tf", rName),

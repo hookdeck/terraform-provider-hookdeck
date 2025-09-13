@@ -19,10 +19,11 @@ type connectionResourceModel struct {
 }
 
 type rule struct {
-	DelayRule     *delayRule     `tfsdk:"delay_rule"`
-	FilterRule    *filterRule    `tfsdk:"filter_rule"`
-	RetryRule     *retryRule     `tfsdk:"retry_rule"`
-	TransformRule *transformRule `tfsdk:"transform_rule"`
+	DeduplicateRule *deduplicateRule `tfsdk:"deduplicate_rule"`
+	DelayRule       *delayRule       `tfsdk:"delay_rule"`
+	FilterRule      *filterRule      `tfsdk:"filter_rule"`
+	RetryRule       *retryRule       `tfsdk:"retry_rule"`
+	TransformRule   *transformRule   `tfsdk:"transform_rule"`
 }
 
 type delayRule struct {
@@ -51,4 +52,10 @@ type retryRule struct {
 
 type transformRule struct {
 	TransformationID types.String `tfsdk:"transformation_id"`
+}
+
+type deduplicateRule struct {
+	Window        types.Int64 `tfsdk:"window"`
+	IncludeFields types.List  `tfsdk:"include_fields"`
+	ExcludeFields types.List  `tfsdk:"exclude_fields"`
 }
