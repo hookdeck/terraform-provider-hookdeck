@@ -152,7 +152,7 @@ func schemaAttributesV1() map[string]schema.Attribute {
 						Attributes: map[string]schema.Attribute{
 							"window": schema.Int64Attribute{
 								Required:    true,
-								Description: `Time window in milliseconds for deduplication (1000 to 3600000)`,
+								Description: `Time window in milliseconds for deduplicate`,
 								Validators: []validator.Int64{
 									int64validator.Between(1000, 3600000),
 								},
@@ -160,12 +160,12 @@ func schemaAttributesV1() map[string]schema.Attribute {
 							"include_fields": schema.ListAttribute{
 								Optional:    true,
 								ElementType: types.StringType,
-								Description: `Field paths to include for field-based deduplication`,
+								Description: `Fields to include when generating deduplicate key`,
 							},
 							"exclude_fields": schema.ListAttribute{
 								Optional:    true,
 								ElementType: types.StringType,
-								Description: `Field paths to exclude for field-based deduplication`,
+								Description: `Fields to exclude when generating deduplicate key`,
 							},
 						},
 						Validators: []validator.Object{
