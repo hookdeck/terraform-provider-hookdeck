@@ -256,7 +256,7 @@ func (m *connectionResourceModel) Delete(ctx context.Context, client *sdkclient.
 	return nil
 }
 
-// toCreatePayload converts the model to API create payload
+// toCreatePayload converts the model to API create payload.
 func (m *connectionResourceModel) toCreatePayload() map[string]interface{} {
 	payload := map[string]interface{}{}
 
@@ -281,7 +281,7 @@ func (m *connectionResourceModel) toCreatePayload() map[string]interface{} {
 	return payload
 }
 
-// toUpdatePayload converts the model to API update payload
+// toUpdatePayload converts the model to API update payload.
 func (m *connectionResourceModel) toUpdatePayload() map[string]interface{} {
 	payload := map[string]interface{}{}
 
@@ -309,7 +309,7 @@ func (m *connectionResourceModel) toUpdatePayload() map[string]interface{} {
 	return payload
 }
 
-// rulesToAPI converts rules to API format
+// rulesToAPI converts rules to API format.
 func rulesToAPI(rules []rule) []interface{} {
 	result := []interface{}{}
 
@@ -371,7 +371,7 @@ func rulesToAPI(rules []rule) []interface{} {
 	return result
 }
 
-// filterRulePropertyToAPI converts filter rule property to API format
+// filterRulePropertyToAPI converts filter rule property to API format.
 func filterRulePropertyToAPI(property *filterRuleProperty) interface{} {
 	if property == nil {
 		return nil
@@ -401,7 +401,7 @@ func filterRulePropertyToAPI(property *filterRuleProperty) interface{} {
 	return nil
 }
 
-// rulesFromAPI converts API rules to model format
+// rulesFromAPI converts API rules to model format.
 func rulesFromAPI(rules []interface{}) []rule {
 	var result []rule
 
@@ -474,7 +474,7 @@ func rulesFromAPI(rules []interface{}) []rule {
 	return result
 }
 
-// filterRulePropertyFromAPI converts API filter rule property to model format
+// filterRulePropertyFromAPI converts API filter rule property to model format.
 func filterRulePropertyFromAPI(property interface{}) *filterRuleProperty {
 	if property == nil {
 		return nil
