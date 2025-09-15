@@ -9,7 +9,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
-	hookdeck "github.com/hookdeck/hookdeck-go-sdk"
+	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
 // Ensure the implementation satisfies the expected interfaces.
@@ -26,7 +26,7 @@ func NewTransformationResource() resource.Resource {
 
 // transformationResource is the resource implementation.
 type transformationResource struct {
-	client sdkclient.Client
+	client *sdkclient.Client
 }
 
 // Metadata returns the resource type name.
@@ -59,7 +59,7 @@ func (r *transformationResource) Configure(_ context.Context, req resource.Confi
 		return
 	}
 
-	r.client = client
+	r.client = &client
 }
 
 // Create creates the resource and sets the initial Terraform state.
@@ -72,14 +72,12 @@ func (r *transformationResource) Create(ctx context.Context, req resource.Create
 	}
 
 	// Create resource
-	transformation, err := r.client.Transformation.Create(context.Background(), data.ToCreatePayload())
-	if err != nil {
-		resp.Diagnostics.AddError("Error creating transformation", err.Error())
+	resp.Diagnostics.Append(data.Create(ctx, r.client)...)
+	if resp.Diagnostics.HasError() {
 		return
 	}
 
 	// Save updated data into Terraform state
-	data.Refresh(transformation)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
@@ -93,14 +91,12 @@ func (r *transformationResource) Read(ctx context.Context, req resource.ReadRequ
 	}
 
 	// Get refreshed resource value
-	transformation, err := r.client.Transformation.Retrieve(context.Background(), data.ID.ValueString())
-	if err != nil {
-		resp.Diagnostics.AddError("Error reading transformation", err.Error())
+	resp.Diagnostics.Append(data.Retrieve(ctx, r.client)...)
+	if resp.Diagnostics.HasError() {
 		return
 	}
 
 	// Save refreshed data into Terraform state
-	data.Refresh(transformation)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
@@ -114,14 +110,12 @@ func (r *transformationResource) Update(ctx context.Context, req resource.Update
 	}
 
 	// Update existing resource
-	transformation, err := r.client.Transformation.Update(context.Background(), data.ID.ValueString(), data.ToUpdatePayload())
-	if err != nil {
-		resp.Diagnostics.AddError("Error updating transformation", err.Error())
+	resp.Diagnostics.Append(data.Update(ctx, r.client)...)
+	if resp.Diagnostics.HasError() {
 		return
 	}
 
 	// Save updated data into Terraform state
-	data.Refresh(transformation)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
@@ -136,26 +130,27 @@ func (r *transformationResource) Delete(ctx context.Context, req resource.Delete
 
 	// Delete existing resource
 	// TODO: use delete once the endpoint is ready
-	// _, err := r.client.Transformation.Delete(context.Background(), data.ID.ValueString())
-	// if err != nil {
-	// 	resp.Diagnostics.AddError("Error deleting source", err.Error())
-	// }
-
-	// TODO: remove later
-	// for now, we'll update the transformation to a random ID in this template `deleted-${transformation_name}-${random}`
+	// For now, we'll update the transformation to a random ID in this template `deleted-${transformation_name}-${random}`
 	// so users can still create a new transformation with the old name
 	length := 10 // length of random key
 	randomizedString, err := generateRandomBytes(length)
 	if err != nil {
-		resp.Diagnostics.AddError("Error deleting source", err.Error())
+		resp.Diagnostics.AddError("Error deleting transformation", err.Error())
+		return
 	}
 	randomizedName := "deleted-" + data.Name.ValueString() + "-" + fmt.Sprintf("%x", randomizedString)[2:length+2]
-	_, err = r.client.Transformation.Update(context.Background(), data.ID.ValueString(), &hookdeck.TransformationUpdateRequest{
-		Name: hookdeck.OptionalOrNull(&randomizedName),
-	})
-	if err != nil {
-		resp.Diagnostics.AddError("Error deleting source", err.Error())
+
+	// Update the name directly in the current model
+	data.Name = types.StringValue(randomizedName)
+
+	// Use the Update method to rename before "deleting"
+	resp.Diagnostics.Append(data.Update(ctx, r.client)...)
+	if resp.Diagnostics.HasError() {
+		return
 	}
+
+	// Note: Once the actual DELETE endpoint is available, replace the above with:
+	// resp.Diagnostics.Append(data.Delete(ctx, r.client)...)
 }
 
 func (r *transformationResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
