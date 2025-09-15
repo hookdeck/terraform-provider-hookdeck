@@ -12,7 +12,7 @@ import (
 	"golang.org/x/time/rate"
 )
 
-// Client is the main client struct exposed to the provider
+// Client is the main client struct exposed to the provider.
 type Client struct {
 	RawClient RawClientInterface
 }
@@ -21,17 +21,17 @@ const (
 	defaultAPIBase = "api.hookdeck.com"
 )
 
-// RawClientInterface defines the contract for sending requests
+// RawClientInterface defines the contract for sending requests.
 type RawClientInterface interface {
 	SendRequest(ctx context.Context, method, path string, opts *RequestOptions) (*http.Response, error)
 }
 
-// RateLimiter interface allows for custom rate limiting implementations
+// RateLimiter interface allows for custom rate limiting implementations.
 type RateLimiter interface {
 	Wait(ctx context.Context) error
 }
 
-// RawClient is the concrete implementation with rate limiting
+// RawClient is the concrete implementation with rate limiting.
 type RawClient struct {
 	apiKey      string
 	apiBase     string
@@ -40,41 +40,41 @@ type RawClient struct {
 	rateLimiter RateLimiter
 }
 
-// HTTPDoer allows for mocking HTTP client in tests
+// HTTPDoer allows for mocking HTTP client in tests.
 type HTTPDoer interface {
 	Do(req *http.Request) (*http.Response, error)
 }
 
-// RequestOptions contains optional parameters for requests
+// RequestOptions contains optional parameters for requests.
 type RequestOptions struct {
 	Body        io.Reader
 	Headers     http.Header
 	QueryParams url.Values
 }
 
-// RawClientOption allows configuring the RawClient
+// RawClientOption allows configuring the RawClient.
 type RawClientOption func(*RawClient)
 
-// WithHTTPClient sets a custom HTTP client (useful for testing)
+// WithHTTPClient sets a custom HTTP client (useful for testing).
 func WithHTTPClient(client HTTPDoer) RawClientOption {
 	return func(c *RawClient) {
 		c.httpClient = client
 	}
 }
 
-// WithRateLimiter sets a custom rate limiter
+// WithRateLimiter sets a custom rate limiter.
 func WithRateLimiter(limiter RateLimiter) RawClientOption {
 	return func(c *RawClient) {
 		c.rateLimiter = limiter
 	}
 }
 
-// HookdeckRateLimiter implements the Hookdeck API rate limit (240 requests per minute)
+// HookdeckRateLimiter implements the Hookdeck API rate limit (240 requests per minute).
 type HookdeckRateLimiter struct {
 	limiter *rate.Limiter
 }
 
-// NewHookdeckRateLimiter creates a rate limiter for Hookdeck's API limits
+// NewHookdeckRateLimiter creates a rate limiter for Hookdeck's API limits.
 func NewHookdeckRateLimiter() *HookdeckRateLimiter {
 	// 240 requests per minute = 4 per second
 	// Use rate.Every for cleaner per-minute expression
@@ -84,12 +84,12 @@ func NewHookdeckRateLimiter() *HookdeckRateLimiter {
 	}
 }
 
-// Wait implements the RateLimiter interface
+// Wait implements the RateLimiter interface.
 func (h *HookdeckRateLimiter) Wait(ctx context.Context) error {
 	return h.limiter.Wait(ctx)
 }
 
-// InitHookdeckSDKClient creates a client with Hookdeck's rate limiting
+// InitHookdeckSDKClient creates a client with Hookdeck's rate limiting.
 func InitHookdeckSDKClient(apiBase string, apiKey string, providerVersion string, opts ...RawClientOption) Client {
 	if apiBase == "" {
 		apiBase = defaultAPIBase
@@ -117,7 +117,7 @@ func InitHookdeckSDKClient(apiBase string, apiKey string, providerVersion string
 	return Client{RawClient: rawClient}
 }
 
-// SendRequest sends an HTTP request with rate limiting
+// SendRequest sends an HTTP request with rate limiting.
 func (c *RawClient) SendRequest(ctx context.Context, method, path string, opts *RequestOptions) (*http.Response, error) {
 	// IMPORTANT: Context Handling Issue with Terraform
 	//

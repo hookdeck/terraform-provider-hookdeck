@@ -97,7 +97,6 @@ func (p *hookdeckProvider) Configure(ctx context.Context, req provider.Configure
 		)
 	}
 
-
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -115,7 +114,6 @@ func (p *hookdeckProvider) Configure(ctx context.Context, req provider.Configure
 	if !config.APIKey.IsNull() {
 		apiKey = config.APIKey.ValueString()
 	}
-
 
 	// If any of the expected configurations are missing, return
 	// errors with provider-specific guidance.

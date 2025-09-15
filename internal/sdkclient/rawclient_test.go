@@ -14,7 +14,7 @@ import (
 	"strings"
 )
 
-// MockRateLimiter for testing rate limiting behavior
+// MockRateLimiter for testing rate limiting behavior.
 type MockRateLimiter struct {
 	waitCalls int32
 	waitDelay time.Duration
@@ -43,7 +43,7 @@ func (m *MockRateLimiter) GetWaitCalls() int {
 	return int(atomic.LoadInt32(&m.waitCalls))
 }
 
-// TrackingMockHTTPClient tracks when requests are made
+// TrackingMockHTTPClient tracks when requests are made.
 type TrackingMockHTTPClient struct {
 	mu            sync.Mutex
 	requestTimes  []time.Time
@@ -150,10 +150,10 @@ func TestRawClient_NoRateLimiter(t *testing.T) {
 	// Send all requests concurrently
 	for i := 0; i < numRequests; i++ {
 		wg.Add(1)
-		go func(idx int) {
+		go func() {
 			defer wg.Done()
-			rawClient.SendRequest(context.Background(), "GET", "/test", nil)
-		}(i)
+			_, _ = rawClient.SendRequest(context.Background(), "GET", "/test", nil)
+		}()
 	}
 
 	wg.Wait()
@@ -300,13 +300,13 @@ func TestRawClient_ConcurrentRequestsWithRateLimiter(t *testing.T) {
 	// Send requests concurrently
 	for i := 0; i < numRequests; i++ {
 		wg.Add(1)
-		go func(idx int) {
+		go func() {
 			defer wg.Done()
 			_, err := rawClient.SendRequest(context.Background(), "GET", "/test", nil)
 			if err == nil {
 				atomic.AddInt32(&successCount, 1)
 			}
-		}(i)
+		}()
 	}
 
 	wg.Wait()
@@ -352,7 +352,7 @@ func TestRawClient_RateLimiterEnforcesSequentialExecution(t *testing.T) {
 		wg.Add(1)
 		go func() {
 			defer wg.Done()
-			rawClient.SendRequest(context.Background(), "GET", "/test", nil)
+			_, _ = rawClient.SendRequest(context.Background(), "GET", "/test", nil)
 		}()
 	}
 
@@ -433,7 +433,7 @@ func TestRawClient_RequestThroughputWithRateLimiter(t *testing.T) {
 		wg.Add(1)
 		go func() {
 			defer wg.Done()
-			rawClient.SendRequest(context.Background(), "GET", "/test", nil)
+			_, _ = rawClient.SendRequest(context.Background(), "GET", "/test", nil)
 		}()
 	}
 
