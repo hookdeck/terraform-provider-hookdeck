@@ -1,22 +1,96 @@
 package sdkclient
 
 import (
+	"context"
 	"fmt"
 	"io"
 	"net/http"
 	"net/url"
 	"strings"
+	"time"
+
+	"golang.org/x/time/rate"
 )
 
+// Client is the main client struct exposed to the provider
 type Client struct {
-	RawClient *RawClient
+	RawClient RawClientInterface
 }
 
 const (
 	defaultAPIBase = "api.hookdeck.com"
 )
 
-func InitHookdeckSDKClient(apiBase string, apiKey string, providerVersion string) Client {
+// RawClientInterface defines the contract for sending requests
+type RawClientInterface interface {
+	SendRequest(method, path string, opts *RequestOptions) (*http.Response, error)
+}
+
+// RateLimiter interface allows for custom rate limiting implementations
+type RateLimiter interface {
+	Wait(ctx context.Context) error
+}
+
+// RawClient is the concrete implementation with rate limiting
+type RawClient struct {
+	apiKey      string
+	apiBase     string
+	header      http.Header
+	httpClient  HTTPDoer
+	rateLimiter RateLimiter
+}
+
+// HTTPDoer allows for mocking HTTP client in tests
+type HTTPDoer interface {
+	Do(req *http.Request) (*http.Response, error)
+}
+
+// RequestOptions contains optional parameters for requests
+type RequestOptions struct {
+	Body        io.Reader
+	Headers     http.Header
+	QueryParams url.Values
+}
+
+// RawClientOption allows configuring the RawClient
+type RawClientOption func(*RawClient)
+
+// WithHTTPClient sets a custom HTTP client (useful for testing)
+func WithHTTPClient(client HTTPDoer) RawClientOption {
+	return func(c *RawClient) {
+		c.httpClient = client
+	}
+}
+
+// WithRateLimiter sets a custom rate limiter
+func WithRateLimiter(limiter RateLimiter) RawClientOption {
+	return func(c *RawClient) {
+		c.rateLimiter = limiter
+	}
+}
+
+// HookdeckRateLimiter implements the Hookdeck API rate limit (240 requests per minute)
+type HookdeckRateLimiter struct {
+	limiter *rate.Limiter
+}
+
+// NewHookdeckRateLimiter creates a rate limiter for Hookdeck's API limits
+func NewHookdeckRateLimiter() *HookdeckRateLimiter {
+	// 240 requests per minute = 4 per second
+	// Use rate.Every for cleaner per-minute expression
+	// Burst of 10 allows for short bursts of activity
+	return &HookdeckRateLimiter{
+		limiter: rate.NewLimiter(rate.Every(time.Minute/240), 10),
+	}
+}
+
+// Wait implements the RateLimiter interface
+func (h *HookdeckRateLimiter) Wait(ctx context.Context) error {
+	return h.limiter.Wait(ctx)
+}
+
+// InitHookdeckSDKClient creates a client with Hookdeck's rate limiting
+func InitHookdeckSDKClient(apiBase string, apiKey string, providerVersion string, opts ...RawClientOption) Client {
 	if apiBase == "" {
 		apiBase = defaultAPIBase
 	}
@@ -26,28 +100,43 @@ func InitHookdeckSDKClient(apiBase string, apiKey string, providerVersion string
 	header := http.Header{}
 	initUserAgentHeader(header, providerVersion)
 
-	return Client{&RawClient{apiKey, apiBase, header}}
+	// Create RawClient with Hookdeck rate limiting by default
+	rawClient := &RawClient{
+		apiKey:      apiKey,
+		apiBase:     apiBase,
+		header:      header,
+		httpClient:  http.DefaultClient,
+		rateLimiter: NewHookdeckRateLimiter(),
+	}
+
+	// Apply any options
+	for _, opt := range opts {
+		opt(rawClient)
+	}
+
+	return Client{RawClient: rawClient}
 }
 
-type RawClient struct {
-	apiKey  string
-	apiBase string
-	header  http.Header
-}
-
-type RequestOptions struct {
-	Body        io.Reader
-	Headers     http.Header
-	QueryParams url.Values
-}
-
+// SendRequest sends an HTTP request with rate limiting
 func (c *RawClient) SendRequest(method, path string, opts *RequestOptions) (*http.Response, error) {
+	// Apply rate limiting if configured
+	if c.rateLimiter != nil {
+		if err := c.rateLimiter.Wait(context.Background()); err != nil {
+			return nil, fmt.Errorf("rate limit wait failed: %w", err)
+		}
+	}
+
 	url := fmt.Sprintf("%s%s", c.apiBase, path)
 	if opts != nil && opts.QueryParams != nil {
 		url += "?" + opts.QueryParams.Encode()
 	}
 
-	req, err := http.NewRequest(method, url, opts.Body)
+	var body io.Reader
+	if opts != nil {
+		body = opts.Body
+	}
+
+	req, err := http.NewRequest(method, url, body)
 	if err != nil {
 		return nil, err
 	}
@@ -69,5 +158,5 @@ func (c *RawClient) SendRequest(method, path string, opts *RequestOptions) (*htt
 		}
 	}
 
-	return http.DefaultClient.Do(req)
+	return c.httpClient.Do(req)
 }
