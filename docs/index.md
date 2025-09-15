@@ -48,4 +48,3 @@ resource "hookdeck_connection" "connection" {
 
 - `api_base` (String) Hookdeck API Base URL. Alternatively, can be configured using the `HOOKDECK_API_BASE` environment variable.
 - `api_key` (String, Sensitive) Hookdeck API Key. Alternatively, can be configured using the `HOOKDECK_API_KEY` environment variable.
-- `sdk_max_attempts` (Number) The maximum number of attempts to make when sending a request to the Hookdeck API. Alternatively, can be configured using the `HOOKDECK_SDK_MAX_ATTEMPTS` environment variable.

@@ -16,7 +16,7 @@ const (
 	defaultAPIBase = "api.hookdeck.com"
 )
 
-func InitHookdeckSDKClient(apiBase string, apiKey string, maxAttempts int, providerVersion string) Client {
+func InitHookdeckSDKClient(apiBase string, apiKey string, providerVersion string) Client {
 	if apiBase == "" {
 		apiBase = defaultAPIBase
 	}
