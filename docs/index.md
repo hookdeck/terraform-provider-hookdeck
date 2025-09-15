@@ -48,3 +48,7 @@ resource "hookdeck_connection" "connection" {
 
 - `api_base` (String) Hookdeck API Base URL. Alternatively, can be configured using the `HOOKDECK_API_BASE` environment variable.
 - `api_key` (String, Sensitive) Hookdeck API Key. Alternatively, can be configured using the `HOOKDECK_API_KEY` environment variable.
+
+## Rate Limiting
+
+The provider automatically enforces Hookdeck's API rate limit of 240 requests per minute with a burst capacity of 10. When the limit is reached, the provider will wait before sending additional requests, ensuring all operations complete successfully without errors. For reference, refreshing 1000 resources would take approximately 4 minutes due to rate limiting.
