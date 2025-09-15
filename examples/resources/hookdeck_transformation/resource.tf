@@ -4,4 +4,10 @@ resource "hookdeck_transformation" "example" {
   env = jsonencode({
     SECRET = var.secret
   })
+
+  # Important: Use create_before_destroy to ensure proper deletion order
+  # when the transformation is referenced by connections
+  lifecycle {
+    create_before_destroy = true
+  }
 }

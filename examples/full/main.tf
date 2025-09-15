@@ -122,6 +122,12 @@ addHandler("transform", (request, context) => {
   return request;
 });
 EOT
+
+  # Important: Use create_before_destroy to ensure proper deletion order
+  # when the transformation is referenced by connections
+  lifecycle {
+    create_before_destroy = true
+  }
 }
 
 resource "hookdeck_connection" "first_connection" {
