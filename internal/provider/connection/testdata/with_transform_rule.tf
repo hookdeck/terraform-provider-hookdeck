@@ -1,6 +1,10 @@
 resource "hookdeck_transformation" "test_%[1]s" {
   name = "test-transformation-%[1]s"
   code = "exports.handler = async (request, context) => { return request; };"
+
+  lifecycle {
+    create_before_destroy = true
+  }
 }
 
 resource "hookdeck_source" "test_%[1]s" {
