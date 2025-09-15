@@ -6,20 +6,14 @@ import (
 	"net/http"
 	"net/url"
 	"strings"
-
-	"github.com/hookdeck/hookdeck-go-sdk/client"
-	"github.com/hookdeck/hookdeck-go-sdk/option"
 )
 
 type Client struct {
-	*client.Client
-
 	RawClient *RawClient
 }
 
 const (
 	defaultAPIBase = "api.hookdeck.com"
-	apiVersion     = "2025-07-01"
 )
 
 func InitHookdeckSDKClient(apiBase string, apiKey string, maxAttempts int, providerVersion string) Client {
@@ -31,13 +25,8 @@ func InitHookdeckSDKClient(apiBase string, apiKey string, maxAttempts int, provi
 	}
 	header := http.Header{}
 	initUserAgentHeader(header, providerVersion)
-	hookdeckClient := client.NewClient(
-		option.WithBaseURL(baseWithVersion(apiBase)),
-		option.WithToken(apiKey),
-		option.WithHTTPHeader(header),
-		option.WithMaxAttempts(uint(maxAttempts)),
-	)
-	return Client{hookdeckClient, &RawClient{apiKey, apiBase, header}}
+
+	return Client{&RawClient{apiKey, apiBase, header}}
 }
 
 type RawClient struct {
@@ -81,11 +70,4 @@ func (c *RawClient) SendRequest(method, path string, opts *RequestOptions) (*htt
 	}
 
 	return http.DefaultClient.Do(req)
-}
-
-func baseWithVersion(apiBase string) string {
-	if !strings.HasSuffix(apiBase, "/") {
-		return apiBase + "/" + apiVersion
-	}
-	return apiBase + apiVersion
 }

@@ -12,7 +12,6 @@ require (
 	github.com/hashicorp/terraform-plugin-go v0.28.0
 	github.com/hashicorp/terraform-plugin-log v0.9.0
 	github.com/hashicorp/terraform-plugin-testing v1.13.3
-	github.com/hookdeck/hookdeck-go-sdk v0.7.0
 	golang.org/x/sys v0.34.0
 )
 
