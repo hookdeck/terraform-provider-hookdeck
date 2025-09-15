@@ -110,7 +110,7 @@ func (m *connectionResourceModel) Refresh(connection map[string]interface{}) dia
 func (m *connectionResourceModel) Retrieve(ctx context.Context, client *sdkclient.Client) diag.Diagnostics {
 	var diags diag.Diagnostics
 
-	response, err := client.RawClient.SendRequest("GET", fmt.Sprintf("/%s/connections/%s", apiVersion, m.ID.ValueString()), &sdkclient.RequestOptions{})
+	response, err := client.RawClient.SendRequest(ctx, "GET", fmt.Sprintf("/%s/connections/%s", apiVersion, m.ID.ValueString()), &sdkclient.RequestOptions{})
 	if err != nil {
 		diags.AddError("Error reading connection", err.Error())
 		return diags
@@ -152,7 +152,7 @@ func (m *connectionResourceModel) Create(ctx context.Context, client *sdkclient.
 		return diags
 	}
 
-	response, err := client.RawClient.SendRequest("POST", fmt.Sprintf("/%s/connections", apiVersion), &sdkclient.RequestOptions{
+	response, err := client.RawClient.SendRequest(ctx, "POST", fmt.Sprintf("/%s/connections", apiVersion), &sdkclient.RequestOptions{
 		Body: bytes.NewReader(jsonData),
 		Headers: http.Header{
 			"Content-Type": []string{"application/json"},
@@ -199,7 +199,7 @@ func (m *connectionResourceModel) Update(ctx context.Context, client *sdkclient.
 		return diags
 	}
 
-	response, err := client.RawClient.SendRequest("PUT", fmt.Sprintf("/%s/connections/%s", apiVersion, m.ID.ValueString()), &sdkclient.RequestOptions{
+	response, err := client.RawClient.SendRequest(ctx, "PUT", fmt.Sprintf("/%s/connections/%s", apiVersion, m.ID.ValueString()), &sdkclient.RequestOptions{
 		Body: bytes.NewReader(jsonData),
 		Headers: http.Header{
 			"Content-Type": []string{"application/json"},
@@ -238,7 +238,7 @@ func (m *connectionResourceModel) Update(ctx context.Context, client *sdkclient.
 func (m *connectionResourceModel) Delete(ctx context.Context, client *sdkclient.Client) diag.Diagnostics {
 	var diags diag.Diagnostics
 
-	response, err := client.RawClient.SendRequest("DELETE", fmt.Sprintf("/%s/connections/%s", apiVersion, m.ID.ValueString()), &sdkclient.RequestOptions{})
+	response, err := client.RawClient.SendRequest(ctx, "DELETE", fmt.Sprintf("/%s/connections/%s", apiVersion, m.ID.ValueString()), &sdkclient.RequestOptions{})
 	if err != nil {
 		diags.AddError("Error deleting connection", err.Error())
 		return diags

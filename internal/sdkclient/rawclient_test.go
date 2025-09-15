@@ -114,7 +114,7 @@ func TestRawClient_WithRateLimiter(t *testing.T) {
 
 	// Send 5 requests
 	for i := 0; i < 5; i++ {
-		_, err := rawClient.SendRequest("GET", "/test", nil)
+		_, err := rawClient.SendRequest(context.Background(), "GET", "/test", nil)
 		if err != nil {
 			t.Errorf("Request %d failed: %v", i, err)
 		}
@@ -152,7 +152,7 @@ func TestRawClient_NoRateLimiter(t *testing.T) {
 		wg.Add(1)
 		go func(idx int) {
 			defer wg.Done()
-			rawClient.SendRequest("GET", "/test", nil)
+			rawClient.SendRequest(context.Background(), "GET", "/test", nil)
 		}(i)
 	}
 
@@ -189,7 +189,7 @@ func TestRawClient_RateLimiterBlocking(t *testing.T) {
 	start := time.Now()
 
 	// Make a synchronous request
-	_, err := rawClient.SendRequest("GET", "/test", nil)
+	_, err := rawClient.SendRequest(context.Background(), "GET", "/test", nil)
 	if err != nil {
 		t.Errorf("Request failed: %v", err)
 	}
@@ -239,7 +239,7 @@ func TestRawClient_RequestConstruction(t *testing.T) {
 		},
 	}
 
-	_, err := rawClient.SendRequest("POST", "/test", opts)
+	_, err := rawClient.SendRequest(context.Background(), "POST", "/test", opts)
 	if err != nil {
 		t.Fatalf("SendRequest failed: %v", err)
 	}
@@ -302,7 +302,7 @@ func TestRawClient_ConcurrentRequestsWithRateLimiter(t *testing.T) {
 		wg.Add(1)
 		go func(idx int) {
 			defer wg.Done()
-			_, err := rawClient.SendRequest("GET", "/test", nil)
+			_, err := rawClient.SendRequest(context.Background(), "GET", "/test", nil)
 			if err == nil {
 				atomic.AddInt32(&successCount, 1)
 			}
@@ -352,7 +352,7 @@ func TestRawClient_RateLimiterEnforcesSequentialExecution(t *testing.T) {
 		wg.Add(1)
 		go func() {
 			defer wg.Done()
-			rawClient.SendRequest("GET", "/test", nil)
+			rawClient.SendRequest(context.Background(), "GET", "/test", nil)
 		}()
 	}
 
@@ -391,7 +391,7 @@ func TestRawClient_RateLimiterErrorHandling(t *testing.T) {
 		rateLimiter: mockRateLimiter,
 	}
 
-	_, err := rawClient.SendRequest("GET", "/test", nil)
+	_, err := rawClient.SendRequest(context.Background(), "GET", "/test", nil)
 	if err == nil {
 		t.Error("Expected error from rate limiter, got nil")
 	}
@@ -433,7 +433,7 @@ func TestRawClient_RequestThroughputWithRateLimiter(t *testing.T) {
 		wg.Add(1)
 		go func() {
 			defer wg.Done()
-			rawClient.SendRequest("GET", "/test", nil)
+			rawClient.SendRequest(context.Background(), "GET", "/test", nil)
 		}()
 	}
 

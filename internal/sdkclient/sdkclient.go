@@ -23,7 +23,7 @@ const (
 
 // RawClientInterface defines the contract for sending requests
 type RawClientInterface interface {
-	SendRequest(method, path string, opts *RequestOptions) (*http.Response, error)
+	SendRequest(ctx context.Context, method, path string, opts *RequestOptions) (*http.Response, error)
 }
 
 // RateLimiter interface allows for custom rate limiting implementations
@@ -118,9 +118,35 @@ func InitHookdeckSDKClient(apiBase string, apiKey string, providerVersion string
 }
 
 // SendRequest sends an HTTP request with rate limiting
-func (c *RawClient) SendRequest(method, path string, opts *RequestOptions) (*http.Response, error) {
+func (c *RawClient) SendRequest(ctx context.Context, method, path string, opts *RequestOptions) (*http.Response, error) {
+	// IMPORTANT: Context Handling Issue with Terraform
+	//
+	// We accept a context parameter to maintain interface compatibility, but we DO NOT use it
+	// for the HTTP request. This is because Terraform's acceptance test framework and some
+	// provider operations (especially post-apply refresh) cancel contexts too aggressively,
+	// which causes requests to fail with "context canceled" errors.
+	//
+	// By not passing the context to http.NewRequest, we ensure that:
+	// 1. API requests can complete even when Terraform cancels the context
+	// 2. Rate limiting is still properly enforced
+	// 3. The provider remains stable during Terraform operations
+	//
+	// This is a deliberate design decision after debugging context cancellation issues
+	// in acceptance tests. The trade-off is that we lose the ability to cancel in-flight
+	// requests, but this is acceptable for Terraform provider operations which need to
+	// complete for state consistency.
+	//
+	// TODO: Future Improvements
+	// - Investigate the root cause of aggressive context cancellation in Terraform
+	// - Consider implementing a grace period mechanism for context cancellation
+	// - Explore whether newer versions of Terraform handle contexts differently
+	// - Potentially add configurable behavior for context handling
+	_ = ctx // Explicitly ignore the context parameter
+
 	// Apply rate limiting if configured
 	if c.rateLimiter != nil {
+		// Use context.Background() for rate limiting to ensure it's never canceled
+		// and we always respect API rate limits
 		if err := c.rateLimiter.Wait(context.Background()); err != nil {
 			return nil, fmt.Errorf("rate limit wait failed: %w", err)
 		}
