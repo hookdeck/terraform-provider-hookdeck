@@ -2,14 +2,12 @@ package transformation
 
 import (
 	"context"
-	"crypto/rand"
 	"fmt"
 	"terraform-provider-hookdeck/internal/sdkclient"
 
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
-	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
 // Ensure the implementation satisfies the expected interfaces.
@@ -129,40 +127,10 @@ func (r *transformationResource) Delete(ctx context.Context, req resource.Delete
 	}
 
 	// Delete existing resource
-	// TODO: use delete once the endpoint is ready
-	// For now, we'll update the transformation to a random ID in this template `deleted-${transformation_name}-${random}`
-	// so users can still create a new transformation with the old name
-	length := 10 // length of random key
-	randomizedString, err := generateRandomBytes(length)
-	if err != nil {
-		resp.Diagnostics.AddError("Error deleting transformation", err.Error())
-		return
-	}
-	randomizedName := "deleted-" + data.Name.ValueString() + "-" + fmt.Sprintf("%x", randomizedString)[2:length+2]
-
-	// Update the name directly in the current model
-	data.Name = types.StringValue(randomizedName)
-
-	// Use the Update method to rename before "deleting"
-	resp.Diagnostics.Append(data.Update(ctx, r.client)...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
-
-	// Note: Once the actual DELETE endpoint is available, replace the above with:
-	// resp.Diagnostics.Append(data.Delete(ctx, r.client)...)
+	resp.Diagnostics.Append(data.Delete(ctx, r.client)...)
 }
 
 func (r *transformationResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	// Retrieve import ID and save to id attribute
 	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
-}
-
-func generateRandomBytes(length int) ([]byte, error) {
-	str := make([]byte, length)
-	_, err := rand.Read(str)
-	if err != nil {
-		return nil, err
-	}
-	return str, nil
 }
