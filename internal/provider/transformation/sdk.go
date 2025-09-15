@@ -247,7 +247,7 @@ func (m *transformationResourceModel) toCreatePayload() map[string]interface{} {
 	// Add env if present
 	if !m.ENV.IsNull() && !m.ENV.IsUnknown() {
 		env := m.getENV()
-		if env != nil && len(env) > 0 {
+		if len(env) > 0 {
 			payload["env"] = env
 		}
 	}
@@ -274,7 +274,7 @@ func (m *transformationResourceModel) toUpdatePayload() map[string]interface{} {
 	// Handle env - API expects an object, not null
 	if !m.ENV.IsNull() && !m.ENV.IsUnknown() {
 		env := m.getENV()
-		if env != nil && len(env) > 0 {
+		if len(env) > 0 {
 			payload["env"] = env
 		} else {
 			// Send empty object when clearing env
