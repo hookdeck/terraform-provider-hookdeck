@@ -119,28 +119,23 @@ func InitHookdeckSDKClient(apiBase string, apiKey string, providerVersion string
 
 // SendRequest sends an HTTP request with rate limiting.
 func (c *RawClient) SendRequest(ctx context.Context, method, path string, opts *RequestOptions) (*http.Response, error) {
-	// IMPORTANT: Context Handling Issue with Terraform
+	// IMPORTANT: Context Handling in Acceptance Tests
 	//
 	// We accept a context parameter to maintain interface compatibility, but we DO NOT use it
-	// for the HTTP request. This is because Terraform's acceptance test framework and some
-	// provider operations (especially post-apply refresh) cancel contexts too aggressively,
-	// which causes requests to fail with "context canceled" errors.
+	// for the HTTP request. This is specifically to work around an issue with Terraform's
+	// acceptance test framework, which cancels contexts aggressively during certain test
+	// operations (particularly during post-apply refresh), causing requests to fail with
+	// "context canceled" errors.
 	//
-	// By not passing the context to http.NewRequest, we ensure that:
-	// 1. API requests can complete even when Terraform cancels the context
-	// 2. Rate limiting is still properly enforced
-	// 3. The provider remains stable during Terraform operations
+	// Trade-off: We lose the ability to cancel in-flight requests, but this is acceptable
+	// because:
+	// - We're only making simple API calls without complex cancellation logic
+	// - The production provider currently doesn't pass context to HTTP requests either
+	// - Terraform operations need to complete for state consistency
 	//
-	// This is a deliberate design decision after debugging context cancellation issues
-	// in acceptance tests. The trade-off is that we lose the ability to cancel in-flight
-	// requests, but this is acceptable for Terraform provider operations which need to
-	// complete for state consistency.
+	// This matches the existing production behavior, so we're not losing any functionality.
 	//
-	// TODO: Future Improvements
-	// - Investigate the root cause of aggressive context cancellation in Terraform
-	// - Consider implementing a grace period mechanism for context cancellation
-	// - Explore whether newer versions of Terraform handle contexts differently
-	// - Potentially add configurable behavior for context handling
+	// TODO: Understand acceptance test framework context cancellation and make it work properly
 	_ = ctx // Explicitly ignore the context parameter
 
 	// Apply rate limiting if configured
