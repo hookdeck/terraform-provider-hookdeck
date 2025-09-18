@@ -30,6 +30,12 @@ resource "hookdeck_connection" "test_%[1]s" {
       }
     },
     {
+      deduplicate_rule = {
+        window = 30000
+        include_fields = ["body.order_id", "body.customer_id"]
+      }
+    },
+    {
       delay_rule = {
         delay = 2000
       }

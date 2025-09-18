@@ -43,10 +43,21 @@ data "hookdeck_connection" "example" {
 
 Read-Only:
 
+- `deduplicate_rule` (Attributes) (see [below for nested schema](#nestedatt--rules--deduplicate_rule))
 - `delay_rule` (Attributes) (see [below for nested schema](#nestedatt--rules--delay_rule))
 - `filter_rule` (Attributes) (see [below for nested schema](#nestedatt--rules--filter_rule))
 - `retry_rule` (Attributes) (see [below for nested schema](#nestedatt--rules--retry_rule))
 - `transform_rule` (Attributes) (see [below for nested schema](#nestedatt--rules--transform_rule))
+
+<a id="nestedatt--rules--deduplicate_rule"></a>
+### Nested Schema for `rules.deduplicate_rule`
+
+Read-Only:
+
+- `exclude_fields` (List of String) Fields to exclude when generating deduplicate key
+- `include_fields` (List of String) Fields to include when generating deduplicate key
+- `window` (Number) Time window in milliseconds to remember deduplication keys when checking for duplicates.
+
 
 <a id="nestedatt--rules--delay_rule"></a>
 ### Nested Schema for `rules.delay_rule`

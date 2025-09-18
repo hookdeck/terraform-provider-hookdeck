@@ -144,7 +144,11 @@ func (m *connectionResourceModel) Retrieve(ctx context.Context, client *sdkclien
 func (m *connectionResourceModel) Create(ctx context.Context, client *sdkclient.Client) diag.Diagnostics {
 	var diags diag.Diagnostics
 
-	payload := m.toCreatePayload()
+	payload, err := m.toCreatePayload(ctx)
+	if err != nil {
+		diags.AddError("Error creating connection", err.Error())
+		return diags
+	}
 
 	jsonData, err := json.Marshal(payload)
 	if err != nil {
@@ -191,7 +195,11 @@ func (m *connectionResourceModel) Create(ctx context.Context, client *sdkclient.
 func (m *connectionResourceModel) Update(ctx context.Context, client *sdkclient.Client) diag.Diagnostics {
 	var diags diag.Diagnostics
 
-	payload := m.toUpdatePayload()
+	payload, err := m.toUpdatePayload(ctx)
+	if err != nil {
+		diags.AddError("Error updating connection", err.Error())
+		return diags
+	}
 
 	jsonData, err := json.Marshal(payload)
 	if err != nil {
@@ -257,7 +265,7 @@ func (m *connectionResourceModel) Delete(ctx context.Context, client *sdkclient.
 }
 
 // toCreatePayload converts the model to API create payload.
-func (m *connectionResourceModel) toCreatePayload() map[string]interface{} {
+func (m *connectionResourceModel) toCreatePayload(ctx context.Context) (map[string]interface{}, error) {
 	payload := map[string]interface{}{}
 
 	if !m.Name.IsNull() && !m.Name.IsUnknown() {
@@ -275,14 +283,18 @@ func (m *connectionResourceModel) toCreatePayload() map[string]interface{} {
 
 	// Convert rules - only include if not nil
 	if m.Rules != nil {
-		payload["rules"] = rulesToAPI(m.Rules)
+		apiRules, err := rulesToAPI(ctx, m.Rules)
+		if err != nil {
+			return nil, err
+		}
+		payload["rules"] = apiRules
 	}
 
-	return payload
+	return payload, nil
 }
 
 // toUpdatePayload converts the model to API update payload.
-func (m *connectionResourceModel) toUpdatePayload() map[string]interface{} {
+func (m *connectionResourceModel) toUpdatePayload(ctx context.Context) (map[string]interface{}, error) {
 	payload := map[string]interface{}{}
 
 	if !m.Name.IsNull() && !m.Name.IsUnknown() {
@@ -300,20 +312,60 @@ func (m *connectionResourceModel) toUpdatePayload() map[string]interface{} {
 	// Convert rules - only include if not nil
 	if m.Rules != nil {
 		if len(m.Rules) > 0 {
-			payload["rules"] = rulesToAPI(m.Rules)
+			apiRules, err := rulesToAPI(ctx, m.Rules)
+			if err != nil {
+				return nil, err
+			}
+			payload["rules"] = apiRules
 		} else {
 			payload["rules"] = []interface{}{}
 		}
 	}
 
-	return payload
+	return payload, nil
 }
 
 // rulesToAPI converts rules to API format.
-func rulesToAPI(rules []rule) []interface{} {
+func rulesToAPI(ctx context.Context, rules []rule) ([]interface{}, error) {
 	result := []interface{}{}
 
 	for _, ruleItem := range rules {
+		if ruleItem.DeduplicateRule != nil {
+			rule := map[string]interface{}{
+				"type":   "deduplicate",
+				"window": ruleItem.DeduplicateRule.Window.ValueInt64(),
+			}
+
+			// Check for mutual exclusivity - defensive programming in case schema validation changes
+			includeFieldsSet := !ruleItem.DeduplicateRule.IncludeFields.IsNull() && !ruleItem.DeduplicateRule.IncludeFields.IsUnknown()
+			excludeFieldsSet := !ruleItem.DeduplicateRule.ExcludeFields.IsNull() && !ruleItem.DeduplicateRule.ExcludeFields.IsUnknown()
+
+			if includeFieldsSet && excludeFieldsSet {
+				// This should be caught by schema validation, but we're being defensive
+				return nil, fmt.Errorf("deduplicate rule cannot have both include_fields and exclude_fields set")
+			}
+
+			// Add include_fields if present
+			if includeFieldsSet {
+				includeFields := []string{}
+				ruleItem.DeduplicateRule.IncludeFields.ElementsAs(ctx, &includeFields, false)
+				if len(includeFields) > 0 {
+					rule["include_fields"] = includeFields
+				}
+			}
+
+			// Add exclude_fields if present
+			if excludeFieldsSet {
+				excludeFields := []string{}
+				ruleItem.DeduplicateRule.ExcludeFields.ElementsAs(ctx, &excludeFields, false)
+				if len(excludeFields) > 0 {
+					rule["exclude_fields"] = excludeFields
+				}
+			}
+
+			result = append(result, rule)
+		}
+
 		if ruleItem.DelayRule != nil {
 			rule := map[string]interface{}{
 				"type":  "delay",
@@ -368,7 +420,7 @@ func rulesToAPI(rules []rule) []interface{} {
 		}
 	}
 
-	return result
+	return result, nil
 }
 
 // filterRulePropertyToAPI converts filter rule property to API format.
@@ -414,6 +466,49 @@ func rulesFromAPI(rules []interface{}) []rule {
 		ruleType, _ := ruleMap["type"].(string)
 
 		switch ruleType {
+		case "deduplicate":
+			deduplicateRule := &deduplicateRule{}
+
+			if window, ok := ruleMap["window"].(float64); ok {
+				deduplicateRule.Window = types.Int64Value(int64(window))
+			}
+
+			// Parse include_fields if present
+			if includeFields, ok := ruleMap["include_fields"].([]interface{}); ok {
+				fields := []types.String{}
+				for _, field := range includeFields {
+					if fieldStr, ok := field.(string); ok {
+						fields = append(fields, types.StringValue(fieldStr))
+					}
+				}
+				if len(fields) > 0 {
+					deduplicateRule.IncludeFields, _ = types.ListValueFrom(context.Background(), types.StringType, fields)
+				} else {
+					deduplicateRule.IncludeFields = types.ListNull(types.StringType)
+				}
+			} else {
+				deduplicateRule.IncludeFields = types.ListNull(types.StringType)
+			}
+
+			// Parse exclude_fields if present
+			if excludeFields, ok := ruleMap["exclude_fields"].([]interface{}); ok {
+				fields := []types.String{}
+				for _, field := range excludeFields {
+					if fieldStr, ok := field.(string); ok {
+						fields = append(fields, types.StringValue(fieldStr))
+					}
+				}
+				if len(fields) > 0 {
+					deduplicateRule.ExcludeFields, _ = types.ListValueFrom(context.Background(), types.StringType, fields)
+				} else {
+					deduplicateRule.ExcludeFields = types.ListNull(types.StringType)
+				}
+			} else {
+				deduplicateRule.ExcludeFields = types.ListNull(types.StringType)
+			}
+
+			result = append(result, rule{DeduplicateRule: deduplicateRule})
+
 		case "delay":
 			if delay, ok := ruleMap["delay"].(float64); ok {
 				result = append(result, rule{
