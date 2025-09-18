@@ -4,7 +4,7 @@ Deletes all Hookdeck resources (connections, sources, destinations, transformati
 
 Useful for cleaning up after acceptance tests or Terraform test runs. Normally, tests clean up after themselves, but if tests fail or are interrupted, resources may be left behind. This tool helps clean up those orphaned resources.
 
-Also helpful when `terraform destroy` isn't sufficient (e.g., due to state inconsistencies, provider bugs, or interrupted operations) - this tool directly removes all resources from the workspace.
+Also helpful when `terraform destroy` isn't sufficient (e.g., due to state inconsistencies, provider bugs, or interrupted operations) - this tool directly removes all resources from the project.
 
 ## Usage
 
