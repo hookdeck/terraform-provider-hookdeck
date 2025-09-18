@@ -1,6 +1,6 @@
 # Teardown
 
-Deletes all Hookdeck resources (connections, sources, destinations, transformations) from a workspace. 
+Deletes all Hookdeck resources (connections, sources, destinations, transformations) from a project. 
 
 Useful for cleaning up after acceptance tests or Terraform test runs. Normally, tests clean up after themselves, but if tests fail or are interrupted, resources may be left behind. This tool helps clean up those orphaned resources.
 
