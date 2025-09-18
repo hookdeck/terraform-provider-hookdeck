@@ -91,7 +91,7 @@ func (m *transformationResourceModel) Refresh(transformation map[string]interfac
 func (m *transformationResourceModel) Retrieve(ctx context.Context, client *sdkclient.Client) diag.Diagnostics {
 	var diags diag.Diagnostics
 
-	response, err := client.RawClient.SendRequest("GET", fmt.Sprintf("/%s/transformations/%s", apiVersion, m.ID.ValueString()), &sdkclient.RequestOptions{})
+	response, err := client.RawClient.SendRequest(ctx, "GET", fmt.Sprintf("/%s/transformations/%s", apiVersion, m.ID.ValueString()), &sdkclient.RequestOptions{})
 	if err != nil {
 		diags.AddError("Error reading transformation", err.Error())
 		return diags
@@ -133,7 +133,7 @@ func (m *transformationResourceModel) Create(ctx context.Context, client *sdkcli
 		return diags
 	}
 
-	response, err := client.RawClient.SendRequest("POST", fmt.Sprintf("/%s/transformations", apiVersion), &sdkclient.RequestOptions{
+	response, err := client.RawClient.SendRequest(ctx, "POST", fmt.Sprintf("/%s/transformations", apiVersion), &sdkclient.RequestOptions{
 		Body: bytes.NewReader(jsonData),
 		Headers: http.Header{
 			"Content-Type": []string{"application/json"},
@@ -180,7 +180,7 @@ func (m *transformationResourceModel) Update(ctx context.Context, client *sdkcli
 		return diags
 	}
 
-	response, err := client.RawClient.SendRequest("PUT", fmt.Sprintf("/%s/transformations/%s", apiVersion, m.ID.ValueString()), &sdkclient.RequestOptions{
+	response, err := client.RawClient.SendRequest(ctx, "PUT", fmt.Sprintf("/%s/transformations/%s", apiVersion, m.ID.ValueString()), &sdkclient.RequestOptions{
 		Body: bytes.NewReader(jsonData),
 		Headers: http.Header{
 			"Content-Type": []string{"application/json"},
@@ -219,7 +219,7 @@ func (m *transformationResourceModel) Update(ctx context.Context, client *sdkcli
 func (m *transformationResourceModel) Delete(ctx context.Context, client *sdkclient.Client) diag.Diagnostics {
 	var diags diag.Diagnostics
 
-	response, err := client.RawClient.SendRequest("DELETE", fmt.Sprintf("/%s/transformations/%s", apiVersion, m.ID.ValueString()), &sdkclient.RequestOptions{})
+	response, err := client.RawClient.SendRequest(ctx, "DELETE", fmt.Sprintf("/%s/transformations/%s", apiVersion, m.ID.ValueString()), &sdkclient.RequestOptions{})
 	if err != nil {
 		diags.AddError("Error deleting transformation", err.Error())
 		return diags
