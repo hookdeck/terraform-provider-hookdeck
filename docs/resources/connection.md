@@ -97,7 +97,7 @@ Optional:
 
 Required:
 
-- `window` (Number) Time window in milliseconds for deduplicate
+- `window` (Number) Time window in milliseconds to remember deduplication keys when checking for duplicates.
 
 Optional:
 

@@ -56,7 +56,7 @@ Read-Only:
 
 - `exclude_fields` (List of String) Fields to exclude when generating deduplicate key
 - `include_fields` (List of String) Fields to include when generating deduplicate key
-- `window` (Number) Time window in milliseconds for deduplicate
+- `window` (Number) Time window in milliseconds to remember deduplication keys when checking for duplicates.
 
 
 <a id="nestedatt--rules--delay_rule"></a>
