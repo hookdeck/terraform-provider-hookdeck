@@ -197,7 +197,7 @@ func main() {
 		fmt.Fprintf(os.Stderr, "Hookdeck Teardown Tool\n")
 		fmt.Fprintf(os.Stderr, "======================\n\n")
 		fmt.Fprintf(os.Stderr, "Deletes all Hookdeck resources (connections, sources, destinations, transformations)\n")
-		fmt.Fprintf(os.Stderr, "from a workspace.\n\n")
+		fmt.Fprintf(os.Stderr, "from a project.\n\n")
 		fmt.Fprintf(os.Stderr, "Useful for cleaning up after acceptance tests or Terraform test runs. Normally, tests\n")
 		fmt.Fprintf(os.Stderr, "clean up after themselves, but if tests fail or are interrupted, resources may be left\n")
 		fmt.Fprintf(os.Stderr, "behind. This tool helps clean up those orphaned resources.\n\n")
