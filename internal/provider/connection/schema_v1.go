@@ -152,7 +152,7 @@ func schemaAttributesV1() map[string]schema.Attribute {
 						Attributes: map[string]schema.Attribute{
 							"window": schema.Int64Attribute{
 								Required:    true,
-								Description: `Time window in milliseconds for deduplicate`,
+								Description: `Time window in milliseconds to remember deduplication keys when checking for duplicates.`,
 								Validators: []validator.Int64{
 									int64validator.Between(1000, 3600000),
 								},
