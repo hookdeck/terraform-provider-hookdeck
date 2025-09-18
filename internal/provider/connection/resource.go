@@ -62,6 +62,31 @@ func (r *connectionResource) Configure(_ context.Context, req resource.Configure
 }
 
 // Create creates the resource and sets the initial Terraform state.
+
+
+func normalizeFilterRulePropertyJSON(rules []rule) {
+	for i := range rules {
+		if rules[i].FilterRule != nil {
+			props := []*filterRuleProperty{
+				rules[i].FilterRule.Body,
+				rules[i].FilterRule.Headers,
+				rules[i].FilterRule.Path,
+				rules[i].FilterRule.Query,
+			}
+			for _, prop := range props {
+				if prop != nil && !prop.JSON.IsNull() && !prop.JSON.IsUnknown() {
+					var v interface{}
+					s := prop.JSON.ValueString()
+					if err := json.Unmarshal([]byte(s), &v); err == nil {
+						b, _ := json.Marshal(v)
+						prop.JSON = types.StringValue(string(b))
+					}
+				}
+			}
+		}
+	}
+}
+
 func (r *connectionResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
 	// Get data from Terraform plan
 	var data *connectionResourceModel
@@ -69,6 +94,7 @@ func (r *connectionResource) Create(ctx context.Context, req resource.CreateRequ
 	if resp.Diagnostics.HasError() {
 		return
 	}
+	normalizeFilterRulePropertyJSON(data.Rules)
 
 	// Create resource
 	connection, err := r.client.Connection.Create(context.Background(), data.ToCreatePayload())
@@ -111,6 +137,7 @@ func (r *connectionResource) Update(ctx context.Context, req resource.UpdateRequ
 	if resp.Diagnostics.HasError() {
 		return
 	}
+	normalizeFilterRulePropertyJSON(data.Rules)
 
 	// Update existing resource
 	connection, err := r.client.Connection.Update(context.Background(), data.ID.ValueString(), data.ToUpdatePayload())
