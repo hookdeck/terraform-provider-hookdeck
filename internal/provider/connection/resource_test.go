@@ -343,12 +343,12 @@ func TestAccConnectionResourceFilterJSONFormattingRawWorkaround(t *testing.T) {
 }
 
 // TestAccConnectionResourceFilterJSONFormattingRaw tests raw JSON in heredoc format.
-// This should now preserve formatting and avoid drift errors.
+// With jsontypes.Normalized, the formatted JSON is preserved but semantic comparison prevents drift.
 func TestAccConnectionResourceFilterJSONFormattingRaw(t *testing.T) {
 	rName := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
 	resourceName := fmt.Sprintf("hookdeck_connection.test_%s", rName)
 
-	// The expected formatted JSON (matching what's in the heredoc)
+	// jsontypes.Normalized preserves the original formatting but compares semantically
 	expectedJSON := `{
   "data": {
     "attributes": {
@@ -381,16 +381,16 @@ func TestAccConnectionResourceFilterJSONFormattingRaw(t *testing.T) {
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceName, "name", fmt.Sprintf("test-connection-json-%s", rName)),
 					resource.TestCheckResourceAttr(resourceName, "rules.#", "1"),
-					// Should preserve the formatted JSON
+					// JSON preserves formatting
 					resource.TestCheckResourceAttr(resourceName, "rules.0.filter_rule.body.json", expectedJSON),
 				),
 			},
-			// Re-apply should show no changes now
+			// Re-apply should show no changes (no drift thanks to semantic comparison)
 			{
 				Config:   loadTestConfigFormatted("with_json_formatting_raw.tf", rName),
 				PlanOnly: true,
 				Check: resource.ComposeAggregateTestCheckFunc(
-					// Still has the formatted JSON
+					// Still has formatted JSON
 					resource.TestCheckResourceAttr(resourceName, "rules.0.filter_rule.body.json", expectedJSON),
 				),
 			},

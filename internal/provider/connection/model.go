@@ -1,6 +1,7 @@
 package connection
 
 import (
+	"github.com/hashicorp/terraform-plugin-framework-jsontypes/jsontypes"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
@@ -38,10 +39,10 @@ type filterRule struct {
 }
 
 type filterRuleProperty struct {
-	Boolean types.Bool   `tfsdk:"boolean"`
-	JSON    types.String `tfsdk:"json"`
-	Number  types.Number `tfsdk:"number"`
-	String  types.String `tfsdk:"string"`
+	Boolean types.Bool           `tfsdk:"boolean"`
+	JSON    jsontypes.Normalized `tfsdk:"json"`
+	Number  types.Number         `tfsdk:"number"`
+	String  types.String         `tfsdk:"string"`
 }
 
 type retryRule struct {

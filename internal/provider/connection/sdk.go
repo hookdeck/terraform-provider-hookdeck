@@ -11,6 +11,7 @@ import (
 	"strconv"
 	"terraform-provider-hookdeck/internal/sdkclient"
 
+	"github.com/hashicorp/terraform-plugin-framework-jsontypes/jsontypes"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
@@ -100,7 +101,7 @@ func (m *connectionResourceModel) Refresh(connection map[string]interface{}) dia
 
 	// Handle rules
 	if rules, ok := connection["rules"].([]interface{}); ok && len(rules) > 0 {
-		m.Rules = rulesFromAPI(rules, m.Rules)
+		m.Rules = rulesFromAPI(rules)
 	}
 	// Keep rules as nil if not present or empty to maintain consistency with Terraform state
 
@@ -434,8 +435,9 @@ func filterRulePropertyToAPI(property *filterRuleProperty) interface{} {
 	}
 
 	if !property.JSON.IsNull() && !property.JSON.IsUnknown() {
+		// jsontypes.Normalized has Unmarshal method that returns the parsed data
 		var jsonData interface{}
-		if err := json.Unmarshal([]byte(property.JSON.ValueString()), &jsonData); err == nil {
+		if diags := property.JSON.Unmarshal(&jsonData); !diags.HasError() {
 			return jsonData
 		}
 	}
@@ -454,10 +456,10 @@ func filterRulePropertyToAPI(property *filterRuleProperty) interface{} {
 }
 
 // rulesFromAPI converts API rules to model format.
-func rulesFromAPI(rules []interface{}, existingRules []rule) []rule {
+func rulesFromAPI(rules []interface{}) []rule {
 	var result []rule
 
-	for i, r := range rules {
+	for _, r := range rules {
 		ruleMap, ok := r.(map[string]interface{})
 		if !ok {
 			continue
@@ -521,39 +523,17 @@ func rulesFromAPI(rules []interface{}, existingRules []rule) []rule {
 		case "filter":
 			fr := &filterRule{}
 
-			// Get existing filter rule if available
-			var existingFilter *filterRule
-			if i < len(existingRules) && existingRules[i].FilterRule != nil {
-				existingFilter = existingRules[i].FilterRule
-			}
-
 			if body := ruleMap["body"]; body != nil {
-				var existingBody *filterRuleProperty
-				if existingFilter != nil {
-					existingBody = existingFilter.Body
-				}
-				fr.Body = filterRulePropertyFromAPI(body, existingBody)
+				fr.Body = filterRulePropertyFromAPI(body)
 			}
 			if headers := ruleMap["headers"]; headers != nil {
-				var existingHeaders *filterRuleProperty
-				if existingFilter != nil {
-					existingHeaders = existingFilter.Headers
-				}
-				fr.Headers = filterRulePropertyFromAPI(headers, existingHeaders)
+				fr.Headers = filterRulePropertyFromAPI(headers)
 			}
 			if path := ruleMap["path"]; path != nil {
-				var existingPath *filterRuleProperty
-				if existingFilter != nil {
-					existingPath = existingFilter.Path
-				}
-				fr.Path = filterRulePropertyFromAPI(path, existingPath)
+				fr.Path = filterRulePropertyFromAPI(path)
 			}
 			if query := ruleMap["query"]; query != nil {
-				var existingQuery *filterRuleProperty
-				if existingFilter != nil {
-					existingQuery = existingFilter.Query
-				}
-				fr.Query = filterRulePropertyFromAPI(query, existingQuery)
+				fr.Query = filterRulePropertyFromAPI(query)
 			}
 
 			result = append(result, rule{FilterRule: fr})
@@ -592,8 +572,7 @@ func rulesFromAPI(rules []interface{}, existingRules []rule) []rule {
 }
 
 // filterRulePropertyFromAPI converts API filter rule property to model format.
-// If an existing property is provided and the JSON is semantically equal, it preserves the original formatting.
-func filterRulePropertyFromAPI(property interface{}, existing *filterRuleProperty) *filterRuleProperty {
+func filterRulePropertyFromAPI(property interface{}) *filterRuleProperty {
 	if property == nil {
 		return nil
 	}
@@ -608,27 +587,9 @@ func filterRulePropertyFromAPI(property interface{}, existing *filterRulePropert
 	case string:
 		result.String = types.StringValue(v)
 	case map[string]interface{}, []interface{}:
-		// For JSON properties, check if we should preserve existing formatting
-		if existing != nil && !existing.JSON.IsNull() && !existing.JSON.IsUnknown() {
-			// Parse the existing JSON
-			var existingData interface{}
-			if err := json.Unmarshal([]byte(existing.JSON.ValueString()), &existingData); err == nil {
-				// Compare with the new data
-				// Marshal both to ensure consistent comparison
-				newJSON, _ := json.Marshal(v)
-				existingCompactJSON, _ := json.Marshal(existingData)
-
-				// If semantically equal, preserve the original formatting
-				if string(newJSON) == string(existingCompactJSON) {
-					result.JSON = existing.JSON
-					return result
-				}
-			}
-		}
-
-		// If no existing value or data has changed, use compact format from API
+		// jsontypes.Normalized will handle normalization automatically
 		if jsonBytes, err := json.Marshal(v); err == nil {
-			result.JSON = types.StringValue(string(jsonBytes))
+			result.JSON = jsontypes.NewNormalizedValue(string(jsonBytes))
 		}
 	}
 
