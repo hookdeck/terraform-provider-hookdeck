@@ -60,18 +60,6 @@ This provider is built on top of the [Hookdeck API](https://hookdeck.com/docs/ap
 
 ## Development
 
-### Background
-
-The Hookdeck Terraform Provider is written in Go.
-
-It is formed of a combination of manually created and maintained code and auto-generated code.
-
-The underlying Hookdeck API interactions use the [Hookdeck Go SDK](https://github.com/hookdeck/hookdeck-go-sdk).
-
-Code generation was [introduced in October 2024](https://github.com/hookdeck/terraform-provider-hookdeck/pull/100) and creates Source Verification Provider code from the Hookdeck OpenAPI specification (https://raw.githubusercontent.com/hookdeck/hookdeck-api-schema/refs/heads/main/openapi.json).
-
-The Hookdeck Go SDK is generated using the Hookdeck Open API spec. Therefore, Hookdeck Terraform Provider code generation must be based on the same OpenAPI spec version used to generate the Go SDK.
-
 ### Running locally
 
 See https://developer.hashicorp.com/terraform/tutorials/providers-plugin-framework/providers-plugin-framework-provider#prepare-terraform-for-local-provider-install

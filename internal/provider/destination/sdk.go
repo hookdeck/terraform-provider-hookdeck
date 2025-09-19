@@ -78,7 +78,7 @@ func (m *destinationResourceModel) Refresh(destination map[string]interface{}) d
 
 func (m *destinationResourceModel) Retrieve(ctx context.Context, client *sdkclient.Client) diag.Diagnostics {
 	var diags diag.Diagnostics
-	response, err := client.RawClient.SendRequest("GET", fmt.Sprintf("/%s/destinations/%s", apiVersion, m.ID.ValueString()), &sdkclient.RequestOptions{
+	response, err := client.RawClient.SendRequest(ctx, "GET", fmt.Sprintf("/%s/destinations/%s", apiVersion, m.ID.ValueString()), &sdkclient.RequestOptions{
 		QueryParams: url.Values{
 			"include": []string{"config.auth"},
 		},
@@ -127,7 +127,7 @@ func (m *destinationResourceModel) Create(ctx context.Context, client *sdkclient
 		return diags
 	}
 
-	response, err := client.RawClient.SendRequest("POST", fmt.Sprintf("/%s/destinations", apiVersion), &sdkclient.RequestOptions{
+	response, err := client.RawClient.SendRequest(ctx, "POST", fmt.Sprintf("/%s/destinations", apiVersion), &sdkclient.RequestOptions{
 		Body: bytes.NewReader(jsonData),
 		Headers: http.Header{
 			"Content-Type": []string{"application/json"},
@@ -177,7 +177,7 @@ func (m *destinationResourceModel) Update(ctx context.Context, client *sdkclient
 		return diags
 	}
 
-	response, err := client.RawClient.SendRequest("PUT", fmt.Sprintf("/%s/destinations/%s", apiVersion, m.ID.ValueString()), &sdkclient.RequestOptions{
+	response, err := client.RawClient.SendRequest(ctx, "PUT", fmt.Sprintf("/%s/destinations/%s", apiVersion, m.ID.ValueString()), &sdkclient.RequestOptions{
 		Body: bytes.NewReader(jsonData),
 		Headers: http.Header{
 			"Content-Type": []string{"application/json"},
@@ -216,7 +216,7 @@ func (m *destinationResourceModel) Update(ctx context.Context, client *sdkclient
 func (m *destinationResourceModel) Delete(ctx context.Context, client *sdkclient.Client) diag.Diagnostics {
 	var diags diag.Diagnostics
 
-	response, err := client.RawClient.SendRequest("DELETE", fmt.Sprintf("/%s/destinations/%s", apiVersion, m.ID.ValueString()), &sdkclient.RequestOptions{})
+	response, err := client.RawClient.SendRequest(ctx, "DELETE", fmt.Sprintf("/%s/destinations/%s", apiVersion, m.ID.ValueString()), &sdkclient.RequestOptions{})
 	if err != nil {
 		diags.AddError("Error deleting destination", err.Error())
 		return diags
