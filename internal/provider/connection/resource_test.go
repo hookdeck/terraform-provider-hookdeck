@@ -310,8 +310,8 @@ func TestAccConnectionResourceRuleOrdering(t *testing.T) {
 	})
 }
 
-// TestAccConnectionResourceFilterJSONFormattingRawWorkaround tests JSON formatting with jsonencode(jsondecode(...))
-// This workaround should work correctly as jsonencode normalizes the JSON
+// TestAccConnectionResourceFilterJSONFormattingRawWorkaround tests JSON formatting with jsonencode(jsondecode(...)).
+// This workaround should work correctly as jsonencode normalizes the JSON.
 func TestAccConnectionResourceFilterJSONFormattingRawWorkaround(t *testing.T) {
 	rName := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
 	resourceName := fmt.Sprintf("hookdeck_connection.test_%s", rName)
@@ -342,8 +342,8 @@ func TestAccConnectionResourceFilterJSONFormattingRawWorkaround(t *testing.T) {
 	})
 }
 
-// TestAccConnectionResourceFilterJSONFormattingRaw tests raw JSON in heredoc format
-// This should now preserve formatting and avoid drift errors
+// TestAccConnectionResourceFilterJSONFormattingRaw tests raw JSON in heredoc format.
+// This should now preserve formatting and avoid drift errors.
 func TestAccConnectionResourceFilterJSONFormattingRaw(t *testing.T) {
 	rName := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
 	resourceName := fmt.Sprintf("hookdeck_connection.test_%s", rName)
@@ -398,8 +398,8 @@ func TestAccConnectionResourceFilterJSONFormattingRaw(t *testing.T) {
 	})
 }
 
-// TestAccConnectionResourceFilterJSONFormatting tests pure jsonencode usage
-// This should work correctly without any issues
+// TestAccConnectionResourceFilterJSONFormatting tests pure jsonencode usage.
+// This should work correctly without any issues.
 func TestAccConnectionResourceFilterJSONFormatting(t *testing.T) {
 	rName := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
 	resourceName := fmt.Sprintf("hookdeck_connection.test_%s", rName)
