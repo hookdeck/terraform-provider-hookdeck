@@ -309,3 +309,92 @@ func TestAccConnectionResourceRuleOrdering(t *testing.T) {
 		},
 	})
 }
+
+// TestAccConnectionResourceFilterJSONFormattingRawWorkaround tests JSON formatting with jsonencode(jsondecode(...))
+// This workaround should work correctly as jsonencode normalizes the JSON
+func TestAccConnectionResourceFilterJSONFormattingRawWorkaround(t *testing.T) {
+	rName := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
+	resourceName := fmt.Sprintf("hookdeck_connection.test_%s", rName)
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { testAccPreCheck(t) },
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				Config: loadTestConfigFormatted("with_json_formatting_decode.tf", rName),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr(resourceName, "name", fmt.Sprintf("test-connection-json-%s", rName)),
+					resource.TestCheckResourceAttr(resourceName, "rules.#", "1"),
+					resource.TestCheckResourceAttr(resourceName, "rules.0.filter_rule.body.json",
+						`{"data":{"attributes":{"payload":{"data":{"attributes":{"status":{"$or":["completed","failed","approved","declined","needs_review"]}}}}}}}`),
+				),
+			},
+			// Re-apply to ensure no drift
+			{
+				Config:   loadTestConfigFormatted("with_json_formatting_decode.tf", rName),
+				PlanOnly: true,
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr(resourceName, "rules.0.filter_rule.body.json",
+						`{"data":{"attributes":{"payload":{"data":{"attributes":{"status":{"$or":["completed","failed","approved","declined","needs_review"]}}}}}}}`),
+				),
+			},
+		},
+	})
+}
+
+// TestAccConnectionResourceFilterJSONFormattingRaw tests raw JSON in heredoc format
+// This reproduces the bug where formatted JSON causes drift errors
+func TestAccConnectionResourceFilterJSONFormattingRaw(t *testing.T) {
+	rName := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
+	resourceName := fmt.Sprintf("hookdeck_connection.test_%s", rName)
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { testAccPreCheck(t) },
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				Config: loadTestConfigFormatted("with_json_formatting_raw.tf", rName),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr(resourceName, "name", fmt.Sprintf("test-connection-json-%s", rName)),
+					resource.TestCheckResourceAttr(resourceName, "rules.#", "1"),
+					resource.TestCheckResourceAttr(resourceName, "rules.0.filter_rule.body.json",
+						`{"data":{"attributes":{"payload":{"data":{"attributes":{"status":{"$or":["completed","failed","approved","declined","needs_review"]}}}}}}}`),
+				),
+			},
+			// Re-apply will fail without proper JSON normalization
+			{
+				Config:   loadTestConfigFormatted("with_json_formatting_raw.tf", rName),
+				PlanOnly: true,
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr(resourceName, "rules.0.filter_rule.body.json",
+						`{"data":{"attributes":{"payload":{"data":{"attributes":{"status":{"$or":["completed","failed","approved","declined","needs_review"]}}}}}}}`),
+				),
+			},
+		},
+	})
+}
+
+// TestAccConnectionResourceFilterJSONFormatting tests pure jsonencode usage
+// This should work correctly without any issues
+func TestAccConnectionResourceFilterJSONFormatting(t *testing.T) {
+	rName := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
+	resourceName := fmt.Sprintf("hookdeck_connection.test_%s", rName)
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { testAccPreCheck(t) },
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				Config: loadTestConfigFormatted("with_json_formatting.tf", rName),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr(resourceName, "name", fmt.Sprintf("test-connection-json-%s", rName)),
+					resource.TestCheckResourceAttr(resourceName, "rules.#", "1"),
+					resource.TestCheckResourceAttr(resourceName, "rules.0.filter_rule.body.json",
+						`{"data":{"attributes":{"payload":{"data":{"attributes":{"status":{"$or":["completed","failed","approved","declined","needs_review"]}}}}}}}`),
+					resource.TestCheckResourceAttr(resourceName, "rules.0.filter_rule.headers.json",
+						`{"x-api-version":"v1","x-webhook-type":"payment.status"}`),
+				),
+			},
+		},
+	})
+}
