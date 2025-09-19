@@ -70,7 +70,8 @@ func (r *transformationResource) Create(ctx context.Context, req resource.Create
 	}
 
 	// Create resource
-	resp.Diagnostics.Append(data.Create(ctx, r.client)...)
+	diags := data.Create(ctx, r.client)
+	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -89,7 +90,8 @@ func (r *transformationResource) Read(ctx context.Context, req resource.ReadRequ
 	}
 
 	// Get refreshed resource value
-	resp.Diagnostics.Append(data.Retrieve(ctx, r.client)...)
+	diags := data.Retrieve(ctx, r.client)
+	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -108,7 +110,8 @@ func (r *transformationResource) Update(ctx context.Context, req resource.Update
 	}
 
 	// Update existing resource
-	resp.Diagnostics.Append(data.Update(ctx, r.client)...)
+	diags := data.Update(ctx, r.client)
+	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -127,7 +130,8 @@ func (r *transformationResource) Delete(ctx context.Context, req resource.Delete
 	}
 
 	// Delete existing resource
-	resp.Diagnostics.Append(data.Delete(ctx, r.client)...)
+	diags := data.Delete(ctx, r.client)
+	resp.Diagnostics.Append(diags...)
 }
 
 func (r *transformationResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
