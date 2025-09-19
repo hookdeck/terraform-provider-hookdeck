@@ -343,10 +343,34 @@ func TestAccConnectionResourceFilterJSONFormattingRawWorkaround(t *testing.T) {
 }
 
 // TestAccConnectionResourceFilterJSONFormattingRaw tests raw JSON in heredoc format
-// This reproduces the bug where formatted JSON causes drift errors
+// This should now preserve formatting and avoid drift errors
 func TestAccConnectionResourceFilterJSONFormattingRaw(t *testing.T) {
 	rName := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
 	resourceName := fmt.Sprintf("hookdeck_connection.test_%s", rName)
+
+	// The expected formatted JSON (matching what's in the heredoc)
+	expectedJSON := `{
+  "data": {
+    "attributes": {
+      "payload": {
+        "data": {
+          "attributes": {
+            "status": {
+              "$or": [
+                "completed",
+                "failed",
+                "approved",
+                "declined",
+                "needs_review"
+              ]
+            }
+          }
+        }
+      }
+    }
+  }
+}
+`
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { testAccPreCheck(t) },
@@ -357,17 +381,17 @@ func TestAccConnectionResourceFilterJSONFormattingRaw(t *testing.T) {
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceName, "name", fmt.Sprintf("test-connection-json-%s", rName)),
 					resource.TestCheckResourceAttr(resourceName, "rules.#", "1"),
-					resource.TestCheckResourceAttr(resourceName, "rules.0.filter_rule.body.json",
-						`{"data":{"attributes":{"payload":{"data":{"attributes":{"status":{"$or":["completed","failed","approved","declined","needs_review"]}}}}}}}`),
+					// Should preserve the formatted JSON
+					resource.TestCheckResourceAttr(resourceName, "rules.0.filter_rule.body.json", expectedJSON),
 				),
 			},
-			// Re-apply will fail without proper JSON normalization
+			// Re-apply should show no changes now
 			{
 				Config:   loadTestConfigFormatted("with_json_formatting_raw.tf", rName),
 				PlanOnly: true,
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr(resourceName, "rules.0.filter_rule.body.json",
-						`{"data":{"attributes":{"payload":{"data":{"attributes":{"status":{"$or":["completed","failed","approved","declined","needs_review"]}}}}}}}`),
+					// Still has the formatted JSON
+					resource.TestCheckResourceAttr(resourceName, "rules.0.filter_rule.body.json", expectedJSON),
 				),
 			},
 		},

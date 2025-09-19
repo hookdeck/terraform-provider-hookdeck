@@ -100,7 +100,7 @@ func (m *connectionResourceModel) Refresh(connection map[string]interface{}) dia
 
 	// Handle rules
 	if rules, ok := connection["rules"].([]interface{}); ok && len(rules) > 0 {
-		m.Rules = rulesFromAPI(rules)
+		m.Rules = rulesFromAPI(rules, m.Rules)
 	}
 	// Keep rules as nil if not present or empty to maintain consistency with Terraform state
 
@@ -454,10 +454,10 @@ func filterRulePropertyToAPI(property *filterRuleProperty) interface{} {
 }
 
 // rulesFromAPI converts API rules to model format.
-func rulesFromAPI(rules []interface{}) []rule {
+func rulesFromAPI(rules []interface{}, existingRules []rule) []rule {
 	var result []rule
 
-	for _, r := range rules {
+	for i, r := range rules {
 		ruleMap, ok := r.(map[string]interface{})
 		if !ok {
 			continue
@@ -519,22 +519,44 @@ func rulesFromAPI(rules []interface{}) []rule {
 			}
 
 		case "filter":
-			filterRule := &filterRule{}
+			fr := &filterRule{}
+
+			// Get existing filter rule if available
+			var existingFilter *filterRule
+			if i < len(existingRules) && existingRules[i].FilterRule != nil {
+				existingFilter = existingRules[i].FilterRule
+			}
 
 			if body := ruleMap["body"]; body != nil {
-				filterRule.Body = filterRulePropertyFromAPI(body)
+				var existingBody *filterRuleProperty
+				if existingFilter != nil {
+					existingBody = existingFilter.Body
+				}
+				fr.Body = filterRulePropertyFromAPI(body, existingBody)
 			}
 			if headers := ruleMap["headers"]; headers != nil {
-				filterRule.Headers = filterRulePropertyFromAPI(headers)
+				var existingHeaders *filterRuleProperty
+				if existingFilter != nil {
+					existingHeaders = existingFilter.Headers
+				}
+				fr.Headers = filterRulePropertyFromAPI(headers, existingHeaders)
 			}
 			if path := ruleMap["path"]; path != nil {
-				filterRule.Path = filterRulePropertyFromAPI(path)
+				var existingPath *filterRuleProperty
+				if existingFilter != nil {
+					existingPath = existingFilter.Path
+				}
+				fr.Path = filterRulePropertyFromAPI(path, existingPath)
 			}
 			if query := ruleMap["query"]; query != nil {
-				filterRule.Query = filterRulePropertyFromAPI(query)
+				var existingQuery *filterRuleProperty
+				if existingFilter != nil {
+					existingQuery = existingFilter.Query
+				}
+				fr.Query = filterRulePropertyFromAPI(query, existingQuery)
 			}
 
-			result = append(result, rule{FilterRule: filterRule})
+			result = append(result, rule{FilterRule: fr})
 
 		case "retry":
 			retryRule := &retryRule{}
@@ -570,7 +592,8 @@ func rulesFromAPI(rules []interface{}) []rule {
 }
 
 // filterRulePropertyFromAPI converts API filter rule property to model format.
-func filterRulePropertyFromAPI(property interface{}) *filterRuleProperty {
+// If an existing property is provided and the JSON is semantically equal, it preserves the original formatting.
+func filterRulePropertyFromAPI(property interface{}, existing *filterRuleProperty) *filterRuleProperty {
 	if property == nil {
 		return nil
 	}
@@ -585,6 +608,25 @@ func filterRulePropertyFromAPI(property interface{}) *filterRuleProperty {
 	case string:
 		result.String = types.StringValue(v)
 	case map[string]interface{}, []interface{}:
+		// For JSON properties, check if we should preserve existing formatting
+		if existing != nil && !existing.JSON.IsNull() && !existing.JSON.IsUnknown() {
+			// Parse the existing JSON
+			var existingData interface{}
+			if err := json.Unmarshal([]byte(existing.JSON.ValueString()), &existingData); err == nil {
+				// Compare with the new data
+				// Marshal both to ensure consistent comparison
+				newJSON, _ := json.Marshal(v)
+				existingCompactJSON, _ := json.Marshal(existingData)
+
+				// If semantically equal, preserve the original formatting
+				if string(newJSON) == string(existingCompactJSON) {
+					result.JSON = existing.JSON
+					return result
+				}
+			}
+		}
+
+		// If no existing value or data has changed, use compact format from API
 		if jsonBytes, err := json.Marshal(v); err == nil {
 			result.JSON = types.StringValue(string(jsonBytes))
 		}
