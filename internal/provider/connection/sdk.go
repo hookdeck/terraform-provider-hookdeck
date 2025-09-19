@@ -11,6 +11,7 @@ import (
 	"strconv"
 	"terraform-provider-hookdeck/internal/sdkclient"
 
+	"github.com/hashicorp/terraform-plugin-framework-jsontypes/jsontypes"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
@@ -434,8 +435,9 @@ func filterRulePropertyToAPI(property *filterRuleProperty) interface{} {
 	}
 
 	if !property.JSON.IsNull() && !property.JSON.IsUnknown() {
+		// jsontypes.Normalized has Unmarshal method that returns the parsed data
 		var jsonData interface{}
-		if err := json.Unmarshal([]byte(property.JSON.ValueString()), &jsonData); err == nil {
+		if diags := property.JSON.Unmarshal(&jsonData); !diags.HasError() {
 			return jsonData
 		}
 	}
@@ -519,22 +521,22 @@ func rulesFromAPI(rules []interface{}) []rule {
 			}
 
 		case "filter":
-			filterRule := &filterRule{}
+			fr := &filterRule{}
 
 			if body := ruleMap["body"]; body != nil {
-				filterRule.Body = filterRulePropertyFromAPI(body)
+				fr.Body = filterRulePropertyFromAPI(body)
 			}
 			if headers := ruleMap["headers"]; headers != nil {
-				filterRule.Headers = filterRulePropertyFromAPI(headers)
+				fr.Headers = filterRulePropertyFromAPI(headers)
 			}
 			if path := ruleMap["path"]; path != nil {
-				filterRule.Path = filterRulePropertyFromAPI(path)
+				fr.Path = filterRulePropertyFromAPI(path)
 			}
 			if query := ruleMap["query"]; query != nil {
-				filterRule.Query = filterRulePropertyFromAPI(query)
+				fr.Query = filterRulePropertyFromAPI(query)
 			}
 
-			result = append(result, rule{FilterRule: filterRule})
+			result = append(result, rule{FilterRule: fr})
 
 		case "retry":
 			retryRule := &retryRule{}
@@ -585,8 +587,9 @@ func filterRulePropertyFromAPI(property interface{}) *filterRuleProperty {
 	case string:
 		result.String = types.StringValue(v)
 	case map[string]interface{}, []interface{}:
+		// jsontypes.Normalized will handle normalization automatically
 		if jsonBytes, err := json.Marshal(v); err == nil {
-			result.JSON = types.StringValue(string(jsonBytes))
+			result.JSON = jsontypes.NewNormalizedValue(string(jsonBytes))
 		}
 	}
 

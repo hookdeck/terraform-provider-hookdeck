@@ -3,6 +3,7 @@ package connection
 import (
 	"terraform-provider-hookdeck/internal/validators"
 
+	"github.com/hashicorp/terraform-plugin-framework-jsontypes/jsontypes"
 	"github.com/hashicorp/terraform-plugin-framework-validators/int64validator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
@@ -21,6 +22,7 @@ func schemaAttributesV1() map[string]schema.Attribute {
 			},
 			"json": schema.StringAttribute{
 				Optional:    true,
+				CustomType:  jsontypes.NormalizedType{},
 				Description: `Stringied JSON using our filter syntax to filter on request headers`,
 			},
 			"number": schema.NumberAttribute{
