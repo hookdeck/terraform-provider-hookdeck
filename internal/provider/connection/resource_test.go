@@ -15,9 +15,14 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
 
-var testAccProtoV6ProviderFactories = map[string]func() (tfprotov6.ProviderServer, error){
-	"hookdeck": providerserver.NewProtocol6WithError(provider.New("test")()),
-}
+var (
+	testAccProtoV6ProviderFactories = map[string]func() (tfprotov6.ProviderServer, error){
+		"hookdeck": providerserver.NewProtocol6WithError(provider.New("test")()),
+	}
+
+	// Common test JSON payload for filter rules
+	testFilterStatusJSON = `{"data":{"attributes":{"payload":{"data":{"attributes":{"status":{"$or":["completed","failed","approved","declined","needs_review"]}}}}}}}`
+)
 
 func testAccPreCheck(t *testing.T) {
 	if v := os.Getenv("HOOKDECK_API_KEY"); v == "" {
@@ -325,8 +330,7 @@ func TestAccConnectionResourceFilterJSONFormattingRawWorkaround(t *testing.T) {
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceName, "name", fmt.Sprintf("test-connection-json-%s", rName)),
 					resource.TestCheckResourceAttr(resourceName, "rules.#", "1"),
-					resource.TestCheckResourceAttr(resourceName, "rules.0.filter_rule.body.json",
-						`{"data":{"attributes":{"payload":{"data":{"attributes":{"status":{"$or":["completed","failed","approved","declined","needs_review"]}}}}}}}`),
+					resource.TestCheckResourceAttr(resourceName, "rules.0.filter_rule.body.json", testFilterStatusJSON),
 				),
 			},
 			// Re-apply to ensure no drift
@@ -334,8 +338,7 @@ func TestAccConnectionResourceFilterJSONFormattingRawWorkaround(t *testing.T) {
 				Config:   loadTestConfigFormatted("with_json_formatting_decode.tf", rName),
 				PlanOnly: true,
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr(resourceName, "rules.0.filter_rule.body.json",
-						`{"data":{"attributes":{"payload":{"data":{"attributes":{"status":{"$or":["completed","failed","approved","declined","needs_review"]}}}}}}}`),
+					resource.TestCheckResourceAttr(resourceName, "rules.0.filter_rule.body.json", testFilterStatusJSON),
 				),
 			},
 		},
@@ -413,8 +416,7 @@ func TestAccConnectionResourceFilterJSONFormatting(t *testing.T) {
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceName, "name", fmt.Sprintf("test-connection-json-%s", rName)),
 					resource.TestCheckResourceAttr(resourceName, "rules.#", "1"),
-					resource.TestCheckResourceAttr(resourceName, "rules.0.filter_rule.body.json",
-						`{"data":{"attributes":{"payload":{"data":{"attributes":{"status":{"$or":["completed","failed","approved","declined","needs_review"]}}}}}}}`),
+					resource.TestCheckResourceAttr(resourceName, "rules.0.filter_rule.body.json", testFilterStatusJSON),
 					resource.TestCheckResourceAttr(resourceName, "rules.0.filter_rule.headers.json",
 						`{"x-api-version":"v1","x-webhook-type":"payment.status"}`),
 				),
