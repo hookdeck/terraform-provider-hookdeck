@@ -28,6 +28,12 @@ resource "hookdeck_connection" "connection_example" {
       }
     },
     {
+      deduplicate_rule = {
+        window         = 3600000 # 1 hour in milliseconds (1s-1hr range)
+        include_fields = ["body.id", "body.event_type"]
+      }
+    },
+    {
       delay_rule = {
         delay = 10000
       }
