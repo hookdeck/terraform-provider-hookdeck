@@ -20,7 +20,7 @@ var (
 		"hookdeck": providerserver.NewProtocol6WithError(provider.New("test")()),
 	}
 
-	// common test JSON payload for filter rules
+	// Common test JSON payload for filter rules.
 	testFilterStatusJSON = `{"data":{"attributes":{"payload":{"data":{"attributes":{"status":{"$or":["completed","failed","approved","declined","needs_review"]}}}}}}}`
 )
 
