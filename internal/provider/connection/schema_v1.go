@@ -3,11 +3,14 @@ package connection
 import (
 	"terraform-provider-hookdeck/internal/validators"
 
+	"github.com/hashicorp/terraform-plugin-framework-jsontypes/jsontypes"
+	"github.com/hashicorp/terraform-plugin-framework-validators/int64validator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
+	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
 func schemaAttributesV1() map[string]schema.Attribute {
@@ -19,6 +22,7 @@ func schemaAttributesV1() map[string]schema.Attribute {
 			},
 			"json": schema.StringAttribute{
 				Optional:    true,
+				CustomType:  jsontypes.NormalizedType{},
 				Description: `Stringied JSON using our filter syntax to filter on request headers`,
 			},
 			"number": schema.NumberAttribute{
@@ -143,6 +147,31 @@ func schemaAttributesV1() map[string]schema.Attribute {
 								Required:    true,
 								Description: `ID of the attached transformation object.`,
 							},
+						},
+					},
+					"deduplicate_rule": schema.SingleNestedAttribute{
+						Optional: true,
+						Attributes: map[string]schema.Attribute{
+							"window": schema.Int64Attribute{
+								Required:    true,
+								Description: `Time window in milliseconds to remember deduplication keys when checking for duplicates.`,
+								Validators: []validator.Int64{
+									int64validator.Between(1000, 3600000),
+								},
+							},
+							"include_fields": schema.ListAttribute{
+								Optional:    true,
+								ElementType: types.StringType,
+								Description: `Fields to include when generating deduplicate key`,
+							},
+							"exclude_fields": schema.ListAttribute{
+								Optional:    true,
+								ElementType: types.StringType,
+								Description: `Fields to exclude when generating deduplicate key`,
+							},
+						},
+						Validators: []validator.Object{
+							validators.AtMostOneOf("include_fields", "exclude_fields"),
 						},
 					},
 				},

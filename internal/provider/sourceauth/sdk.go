@@ -47,9 +47,9 @@ func (m *sourceAuthResourceModel) Refresh(source map[string]interface{}) diag.Di
 	return diags
 }
 
-func (m *sourceAuthResourceModel) doRetrieve(_ context.Context, client *sdkclient.Client) (map[string]interface{}, diag.Diagnostics) {
+func (m *sourceAuthResourceModel) doRetrieve(ctx context.Context, client *sdkclient.Client) (map[string]interface{}, diag.Diagnostics) {
 	var diags diag.Diagnostics
-	response, err := client.RawClient.SendRequest("GET", fmt.Sprintf("/%s/sources/%s", apiVersion, m.SourceID.ValueString()), &sdkclient.RequestOptions{
+	response, err := client.RawClient.SendRequest(ctx, "GET", fmt.Sprintf("/%s/sources/%s", apiVersion, m.SourceID.ValueString()), &sdkclient.RequestOptions{
 		QueryParams: url.Values{
 			"include": []string{"config.auth"},
 		},
@@ -116,7 +116,7 @@ func (m *sourceAuthResourceModel) Update(ctx context.Context, client *sdkclient.
 		return diags
 	}
 
-	response, err := client.RawClient.SendRequest("PUT", fmt.Sprintf("/%s/sources/%s", apiVersion, m.SourceID.ValueString()), &sdkclient.RequestOptions{
+	response, err := client.RawClient.SendRequest(ctx, "PUT", fmt.Sprintf("/%s/sources/%s", apiVersion, m.SourceID.ValueString()), &sdkclient.RequestOptions{
 		Body: bytes.NewReader(jsonData),
 		Headers: http.Header{
 			"Content-Type": []string{"application/json"},
@@ -179,7 +179,7 @@ func (m *sourceAuthResourceModel) Delete(ctx context.Context, client *sdkclient.
 		return diags
 	}
 
-	response, err := client.RawClient.SendRequest("PUT", fmt.Sprintf("/%s/sources/%s", apiVersion, m.SourceID.ValueString()), &sdkclient.RequestOptions{
+	response, err := client.RawClient.SendRequest(ctx, "PUT", fmt.Sprintf("/%s/sources/%s", apiVersion, m.SourceID.ValueString()), &sdkclient.RequestOptions{
 		Body: bytes.NewReader(jsonData),
 		Headers: http.Header{
 			"Content-Type": []string{"application/json"},

@@ -41,3 +41,5 @@ website/vendor
 
 # Ignore the terraform provider locally built binary
 terraform-provider-hookdeck
+# Test environment variables
+.env.test

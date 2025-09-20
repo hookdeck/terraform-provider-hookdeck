@@ -1,6 +1,9 @@
 package connection
 
-import "github.com/hashicorp/terraform-plugin-framework/types"
+import (
+	"github.com/hashicorp/terraform-plugin-framework-jsontypes/jsontypes"
+	"github.com/hashicorp/terraform-plugin-framework/types"
+)
 
 type connectionResourceModel struct {
 	CreatedAt     types.String `tfsdk:"created_at"`
@@ -17,10 +20,11 @@ type connectionResourceModel struct {
 }
 
 type rule struct {
-	DelayRule     *delayRule     `tfsdk:"delay_rule"`
-	FilterRule    *filterRule    `tfsdk:"filter_rule"`
-	RetryRule     *retryRule     `tfsdk:"retry_rule"`
-	TransformRule *transformRule `tfsdk:"transform_rule"`
+	DeduplicateRule *deduplicateRule `tfsdk:"deduplicate_rule"`
+	DelayRule       *delayRule       `tfsdk:"delay_rule"`
+	FilterRule      *filterRule      `tfsdk:"filter_rule"`
+	RetryRule       *retryRule       `tfsdk:"retry_rule"`
+	TransformRule   *transformRule   `tfsdk:"transform_rule"`
 }
 
 type delayRule struct {
@@ -35,10 +39,10 @@ type filterRule struct {
 }
 
 type filterRuleProperty struct {
-	Boolean types.Bool   `tfsdk:"boolean"`
-	JSON    types.String `tfsdk:"json"`
-	Number  types.Number `tfsdk:"number"`
-	String  types.String `tfsdk:"string"`
+	Boolean types.Bool           `tfsdk:"boolean"`
+	JSON    jsontypes.Normalized `tfsdk:"json"`
+	Number  types.Number         `tfsdk:"number"`
+	String  types.String         `tfsdk:"string"`
 }
 
 type retryRule struct {
@@ -49,4 +53,10 @@ type retryRule struct {
 
 type transformRule struct {
 	TransformationID types.String `tfsdk:"transformation_id"`
+}
+
+type deduplicateRule struct {
+	Window        types.Int64 `tfsdk:"window"`
+	IncludeFields types.List  `tfsdk:"include_fields"`
+	ExcludeFields types.List  `tfsdk:"exclude_fields"`
 }

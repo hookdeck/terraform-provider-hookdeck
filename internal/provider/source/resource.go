@@ -68,7 +68,8 @@ func (r *sourceResource) Create(ctx context.Context, req resource.CreateRequest,
 		return
 	}
 
-	resp.Diagnostics.Append(data.Create(ctx, &r.client)...)
+	diags := data.Create(ctx, &r.client)
+	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -84,7 +85,8 @@ func (r *sourceResource) Read(ctx context.Context, req resource.ReadRequest, res
 		return
 	}
 
-	resp.Diagnostics.Append(data.Retrieve(ctx, &r.client)...)
+	diags := data.Retrieve(ctx, &r.client)
+	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -100,7 +102,8 @@ func (r *sourceResource) Update(ctx context.Context, req resource.UpdateRequest,
 		return
 	}
 
-	resp.Diagnostics.Append(data.Update(ctx, &r.client)...)
+	diags := data.Update(ctx, &r.client)
+	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -116,7 +119,8 @@ func (r *sourceResource) Delete(ctx context.Context, req resource.DeleteRequest,
 		return
 	}
 
-	resp.Diagnostics.Append(data.Delete(ctx, &r.client)...)
+	diags := data.Delete(ctx, &r.client)
+	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return
 	}

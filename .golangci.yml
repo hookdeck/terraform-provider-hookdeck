@@ -22,6 +22,11 @@ linters:
     - unused
     - usetesting
 
+  settings:
+    errcheck:
+      exclude-functions:
+        - (io.ReadCloser).Close # ignore close error for http response body
+
 issues:
   max-issues-per-linter: 0
   max-same-issues: 0

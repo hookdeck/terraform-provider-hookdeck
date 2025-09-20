@@ -85,7 +85,7 @@ func (m *sourceResourceModel) Refresh(source map[string]interface{}) diag.Diagno
 
 func (m *sourceResourceModel) Retrieve(ctx context.Context, client *sdkclient.Client) diag.Diagnostics {
 	var diags diag.Diagnostics
-	response, err := client.RawClient.SendRequest("GET", fmt.Sprintf("/%s/sources/%s", apiVersion, m.ID.ValueString()), &sdkclient.RequestOptions{
+	response, err := client.RawClient.SendRequest(ctx, "GET", fmt.Sprintf("/%s/sources/%s", apiVersion, m.ID.ValueString()), &sdkclient.RequestOptions{
 		QueryParams: url.Values{
 			"include": []string{"config.auth"},
 		},
@@ -134,7 +134,7 @@ func (m *sourceResourceModel) Create(ctx context.Context, client *sdkclient.Clie
 		return diags
 	}
 
-	response, err := client.RawClient.SendRequest("POST", fmt.Sprintf("/%s/sources", apiVersion), &sdkclient.RequestOptions{
+	response, err := client.RawClient.SendRequest(ctx, "POST", fmt.Sprintf("/%s/sources", apiVersion), &sdkclient.RequestOptions{
 		Body: bytes.NewReader(jsonData),
 		Headers: http.Header{
 			"Content-Type": []string{"application/json"},
@@ -184,7 +184,7 @@ func (m *sourceResourceModel) Update(ctx context.Context, client *sdkclient.Clie
 		return diags
 	}
 
-	response, err := client.RawClient.SendRequest("PUT", fmt.Sprintf("/%s/sources/%s", apiVersion, m.ID.ValueString()), &sdkclient.RequestOptions{
+	response, err := client.RawClient.SendRequest(ctx, "PUT", fmt.Sprintf("/%s/sources/%s", apiVersion, m.ID.ValueString()), &sdkclient.RequestOptions{
 		Body: bytes.NewReader(jsonData),
 		Headers: http.Header{
 			"Content-Type": []string{"application/json"},
@@ -223,7 +223,7 @@ func (m *sourceResourceModel) Update(ctx context.Context, client *sdkclient.Clie
 func (m *sourceResourceModel) Delete(ctx context.Context, client *sdkclient.Client) diag.Diagnostics {
 	var diags diag.Diagnostics
 
-	response, err := client.RawClient.SendRequest("DELETE", fmt.Sprintf("/%s/sources/%s", apiVersion, m.ID.ValueString()), &sdkclient.RequestOptions{})
+	response, err := client.RawClient.SendRequest(ctx, "DELETE", fmt.Sprintf("/%s/sources/%s", apiVersion, m.ID.ValueString()), &sdkclient.RequestOptions{})
 	if err != nil {
 		diags.AddError("Error deleting source", err.Error())
 		return diags

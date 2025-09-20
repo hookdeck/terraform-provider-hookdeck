@@ -67,7 +67,8 @@ func (r *destinationDataSource) Read(ctx context.Context, req datasource.ReadReq
 		return
 	}
 
-	resp.Diagnostics.Append(data.Retrieve(ctx, &r.client)...)
+	diags := data.Retrieve(ctx, &r.client)
+	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
