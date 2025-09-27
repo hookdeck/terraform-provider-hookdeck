@@ -76,11 +76,11 @@ type HookdeckRateLimiter struct {
 
 // NewHookdeckRateLimiter creates a rate limiter for Hookdeck's API limits.
 func NewHookdeckRateLimiter() *HookdeckRateLimiter {
-	// 240 requests per minute = 4 per second
-	// Use rate.Every for cleaner per-minute expression
-	// Burst of 10 allows for short bursts of activity
+	// API limit: 240 requests per minute
+	// We use 230 req/min with burst of 5 to stay safely under the limit
+	// 230 + 5 = 235 total possible requests in first minute (5 request buffer)
 	return &HookdeckRateLimiter{
-		limiter: rate.NewLimiter(rate.Every(time.Minute/240), 10),
+		limiter: rate.NewLimiter(rate.Every(time.Minute/230), 5),
 	}
 }
 
