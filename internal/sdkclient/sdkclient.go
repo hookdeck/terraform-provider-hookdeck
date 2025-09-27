@@ -75,6 +75,39 @@ type HookdeckRateLimiter struct {
 }
 
 // NewHookdeckRateLimiter creates a rate limiter for Hookdeck's API limits.
+//
+// Rate Limiting Strategy:
+// - Initial burst: 5 requests (allows immediate execution for small operations)
+// - Steady rate: 230 requests/minute (3.83 req/sec)
+// - This results in max 235 requests in the first minute, then 230/min thereafter
+// - Conservative approach ensures we stay under the 240 req/min API limit
+//
+// API Rate Limit Headers:
+// The Hookdeck API returns the following rate limit headers in responses:
+// - Retry-After: Seconds before next request can be made
+// - X-RateLimit-Limit: Requests per minute limit for the API key
+// - X-RateLimit-Remaining: Remaining requests for the rate limit period
+// - X-RateLimit-Reset: ISO timestamp of the next rate limit period reset
+// Currently, we use client-side rate limiting and don't dynamically adjust based
+// on these headers, but they're available for debugging and future enhancements.
+//
+// Retry Considerations:
+// - We intentionally DO NOT implement automatic retries on 429 errors
+// - Retries would consume additional tokens from our rate limit bucket,
+//   potentially causing cascading failures for subsequent requests
+// - If retry logic is needed, implement using recursion with retry count tracking,
+//   ensuring each retry attempt goes through the rate limiter to maintain
+//   the global rate limit invariant
+//
+// Performance Trade-offs:
+// - This rate limiter works well for large Terraform states (200+ resources)
+// - However, it significantly impacts small deployments:
+//   - 100 resources now take ~30 seconds vs ~5 seconds previously
+//   - This is an intentional trade-off for reliability and compliance
+// - Future optimization could implement a true "240 requests per sliding minute"
+//   window instead of the current token bucket approach
+// - Potential solution: In-memory FIFO queue that tracks the last minute's
+//   requests and blocks when 240 requests have been made in the past 60 seconds
 func NewHookdeckRateLimiter() *HookdeckRateLimiter {
 	// API limit: 240 requests per minute
 	// We use 230 req/min with burst of 5 to stay safely under the limit
