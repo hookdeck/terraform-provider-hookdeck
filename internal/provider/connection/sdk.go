@@ -9,6 +9,7 @@ import (
 	"math/big"
 	"net/http"
 	"strconv"
+
 	"terraform-provider-hookdeck/internal/sdkclient"
 
 	"github.com/hashicorp/terraform-plugin-framework-jsontypes/jsontypes"
@@ -563,7 +564,7 @@ func rulesFromAPI(rules []interface{}) []rule {
 			} else {
 				retryRule.Interval = types.Int64Null()
 			}
-			if responseStatusCodes, ok := ruleMap["response_status_codes"].([]interface{}); ok {
+			if responseStatusCodes, ok := ruleMap["response_status_codes"].([]any); ok {
 				statusCodeExpressions := []types.String{}
 				for _, expression := range responseStatusCodes {
 					if expressionStr, ok := expression.(string); ok {
@@ -575,6 +576,8 @@ func rulesFromAPI(rules []interface{}) []rule {
 				} else {
 					retryRule.ResponseStatusCodes = types.ListNull(types.StringType)
 				}
+			} else {
+				retryRule.ResponseStatusCodes = types.ListNull(types.StringType)
 			}
 
 			result = append(result, rule{RetryRule: retryRule})
