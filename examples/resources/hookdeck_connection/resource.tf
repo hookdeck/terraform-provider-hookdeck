@@ -40,9 +40,10 @@ resource "hookdeck_connection" "connection_example" {
     },
     {
       retry_rule = {
-        count    = 5
-        interval = 3600000
-        strategy = "exponential"
+        count                 = 5
+        interval              = 3600000
+        strategy              = "exponential"
+        response_status_codes = ["500-599", ">400", "!503"]
       }
     }
   ]

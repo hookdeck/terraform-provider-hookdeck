@@ -129,6 +129,7 @@ Read-Only:
 
 - `count` (Number) Maximum number of retries to attempt
 - `interval` (Number) Time in MS between each retry
+- `response_status_codes` (List of String) HTTP codes to retry on. Accepts: range expressions (e.g., "400-499", ">400"), specific codes (e.g., 404), and exclusions (e.g., "!401"). Example: ["500-599", ">400", 404, "!401"]
 - `strategy` (String) must be one of ["linear", "exponential"]
 Algorithm to use when calculating delay between retries
 
