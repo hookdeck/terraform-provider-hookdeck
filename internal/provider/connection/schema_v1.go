@@ -138,6 +138,11 @@ func schemaAttributesV1() map[string]schema.Attribute {
 								MarkdownDescription: `must be one of ["linear", "exponential"]` + "\n" +
 									`Algorithm to use when calculating delay between retries`,
 							},
+							"response_status_codes": schema.ListAttribute{
+								Optional:    true,
+								ElementType: types.StringType,
+								Description: `HTTP codes to retry on. Accepts: range expressions (e.g., "400-499", ">400"), specific codes (e.g., 404), and exclusions (e.g., "!401"). Example: ["500-599", ">400", 404, "!401"]`,
+							},
 						},
 					},
 					"transform_rule": schema.SingleNestedAttribute{

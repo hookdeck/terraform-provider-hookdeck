@@ -46,9 +46,10 @@ type filterRuleProperty struct {
 }
 
 type retryRule struct {
-	Count    types.Int64  `tfsdk:"count"`
-	Interval types.Int64  `tfsdk:"interval"`
-	Strategy types.String `tfsdk:"strategy"`
+	Count               types.Int64  `tfsdk:"count"`
+	Interval            types.Int64  `tfsdk:"interval"`
+	Strategy            types.String `tfsdk:"strategy"`
+	ResponseStatusCodes types.List   `tfsdk:"response_status_codes"`
 }
 
 type transformRule struct {

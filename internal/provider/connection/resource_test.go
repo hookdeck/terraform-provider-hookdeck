@@ -113,6 +113,19 @@ func TestAccConnectionResourceWithRules(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceName, "rules.0.retry_rule.interval", "1000"),
 				),
 			},
+			// Update with retry rule with response status codes
+			{
+				Config: loadTestConfigFormatted("with_retry_rule_with_codes.tf", rName),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr(resourceName, "name", fmt.Sprintf("test-connection-retry-%s", rName)),
+					resource.TestCheckResourceAttr(resourceName, "rules.#", "1"),
+					resource.TestCheckResourceAttr(resourceName, "rules.0.retry_rule.strategy", "exponential"),
+					resource.TestCheckResourceAttr(resourceName, "rules.0.retry_rule.count", "5"),
+					resource.TestCheckResourceAttr(resourceName, "rules.0.retry_rule.interval", "1000"),
+					resource.TestCheckResourceAttr(resourceName, "rules.0.retry_rule.response_status_codes.#", "1"),
+					resource.TestCheckResourceAttr(resourceName, "rules.0.retry_rule.response_status_codes.0", "500-599"),
+				),
+			},
 			// Update with delay rule
 			{
 				Config: loadTestConfigFormatted("with_delay_rule.tf", rName),

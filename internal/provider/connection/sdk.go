@@ -9,6 +9,7 @@ import (
 	"math/big"
 	"net/http"
 	"strconv"
+
 	"terraform-provider-hookdeck/internal/sdkclient"
 
 	"github.com/hashicorp/terraform-plugin-framework-jsontypes/jsontypes"
@@ -409,6 +410,15 @@ func rulesToAPI(ctx context.Context, rules []rule) ([]interface{}, error) {
 				rule["interval"] = ruleItem.RetryRule.Interval.ValueInt64()
 			}
 
+			responseStatusCodesFieldsSet := !ruleItem.RetryRule.ResponseStatusCodes.IsNull() && !ruleItem.RetryRule.ResponseStatusCodes.IsUnknown()
+			if responseStatusCodesFieldsSet {
+				responseStatusCodes := []string{}
+				ruleItem.RetryRule.ResponseStatusCodes.ElementsAs(ctx, &responseStatusCodes, false)
+				if len(responseStatusCodes) > 0 {
+					rule["response_status_codes"] = responseStatusCodes
+				}
+			}
+
 			result = append(result, rule)
 		}
 
@@ -553,6 +563,21 @@ func rulesFromAPI(rules []interface{}) []rule {
 				retryRule.Interval = types.Int64Value(int64(interval))
 			} else {
 				retryRule.Interval = types.Int64Null()
+			}
+			if responseStatusCodes, ok := ruleMap["response_status_codes"].([]any); ok {
+				statusCodeExpressions := []types.String{}
+				for _, expression := range responseStatusCodes {
+					if expressionStr, ok := expression.(string); ok {
+						statusCodeExpressions = append(statusCodeExpressions, types.StringValue(expressionStr))
+					}
+				}
+				if len(statusCodeExpressions) > 0 {
+					retryRule.ResponseStatusCodes, _ = types.ListValueFrom(context.Background(), types.StringType, statusCodeExpressions)
+				} else {
+					retryRule.ResponseStatusCodes = types.ListNull(types.StringType)
+				}
+			} else {
+				retryRule.ResponseStatusCodes = types.ListNull(types.StringType)
 			}
 
 			result = append(result, rule{RetryRule: retryRule})

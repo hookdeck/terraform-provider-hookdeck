@@ -55,9 +55,10 @@ resource "hookdeck_connection" "connection_example" {
     },
     {
       retry_rule = {
-        count    = 5
-        interval = 3600000
-        strategy = "exponential"
+        count                 = 5
+        interval              = 3600000
+        strategy              = "exponential"
+        response_status_codes = ["500-599", ">400", "!503"]
       }
     }
   ]
@@ -186,6 +187,7 @@ Optional:
 
 - `count` (Number) Maximum number of retries to attempt
 - `interval` (Number) Time in MS between each retry
+- `response_status_codes` (List of String) HTTP codes to retry on. Accepts: range expressions (e.g., "400-499", ">400"), specific codes (e.g., 404), and exclusions (e.g., "!401"). Example: ["500-599", ">400", 404, "!401"]
 
 
 <a id="nestedatt--rules--transform_rule"></a>
