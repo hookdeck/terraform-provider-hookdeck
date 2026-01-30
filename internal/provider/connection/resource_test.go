@@ -443,6 +443,13 @@ func TestAccConnectionResourceFilterJSONFormatting(t *testing.T) {
 // encountered "Value Conversion Error" with "Struct defines fields not found
 // in object: deduplicate_rule" when configuring a connection with a retry rule.
 // See: https://github.com/hookdeck/terraform-provider-hookdeck/issues/191
+//
+// Note: This acceptance test validates that the configuration from issue #191
+// works correctly with the fixed provider, addressing the user's immediate problem.
+// It creates a resource with the current provider version rather than testing
+// the actual state upgrade scenario from V0 to V1 (which would require using
+// ExternalProviders with an older provider version). The unit tests in
+// stateupgrade_test.go provide comprehensive coverage of the state upgrade logic.
 func TestAccConnectionResource_Issue191(t *testing.T) {
 	rName := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
 	resourceName := fmt.Sprintf("hookdeck_connection.test_%s", rName)
