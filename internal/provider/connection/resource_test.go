@@ -437,3 +437,50 @@ func TestAccConnectionResourceFilterJSONFormatting(t *testing.T) {
 		},
 	})
 }
+
+// TestAccConnectionResource_Issue191 verifies the fix for issue #191.
+// This test uses the exact configuration from the GitHub issue where users
+// encountered "Value Conversion Error" with "Struct defines fields not found
+// in object: deduplicate_rule" when configuring a connection with a retry rule.
+// See: https://github.com/hookdeck/terraform-provider-hookdeck/issues/191
+func TestAccConnectionResource_Issue191(t *testing.T) {
+	rName := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
+	resourceName := fmt.Sprintf("hookdeck_connection.test_%s", rName)
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { testAccPreCheck(t) },
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			// Step 1: Create connection with retry rule (exact config from issue #191)
+			{
+				Config: loadTestConfigFormatted("issue_191_retry_only.tf", rName),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr(resourceName, "name", fmt.Sprintf("test-connection-issue191-%s", rName)),
+					resource.TestCheckResourceAttr(resourceName, "rules.#", "1"),
+					resource.TestCheckResourceAttr(resourceName, "rules.0.retry_rule.strategy", "exponential"),
+					resource.TestCheckResourceAttr(resourceName, "rules.0.retry_rule.count", "6"),
+					resource.TestCheckResourceAttr(resourceName, "rules.0.retry_rule.interval", "60000"),
+					resource.TestCheckResourceAttr(resourceName, "rules.0.retry_rule.response_status_codes.#", "1"),
+					resource.TestCheckResourceAttr(resourceName, "rules.0.retry_rule.response_status_codes.0", "500-599"),
+					// Verify deduplicate_rule is not present (the field that caused the error)
+					resource.TestCheckNoResourceAttr(resourceName, "rules.0.deduplicate_rule"),
+				),
+			},
+			// Step 2: Import state to verify state handling
+			{
+				ResourceName:      resourceName,
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+			// Step 3: Re-apply the same config to verify no drift
+			{
+				Config:   loadTestConfigFormatted("issue_191_retry_only.tf", rName),
+				PlanOnly: true,
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr(resourceName, "rules.#", "1"),
+					resource.TestCheckResourceAttr(resourceName, "rules.0.retry_rule.strategy", "exponential"),
+				),
+			},
+		},
+	})
+}
