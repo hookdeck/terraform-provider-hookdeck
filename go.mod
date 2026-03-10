@@ -1,8 +1,6 @@
 module terraform-provider-hookdeck
 
-go 1.24.0
-
-toolchain go1.24.7
+go 1.25.0
 
 require (
 	github.com/hashicorp/terraform-plugin-docs v0.24.0
@@ -13,7 +11,7 @@ require (
 	github.com/hashicorp/terraform-plugin-log v0.10.0
 	github.com/hashicorp/terraform-plugin-testing v1.13.3
 	golang.org/x/sys v0.37.0
-	golang.org/x/time v0.14.0
+	golang.org/x/time v0.15.0
 )
 
 require (
