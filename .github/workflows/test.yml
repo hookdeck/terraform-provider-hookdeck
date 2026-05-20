@@ -8,6 +8,8 @@ on:
     paths-ignore:
       - "README.md"
   push:
+    branches:
+      - main
     paths-ignore:
       - "README.md"
 
@@ -54,17 +56,25 @@ jobs:
     name: Terraform Provider Acceptance Tests
     needs: build
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 30
+    # Fork PRs can't access secrets, so HOOKDECK_API_KEY would be empty and
+    # the tests would fail. Skip on fork PRs — they run after merge to main.
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
+    # Acceptance tests create real Hookdeck resources. The API has a
+    # 240 req/min limit and the provider doesn't retry on 429. Serialize all
+    # acceptance runs across the repo to keep within the limit.
+    concurrency:
+      group: acceptance-tests
+      cancel-in-progress: false
     strategy:
       fail-fast: false
+      # Same reasoning: serialize matrix entries too so two TF versions don't
+      # race on the rate limit within a single workflow run.
+      max-parallel: 1
       matrix:
-        # list whatever Terraform versions here you would like to support
         terraform:
-          - "1.0.*"
-          - "1.1.*"
-          - "1.2.*"
-          - "1.3.*"
-          - "1.4.*"
+          - "1.9.*"
+          - "1.10.*"
     steps:
       - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
       - uses: actions/setup-go@3041bf56c941b39c61721a86cd11f3bb1338122a # v5.2.0
@@ -78,6 +88,6 @@ jobs:
       - run: go mod download
       - env:
           TF_ACC: "1"
-        run: go test -v -cover ./internal/provider/
-        timeout-minutes: 10
-
+          HOOKDECK_API_KEY: ${{ secrets.HOOKDECK_API_KEY }}
+        run: go test -v -cover -timeout 25m ./internal/provider/...
+        timeout-minutes: 25
