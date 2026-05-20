@@ -70,7 +70,7 @@ func fetchSourceConfig(id string) (map[string]interface{}, error) {
 	return config, nil
 }
 
-func checkAPIConfigValue(resourceName, key string, expected interface{}) resource.TestCheckFunc {
+func checkAPIConfigKeyAbsent(resourceName, key string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[resourceName]
 		if !ok {
@@ -80,39 +80,36 @@ func checkAPIConfigValue(resourceName, key string, expected interface{}) resourc
 		if err != nil {
 			return err
 		}
-		got := config[key]
-		switch want := expected.(type) {
-		case nil:
-			if got != nil {
-				return fmt.Errorf("expected config.%s to be absent/null on API, got %v", key, got)
-			}
-		case []string:
-			gotSlice, ok := got.([]interface{})
-			if !ok {
-				return fmt.Errorf("expected config.%s = %v on API, got %v (%T)", key, want, got, got)
-			}
-			if len(gotSlice) != len(want) {
-				return fmt.Errorf("expected config.%s length %d, got %d (%v)", key, len(want), len(gotSlice), got)
-			}
-			for i, w := range want {
-				gs, ok := gotSlice[i].(string)
-				if !ok || gs != w {
-					return fmt.Errorf("expected config.%s[%d] = %q on API, got %v", key, i, w, gotSlice[i])
-				}
-			}
-		default:
-			return fmt.Errorf("unsupported expected type %T", expected)
+		if got := config[key]; got != nil {
+			return fmt.Errorf("expected config.%s to be absent/null on API, got %v", key, got)
 		}
 		return nil
 	}
 }
 
-// TestAccSourceResource_RemoveAllowedHTTPMethods verifies that removing
-// `allowed_http_methods` from the Terraform config actually clears it on the
-// Hookdeck source. The Hookdeck API merges config updates, so without explicit
-// null-out logic, removed keys silently persist. Mirrors the destination
-// rate_limit removal test, exercising the same fix in source/sdk.go.
-func TestAccSourceResource_RemoveAllowedHTTPMethods(t *testing.T) {
+func checkAPIConfigKeyIsObject(resourceName, key string) resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+		rs, ok := s.RootModule().Resources[resourceName]
+		if !ok {
+			return fmt.Errorf("resource not found: %s", resourceName)
+		}
+		config, err := fetchSourceConfig(rs.Primary.ID)
+		if err != nil {
+			return err
+		}
+		if _, ok := config[key].(map[string]interface{}); !ok {
+			return fmt.Errorf("expected config.%s to be an object on API, got %v", key, config[key])
+		}
+		return nil
+	}
+}
+
+// TestAccSourceResource_RemoveCustomResponse mirrors the destination
+// rate_limit removal test for sources: applies a source with a
+// `custom_response` object set, removes it, and verifies via direct API read
+// that the key is cleared. `custom_response` is nullable in the OpenAPI spec
+// so the provider's null-out logic in source/sdk.go applies cleanly.
+func TestAccSourceResource_RemoveCustomResponse(t *testing.T) {
 	rName := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
 	resourceName := fmt.Sprintf("hookdeck_source.test_%s", rName)
 
@@ -121,17 +118,40 @@ func TestAccSourceResource_RemoveAllowedHTTPMethods(t *testing.T) {
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: loadTestConfigFormatted("with_allowed_http_methods.tf", rName),
+				Config: loadTestConfigFormatted("with_custom_response.tf", rName),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttrSet(resourceName, "id"),
-					checkAPIConfigValue(resourceName, "allowed_http_methods", []string{"GET", "POST"}),
+					checkAPIConfigKeyIsObject(resourceName, "custom_response"),
 				),
 			},
 			{
 				Config: loadTestConfigFormatted("without_allowed_http_methods.tf", rName),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					checkAPIConfigValue(resourceName, "allowed_http_methods", nil),
+					checkAPIConfigKeyAbsent(resourceName, "custom_response"),
 				),
+			},
+		},
+	})
+}
+
+// TestAccSourceResource_RemoveAllowedHTTPMethodsDoesNotError locks in that
+// removing a non-nullable array-typed config field (`allowed_http_methods` is
+// non-nullable per OpenAPI) does not cause the API to 422. The null-out logic
+// in source/sdk.go skips arrays and booleans for this reason. The field
+// retains its prior API value (merge-bug behavior preserved for non-nullable
+// types) but the apply itself succeeds.
+func TestAccSourceResource_RemoveAllowedHTTPMethodsDoesNotError(t *testing.T) {
+	rName := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { testAccPreCheck(t) },
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				Config: loadTestConfigFormatted("with_allowed_http_methods.tf", rName),
+			},
+			{
+				Config: loadTestConfigFormatted("without_allowed_http_methods.tf", rName),
 			},
 		},
 	})

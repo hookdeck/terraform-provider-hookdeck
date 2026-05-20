@@ -287,10 +287,20 @@ func (m *destinationResourceModel) toUpdatePayload(priorConfig string) (map[stri
 		payload["config"] = newPayloadConfig
 	}
 
-	for key := range priorPayloadConfig {
-		if _, exists := newPayloadConfig[key]; !exists {
-			newPayloadConfig[key] = nil
+	for key, priorValue := range priorPayloadConfig {
+		if _, exists := newPayloadConfig[key]; exists {
+			continue
 		}
+		// Hookdeck's OpenAPI spec marks every array- and boolean-typed
+		// destination config field as non-nullable, so sending null returns
+		// 422. The API has no "reset to default" sentinel for those types —
+		// leave them omitted (the merge bug persists for that specific field,
+		// but the apply succeeds rather than erroring out).
+		switch priorValue.(type) {
+		case []interface{}, bool:
+			continue
+		}
+		newPayloadConfig[key] = nil
 	}
 
 	return payload, diags
