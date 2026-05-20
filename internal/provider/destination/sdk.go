@@ -163,10 +163,10 @@ func (m *destinationResourceModel) Create(ctx context.Context, client *sdkclient
 	return m.Refresh(destination)
 }
 
-func (m *destinationResourceModel) Update(ctx context.Context, client *sdkclient.Client) diag.Diagnostics {
+func (m *destinationResourceModel) Update(ctx context.Context, client *sdkclient.Client, priorConfig string) diag.Diagnostics {
 	var diags diag.Diagnostics
 
-	payload, diags := m.toPayload()
+	payload, diags := m.toUpdatePayload(priorConfig)
 	if diags.HasError() {
 		return diags
 	}
@@ -256,6 +256,41 @@ func (m *destinationResourceModel) toPayload() (map[string]interface{}, diag.Dia
 	}
 	if m.Type.ValueString() != "" {
 		payload["type"] = m.Type.ValueString()
+	}
+
+	return payload, diags
+}
+
+// toUpdatePayload builds the update payload, explicitly nulling out top-level
+// config keys that existed in the prior state but were removed in the plan.
+// The Hookdeck API merges config updates, so omitted keys would otherwise be
+// retained on the destination.
+func (m *destinationResourceModel) toUpdatePayload(priorConfig string) (map[string]interface{}, diag.Diagnostics) {
+	payload, diags := m.toPayload()
+	if diags.HasError() {
+		return nil, diags
+	}
+
+	if priorConfig == "" {
+		return payload, diags
+	}
+
+	var priorPayloadConfig map[string]interface{}
+	if err := json.Unmarshal([]byte(priorConfig), &priorPayloadConfig); err != nil {
+		diags.AddError("Error parsing prior destination config", err.Error())
+		return nil, diags
+	}
+
+	newPayloadConfig, ok := payload["config"].(map[string]interface{})
+	if !ok {
+		newPayloadConfig = map[string]interface{}{}
+		payload["config"] = newPayloadConfig
+	}
+
+	for key := range priorPayloadConfig {
+		if _, exists := newPayloadConfig[key]; !exists {
+			newPayloadConfig[key] = nil
+		}
 	}
 
 	return payload, diags
