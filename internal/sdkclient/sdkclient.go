@@ -153,8 +153,16 @@ func InitHookdeckSDKClient(apiBase string, apiKey string, providerVersion string
 	initUserAgentHeader(header, providerVersion)
 
 	limiter := RateLimiter(NewHookdeckRateLimiter())
+	httpClient := HTTPDoer(http.DefaultClient)
 	if os.Getenv("TF_ACC") == "1" {
 		limiter = getSharedTestRateLimiter()
+		// Tests spin up many short-lived providers against a single API key;
+		// cumulative bursts can still occasionally trip the API's sliding-
+		// window 429 even with the shared limiter. Wrap the HTTP client to
+		// retry on 429 with the Retry-After header respected. Production
+		// behavior intentionally does NOT retry (see comment on
+		// HookdeckRateLimiter); this only applies under TF_ACC=1.
+		httpClient = newRetrying429Client(http.DefaultClient, 5)
 	}
 
 	// Create RawClient with Hookdeck rate limiting by default
@@ -162,7 +170,7 @@ func InitHookdeckSDKClient(apiBase string, apiKey string, providerVersion string
 		apiKey:      apiKey,
 		apiBase:     apiBase,
 		header:      header,
-		httpClient:  http.DefaultClient,
+		httpClient:  httpClient,
 		rateLimiter: limiter,
 	}
 
