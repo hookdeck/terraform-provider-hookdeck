@@ -1,0 +1,9 @@
+resource "hookdeck_destination" "test_%[1]s" {
+  name = "test-destination-%[1]s"
+  type = "HTTP"
+  config = jsonencode({
+    url               = "https://mock.hookdeck.com"
+    rate_limit        = 10
+    rate_limit_period = "concurrent"
+  })
+}
