@@ -261,7 +261,22 @@ func (m *destinationResourceModel) toPayload() (map[string]interface{}, diag.Dia
 	return payload, diags
 }
 
-// toUpdatePayload builds the update payload, explicitly nulling out top-level
+// nonNullableConfigDefaults holds the documented default values for
+// destination config fields that the Hookdeck API marks as non-nullable.
+// For nullable fields, sending null clears them — but the API rejects null
+// for non-nullable fields (e.g. boolean `path_forwarding_disabled`). To still
+// honor a user removing such a field from their Terraform config, send the
+// documented default explicitly so the field is reset rather than retained.
+//
+// Keep in sync with the OpenAPI spec when new destination types or
+// non-nullable fields are introduced.
+var nonNullableConfigDefaults = map[string]map[string]interface{}{
+	"HTTP":     {"path_forwarding_disabled": false},
+	"CLI":      {"path_forwarding_disabled": false},
+	"MOCK_API": {"path_forwarding_disabled": false},
+}
+
+// toUpdatePayload builds the update payload, explicitly clearing top-level
 // config keys that existed in the prior state but were removed in the plan.
 // The Hookdeck API merges config updates, so omitted keys would otherwise be
 // retained on the destination.
@@ -287,17 +302,20 @@ func (m *destinationResourceModel) toUpdatePayload(priorConfig string) (map[stri
 		payload["config"] = newPayloadConfig
 	}
 
+	typeDefaults := nonNullableConfigDefaults[m.Type.ValueString()]
 	for key, priorValue := range priorPayloadConfig {
 		if _, exists := newPayloadConfig[key]; exists {
 			continue
 		}
-		// Hookdeck's OpenAPI spec marks every array- and boolean-typed
-		// destination config field as non-nullable, so sending null returns
-		// 422. The API has no "reset to default" sentinel for those types —
-		// leave them omitted (the merge bug persists for that specific field,
-		// but the apply succeeds rather than erroring out).
+		// Arrays and booleans are uniformly non-nullable in this API. Sending
+		// null returns 422. If we have a documented default for the field,
+		// send that to reset; otherwise leave it omitted (which falls back to
+		// the merge behavior — the only safe choice without a known default).
 		switch priorValue.(type) {
 		case []interface{}, bool:
+			if def, ok := typeDefaults[key]; ok {
+				newPayloadConfig[key] = def
+			}
 			continue
 		}
 		newPayloadConfig[key] = nil

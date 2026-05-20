@@ -104,6 +104,40 @@ func checkAPIConfigKeyIsObject(resourceName, key string) resource.TestCheckFunc 
 	}
 }
 
+func checkAPIConfigStringSlice(resourceName, key string, expected []string) resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+		rs, ok := s.RootModule().Resources[resourceName]
+		if !ok {
+			return fmt.Errorf("resource not found: %s", resourceName)
+		}
+		config, err := fetchSourceConfig(rs.Primary.ID)
+		if err != nil {
+			return err
+		}
+		raw, ok := config[key].([]interface{})
+		if !ok {
+			return fmt.Errorf("expected config.%s to be an array on API, got %v (%T)", key, config[key], config[key])
+		}
+		if len(raw) != len(expected) {
+			return fmt.Errorf("expected config.%s length %d, got %d (%v)", key, len(expected), len(raw), raw)
+		}
+		got := make(map[string]bool, len(raw))
+		for _, v := range raw {
+			s, ok := v.(string)
+			if !ok {
+				return fmt.Errorf("expected config.%s to be []string, got element %v (%T)", key, v, v)
+			}
+			got[s] = true
+		}
+		for _, w := range expected {
+			if !got[w] {
+				return fmt.Errorf("expected config.%s to contain %q on API, got %v", key, w, raw)
+			}
+		}
+		return nil
+	}
+}
+
 // TestAccSourceResource_RemoveCustomResponse mirrors the destination
 // rate_limit removal test for sources: applies a source with a
 // `custom_response` object set, removes it, and verifies via direct API read
@@ -134,14 +168,15 @@ func TestAccSourceResource_RemoveCustomResponse(t *testing.T) {
 	})
 }
 
-// TestAccSourceResource_RemoveAllowedHTTPMethodsDoesNotError locks in that
-// removing a non-nullable array-typed config field (`allowed_http_methods` is
-// non-nullable per OpenAPI) does not cause the API to 422. The null-out logic
-// in source/sdk.go skips arrays and booleans for this reason. The field
-// retains its prior API value (merge-bug behavior preserved for non-nullable
-// types) but the apply itself succeeds.
-func TestAccSourceResource_RemoveAllowedHTTPMethodsDoesNotError(t *testing.T) {
+// TestAccSourceResource_RemoveAllowedHTTPMethodsResetsToDefault verifies that
+// removing the non-nullable `allowed_http_methods` field from a Terraform
+// config resets the source to the API's documented default
+// (["PUT","POST","PATCH","DELETE"]). Sending null would 422; source/sdk.go
+// looks up the documented default in nonNullableConfigDefaults and sends it
+// explicitly so the field is reset, not retained.
+func TestAccSourceResource_RemoveAllowedHTTPMethodsResetsToDefault(t *testing.T) {
 	rName := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
+	resourceName := fmt.Sprintf("hookdeck_source.test_%s", rName)
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { testAccPreCheck(t) },
@@ -149,9 +184,16 @@ func TestAccSourceResource_RemoveAllowedHTTPMethodsDoesNotError(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: loadTestConfigFormatted("with_allowed_http_methods.tf", rName),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					checkAPIConfigStringSlice(resourceName, "allowed_http_methods", []string{"GET", "POST"}),
+				),
 			},
 			{
 				Config: loadTestConfigFormatted("without_allowed_http_methods.tf", rName),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					checkAPIConfigStringSlice(resourceName, "allowed_http_methods",
+						[]string{"PUT", "POST", "PATCH", "DELETE"}),
+				),
 			},
 		},
 	})

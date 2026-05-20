@@ -100,6 +100,11 @@ func checkAPIConfigValue(resourceName, key string, expected interface{}) resourc
 			if !ok || gotStr != want {
 				return fmt.Errorf("expected config.%s = %q on API, got %v", key, want, got)
 			}
+		case bool:
+			gotBool, ok := got.(bool)
+			if !ok || gotBool != want {
+				return fmt.Errorf("expected config.%s = %v on API, got %v", key, want, got)
+			}
 		default:
 			return fmt.Errorf("unsupported expected type %T", expected)
 		}
@@ -236,6 +241,37 @@ func TestAccDestinationResource_RemoveHTTPMethod(t *testing.T) {
 				Config: loadTestConfigFormatted("without_rate_limit.tf", rName),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					checkAPIConfigValue(resourceName, "http_method", nil),
+				),
+			},
+		},
+	})
+}
+
+// TestAccDestinationResource_RemovePathForwardingDisabledResetsToDefault
+// verifies that removing the non-nullable `path_forwarding_disabled` boolean
+// from a Terraform config resets the destination to the API's documented
+// default (false). Booleans are non-nullable in the Hookdeck OpenAPI spec, so
+// sending null would 422; destination/sdk.go looks up the documented default
+// in nonNullableConfigDefaults and sends it explicitly so the field is reset,
+// not retained.
+func TestAccDestinationResource_RemovePathForwardingDisabledResetsToDefault(t *testing.T) {
+	rName := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
+	resourceName := fmt.Sprintf("hookdeck_destination.test_%s", rName)
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { testAccPreCheck(t) },
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				Config: loadTestConfigFormatted("with_path_forwarding_disabled.tf", rName),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					checkAPIConfigValue(resourceName, "path_forwarding_disabled", true),
+				),
+			},
+			{
+				Config: loadTestConfigFormatted("without_rate_limit.tf", rName),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					checkAPIConfigValue(resourceName, "path_forwarding_disabled", false),
 				),
 			},
 		},
