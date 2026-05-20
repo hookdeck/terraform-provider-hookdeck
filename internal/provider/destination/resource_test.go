@@ -139,3 +139,146 @@ func TestAccDestinationResource_RemoveRateLimit(t *testing.T) {
 		},
 	})
 }
+
+// TestAccDestinationResource_AddRemoveReaddRateLimit verifies that adding,
+// removing, and re-adding rate_limit works repeatedly without state
+// corruption — exercising the diff logic across multiple Update cycles.
+func TestAccDestinationResource_AddRemoveReaddRateLimit(t *testing.T) {
+	rName := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
+	resourceName := fmt.Sprintf("hookdeck_destination.test_%s", rName)
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { testAccPreCheck(t) },
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			// Start minimal — no rate_limit.
+			{
+				Config: loadTestConfigFormatted("without_rate_limit.tf", rName),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					checkAPIConfigValue(resourceName, "rate_limit", nil),
+				),
+			},
+			// Add rate_limit.
+			{
+				Config: loadTestConfigFormatted("with_rate_limit.tf", rName),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					checkAPIConfigValue(resourceName, "rate_limit", float64(10)),
+					checkAPIConfigValue(resourceName, "rate_limit_period", "concurrent"),
+				),
+			},
+			// Remove rate_limit again.
+			{
+				Config: loadTestConfigFormatted("without_rate_limit.tf", rName),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					checkAPIConfigValue(resourceName, "rate_limit", nil),
+				),
+			},
+			// Re-add rate_limit.
+			{
+				Config: loadTestConfigFormatted("with_rate_limit.tf", rName),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					checkAPIConfigValue(resourceName, "rate_limit", float64(10)),
+					checkAPIConfigValue(resourceName, "rate_limit_period", "concurrent"),
+				),
+			},
+		},
+	})
+}
+
+// TestAccDestinationResource_NoDriftAfterRateLimitRemoval verifies that
+// re-applying the same config after removing rate_limit produces no plan
+// diff. If our null-out logic incorrectly compared against the wrong baseline,
+// every subsequent apply would try to re-null already-null keys.
+func TestAccDestinationResource_NoDriftAfterRateLimitRemoval(t *testing.T) {
+	rName := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { testAccPreCheck(t) },
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			// Apply with rate_limit set.
+			{
+				Config: loadTestConfigFormatted("with_rate_limit.tf", rName),
+			},
+			// Remove rate_limit.
+			{
+				Config: loadTestConfigFormatted("without_rate_limit.tf", rName),
+			},
+			// Re-run the same config — expect empty plan.
+			{
+				Config:             loadTestConfigFormatted("without_rate_limit.tf", rName),
+				PlanOnly:           true,
+				ExpectNonEmptyPlan: false,
+			},
+		},
+	})
+}
+
+// TestAccDestinationResource_RemoveHTTPMethod verifies the null-out fix
+// generalizes beyond rate_limit. `http_method` is a top-level config field
+// that documented to default to null (unlike `rate_limit_period`, which
+// defaults to "second"), so removal should result in a true null on the API.
+func TestAccDestinationResource_RemoveHTTPMethod(t *testing.T) {
+	rName := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
+	resourceName := fmt.Sprintf("hookdeck_destination.test_%s", rName)
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { testAccPreCheck(t) },
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				Config: loadTestConfigFormatted("with_http_method.tf", rName),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					checkAPIConfigValue(resourceName, "http_method", "PUT"),
+				),
+			},
+			{
+				Config: loadTestConfigFormatted("without_rate_limit.tf", rName),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					checkAPIConfigValue(resourceName, "http_method", nil),
+				),
+			},
+		},
+	})
+}
+
+// TestAccDestinationResource_RateLimitPeriodMergeBehavior probes whether
+// the Hookdeck API auto-resets rate_limit_period to its default ("second")
+// whenever rate_limit becomes null, or only when we explicitly send null
+// for the period field.
+//
+// Scenario: start with both rate_limit and rate_limit_period set, then
+// switch to a config that drops only rate_limit but keeps rate_limit_period.
+// Our provider sends `{rate_limit: null, rate_limit_period: "concurrent"}`.
+//
+// If the period assertion passes — the API merges as expected and the
+// "second" we see when both are removed is purely because we send null
+// for both.
+// If the period assertion fails (got "second") — the API auto-resets the
+// period whenever rate_limit is null, regardless of what we send. That
+// would be an API-side behavior, not a provider bug.
+func TestAccDestinationResource_RateLimitPeriodMergeBehavior(t *testing.T) {
+	rName := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
+	resourceName := fmt.Sprintf("hookdeck_destination.test_%s", rName)
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { testAccPreCheck(t) },
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				Config: loadTestConfigFormatted("with_rate_limit.tf", rName),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					checkAPIConfigValue(resourceName, "rate_limit", float64(10)),
+					checkAPIConfigValue(resourceName, "rate_limit_period", "concurrent"),
+				),
+			},
+			{
+				Config: loadTestConfigFormatted("with_period_only.tf", rName),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					checkAPIConfigValue(resourceName, "rate_limit", nil),
+					checkAPIConfigValue(resourceName, "rate_limit_period", "concurrent"),
+				),
+			},
+		},
+	})
+}
