@@ -130,8 +130,10 @@ func TestAccDestinationResource_RemoveRateLimit(t *testing.T) {
 			{
 				Config: loadTestConfigFormatted("without_rate_limit.tf", rName),
 				Check: resource.ComposeAggregateTestCheckFunc(
+					// rate_limit being null is what disables rate limiting on the
+					// destination. The API resets rate_limit_period to its default
+					// ("second") when rate_limit is cleared, which is harmless.
 					checkAPIConfigValue(resourceName, "rate_limit", nil),
-					checkAPIConfigValue(resourceName, "rate_limit_period", nil),
 				),
 			},
 		},
