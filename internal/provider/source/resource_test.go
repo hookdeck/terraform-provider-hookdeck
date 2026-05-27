@@ -139,6 +139,34 @@ func checkAPIConfigStringSlice(resourceName, key string, expected []string) reso
 	}
 }
 
+// checkAPIConfigNestedKey verifies whether a sub-key inside a nested config
+// object is present or absent on the API. Used to probe how the API treats
+// nested objects on update (wholesale replace vs deep-merge).
+func checkAPIConfigNestedKey(resourceName, key, subKey string, wantPresent bool) resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+		rs, ok := s.RootModule().Resources[resourceName]
+		if !ok {
+			return fmt.Errorf("resource not found: %s", resourceName)
+		}
+		config, err := fetchSourceConfig(rs.Primary.ID)
+		if err != nil {
+			return err
+		}
+		obj, ok := config[key].(map[string]interface{})
+		if !ok {
+			return fmt.Errorf("expected config.%s to be an object on API, got %v", key, config[key])
+		}
+		_, present := obj[subKey]
+		if wantPresent && !present {
+			return fmt.Errorf("expected config.%s.%s to be present on API, got %v", key, subKey, obj)
+		}
+		if !wantPresent && present {
+			return fmt.Errorf("expected config.%s.%s to be cleared on API (API deep-merges nested objects rather than replacing wholesale), got %v", key, subKey, obj[subKey])
+		}
+		return nil
+	}
+}
+
 // TestAccSourceResource_RemoveCustomResponse mirrors the destination
 // rate_limit removal test for sources: applies a source with a
 // `custom_response` object set, removes it, and verifies via direct API read
@@ -194,6 +222,39 @@ func TestAccSourceResource_RemoveAllowedHTTPMethodsResetsToDefault(t *testing.T)
 				Check: resource.ComposeAggregateTestCheckFunc(
 					checkAPIConfigStringSlice(resourceName, "allowed_http_methods",
 						[]string{"PUT", "POST", "PATCH", "DELETE"}),
+				),
+			},
+		},
+	})
+}
+
+// TestAccSourceResource_RemoveNestedKey probes how the Hookdeck API treats
+// nested config objects on update. It sets `custom_response` with both
+// `content_type` and `body`, then removes only `body` while keeping the
+// object. The provider's diff is top-level only, so it sends the new
+// `custom_response` object as-is. The outcome tells us how the API merges:
+//   - body absent  -> API replaces nested objects wholesale; top-level diff
+//     is sufficient and this stands as regression coverage.
+//   - body present -> API deep-merges nested objects; toUpdatePayload would
+//     need to recurse to clear nested sub-keys.
+func TestAccSourceResource_RemoveNestedKey(t *testing.T) {
+	rName := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
+	resourceName := fmt.Sprintf("hookdeck_source.test_%s", rName)
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { testAccPreCheck(t) },
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				Config: loadTestConfigFormatted(t, "with_custom_response.tf", rName),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					checkAPIConfigNestedKey(resourceName, "custom_response", "body", true),
+				),
+			},
+			{
+				Config: loadTestConfigFormatted(t, "with_custom_response_no_body.tf", rName),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					checkAPIConfigNestedKey(resourceName, "custom_response", "body", false),
 				),
 			},
 		},
