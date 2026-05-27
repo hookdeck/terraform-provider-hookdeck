@@ -43,3 +43,8 @@ website/vendor
 terraform-provider-hookdeck
 # Test environment variables
 .env.test
+
+# Agent tooling (Claude Code, hookdeck/agent-skills, etc.)
+.agents/
+.claude/
+skills-lock.json
