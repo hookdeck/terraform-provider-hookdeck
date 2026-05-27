@@ -108,7 +108,7 @@ func (r *destinationResource) Update(ctx context.Context, req resource.UpdateReq
 		return
 	}
 
-	diags := data.Update(ctx, &r.client, state.Config.ValueString())
+	diags := data.Update(ctx, &r.client, state)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return

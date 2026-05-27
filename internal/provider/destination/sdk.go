@@ -163,10 +163,10 @@ func (m *destinationResourceModel) Create(ctx context.Context, client *sdkclient
 	return m.Refresh(destination)
 }
 
-func (m *destinationResourceModel) Update(ctx context.Context, client *sdkclient.Client, priorConfig string) diag.Diagnostics {
+func (m *destinationResourceModel) Update(ctx context.Context, client *sdkclient.Client, priorState *destinationResourceModel) diag.Diagnostics {
 	var diags diag.Diagnostics
 
-	payload, diags := m.toUpdatePayload(priorConfig)
+	payload, diags := m.toUpdatePayload(priorState)
 	if diags.HasError() {
 		return diags
 	}
@@ -280,18 +280,18 @@ var nonNullableConfigDefaults = map[string]map[string]interface{}{
 // config keys that existed in the prior state but were removed in the plan.
 // The Hookdeck API merges config updates, so omitted keys would otherwise be
 // retained on the destination.
-func (m *destinationResourceModel) toUpdatePayload(priorConfig string) (map[string]interface{}, diag.Diagnostics) {
+func (m *destinationResourceModel) toUpdatePayload(priorState *destinationResourceModel) (map[string]interface{}, diag.Diagnostics) {
 	payload, diags := m.toPayload()
 	if diags.HasError() {
 		return nil, diags
 	}
 
-	if priorConfig == "" {
+	if priorState == nil || priorState.Config.ValueString() == "" {
 		return payload, diags
 	}
 
 	var priorPayloadConfig map[string]interface{}
-	if err := json.Unmarshal([]byte(priorConfig), &priorPayloadConfig); err != nil {
+	if err := json.Unmarshal([]byte(priorState.Config.ValueString()), &priorPayloadConfig); err != nil {
 		diags.AddError("Error parsing prior destination config", err.Error())
 		return nil, diags
 	}
