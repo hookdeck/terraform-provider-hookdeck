@@ -29,11 +29,12 @@ func testAccPreCheck(t *testing.T) {
 	}
 }
 
-func loadTestConfigFormatted(filename string, args ...interface{}) string {
+func loadTestConfigFormatted(t *testing.T, filename string, args ...interface{}) string {
+	t.Helper()
 	path := filepath.Join("testdata", filename)
 	content, err := os.ReadFile(path)
 	if err != nil {
-		panic(err)
+		t.Fatalf("failed to read test fixture %q: %v", filename, err)
 	}
 	return fmt.Sprintf(string(content), args...)
 }
@@ -125,7 +126,7 @@ func TestAccDestinationResource_RemoveRateLimit(t *testing.T) {
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: loadTestConfigFormatted("with_rate_limit.tf", rName),
+				Config: loadTestConfigFormatted(t, "with_rate_limit.tf", rName),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttrSet(resourceName, "id"),
 					checkAPIConfigValue(resourceName, "rate_limit", float64(10)),
@@ -133,7 +134,7 @@ func TestAccDestinationResource_RemoveRateLimit(t *testing.T) {
 				),
 			},
 			{
-				Config: loadTestConfigFormatted("without_rate_limit.tf", rName),
+				Config: loadTestConfigFormatted(t, "without_rate_limit.tf", rName),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					// rate_limit being null is what disables rate limiting on the
 					// destination. The API resets rate_limit_period to its default
@@ -158,14 +159,14 @@ func TestAccDestinationResource_AddRemoveReaddRateLimit(t *testing.T) {
 		Steps: []resource.TestStep{
 			// Start minimal — no rate_limit.
 			{
-				Config: loadTestConfigFormatted("without_rate_limit.tf", rName),
+				Config: loadTestConfigFormatted(t, "without_rate_limit.tf", rName),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					checkAPIConfigValue(resourceName, "rate_limit", nil),
 				),
 			},
 			// Add rate_limit.
 			{
-				Config: loadTestConfigFormatted("with_rate_limit.tf", rName),
+				Config: loadTestConfigFormatted(t, "with_rate_limit.tf", rName),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					checkAPIConfigValue(resourceName, "rate_limit", float64(10)),
 					checkAPIConfigValue(resourceName, "rate_limit_period", "concurrent"),
@@ -173,14 +174,14 @@ func TestAccDestinationResource_AddRemoveReaddRateLimit(t *testing.T) {
 			},
 			// Remove rate_limit again.
 			{
-				Config: loadTestConfigFormatted("without_rate_limit.tf", rName),
+				Config: loadTestConfigFormatted(t, "without_rate_limit.tf", rName),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					checkAPIConfigValue(resourceName, "rate_limit", nil),
 				),
 			},
 			// Re-add rate_limit.
 			{
-				Config: loadTestConfigFormatted("with_rate_limit.tf", rName),
+				Config: loadTestConfigFormatted(t, "with_rate_limit.tf", rName),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					checkAPIConfigValue(resourceName, "rate_limit", float64(10)),
 					checkAPIConfigValue(resourceName, "rate_limit_period", "concurrent"),
@@ -203,15 +204,15 @@ func TestAccDestinationResource_NoDriftAfterRateLimitRemoval(t *testing.T) {
 		Steps: []resource.TestStep{
 			// Apply with rate_limit set.
 			{
-				Config: loadTestConfigFormatted("with_rate_limit.tf", rName),
+				Config: loadTestConfigFormatted(t, "with_rate_limit.tf", rName),
 			},
 			// Remove rate_limit.
 			{
-				Config: loadTestConfigFormatted("without_rate_limit.tf", rName),
+				Config: loadTestConfigFormatted(t, "without_rate_limit.tf", rName),
 			},
 			// Re-run the same config — expect empty plan.
 			{
-				Config:             loadTestConfigFormatted("without_rate_limit.tf", rName),
+				Config:             loadTestConfigFormatted(t, "without_rate_limit.tf", rName),
 				PlanOnly:           true,
 				ExpectNonEmptyPlan: false,
 			},
@@ -232,13 +233,13 @@ func TestAccDestinationResource_RemoveHTTPMethod(t *testing.T) {
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: loadTestConfigFormatted("with_http_method.tf", rName),
+				Config: loadTestConfigFormatted(t, "with_http_method.tf", rName),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					checkAPIConfigValue(resourceName, "http_method", "PUT"),
 				),
 			},
 			{
-				Config: loadTestConfigFormatted("without_rate_limit.tf", rName),
+				Config: loadTestConfigFormatted(t, "without_rate_limit.tf", rName),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					checkAPIConfigValue(resourceName, "http_method", nil),
 				),
@@ -263,13 +264,13 @@ func TestAccDestinationResource_RemovePathForwardingDisabledResetsToDefault(t *t
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: loadTestConfigFormatted("with_path_forwarding_disabled.tf", rName),
+				Config: loadTestConfigFormatted(t, "with_path_forwarding_disabled.tf", rName),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					checkAPIConfigValue(resourceName, "path_forwarding_disabled", true),
 				),
 			},
 			{
-				Config: loadTestConfigFormatted("without_rate_limit.tf", rName),
+				Config: loadTestConfigFormatted(t, "without_rate_limit.tf", rName),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					checkAPIConfigValue(resourceName, "path_forwarding_disabled", false),
 				),
@@ -302,14 +303,14 @@ func TestAccDestinationResource_RateLimitPeriodMergeBehavior(t *testing.T) {
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: loadTestConfigFormatted("with_rate_limit.tf", rName),
+				Config: loadTestConfigFormatted(t, "with_rate_limit.tf", rName),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					checkAPIConfigValue(resourceName, "rate_limit", float64(10)),
 					checkAPIConfigValue(resourceName, "rate_limit_period", "concurrent"),
 				),
 			},
 			{
-				Config: loadTestConfigFormatted("with_period_only.tf", rName),
+				Config: loadTestConfigFormatted(t, "with_period_only.tf", rName),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					checkAPIConfigValue(resourceName, "rate_limit", nil),
 					checkAPIConfigValue(resourceName, "rate_limit_period", "concurrent"),

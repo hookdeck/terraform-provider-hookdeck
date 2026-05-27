@@ -28,11 +28,12 @@ func testAccPreCheck(t *testing.T) {
 	}
 }
 
-func loadTestConfigFormatted(filename string, args ...interface{}) string {
+func loadTestConfigFormatted(t *testing.T, filename string, args ...interface{}) string {
+	t.Helper()
 	path := filepath.Join("testdata", filename)
 	content, err := os.ReadFile(path)
 	if err != nil {
-		panic(err)
+		t.Fatalf("failed to read test fixture %q: %v", filename, err)
 	}
 	return fmt.Sprintf(string(content), args...)
 }
@@ -152,14 +153,14 @@ func TestAccSourceResource_RemoveCustomResponse(t *testing.T) {
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: loadTestConfigFormatted("with_custom_response.tf", rName),
+				Config: loadTestConfigFormatted(t, "with_custom_response.tf", rName),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttrSet(resourceName, "id"),
 					checkAPIConfigKeyIsObject(resourceName, "custom_response"),
 				),
 			},
 			{
-				Config: loadTestConfigFormatted("without_allowed_http_methods.tf", rName),
+				Config: loadTestConfigFormatted(t, "without_allowed_http_methods.tf", rName),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					checkAPIConfigKeyAbsent(resourceName, "custom_response"),
 				),
@@ -183,13 +184,13 @@ func TestAccSourceResource_RemoveAllowedHTTPMethodsResetsToDefault(t *testing.T)
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: loadTestConfigFormatted("with_allowed_http_methods.tf", rName),
+				Config: loadTestConfigFormatted(t, "with_allowed_http_methods.tf", rName),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					checkAPIConfigStringSlice(resourceName, "allowed_http_methods", []string{"GET", "POST"}),
 				),
 			},
 			{
-				Config: loadTestConfigFormatted("without_allowed_http_methods.tf", rName),
+				Config: loadTestConfigFormatted(t, "without_allowed_http_methods.tf", rName),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					checkAPIConfigStringSlice(resourceName, "allowed_http_methods",
 						[]string{"PUT", "POST", "PATCH", "DELETE"}),
