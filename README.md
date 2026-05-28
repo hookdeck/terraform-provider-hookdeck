@@ -58,48 +58,6 @@ For [Source `config`](https://hookdeck.com/docs/api#source-object) and [Destinat
 
 This provider is built on top of the [Hookdeck API](https://hookdeck.com/docs/api).
 
-## Development
+## Contributing
 
-### Running locally
-
-See https://developer.hashicorp.com/terraform/tutorials/providers-plugin-framework/providers-plugin-framework-provider#prepare-terraform-for-local-provider-install
-
-### Brief details
-
-Build and install:
-
-```
-go build
-go install
-```
-
-Override the provider in a `~/.terraformrc`:
-
-```
-provider_installation {
-
-  dev_overrides {
-      "hookdeck/hookdeck" = "/Users/leggetter/go/bin"
-  }
-
-  # For all other providers, install them directly from their origin provider
-  # registries as normal. If you omit this, Terraform will _only_ use
-  # the dev_overrides block, and so no other providers will be available.
-  direct {}
-}
-```
-
-
-### Release
-
-Released are managed via [GitHub Releases](https://github.com/hookdeck/terraform-provider-hookdeck/releases).
-
-To release, create a new release with a name representing the SemVer version. Also, create a tag with the same version. A GitHub action is triggered via the new Tag creation and uses [GoReleaser](https://goreleaser.com) to create a new set of release assets for the Hookdeck Terraform Provider.
-
-### Notes
-
-Enable pre-commit Git hooks to ensure any code changes are reflected in the documentation:
-
-```sh
-make enable-git-hooks
-```
+Contributions are welcome. See [`CONTRIBUTING.md`](CONTRIBUTING.md) for development setup, running acceptance tests, documentation generation, and the release process. If you are working on this repository with an AI coding agent, see [`AGENTS.md`](AGENTS.md).
