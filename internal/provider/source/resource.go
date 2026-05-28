@@ -102,7 +102,13 @@ func (r *sourceResource) Update(ctx context.Context, req resource.UpdateRequest,
 		return
 	}
 
-	diags := data.Update(ctx, &r.client)
+	var state *sourceResourceModel
+	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	diags := data.Update(ctx, &r.client, state)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return

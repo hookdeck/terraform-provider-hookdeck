@@ -6,7 +6,9 @@ import (
 	"io"
 	"net/http"
 	"net/url"
+	"os"
 	"strings"
+	"sync"
 	"time"
 
 	"golang.org/x/time/rate"
@@ -122,6 +124,23 @@ func (h *HookdeckRateLimiter) Wait(ctx context.Context) error {
 	return h.limiter.Wait(ctx)
 }
 
+// sharedTestRateLimiter, when running under TF_ACC=1, is shared across every
+// RawClient created in the process. Each acceptance test step spins up a
+// fresh provider (and would otherwise get its own 5-token burst); stacking
+// those bursts blows past the API's 240 req/min per-key sliding window.
+// Sharing keeps the cumulative request rate within bounds.
+var (
+	sharedTestRateLimiterOnce sync.Once
+	sharedTestRateLimiterVal  RateLimiter
+)
+
+func getSharedTestRateLimiter() RateLimiter {
+	sharedTestRateLimiterOnce.Do(func() {
+		sharedTestRateLimiterVal = NewHookdeckRateLimiter()
+	})
+	return sharedTestRateLimiterVal
+}
+
 // InitHookdeckSDKClient creates a client with Hookdeck's rate limiting.
 func InitHookdeckSDKClient(apiBase string, apiKey string, providerVersion string, opts ...RawClientOption) Client {
 	if apiBase == "" {
@@ -133,13 +152,26 @@ func InitHookdeckSDKClient(apiBase string, apiKey string, providerVersion string
 	header := http.Header{}
 	initUserAgentHeader(header, providerVersion)
 
+	limiter := RateLimiter(NewHookdeckRateLimiter())
+	httpClient := HTTPDoer(http.DefaultClient)
+	if os.Getenv("TF_ACC") == "1" {
+		limiter = getSharedTestRateLimiter()
+		// Tests spin up many short-lived providers against a single API key;
+		// cumulative bursts can still occasionally trip the API's sliding-
+		// window 429 even with the shared limiter. Wrap the HTTP client to
+		// retry on 429 with the Retry-After header respected. Production
+		// behavior intentionally does NOT retry (see comment on
+		// HookdeckRateLimiter); this only applies under TF_ACC=1.
+		httpClient = newRetrying429Client(http.DefaultClient, 5)
+	}
+
 	// Create RawClient with Hookdeck rate limiting by default
 	rawClient := &RawClient{
 		apiKey:      apiKey,
 		apiBase:     apiBase,
 		header:      header,
-		httpClient:  http.DefaultClient,
-		rateLimiter: NewHookdeckRateLimiter(),
+		httpClient:  httpClient,
+		rateLimiter: limiter,
 	}
 
 	// Apply any options
