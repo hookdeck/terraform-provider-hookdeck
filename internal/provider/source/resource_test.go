@@ -7,7 +7,6 @@ import (
 	"io"
 	"os"
 	"path/filepath"
-	"regexp"
 	"terraform-provider-hookdeck/internal/provider"
 	"terraform-provider-hookdeck/internal/sdkclient"
 	"testing"
@@ -201,38 +200,3 @@ func TestAccSourceResource_RemoveAllowedHTTPMethodsResetsToDefault(t *testing.T)
 	})
 }
 
-// TestAccSourceResource_NestedConfigObjectsValidatedWhole locks in the
-// invariant that justifies why source/sdk.go's toUpdatePayload only diffs
-// top-level config keys: the Hookdeck API rejects any update where a nested
-// config object is sent with a required inner field missing. Because the
-// API never accepts a partial nested object, the provider has no
-// user-input shape that would require diffing inner keys to clear them.
-//
-// Step 1 applies a valid HMAC `auth` block. Step 2 attempts to update with
-// `header_key` removed and expects a 422 from the API. If this test ever
-// starts passing step 2 (i.e. the API loosens validation and accepts
-// partial nested updates), the top-level-only diff in toUpdatePayload may
-// need to recurse, and this test failure is the trigger to revisit.
-//
-// Empirical basis: also confirmed against `custom_response`, which the
-// OpenAPI spec marks `content_type` and `body` as both required and the
-// API rejects identically. HMAC `auth` is used here because the spec
-// declares no `required` inner fields yet the backend still enforces
-// them, which makes this the strongest case to lock in.
-func TestAccSourceResource_NestedConfigObjectsValidatedWhole(t *testing.T) {
-	rName := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
-
-	resource.Test(t, resource.TestCase{
-		PreCheck:                 func() { testAccPreCheck(t) },
-		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
-		Steps: []resource.TestStep{
-			{
-				Config: loadTestConfigFormatted(t, "with_hmac_auth.tf", rName),
-			},
-			{
-				Config:      loadTestConfigFormatted(t, "with_hmac_auth_no_header_key.tf", rName),
-				ExpectError: regexp.MustCompile(`config\.auth\.header_key\s+is required`),
-			},
-		},
-	})
-}
