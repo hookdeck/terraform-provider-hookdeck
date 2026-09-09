@@ -45,7 +45,7 @@ resource "hookdeck_destination" "example" {
 
 ### Optional
 
-- `config` (String, Sensitive) Destination configuration as JSON using API version 2026-09-01. Use delivery_policy for rate, period, and groups. Legacy rate_limit, rate_limit_period, and delivery_groups are still accepted, but cannot be combined with delivery_policy.
+- `config` (String, Sensitive) Destination configuration as JSON using API version 2026-09-01. Use delivery_policy for rate, period, and groups. Breaking change: rate_limit, rate_limit_period, and delivery_groups are no longer accepted. Update your configuration to delivery_policy; see the destination delivery policy migration guide.
 - `description` (String) Description for the destination
 - `disabled_at` (String) Date the destination was disabled
 - `type` (String) Type of the destination

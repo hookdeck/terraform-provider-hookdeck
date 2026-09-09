@@ -19,17 +19,16 @@ func TestDeliveryPolicyPayload(t *testing.T) {
 		invalid                   bool
 	}{
 		{name: "new policy", config: `{"delivery_policy":{"rate":10,"period":"second","groups":{"key":"body.id","rate":2,"rate_period":"second"}}}`, want: `{"delivery_policy":{"rate":10,"period":"second","groups":{"key":"body.id","rate":2,"rate_period":"second"}}}`},
-		{name: "legacy rates", config: `{"rate_limit":10,"rate_limit_period":"concurrent"}`, want: `{"delivery_policy":{"rate":10,"period":"concurrent"}}`},
-		{name: "legacy groups", config: `{"delivery_groups":{"key":"body.id","rate_limit":2,"rate_limit_period":"second","overrides":{"a":{"rate_limit":3,"rate_limit_period":"minute"}}}}`, want: `{"delivery_policy":{"groups":{"key":"body.id","rate":2,"rate_period":"second","overrides":{"a":{"rate":3,"rate_period":"minute"}}}}}`},
+		{name: "legacy rates rejected", config: `{"rate_limit":10,"rate_limit_period":"second"}`, invalid: true},
+		{name: "legacy groups rejected", config: `{"delivery_groups":null}`, invalid: true},
+		{name: "legacy period rejected", config: `{"rate_limit_period":null}`, invalid: true},
+		{name: "remove rate retain period", prior: `{"delivery_policy":{"rate":10,"period":"concurrent"}}`, config: `{"delivery_policy":{"period":"concurrent"}}`, want: `{"delivery_policy":{"rate":null,"period":"concurrent"}}`},
+		{name: "clear legacy policy explicitly", prior: `{"rate_limit":10,"rate_limit_period":"second","delivery_groups":{"key":"body.id"}}`, config: `{"delivery_policy":null}`, want: `{"delivery_policy":null}`},
 		{name: "mixed rejected", config: `{"delivery_policy":{},"rate_limit":2}`, invalid: true},
 		{name: "null policy mixed rejected", config: `{"delivery_policy":null,"delivery_groups":null}`, invalid: true},
-		{name: "legacy null", config: `{"rate_limit":null}`, want: `{"delivery_policy":{"rate":null}}`},
 		{name: "legacy to new", prior: `{"rate_limit":10,"rate_limit_period":"second"}`, config: `{"delivery_policy":{"rate":10,"period":"second"}}`, want: `{"delivery_policy":{"rate":10,"period":"second"}}`},
-		{name: "new to legacy", prior: `{"delivery_policy":{"rate":10,"period":"second"}}`, config: `{"rate_limit":10,"rate_limit_period":"second"}`, want: `{"delivery_policy":{"rate":10,"period":"second"}}`},
-		{name: "remove legacy rate", prior: `{"rate_limit":10,"rate_limit_period":"second"}`, config: `{}`, want: `{"delivery_policy":null}`},
 		{name: "remove whole policy", prior: `{"delivery_policy":{"rate":10,"groups":{"key":"body.id"}}}`, config: `{}`, want: `{"delivery_policy":null}`},
 		{name: "remove group and period", prior: `{"delivery_policy":{"rate":10,"period":"minute","groups":{"key":"body.id"}}}`, config: `{"delivery_policy":{"rate":5}}`, want: `{"delivery_policy":{"rate":5,"period":null,"groups":null}}`},
-		{name: "remove rate retain period", prior: `{"rate_limit":10,"rate_limit_period":"concurrent"}`, config: `{"rate_limit_period":"concurrent"}`, want: `{"delivery_policy":{"rate":null,"period":"concurrent"}}`},
 		{name: "replace overrides", prior: `{"delivery_policy":{"groups":{"key":"body.id","overrides":{"a":{"rate":3,"rate_period":"second"}}}}}`, config: `{"delivery_policy":{"groups":{"key":"body.id"}}}`, want: `{"delivery_policy":{"groups":{"key":"body.id"}}}`},
 		{name: "explicit null", prior: `{"delivery_policy":{"rate":10}}`, config: `{"delivery_policy":null}`, want: `{"delivery_policy":null}`},
 	}
@@ -97,7 +96,7 @@ func TestDestinationUsesNewAPIVersion(t *testing.T) {
 	}))
 	defer server.Close()
 	client := sdkclient.InitHookdeckSDKClient(server.URL, "test", "test")
-	m := destinationResourceModel{Name: types.StringValue("test"), Config: jsontypes.NewNormalizedValue(`{"rate_limit":10}`)}
+	m := destinationResourceModel{Name: types.StringValue("test"), Config: jsontypes.NewNormalizedValue(`{"delivery_policy":{"rate":10}}`)}
 	ctx := t.Context()
 	if d := m.Create(ctx, &client); d.HasError() {
 		t.Fatal(d)

@@ -247,7 +247,7 @@ func (m *destinationResourceModel) toPayload() (map[string]interface{}, diag.Dia
 			diags.AddError("Error creating destination", err.Error())
 			return nil, diags
 		}
-		if err := normalizeDeliveryPolicy(payloadConfig); err != nil {
+		if err := validateDeliveryPolicy(payloadConfig); err != nil {
 			diags.AddError("Invalid destination config", err.Error())
 			return nil, diags
 		}
@@ -300,11 +300,6 @@ func (m *destinationResourceModel) toUpdatePayload(priorState *destinationResour
 		return nil, diags
 	}
 
-	if err := normalizeDeliveryPolicy(priorPayloadConfig); err != nil {
-		diags.AddError("Invalid prior destination config", err.Error())
-		return nil, diags
-	}
-
 	newPayloadConfig, ok := payload["config"].(map[string]interface{})
 	if !ok {
 		newPayloadConfig = map[string]interface{}{}
@@ -325,6 +320,11 @@ func (m *destinationResourceModel) toUpdatePayload(priorState *destinationResour
 
 	typeDefaults := nonNullableConfigDefaults[m.Type.ValueString()]
 	for key, priorValue := range priorPayloadConfig {
+		// Old state can remain until the user applies their migrated config.
+		// Retired API fields must not be sent, even as null. Do not translate them.
+		if key == "rate_limit" || key == "rate_limit_period" || key == "delivery_groups" {
+			continue
+		}
 		if _, exists := newPayloadConfig[key]; exists {
 			continue
 		}
@@ -343,49 +343,4 @@ func (m *destinationResourceModel) toUpdatePayload(priorState *destinationResour
 	}
 
 	return payload, diags
-}
-
-// normalizeDeliveryPolicy translates legacy JSON config at the request boundary,
-// preserving the user's original config in Terraform state. Reject mixed formats
-// rather than silently choosing which settings to apply.
-func normalizeDeliveryPolicy(config map[string]interface{}) error {
-	fields := map[string]string{"rate_limit": "rate", "rate_limit_period": "period", "delivery_groups": "groups"}
-	_, hasPolicy := config["delivery_policy"]
-	policy := map[string]interface{}{}
-	for old, current := range fields {
-		value, exists := config[old]
-		if !exists {
-			continue
-		}
-		if hasPolicy {
-			return fmt.Errorf("config.delivery_policy cannot be combined with legacy rate_limit, rate_limit_period, or delivery_groups; use one format")
-		}
-		if old == "delivery_groups" {
-			if groups, ok := value.(map[string]interface{}); ok {
-				renameGroupRateFields(groups)
-				if overrides, ok := groups["overrides"].(map[string]interface{}); ok {
-					for _, value := range overrides {
-						if override, ok := value.(map[string]interface{}); ok {
-							renameGroupRateFields(override)
-						}
-					}
-				}
-			}
-		}
-		policy[current] = value
-		delete(config, old)
-	}
-	if len(policy) > 0 {
-		config["delivery_policy"] = policy
-	}
-	return nil
-}
-
-func renameGroupRateFields(group map[string]interface{}) {
-	for old, current := range map[string]string{"rate_limit": "rate", "rate_limit_period": "rate_period"} {
-		if value, exists := group[old]; exists {
-			group[current] = value
-			delete(group, old)
-		}
-	}
 }

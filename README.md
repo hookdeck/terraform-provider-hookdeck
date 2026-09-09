@@ -26,6 +26,12 @@ provider "hookdeck" {
 }
 ```
 
+## Destination delivery policy breaking change
+
+Destination operations now use API version `2026-09-01`. Existing configurations using `config.rate_limit`, `config.rate_limit_period`, or `config.delivery_groups` must be updated to `config.delivery_policy` before applying this provider version. Legacy fields fail validation; the provider does not translate them.
+
+See the [destination delivery policy migration guide](docs/guides/destination-delivery-policy-migration.md) for field mappings and before/after examples. This change requires a major provider release.
+
 ## Using the provider
 
 This README gives a basic example; for more examples, see the [examples/](examples/) folder, the rendered documentation on the [Terraform Registry](https://registry.terraform.io/providers/hookdeck/hookdeck/latest/docs), or [docs folder](docs/) in this repository.

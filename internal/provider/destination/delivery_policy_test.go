@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"reflect"
+	"regexp"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
@@ -30,12 +31,13 @@ func TestAccDestinationResource_DeliveryPolicy(t *testing.T) {
 			if err != nil {
 				return err
 			}
+			policy, _ := actual["delivery_policy"].(map[string]interface{})
 			var want interface{}
 			if err := json.Unmarshal([]byte(expected), &want); err != nil {
 				return err
 			}
-			if !reflect.DeepEqual(actual["delivery_groups"], want) {
-				return fmt.Errorf("groups: got %v, want %v", actual["delivery_groups"], want)
+			if !reflect.DeepEqual(policy["groups"], want) {
+				return fmt.Errorf("groups: got %v, want %v", policy["groups"], want)
 			}
 			return nil
 		}
@@ -47,15 +49,16 @@ func TestAccDestinationResource_DeliveryPolicy(t *testing.T) {
 		PreCheck:                 func() { testAccPreCheck(t) },
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
-			{Config: config(`rate_limit = 10, rate_limit_period = "second"`), Check: checkAPIConfigValue("hookdeck_destination.test", "rate_limit", float64(10))},
-			{Config: config(rateOnly), Check: checkAPIConfigValue("hookdeck_destination.test", "rate_limit", float64(10))},
-			{Config: config(withGroups), Check: checkGroups(`{"key":"body.customer_id","rate_limit":5,"rate_limit_period":"second","overrides":{"priority":{"rate_limit":8,"rate_limit_period":"minute"}}}`)},
+			{Config: config(`rate_limit = 10, rate_limit_period = "second"`), ExpectError: regexp.MustCompile("Destination config migration required")},
+			{Config: config(rateOnly), Check: checkAPIConfigValue("hookdeck_destination.test", "delivery_policy.rate", float64(10))},
+			{Config: config(withGroups), Check: checkGroups(`{"key":"body.customer_id","rate":5,"rate_period":"second","overrides":{"priority":{"rate":8,"rate_period":"minute"}}}`)},
 			{Config: config(withoutOverride), Check: func(s *terraform.State) error {
 				actual, err := fetchDestinationConfig(s.RootModule().Resources["hookdeck_destination.test"].Primary.ID)
 				if err != nil {
 					return err
 				}
-				groups, ok := actual["delivery_groups"].(map[string]interface{})
+				policy, _ := actual["delivery_policy"].(map[string]interface{})
+				groups, ok := policy["groups"].(map[string]interface{})
 				if !ok {
 					return fmt.Errorf("missing groups")
 				}
@@ -65,7 +68,7 @@ func TestAccDestinationResource_DeliveryPolicy(t *testing.T) {
 				return nil
 			}},
 			{Config: config(rateOnly), Check: checkGroups(`null`)},
-			{Config: config(""), Check: checkAPIConfigValue("hookdeck_destination.test", "rate_limit", nil)},
+			{Config: config(""), Check: checkAPIConfigValue("hookdeck_destination.test", "delivery_policy.rate", nil)},
 			{Config: config(""), PlanOnly: true, ExpectNonEmptyPlan: false},
 		},
 	})

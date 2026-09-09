@@ -8,6 +8,7 @@ import (
 	"net/url"
 	"os"
 	"path/filepath"
+	"strings"
 	"terraform-provider-hookdeck/internal/provider"
 	"terraform-provider-hookdeck/internal/sdkclient"
 	"testing"
@@ -50,7 +51,7 @@ func fetchDestinationConfig(id string) (map[string]interface{}, error) {
 		"test",
 	)
 	resp, err := client.RawClient.SendRequest(context.Background(), "GET",
-		fmt.Sprintf("/2025-07-01/destinations/%s", id),
+		fmt.Sprintf("/2026-09-01/destinations/%s", id),
 		&sdkclient.RequestOptions{
 			QueryParams: url.Values{"include": []string{"config.auth"}},
 		})
@@ -85,7 +86,15 @@ func checkAPIConfigValue(resourceName, key string, expected interface{}) resourc
 		if err != nil {
 			return err
 		}
-		got := config[key]
+		var got interface{} = config
+		for _, part := range strings.Split(key, ".") {
+			object, ok := got.(map[string]interface{})
+			if !ok {
+				got = nil
+				break
+			}
+			got = object[part]
+		}
 		switch want := expected.(type) {
 		case nil:
 			if got != nil {
@@ -114,7 +123,7 @@ func checkAPIConfigValue(resourceName, key string, expected interface{}) resourc
 }
 
 // TestAccDestinationResource_RemoveRateLimit verifies that removing
-// `rate_limit` and `rate_limit_period` from the Terraform config actually
+// `delivery_policy.rate` and `delivery_policy.period` from the Terraform config actually
 // clears them on the Hookdeck destination. The Hookdeck API merges config
 // updates, so without explicit null-out logic, removed keys silently persist.
 func TestAccDestinationResource_RemoveRateLimit(t *testing.T) {
@@ -129,8 +138,8 @@ func TestAccDestinationResource_RemoveRateLimit(t *testing.T) {
 				Config: loadTestConfigFormatted(t, "with_rate_limit.tf", rName),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttrSet(resourceName, "id"),
-					checkAPIConfigValue(resourceName, "rate_limit", float64(10)),
-					checkAPIConfigValue(resourceName, "rate_limit_period", "concurrent"),
+					checkAPIConfigValue(resourceName, "delivery_policy.rate", float64(10)),
+					checkAPIConfigValue(resourceName, "delivery_policy.period", "concurrent"),
 				),
 			},
 			{
@@ -139,7 +148,7 @@ func TestAccDestinationResource_RemoveRateLimit(t *testing.T) {
 					// rate_limit being null is what disables rate limiting on the
 					// destination. The API resets rate_limit_period to its default
 					// ("second") when rate_limit is cleared, which is harmless.
-					checkAPIConfigValue(resourceName, "rate_limit", nil),
+					checkAPIConfigValue(resourceName, "delivery_policy.rate", nil),
 				),
 			},
 		},
@@ -161,30 +170,30 @@ func TestAccDestinationResource_AddRemoveReaddRateLimit(t *testing.T) {
 			{
 				Config: loadTestConfigFormatted(t, "without_rate_limit.tf", rName),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					checkAPIConfigValue(resourceName, "rate_limit", nil),
+					checkAPIConfigValue(resourceName, "delivery_policy.rate", nil),
 				),
 			},
 			// Add rate_limit.
 			{
 				Config: loadTestConfigFormatted(t, "with_rate_limit.tf", rName),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					checkAPIConfigValue(resourceName, "rate_limit", float64(10)),
-					checkAPIConfigValue(resourceName, "rate_limit_period", "concurrent"),
+					checkAPIConfigValue(resourceName, "delivery_policy.rate", float64(10)),
+					checkAPIConfigValue(resourceName, "delivery_policy.period", "concurrent"),
 				),
 			},
 			// Remove rate_limit again.
 			{
 				Config: loadTestConfigFormatted(t, "without_rate_limit.tf", rName),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					checkAPIConfigValue(resourceName, "rate_limit", nil),
+					checkAPIConfigValue(resourceName, "delivery_policy.rate", nil),
 				),
 			},
 			// Re-add rate_limit.
 			{
 				Config: loadTestConfigFormatted(t, "with_rate_limit.tf", rName),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					checkAPIConfigValue(resourceName, "rate_limit", float64(10)),
-					checkAPIConfigValue(resourceName, "rate_limit_period", "concurrent"),
+					checkAPIConfigValue(resourceName, "delivery_policy.rate", float64(10)),
+					checkAPIConfigValue(resourceName, "delivery_policy.period", "concurrent"),
 				),
 			},
 		},
@@ -222,7 +231,7 @@ func TestAccDestinationResource_NoDriftAfterRateLimitRemoval(t *testing.T) {
 
 // TestAccDestinationResource_RemoveHTTPMethod verifies the null-out fix
 // generalizes beyond rate_limit. `http_method` is a top-level config field
-// that documented to default to null (unlike `rate_limit_period`, which
+// that documented to default to null (unlike `delivery_policy.period`, which
 // defaults to "second"), so removal should result in a true null on the API.
 func TestAccDestinationResource_RemoveHTTPMethod(t *testing.T) {
 	rName := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
@@ -286,7 +295,7 @@ func TestAccDestinationResource_RemovePathForwardingDisabledResetsToDefault(t *t
 //
 // Scenario: start with both rate_limit and rate_limit_period set, then
 // switch to a config that drops only rate_limit but keeps rate_limit_period.
-// Our provider sends `{rate_limit: null, rate_limit_period: "concurrent"}`.
+// Our provider sends `{delivery_policy: {rate: null, period: "concurrent"}}`.
 //
 // If the period assertion passes — the API merges as expected and the
 // "second" we see when both are removed is purely because we send null
@@ -305,15 +314,15 @@ func TestAccDestinationResource_RateLimitPeriodMergeBehavior(t *testing.T) {
 			{
 				Config: loadTestConfigFormatted(t, "with_rate_limit.tf", rName),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					checkAPIConfigValue(resourceName, "rate_limit", float64(10)),
-					checkAPIConfigValue(resourceName, "rate_limit_period", "concurrent"),
+					checkAPIConfigValue(resourceName, "delivery_policy.rate", float64(10)),
+					checkAPIConfigValue(resourceName, "delivery_policy.period", "concurrent"),
 				),
 			},
 			{
 				Config: loadTestConfigFormatted(t, "with_period_only.tf", rName),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					checkAPIConfigValue(resourceName, "rate_limit", nil),
-					checkAPIConfigValue(resourceName, "rate_limit_period", "concurrent"),
+					checkAPIConfigValue(resourceName, "delivery_policy.rate", nil),
+					checkAPIConfigValue(resourceName, "delivery_policy.period", "concurrent"),
 				),
 			},
 		},
