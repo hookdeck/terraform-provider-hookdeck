@@ -96,6 +96,9 @@ jobs:
         timeout-minutes: 25
       # Failed or interrupted tests leave resources behind in the test
       # project. Wipe it after every run so orphans don't accumulate.
+      # This deletes everything in the project, which is safe only because
+      # the concurrency group and max-parallel above guarantee no other
+      # acceptance job is running against it at the same time.
       - name: Tear down test project resources
         if: always()
         env:
