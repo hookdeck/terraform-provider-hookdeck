@@ -94,3 +94,10 @@ jobs:
           HOOKDECK_API_KEY: ${{ secrets.HOOKDECK_API_KEY }}
         run: go test -v -cover -timeout 25m ./internal/provider/...
         timeout-minutes: 25
+      # Failed or interrupted tests leave resources behind in the test
+      # project. Wipe it after every run so orphans don't accumulate.
+      - name: Tear down test project resources
+        if: always()
+        env:
+          HOOKDECK_API_KEY: ${{ secrets.HOOKDECK_API_KEY }}
+        run: go run ./cmd/teardown --auto-approve
