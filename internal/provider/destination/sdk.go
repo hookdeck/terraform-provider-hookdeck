@@ -15,7 +15,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-const apiVersion = "2025-07-01"
+const apiVersion = "2026-09-01"
 
 func (m *destinationResourceModel) Refresh(destination map[string]interface{}) diag.Diagnostics {
 	var diags diag.Diagnostics
@@ -247,6 +247,10 @@ func (m *destinationResourceModel) toPayload() (map[string]interface{}, diag.Dia
 			diags.AddError("Error creating destination", err.Error())
 			return nil, diags
 		}
+		if err := normalizeDeliveryPolicy(payloadConfig); err != nil {
+			diags.AddError("Invalid destination config", err.Error())
+			return nil, diags
+		}
 		payload["config"] = payloadConfig
 	}
 	if m.Description.ValueString() != "" {
@@ -296,10 +300,27 @@ func (m *destinationResourceModel) toUpdatePayload(priorState *destinationResour
 		return nil, diags
 	}
 
+	if err := normalizeDeliveryPolicy(priorPayloadConfig); err != nil {
+		diags.AddError("Invalid prior destination config", err.Error())
+		return nil, diags
+	}
+
 	newPayloadConfig, ok := payload["config"].(map[string]interface{})
 	if !ok {
 		newPayloadConfig = map[string]interface{}{}
 		payload["config"] = newPayloadConfig
+	}
+
+	// Policy members are independently merged by the API. Groups themselves
+	// are replaced, including their overrides, so only this level needs clearing.
+	if prior, ok := priorPayloadConfig["delivery_policy"].(map[string]interface{}); ok {
+		if next, ok := newPayloadConfig["delivery_policy"].(map[string]interface{}); ok {
+			for key := range prior {
+				if _, exists := next[key]; !exists {
+					next[key] = nil
+				}
+			}
+		}
 	}
 
 	typeDefaults := nonNullableConfigDefaults[m.Type.ValueString()]
@@ -322,4 +343,49 @@ func (m *destinationResourceModel) toUpdatePayload(priorState *destinationResour
 	}
 
 	return payload, diags
+}
+
+// normalizeDeliveryPolicy translates legacy JSON config at the request boundary,
+// preserving the user's original config in Terraform state. Reject mixed formats
+// rather than silently choosing which settings to apply.
+func normalizeDeliveryPolicy(config map[string]interface{}) error {
+	fields := map[string]string{"rate_limit": "rate", "rate_limit_period": "period", "delivery_groups": "groups"}
+	_, hasPolicy := config["delivery_policy"]
+	policy := map[string]interface{}{}
+	for old, current := range fields {
+		value, exists := config[old]
+		if !exists {
+			continue
+		}
+		if hasPolicy {
+			return fmt.Errorf("config.delivery_policy cannot be combined with legacy rate_limit, rate_limit_period, or delivery_groups; use one format")
+		}
+		if old == "delivery_groups" {
+			if groups, ok := value.(map[string]interface{}); ok {
+				renameGroupRateFields(groups)
+				if overrides, ok := groups["overrides"].(map[string]interface{}); ok {
+					for _, value := range overrides {
+						if override, ok := value.(map[string]interface{}); ok {
+							renameGroupRateFields(override)
+						}
+					}
+				}
+			}
+		}
+		policy[current] = value
+		delete(config, old)
+	}
+	if len(policy) > 0 {
+		config["delivery_policy"] = policy
+	}
+	return nil
+}
+
+func renameGroupRateFields(group map[string]interface{}) {
+	for old, current := range map[string]string{"rate_limit": "rate", "rate_limit_period": "rate_period"} {
+		if value, exists := group[old]; exists {
+			group[current] = value
+			delete(group, old)
+		}
+	}
 }

@@ -8,7 +8,14 @@ resource "hookdeck_destination" "example" {
       username = "username"
       password = "password"
     }
-    rate_limit        = 10
-    rate_limit_period = "concurrent"
+    delivery_policy = {
+      rate   = 10
+      period = "concurrent"
+      groups = {
+        key         = "body.customer_id"
+        rate        = 5
+        rate_period = "second"
+      }
+    }
   })
 }

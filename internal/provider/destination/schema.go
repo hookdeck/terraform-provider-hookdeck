@@ -18,7 +18,7 @@ func schemaAttributes() map[string]schema.Attribute {
 			// leading a conflict between the initial state & computed state after creation.
 			Computed:    false,
 			Sensitive:   true,
-			Description: "Destination configuration",
+			Description: "Destination configuration as JSON using API version 2026-09-01. Use delivery_policy for rate, period, and groups. Legacy rate_limit, rate_limit_period, and delivery_groups are still accepted, but cannot be combined with delivery_policy.",
 			PlanModifiers: []planmodifier.String{
 				stringplanmodifier.UseStateForUnknown(),
 			},

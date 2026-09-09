@@ -23,8 +23,15 @@ resource "hookdeck_destination" "example" {
       username = "username"
       password = "password"
     }
-    rate_limit        = 10
-    rate_limit_period = "concurrent"
+    delivery_policy = {
+      rate   = 10
+      period = "concurrent"
+      groups = {
+        key         = "body.customer_id"
+        rate        = 5
+        rate_period = "second"
+      }
+    }
   })
 }
 ```
@@ -38,7 +45,7 @@ resource "hookdeck_destination" "example" {
 
 ### Optional
 
-- `config` (String, Sensitive) Destination configuration
+- `config` (String, Sensitive) Destination configuration as JSON using API version 2026-09-01. Use delivery_policy for rate, period, and groups. Legacy rate_limit, rate_limit_period, and delivery_groups are still accepted, but cannot be combined with delivery_policy.
 - `description` (String) Description for the destination
 - `disabled_at` (String) Date the destination was disabled
 - `type` (String) Type of the destination
