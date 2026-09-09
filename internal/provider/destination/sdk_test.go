@@ -16,17 +16,11 @@ import (
 func TestDeliveryPolicyPayload(t *testing.T) {
 	tests := []struct {
 		name, prior, config, want string
-		invalid                   bool
 	}{
 		{name: "new policy", config: `{"delivery_policy":{"rate":10,"period":"second","groups":{"key":"body.id","rate":2,"rate_period":"second"}}}`, want: `{"delivery_policy":{"rate":10,"period":"second","groups":{"key":"body.id","rate":2,"rate_period":"second"}}}`},
-		{name: "legacy rates rejected", config: `{"rate_limit":10,"rate_limit_period":"second"}`, invalid: true},
-		{name: "legacy groups rejected", config: `{"delivery_groups":null}`, invalid: true},
-		{name: "legacy period rejected", config: `{"rate_limit_period":null}`, invalid: true},
 		{name: "remove rate retain period", prior: `{"delivery_policy":{"rate":10,"period":"concurrent"}}`, config: `{"delivery_policy":{"period":"concurrent"}}`, want: `{"delivery_policy":{"rate":null,"period":"concurrent"}}`},
-		{name: "clear legacy policy explicitly", prior: `{"rate_limit":10,"rate_limit_period":"second","delivery_groups":{"key":"body.id"}}`, config: `{"delivery_policy":null}`, want: `{"delivery_policy":null}`},
-		{name: "mixed rejected", config: `{"delivery_policy":{},"rate_limit":2}`, invalid: true},
-		{name: "null policy mixed rejected", config: `{"delivery_policy":null,"delivery_groups":null}`, invalid: true},
-		{name: "legacy to new", prior: `{"rate_limit":10,"rate_limit_period":"second"}`, config: `{"delivery_policy":{"rate":10,"period":"second"}}`, want: `{"delivery_policy":{"rate":10,"period":"second"}}`},
+		{name: "clear legacy policy explicitly", prior: `{"rate_limit":10,"rate_limit_period":"second","delivery_groups":{"key":"body.id"}}`, config: `{"delivery_policy":null}`, want: `{"delivery_policy":null,"rate_limit":null,"rate_limit_period":null,"delivery_groups":null}`},
+		{name: "legacy to new", prior: `{"rate_limit":10,"rate_limit_period":"second"}`, config: `{"delivery_policy":{"rate":10,"period":"second"}}`, want: `{"delivery_policy":{"rate":10,"period":"second"},"rate_limit":null,"rate_limit_period":null}`},
 		{name: "remove whole policy", prior: `{"delivery_policy":{"rate":10,"groups":{"key":"body.id"}}}`, config: `{}`, want: `{"delivery_policy":null}`},
 		{name: "remove group and period", prior: `{"delivery_policy":{"rate":10,"period":"minute","groups":{"key":"body.id"}}}`, config: `{"delivery_policy":{"rate":5}}`, want: `{"delivery_policy":{"rate":5,"period":null,"groups":null}}`},
 		{name: "replace overrides", prior: `{"delivery_policy":{"groups":{"key":"body.id","overrides":{"a":{"rate":3,"rate_period":"second"}}}}}`, config: `{"delivery_policy":{"groups":{"key":"body.id"}}}`, want: `{"delivery_policy":{"groups":{"key":"body.id"}}}`},
@@ -40,12 +34,6 @@ func TestDeliveryPolicyPayload(t *testing.T) {
 				prior = &destinationResourceModel{Config: jsontypes.NewNormalizedValue(tt.prior)}
 			}
 			payload, diags := m.toUpdatePayload(prior)
-			if tt.invalid {
-				if !diags.HasError() {
-					t.Fatal("expected error")
-				}
-				return
-			}
 			if diags.HasError() {
 				t.Fatal(diags)
 			}

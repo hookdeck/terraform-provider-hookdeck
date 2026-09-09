@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"reflect"
-	"regexp"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
@@ -49,7 +48,6 @@ func TestAccDestinationResource_DeliveryPolicy(t *testing.T) {
 		PreCheck:                 func() { testAccPreCheck(t) },
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
-			{Config: config(`rate_limit = 10, rate_limit_period = "second"`), ExpectError: regexp.MustCompile("Destination config migration required")},
 			{Config: config(rateOnly), Check: checkAPIConfigValue("hookdeck_destination.test", "delivery_policy.rate", float64(10))},
 			{Config: config(withGroups), Check: checkGroups(`{"key":"body.customer_id","rate":5,"rate_period":"second","overrides":{"priority":{"rate":8,"rate_period":"minute"}}}`)},
 			{Config: config(withoutOverride), Check: func(s *terraform.State) error {

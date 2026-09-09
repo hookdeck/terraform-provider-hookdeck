@@ -23,7 +23,6 @@ func schemaAttributes() map[string]schema.Attribute {
 				stringplanmodifier.UseStateForUnknown(),
 			},
 			CustomType: jsontypes.NormalizedType{},
-			Validators: []validator.String{deliveryPolicyValidator{}},
 		},
 		"created_at": schema.StringAttribute{
 			Computed: true,

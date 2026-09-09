@@ -247,10 +247,6 @@ func (m *destinationResourceModel) toPayload() (map[string]interface{}, diag.Dia
 			diags.AddError("Error creating destination", err.Error())
 			return nil, diags
 		}
-		if err := validateDeliveryPolicy(payloadConfig); err != nil {
-			diags.AddError("Invalid destination config", err.Error())
-			return nil, diags
-		}
 		payload["config"] = payloadConfig
 	}
 	if m.Description.ValueString() != "" {
@@ -320,11 +316,6 @@ func (m *destinationResourceModel) toUpdatePayload(priorState *destinationResour
 
 	typeDefaults := nonNullableConfigDefaults[m.Type.ValueString()]
 	for key, priorValue := range priorPayloadConfig {
-		// Old state can remain until the user applies their migrated config.
-		// Retired API fields must not be sent, even as null. Do not translate them.
-		if key == "rate_limit" || key == "rate_limit_period" || key == "delivery_groups" {
-			continue
-		}
 		if _, exists := newPayloadConfig[key]; exists {
 			continue
 		}
