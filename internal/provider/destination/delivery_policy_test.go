@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"reflect"
+	"regexp"
+	"strings"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
@@ -11,14 +13,31 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 )
 
+func TestAccDestinationResource_RejectsRemovedConfigFields(t *testing.T) {
+	name := acctest.RandomWithPrefix("tf-legacy")
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { testAccPreCheck(t) },
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{{
+			Config: fmt.Sprintf(`resource "hookdeck_destination" "test" {
+ name = %q
+ type = "HTTP"
+ config = jsonencode({url = "https://mock.hookdeck.com", rate_limit = 10, rate_limit_period = "minute"})
+}`, name),
+			ExpectError: regexp.MustCompile(`(?s)Destination config uses removed fields.*rate_limit, rate_limit_period`),
+		}},
+	})
+}
+
 func TestAccDestinationResource_DeliveryPolicy(t *testing.T) {
 	name := acctest.RandomWithPrefix("tf-policy")
-	config := func(fields string) string {
+	config := func(fields ...string) string {
+		all := append([]string{`url = "https://mock.hookdeck.com"`}, fields...)
 		return fmt.Sprintf(`resource "hookdeck_destination" "test" {
  name = %q
  type = "HTTP"
- config = jsonencode({url = "https://mock.hookdeck.com", %s})
-}`, name, fields)
+ config = jsonencode({%s})
+}`, name, strings.Join(all, ", "))
 	}
 	checkGroups := func(expected string) resource.TestCheckFunc {
 		return func(s *terraform.State) error {
@@ -66,8 +85,8 @@ func TestAccDestinationResource_DeliveryPolicy(t *testing.T) {
 				return nil
 			}},
 			{Config: config(rateOnly), Check: checkGroups(`null`)},
-			{Config: config(""), Check: checkAPIConfigValue("hookdeck_destination.test", "delivery_policy.rate", nil)},
-			{Config: config(""), PlanOnly: true, ExpectNonEmptyPlan: false},
+			{Config: config(), Check: checkAPIConfigValue("hookdeck_destination.test", "delivery_policy.rate", nil)},
+			{Config: config(), PlanOnly: true, ExpectNonEmptyPlan: false},
 		},
 	})
 }

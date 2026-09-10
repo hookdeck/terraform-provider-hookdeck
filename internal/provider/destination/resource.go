@@ -12,9 +12,10 @@ import (
 
 // Ensure the implementation satisfies the expected interfaces.
 var (
-	_ resource.Resource                = &destinationResource{}
-	_ resource.ResourceWithConfigure   = &destinationResource{}
-	_ resource.ResourceWithImportState = &destinationResource{}
+	_ resource.Resource                   = &destinationResource{}
+	_ resource.ResourceWithConfigure      = &destinationResource{}
+	_ resource.ResourceWithImportState    = &destinationResource{}
+	_ resource.ResourceWithValidateConfig = &destinationResource{}
 )
 
 // NewDestinationResource is a helper function to simplify the provider implementation.
@@ -135,4 +136,14 @@ func (r *destinationResource) Delete(ctx context.Context, req resource.DeleteReq
 func (r *destinationResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	// Retrieve import ID and save to id attribute
 	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
+}
+
+// ValidateConfig runs plan-time checks on the resource configuration.
+func (r *destinationResource) ValidateConfig(ctx context.Context, req resource.ValidateConfigRequest, resp *resource.ValidateConfigResponse) {
+	var data destinationResourceModel
+	resp.Diagnostics.Append(req.Config.Get(ctx, &data)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	resp.Diagnostics.Append(validateConfigForAPIVersion20260901(data.Config)...)
 }
