@@ -18,7 +18,7 @@ func schemaAttributes() map[string]schema.Attribute {
 			// leading a conflict between the initial state & computed state after creation.
 			Computed:    false,
 			Sensitive:   true,
-			Description: "Destination configuration",
+			Description: "Destination configuration as JSON using API version 2026-09-01.",
 			PlanModifiers: []planmodifier.String{
 				stringplanmodifier.UseStateForUnknown(),
 			},

@@ -15,7 +15,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-const apiVersion = "2025-07-01"
+const apiVersion = "2026-09-01"
 
 func (m *destinationResourceModel) Refresh(destination map[string]interface{}) diag.Diagnostics {
 	var diags diag.Diagnostics
@@ -300,6 +300,18 @@ func (m *destinationResourceModel) toUpdatePayload(priorState *destinationResour
 	if !ok {
 		newPayloadConfig = map[string]interface{}{}
 		payload["config"] = newPayloadConfig
+	}
+
+	// Policy members are independently merged by the API. Groups themselves
+	// are replaced, including their overrides, so only this level needs clearing.
+	if prior, ok := priorPayloadConfig["delivery_policy"].(map[string]interface{}); ok {
+		if next, ok := newPayloadConfig["delivery_policy"].(map[string]interface{}); ok {
+			for key := range prior {
+				if _, exists := next[key]; !exists {
+					next[key] = nil
+				}
+			}
+		}
 	}
 
 	typeDefaults := nonNullableConfigDefaults[m.Type.ValueString()]

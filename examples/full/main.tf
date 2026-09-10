@@ -95,8 +95,10 @@ resource "hookdeck_destination" "second_destination" {
       username = "username"
       password = "password"
     }
-    rate_limit        = 10
-    rate_limit_period = "concurrent"
+    delivery_policy = {
+      rate   = 10
+      period = "concurrent"
+    }
   })
 }
 
