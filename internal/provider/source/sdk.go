@@ -11,6 +11,7 @@ import (
 	"strconv"
 	"terraform-provider-hookdeck/internal/sdkclient"
 
+	"github.com/hashicorp/terraform-plugin-framework-jsontypes/jsontypes"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
@@ -78,6 +79,19 @@ func (m *sourceResourceModel) Refresh(source map[string]interface{}) diag.Diagno
 	} else {
 		diags.AddError("Error parsing url", "Expected string value")
 		return diags
+	}
+
+	if config, ok := source["config"]; ok {
+		if config == nil {
+			m.Config = jsontypes.NewNormalizedNull()
+		} else {
+			configJSON, err := json.Marshal(config)
+			if err != nil {
+				diags.AddError("Error parsing config", err.Error())
+				return diags
+			}
+			m.Config = jsontypes.NewNormalizedValue(string(configJSON))
+		}
 	}
 
 	return diags
