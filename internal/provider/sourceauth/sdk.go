@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"net/url"
 	"strconv"
+	"terraform-provider-hookdeck/internal/provider/shared"
 	"terraform-provider-hookdeck/internal/sdkclient"
 
 	"github.com/hashicorp/terraform-plugin-framework-jsontypes/jsontypes"
@@ -16,7 +17,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-const apiVersion = "2025-07-01"
+const apiVersion = sdkclient.APIVersion
 
 func (m *sourceAuthResourceModel) Refresh(source map[string]interface{}) diag.Diagnostics {
 	var diags diag.Diagnostics
@@ -56,6 +57,11 @@ func (m *sourceAuthResourceModel) doRetrieve(ctx context.Context, client *sdkcli
 	})
 	if err != nil {
 		diags.AddError("Error reading source auth", err.Error())
+		return nil, diags
+	}
+
+	if shared.IsGoneStatus(response.StatusCode) {
+		diags.Append(shared.NotFoundDiagnostic("Source", m.SourceID.ValueString()))
 		return nil, diags
 	}
 

@@ -67,7 +67,6 @@ func schemaAttributesV1() map[string]schema.Attribute {
 		},
 		"disabled_at": schema.StringAttribute{
 			Computed: true,
-			Optional: true,
 			Validators: []validator.String{
 				validators.IsRFC3339(),
 			},

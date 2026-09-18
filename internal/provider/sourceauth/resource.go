@@ -116,6 +116,10 @@ func (r *sourceAuthResource) Read(ctx context.Context, req resource.ReadRequest,
 		return
 	}
 	diags := data.Retrieve(ctx, &client)
+	if shared.IsNotFoundDiagnostics(diags) {
+		resp.State.RemoveResource(ctx)
+		return
+	}
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return

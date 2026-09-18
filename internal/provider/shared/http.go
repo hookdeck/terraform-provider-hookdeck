@@ -11,6 +11,8 @@ import (
 	"net/url"
 
 	"terraform-provider-hookdeck/internal/sdkclient"
+
+	"github.com/hashicorp/terraform-plugin-framework/diag"
 )
 
 // APIError is a non-2xx response.
@@ -23,10 +25,17 @@ func (e *APIError) Error() string {
 	return fmt.Sprintf("status %d: %s", e.Status, e.Body)
 }
 
-// IsNotFound reports whether err is a 404 response.
+// IsGoneStatus reports whether status means the resource no longer exists.
+// Hookdeck answers 404 for unknown ids and 410 for deleted resources.
+func IsGoneStatus(status int) bool {
+	return status == http.StatusNotFound || status == http.StatusGone
+}
+
+// IsNotFound reports whether err is a response for a resource that no
+// longer exists.
 func IsNotFound(err error) bool {
 	var apiErr *APIError
-	return errors.As(err, &apiErr) && apiErr.Status == http.StatusNotFound
+	return errors.As(err, &apiErr) && IsGoneStatus(apiErr.Status)
 }
 
 // Request sends a JSON request and decodes the response into out. A non-2xx
@@ -57,4 +66,22 @@ func Request(ctx context.Context, client sdkclient.Client, method, path string, 
 		return nil
 	}
 	return json.Unmarshal(body, out)
+}
+
+const notFoundSummary = "Resource not found"
+
+// NotFoundDiagnostic marks a Retrieve that got a 404. Resource Read uses
+// IsNotFoundDiagnostics to drop the resource from state instead of failing.
+func NotFoundDiagnostic(kind, id string) diag.Diagnostic {
+	return diag.NewErrorDiagnostic(notFoundSummary, fmt.Sprintf("%s %s no longer exists.", kind, id))
+}
+
+// IsNotFoundDiagnostics reports whether diags carries NotFoundDiagnostic.
+func IsNotFoundDiagnostics(diags diag.Diagnostics) bool {
+	for _, d := range diags {
+		if d.Severity() == diag.SeverityError && d.Summary() == notFoundSummary {
+			return true
+		}
+	}
+	return false
 }

@@ -121,6 +121,10 @@ func (r *transformationResource) Read(ctx context.Context, req resource.ReadRequ
 		return
 	}
 	diags := data.Retrieve(ctx, &client)
+	if shared.IsNotFoundDiagnostics(diags) {
+		resp.State.RemoveResource(ctx)
+		return
+	}
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return

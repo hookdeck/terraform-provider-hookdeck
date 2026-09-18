@@ -49,7 +49,7 @@ func fetchSourceConfig(id string) (map[string]interface{}, error) {
 		"test",
 	)
 	resp, err := client.RawClient.SendRequest(context.Background(), "GET",
-		fmt.Sprintf("/2025-07-01/sources/%s", id), nil)
+		fmt.Sprintf("/"+sdkclient.APIVersion+"/sources/%s", id), nil)
 	if err != nil {
 		return nil, err
 	}

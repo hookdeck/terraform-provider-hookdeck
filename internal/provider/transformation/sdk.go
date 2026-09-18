@@ -8,13 +8,14 @@ import (
 	"io"
 	"net/http"
 	"strconv"
+	"terraform-provider-hookdeck/internal/provider/shared"
 	"terraform-provider-hookdeck/internal/sdkclient"
 
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-const apiVersion = "2025-07-01"
+const apiVersion = sdkclient.APIVersion
 
 func (m *transformationResourceModel) Refresh(transformation map[string]interface{}) diag.Diagnostics {
 	var diags diag.Diagnostics
@@ -94,6 +95,11 @@ func (m *transformationResourceModel) Retrieve(ctx context.Context, client *sdkc
 	response, err := client.RawClient.SendRequest(ctx, "GET", fmt.Sprintf("/%s/transformations/%s", apiVersion, m.ID.ValueString()), &sdkclient.RequestOptions{})
 	if err != nil {
 		diags.AddError("Error reading transformation", err.Error())
+		return diags
+	}
+
+	if shared.IsGoneStatus(response.StatusCode) {
+		diags.Append(shared.NotFoundDiagnostic("Transformation", m.ID.ValueString()))
 		return diags
 	}
 

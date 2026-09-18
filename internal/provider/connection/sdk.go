@@ -10,6 +10,7 @@ import (
 	"net/http"
 	"strconv"
 
+	"terraform-provider-hookdeck/internal/provider/shared"
 	"terraform-provider-hookdeck/internal/sdkclient"
 
 	"github.com/hashicorp/terraform-plugin-framework-jsontypes/jsontypes"
@@ -17,7 +18,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-const apiVersion = "2025-07-01"
+const apiVersion = sdkclient.APIVersion
 
 func (m *connectionResourceModel) Refresh(connection map[string]interface{}) diag.Diagnostics {
 	var diags diag.Diagnostics
@@ -115,6 +116,11 @@ func (m *connectionResourceModel) Retrieve(ctx context.Context, client *sdkclien
 	response, err := client.RawClient.SendRequest(ctx, "GET", fmt.Sprintf("/%s/connections/%s", apiVersion, m.ID.ValueString()), &sdkclient.RequestOptions{})
 	if err != nil {
 		diags.AddError("Error reading connection", err.Error())
+		return diags
+	}
+
+	if shared.IsGoneStatus(response.StatusCode) {
+		diags.Append(shared.NotFoundDiagnostic("Connection", m.ID.ValueString()))
 		return diags
 	}
 

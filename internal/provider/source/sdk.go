@@ -9,13 +9,14 @@ import (
 	"net/http"
 	"net/url"
 	"strconv"
+	"terraform-provider-hookdeck/internal/provider/shared"
 	"terraform-provider-hookdeck/internal/sdkclient"
 
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-const apiVersion = "2025-07-01"
+const apiVersion = sdkclient.APIVersion
 
 func (m *sourceResourceModel) Refresh(source map[string]interface{}) diag.Diagnostics {
 	var diags diag.Diagnostics
@@ -92,6 +93,11 @@ func (m *sourceResourceModel) Retrieve(ctx context.Context, client *sdkclient.Cl
 	})
 	if err != nil {
 		diags.AddError("Error reading source", err.Error())
+		return diags
+	}
+
+	if shared.IsGoneStatus(response.StatusCode) {
+		diags.Append(shared.NotFoundDiagnostic("Source", m.ID.ValueString()))
 		return diags
 	}
 
