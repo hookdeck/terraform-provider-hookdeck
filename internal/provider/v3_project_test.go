@@ -222,3 +222,38 @@ func importIDWithProject(name, projectID string) resource.ImportStateIdFunc {
 		return projectID + "/" + rs.Primary.ID, nil
 	}
 }
+
+// A project key sees its own project through the data source.
+func TestAccV3_ProjectKey_GatewayProjectDataSource(t *testing.T) {
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { testAccPreCheck(t) },
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				Config: loadFixture(t, "project_datasource.tf", currentProjectID(t)),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("data.hookdeck_gateway_project.by_id", "id", currentProjectID(t)),
+					resource.TestCheckResourceAttr("data.hookdeck_gateway_project.by_id", "type", "event_gateway"),
+					resource.TestCheckResourceAttrSet("data.hookdeck_gateway_project.by_id", "organization_id"),
+					resource.TestCheckResourceAttr("data.hookdeck_gateway_project.by_name", "id", currentProjectID(t)),
+				),
+			},
+		},
+	})
+}
+
+// Project keys cannot create projects; the API's 401 surfaces as an error.
+func TestAccV3_ProjectKey_CannotCreateProject(t *testing.T) {
+	suffix := acctest.RandStringFromCharSet(8, acctest.CharSetAlphaNum)
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { testAccPreCheck(t) },
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				Config:      loadFixture(t, "project_create.tf", suffix),
+				ExpectError: regexp.MustCompile(`Error creating project`),
+			},
+		},
+	})
+}

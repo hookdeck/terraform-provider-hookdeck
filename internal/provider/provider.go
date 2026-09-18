@@ -8,6 +8,7 @@ import (
 	"terraform-provider-hookdeck/internal/projectscope"
 	"terraform-provider-hookdeck/internal/provider/connection"
 	"terraform-provider-hookdeck/internal/provider/destination"
+	"terraform-provider-hookdeck/internal/provider/project"
 	"terraform-provider-hookdeck/internal/provider/source"
 	"terraform-provider-hookdeck/internal/provider/sourceauth"
 	"terraform-provider-hookdeck/internal/provider/transformation"
@@ -181,6 +182,7 @@ func (p *hookdeckProvider) Configure(ctx context.Context, req provider.Configure
 func (p *hookdeckProvider) Resources(ctx context.Context) []func() resource.Resource {
 	return []func() resource.Resource{
 		// Event Gateway
+		project.NewProjectResource,
 		connection.NewConnectionResource,
 		destination.NewDestinationResource,
 		source.NewSourceResource,
@@ -199,6 +201,7 @@ func (p *hookdeckProvider) Resources(ctx context.Context) []func() resource.Reso
 func (p *hookdeckProvider) DataSources(_ context.Context) []func() datasource.DataSource {
 	return []func() datasource.DataSource{
 		// Event Gateway
+		project.NewProjectDataSource,
 		connection.NewConnectionDataSource,
 		destination.NewDestinationDataSource,
 		source.NewSourceDataSource,
