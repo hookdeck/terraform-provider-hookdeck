@@ -1,1 +1,4 @@
-$ terraform import hookdeck_transformation.example <transformation_id>
+$ terraform import hookdeck_gateway_transformation.example <id>
+
+# With an organization API key and no provider project_id:
+$ terraform import hookdeck_gateway_transformation.example <project_id>/<id>

@@ -32,12 +32,12 @@ This README gives a basic example; for more examples, see the [examples/](exampl
 
 ```hcl
 # Configure a source
-resource "hookdeck_source" "my_source" {
+resource "hookdeck_gateway_source" "my_source" {
   name = "my_source"
 }
 
 # Configure a destination
-resource "hookdeck_destination" "my_destination" {
+resource "hookdeck_gateway_destination" "my_destination" {
   name = "my_destination"
   type = "HTTP"
   config = jsonencode({
@@ -46,9 +46,9 @@ resource "hookdeck_destination" "my_destination" {
 }
 
 # Configure a connection
-resource "hookdeck_connection" "my_connection" {
-  source_id      = hookdeck_source.my_source.id
-  destination_id = hookdeck_destination.my_destination.id
+resource "hookdeck_gateway_connection" "my_connection" {
+  source_id      = hookdeck_gateway_source.my_source.id
+  destination_id = hookdeck_gateway_destination.my_destination.id
 }
 ```
 

@@ -20,22 +20,29 @@ terraform {
   }
 }
 
+# Project API key: every resource belongs to the key's project.
 provider "hookdeck" {
   api_key = var.hookdeck_api_key
 }
 
+# Organization API key: set a default project, or project_id per resource.
+# provider "hookdeck" {
+#   api_key    = var.hookdeck_org_api_key
+#   project_id = "tm_xxx"
+# }
+
 # Create a source
-resource "hookdeck_source" "source" {
+resource "hookdeck_gateway_source" "source" {
   # ...
 }
 
 # Create a destination
-resource "hookdeck_destination" "destination" {
+resource "hookdeck_gateway_destination" "destination" {
   # ...
 }
 
 # Create a connection
-resource "hookdeck_connection" "connection" {
+resource "hookdeck_gateway_connection" "connection" {
   # ...
 }
 ```
@@ -46,4 +53,5 @@ resource "hookdeck_connection" "connection" {
 ### Optional
 
 - `api_base` (String) Hookdeck API Base URL. Alternatively, can be configured using the `HOOKDECK_API_BASE` environment variable.
-- `api_key` (String, Sensitive) Hookdeck API Key. Alternatively, can be configured using the `HOOKDECK_API_KEY` environment variable.
+- `api_key` (String, Sensitive) Hookdeck API Key, either a project key or an organization key (`hd_org_` prefix). Alternatively, can be configured using the `HOOKDECK_API_KEY` environment variable.
+- `project_id` (String) Default project for every resource that does not set its own `project_id`. Required with an organization API key unless each resource sets `project_id`. With a project API key it must match the key's project. Alternatively, can be configured using the `HOOKDECK_PROJECT_ID` environment variable.

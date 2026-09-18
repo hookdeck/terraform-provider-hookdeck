@@ -92,6 +92,9 @@ jobs:
       - env:
           TF_ACC: "1"
           HOOKDECK_API_KEY: ${{ secrets.HOOKDECK_API_KEY }}
+          # Organization key tests skip when these are unset.
+          HOOKDECK_ORG_API_KEY: ${{ secrets.HOOKDECK_ORG_API_KEY }}
+          HOOKDECK_ORG_PROJECT_ID: ${{ secrets.HOOKDECK_ORG_PROJECT_ID }}
         run: go test -v -cover -timeout 25m ./internal/provider/...
         timeout-minutes: 25
       # Failed or interrupted tests leave resources behind in the test
