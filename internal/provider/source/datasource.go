@@ -3,6 +3,7 @@ package source
 import (
 	"context"
 	"fmt"
+	"terraform-provider-hookdeck/internal/provider/shared"
 	"terraform-provider-hookdeck/internal/schemahelpers"
 	"terraform-provider-hookdeck/internal/sdkclient"
 
@@ -35,7 +36,7 @@ func (r *sourceDataSource) Metadata(_ context.Context, req datasource.MetadataRe
 func (r *sourceDataSource) Schema(_ context.Context, _ datasource.SchemaRequest, resp *datasource.SchemaResponse) {
 	resp.Schema = schema.Schema{
 		Description: "Source Data Source",
-		Attributes:  schemahelpers.DataSourceSchemaFromResourceSchema(schemaAttributes(), "id"),
+		Attributes:  dataSourceAttributes(),
 	}
 }
 
@@ -67,11 +68,22 @@ func (r *sourceDataSource) Read(ctx context.Context, req datasource.ReadRequest,
 		return
 	}
 
-	diags := data.Retrieve(ctx, &r.client)
+	client, clientDiags := shared.ClientFor(ctx, r.client, data.ProjectID)
+	resp.Diagnostics.Append(clientDiags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	diags := data.Retrieve(ctx, &client)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
+}
+
+func dataSourceAttributes() map[string]schema.Attribute {
+	attributes := schemahelpers.DataSourceSchemaFromResourceSchema(schemaAttributes(), "id")
+	attributes["project_id"] = shared.ProjectIDDataSourceAttribute()
+	return attributes
 }

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 
+	"terraform-provider-hookdeck/internal/projectscope"
 	"terraform-provider-hookdeck/internal/provider/connection"
 	"terraform-provider-hookdeck/internal/provider/destination"
 	"terraform-provider-hookdeck/internal/provider/source"
@@ -37,8 +38,9 @@ type hookdeckProvider struct {
 
 // hookdeckProviderModel describes the provider data model.
 type hookdeckProviderModel struct {
-	APIBase types.String `tfsdk:"api_base"`
-	APIKey  types.String `tfsdk:"api_key"`
+	APIBase   types.String `tfsdk:"api_base"`
+	APIKey    types.String `tfsdk:"api_key"`
+	ProjectID types.String `tfsdk:"project_id"`
 }
 
 func (p *hookdeckProvider) Metadata(ctx context.Context, req provider.MetadataRequest, resp *provider.MetadataResponse) {
@@ -59,7 +61,11 @@ func (p *hookdeckProvider) Schema(ctx context.Context, req provider.SchemaReques
 			"api_key": schema.StringAttribute{
 				Optional:            true,
 				Sensitive:           true,
-				MarkdownDescription: fmt.Sprintf("Hookdeck API Key. Alternatively, can be configured using the `%s` environment variable.", apiKeyEnvVarKey),
+				MarkdownDescription: fmt.Sprintf("Hookdeck API Key, either a project key or an organization key (`hd_org_` prefix). Alternatively, can be configured using the `%s` environment variable.", apiKeyEnvVarKey),
+			},
+			"project_id": schema.StringAttribute{
+				Optional:            true,
+				MarkdownDescription: fmt.Sprintf("Default project for every resource that does not set its own `project_id`. Required with an organization API key unless each resource sets `project_id`. With a project API key it must match the key's project. Alternatively, can be configured using the `%s` environment variable.", projectIDEnvVarKey),
 			},
 		},
 	}
@@ -97,6 +103,15 @@ func (p *hookdeckProvider) Configure(ctx context.Context, req provider.Configure
 		)
 	}
 
+	if config.ProjectID.IsUnknown() {
+		resp.Diagnostics.AddAttributeError(
+			path.Root("project_id"),
+			"Unknown Hookdeck Project ID",
+			"The provider cannot create the Hookdeck API client as there is an unknown configuration value for the Hookdeck project ID. "+
+				fmt.Sprintf("Either target apply the source of the value first, set the value statically in the configuration, or use the %s environment variable.", projectIDEnvVarKey),
+		)
+	}
+
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -106,6 +121,7 @@ func (p *hookdeckProvider) Configure(ctx context.Context, req provider.Configure
 
 	apiBase := os.Getenv(apiBaseEnvVarKey)
 	apiKey := os.Getenv(apiKeyEnvVarKey)
+	projectID := os.Getenv(projectIDEnvVarKey)
 
 	if !config.APIBase.IsNull() {
 		apiBase = config.APIBase.ValueString()
@@ -113,6 +129,10 @@ func (p *hookdeckProvider) Configure(ctx context.Context, req provider.Configure
 
 	if !config.APIKey.IsNull() {
 		apiKey = config.APIKey.ValueString()
+	}
+
+	if !config.ProjectID.IsNull() {
+		projectID = config.ProjectID.ValueString()
 	}
 
 	// If any of the expected configurations are missing, return
@@ -133,14 +153,22 @@ func (p *hookdeckProvider) Configure(ctx context.Context, req provider.Configure
 	}
 
 	ctx = tflog.SetField(ctx, "hookdeck_api_base", apiBase)
-	ctx = tflog.SetField(ctx, "hookdeck_api_key", apiKey)
-	ctx = tflog.MaskFieldValuesWithFieldKeys(ctx, "hookdeck_api_key")
+	ctx = tflog.SetField(ctx, "hookdeck_project_id", projectID)
 
 	tflog.Debug(ctx, "Creating Hookdeck client")
-	tflog.Debug(ctx, apiBase+" "+apiKey)
 
 	// Create a new Hookdeck client using the configuration values
 	client := sdkclient.InitHookdeckSDKClient(apiBase, apiKey, p.version)
+	client.DefaultProjectID = projectID
+
+	// A project key with a provider default that is not its own project is
+	// a configuration error; fail here rather than on the first resource.
+	if projectID != "" && client.KeyKind == projectscope.KeyKindProject {
+		if _, err := client.ForProject(ctx, ""); err != nil {
+			resp.Diagnostics.AddAttributeError(path.Root("project_id"), "Project mismatch", err.Error())
+			return
+		}
+	}
 
 	// Make the Hookdeck client available during DataSource and Resource
 	// type Configure methods.
@@ -178,6 +206,7 @@ func New(version string) func() provider.Provider {
 }
 
 const (
-	apiBaseEnvVarKey = "HOOKDECK_API_BASE"
-	apiKeyEnvVarKey  = "HOOKDECK_API_KEY"
+	apiBaseEnvVarKey   = "HOOKDECK_API_BASE"
+	apiKeyEnvVarKey    = "HOOKDECK_API_KEY"
+	projectIDEnvVarKey = "HOOKDECK_PROJECT_ID"
 )

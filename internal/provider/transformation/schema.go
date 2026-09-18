@@ -1,6 +1,8 @@
 package transformation
 
 import (
+	"terraform-provider-hookdeck/internal/provider/shared"
+
 	"terraform-provider-hookdeck/internal/validators"
 
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
@@ -11,6 +13,7 @@ import (
 
 func schemaAttributes() map[string]schema.Attribute {
 	return map[string]schema.Attribute{
+		"project_id": shared.ProjectIDResourceAttribute(),
 		"code": schema.StringAttribute{
 			Required:    true,
 			Description: "JavaScript code to be executed",

@@ -3,9 +3,9 @@ package transformation
 import (
 	"context"
 	"fmt"
+	"terraform-provider-hookdeck/internal/provider/shared"
 	"terraform-provider-hookdeck/internal/sdkclient"
 
-	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 )
@@ -24,7 +24,7 @@ func NewTransformationResource() resource.Resource {
 
 // transformationResource is the resource implementation.
 type transformationResource struct {
-	client *sdkclient.Client
+	client sdkclient.Client
 }
 
 // Metadata returns the resource type name.
@@ -57,7 +57,7 @@ func (r *transformationResource) Configure(_ context.Context, req resource.Confi
 		return
 	}
 
-	r.client = &client
+	r.client = client
 }
 
 // Create creates the resource and sets the initial Terraform state.
@@ -70,7 +70,12 @@ func (r *transformationResource) Create(ctx context.Context, req resource.Create
 	}
 
 	// Create resource
-	diags := data.Create(ctx, r.client)
+	client, clientDiags := shared.ClientFor(ctx, r.client, data.ProjectID)
+	resp.Diagnostics.Append(clientDiags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	diags := data.Create(ctx, &client)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return
@@ -90,7 +95,12 @@ func (r *transformationResource) Read(ctx context.Context, req resource.ReadRequ
 	}
 
 	// Get refreshed resource value
-	diags := data.Retrieve(ctx, r.client)
+	client, clientDiags := shared.ClientFor(ctx, r.client, data.ProjectID)
+	resp.Diagnostics.Append(clientDiags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	diags := data.Retrieve(ctx, &client)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return
@@ -110,7 +120,12 @@ func (r *transformationResource) Update(ctx context.Context, req resource.Update
 	}
 
 	// Update existing resource
-	diags := data.Update(ctx, r.client)
+	client, clientDiags := shared.ClientFor(ctx, r.client, data.ProjectID)
+	resp.Diagnostics.Append(clientDiags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	diags := data.Update(ctx, &client)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return
@@ -130,11 +145,15 @@ func (r *transformationResource) Delete(ctx context.Context, req resource.Delete
 	}
 
 	// Delete existing resource
-	diags := data.Delete(ctx, r.client)
+	client, clientDiags := shared.ClientFor(ctx, r.client, data.ProjectID)
+	resp.Diagnostics.Append(clientDiags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	diags := data.Delete(ctx, &client)
 	resp.Diagnostics.Append(diags...)
 }
 
 func (r *transformationResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
-	// Retrieve import ID and save to id attribute
-	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
+	shared.ImportState(ctx, "id", req, resp)
 }

@@ -3,9 +3,9 @@ package connection
 import (
 	"context"
 	"fmt"
+	"terraform-provider-hookdeck/internal/provider/shared"
 	"terraform-provider-hookdeck/internal/sdkclient"
 
-	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 )
@@ -69,7 +69,12 @@ func (r *connectionResource) Create(ctx context.Context, req resource.CreateRequ
 		return
 	}
 
-	diags := data.Create(ctx, &r.client)
+	client, clientDiags := shared.ClientFor(ctx, r.client, data.ProjectID)
+	resp.Diagnostics.Append(clientDiags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	diags := data.Create(ctx, &client)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return
@@ -86,7 +91,12 @@ func (r *connectionResource) Read(ctx context.Context, req resource.ReadRequest,
 		return
 	}
 
-	diags := data.Retrieve(ctx, &r.client)
+	client, clientDiags := shared.ClientFor(ctx, r.client, data.ProjectID)
+	resp.Diagnostics.Append(clientDiags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	diags := data.Retrieve(ctx, &client)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return
@@ -103,7 +113,12 @@ func (r *connectionResource) Update(ctx context.Context, req resource.UpdateRequ
 		return
 	}
 
-	diags := data.Update(ctx, &r.client)
+	client, clientDiags := shared.ClientFor(ctx, r.client, data.ProjectID)
+	resp.Diagnostics.Append(clientDiags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	diags := data.Update(ctx, &client)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return
@@ -120,7 +135,12 @@ func (r *connectionResource) Delete(ctx context.Context, req resource.DeleteRequ
 		return
 	}
 
-	diags := data.Delete(ctx, &r.client)
+	client, clientDiags := shared.ClientFor(ctx, r.client, data.ProjectID)
+	resp.Diagnostics.Append(clientDiags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	diags := data.Delete(ctx, &client)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return
@@ -128,6 +148,5 @@ func (r *connectionResource) Delete(ctx context.Context, req resource.DeleteRequ
 }
 
 func (r *connectionResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
-	// Retrieve import ID and save to id attribute
-	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
+	shared.ImportState(ctx, "id", req, resp)
 }

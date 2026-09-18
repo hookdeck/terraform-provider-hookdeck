@@ -12,11 +12,20 @@ import (
 	"time"
 
 	"golang.org/x/time/rate"
+
+	"terraform-provider-hookdeck/internal/projectscope"
 )
 
 // Client is the main client struct exposed to the provider.
 type Client struct {
 	RawClient RawClientInterface
+
+	// KeyKind is derived from the API key prefix.
+	KeyKind projectscope.KeyKind
+	// DefaultProjectID is the provider-level project_id, "" when unset.
+	DefaultProjectID string
+
+	keyProject *keyProjectLookup
 }
 
 const (
@@ -179,7 +188,11 @@ func InitHookdeckSDKClient(apiBase string, apiKey string, providerVersion string
 		opt(rawClient)
 	}
 
-	return Client{RawClient: rawClient}
+	return Client{
+		RawClient:  rawClient,
+		KeyKind:    projectscope.KindOfKey(apiKey),
+		keyProject: &keyProjectLookup{},
+	}
 }
 
 // SendRequest sends an HTTP request with rate limiting.

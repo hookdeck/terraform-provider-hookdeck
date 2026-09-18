@@ -6,7 +6,10 @@
 // any explicit project id must match it.
 package projectscope
 
-import "errors"
+import (
+	"errors"
+	"strings"
+)
 
 // KeyKind is the kind of API key the provider was configured with.
 type KeyKind int
@@ -17,6 +20,9 @@ const (
 	// KeyKindOrganization is an organization API key (prefix hd_org_).
 	KeyKindOrganization
 )
+
+// OrganizationKeyPrefix is the prefix of organization API keys.
+const OrganizationKeyPrefix = "hd_org_"
 
 var (
 	// ErrProjectRequired is returned when an organization key has no
@@ -32,7 +38,10 @@ var (
 
 // KindOfKey derives the key kind from the key's prefix.
 func KindOfKey(apiKey string) KeyKind {
-	panic("not implemented")
+	if strings.HasPrefix(apiKey, OrganizationKeyPrefix) {
+		return KeyKindOrganization
+	}
+	return KeyKindProject
 }
 
 // Resolve returns the project id requests should target, or "" when the
@@ -41,10 +50,48 @@ func KindOfKey(apiKey string) KeyKind {
 // keyProject is called at most once, only when the resolution needs the
 // project key's own project id to validate an explicit project_id.
 func Resolve(kind KeyKind, resourceProjectID, providerProjectID string, keyProject func() (string, error)) (string, error) {
-	panic("not implemented")
+	if kind == KeyKindOrganization {
+		if resourceProjectID != "" {
+			return resourceProjectID, nil
+		}
+		if providerProjectID != "" {
+			return providerProjectID, nil
+		}
+		return "", ErrProjectRequired
+	}
+
+	want := resourceProjectID
+	if want == "" {
+		want = providerProjectID
+	}
+	if want == "" {
+		return "", nil
+	}
+	actual, err := keyProject()
+	if err != nil {
+		return "", err
+	}
+	if actual != want {
+		return "", ErrProjectMismatch
+	}
+	return want, nil
 }
 
 // ParseImportID splits "<project_id>/<id>" or "<id>".
 func ParseImportID(importID string) (projectID, id string, err error) {
-	panic("not implemented")
+	parts := strings.Split(importID, "/")
+	switch len(parts) {
+	case 1:
+		if parts[0] == "" {
+			return "", "", ErrInvalidImportID
+		}
+		return "", parts[0], nil
+	case 2:
+		if parts[0] == "" || parts[1] == "" {
+			return "", "", ErrInvalidImportID
+		}
+		return parts[0], parts[1], nil
+	default:
+		return "", "", ErrInvalidImportID
+	}
 }

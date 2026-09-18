@@ -1,6 +1,8 @@
 package source
 
 import (
+	"terraform-provider-hookdeck/internal/provider/shared"
+
 	"terraform-provider-hookdeck/internal/validators"
 
 	"github.com/hashicorp/terraform-plugin-framework-jsontypes/jsontypes"
@@ -12,6 +14,7 @@ import (
 
 func schemaAttributes() map[string]schema.Attribute {
 	return map[string]schema.Attribute{
+		"project_id": shared.ProjectIDResourceAttribute(),
 		"config": schema.StringAttribute{
 			Optional: true,
 			// Cannot be computed because some sources may have default config value,

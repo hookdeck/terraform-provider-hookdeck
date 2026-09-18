@@ -6,6 +6,7 @@ import (
 )
 
 type sourceResourceModel struct {
+	ProjectID   types.String         `tfsdk:"project_id"`
 	Config      jsontypes.Normalized `tfsdk:"config"`
 	CreatedAt   types.String         `tfsdk:"created_at"`
 	Description types.String         `tfsdk:"description"`

@@ -5,6 +5,7 @@ import (
 )
 
 type transformationResourceModel struct {
+	ProjectID types.String `tfsdk:"project_id"`
 	Code      types.String `tfsdk:"code"`
 	CreatedAt types.String `tfsdk:"created_at"`
 	ENV       types.String `tfsdk:"env"`

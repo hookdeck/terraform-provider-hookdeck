@@ -1,6 +1,8 @@
 package sourceauth
 
 import (
+	"terraform-provider-hookdeck/internal/provider/shared"
+
 	"github.com/hashicorp/terraform-plugin-framework-jsontypes/jsontypes"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
@@ -9,6 +11,7 @@ import (
 
 func schemaAttributes() map[string]schema.Attribute {
 	return map[string]schema.Attribute{
+		"project_id": shared.ProjectIDResourceAttribute(),
 		"auth": schema.StringAttribute{
 			Required:    true,
 			Sensitive:   true,
