@@ -17,26 +17,33 @@ var (
 	_ datasource.DataSourceWithConfigure = &sourceDataSource{}
 )
 
-// NewSourceDataSource is a helper function to simplify the provider implementation.
+// NewSourceDataSource returns the hookdeck_gateway_source data source.
 func NewSourceDataSource() datasource.DataSource {
-	return &sourceDataSource{}
+	return &sourceDataSource{naming: shared.Naming{Suffix: "_source"}}
+}
+
+// NewLegacySourceDataSource returns the deprecated hookdeck_source alias.
+func NewLegacySourceDataSource() datasource.DataSource {
+	return &sourceDataSource{naming: shared.Naming{Suffix: "_source", Legacy: true}}
 }
 
 // sourceDataSource is the datasource implementation.
 type sourceDataSource struct {
+	naming shared.Naming
 	client sdkclient.Client
 }
 
 // Metadata returns the datasource type name.
 func (r *sourceDataSource) Metadata(_ context.Context, req datasource.MetadataRequest, resp *datasource.MetadataResponse) {
-	resp.TypeName = req.ProviderTypeName + "_source"
+	resp.TypeName = r.naming.TypeName(req.ProviderTypeName)
 }
 
 // Schema returns the data source schema.
 func (r *sourceDataSource) Schema(_ context.Context, _ datasource.SchemaRequest, resp *datasource.SchemaResponse) {
 	resp.Schema = schema.Schema{
-		Description: "Source Data Source",
-		Attributes:  dataSourceAttributes(),
+		DeprecationMessage: r.naming.DeprecationMessage(),
+		Description:        "Source Data Source",
+		Attributes:         dataSourceAttributes(),
 	}
 }
 

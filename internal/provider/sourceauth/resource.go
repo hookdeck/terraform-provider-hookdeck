@@ -15,29 +15,49 @@ var (
 	_ resource.Resource                = &sourceAuthResource{}
 	_ resource.ResourceWithConfigure   = &sourceAuthResource{}
 	_ resource.ResourceWithImportState = &sourceAuthResource{}
+	_ resource.ResourceWithMoveState   = &sourceAuthResource{}
 )
 
-// NewSourceAuthResource is a helper function to simplify the provider implementation.
+// NewSourceAuthResource returns the hookdeck_gateway_source_auth resource.
 func NewSourceAuthResource() resource.Resource {
-	return &sourceAuthResource{}
+	return &sourceAuthResource{naming: shared.Naming{Suffix: "_source_auth"}}
+}
+
+// NewLegacySourceAuthResource returns the deprecated hookdeck_source_auth alias.
+func NewLegacySourceAuthResource() resource.Resource {
+	return &sourceAuthResource{naming: shared.Naming{Suffix: "_source_auth", Legacy: true}}
 }
 
 // sourceAuthResource is the resource implementation.
 type sourceAuthResource struct {
+	naming shared.Naming
 	client sdkclient.Client
 }
 
 // Metadata returns the resource type name.
 func (r *sourceAuthResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
-	resp.TypeName = req.ProviderTypeName + "_source_auth"
+	resp.TypeName = r.naming.TypeName(req.ProviderTypeName)
 }
 
 // Schema returns the resource schema.
 func (r *sourceAuthResource) Schema(_ context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
-	resp.Schema = schema.Schema{
-		Description: "Source Auth Resource",
-		Attributes:  schemaAttributes(),
+	resp.Schema = r.schema()
+}
+
+func (r *sourceAuthResource) schema() schema.Schema {
+	return schema.Schema{
+		DeprecationMessage: r.naming.DeprecationMessage(),
+		Description:        "Source Auth Resource",
+		Attributes:         schemaAttributes(),
 	}
+}
+
+// MoveState accepts state from the v2 name via a moved block.
+func (r *sourceAuthResource) MoveState(_ context.Context) []resource.StateMover {
+	if r.naming.Legacy {
+		return nil
+	}
+	return []resource.StateMover{shared.RenamedStateMover(r.naming.LegacyTypeName(), r.schema())}
 }
 
 // Configure adds the provider configured client to the resource.

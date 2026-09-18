@@ -15,29 +15,49 @@ var (
 	_ resource.Resource                = &transformationResource{}
 	_ resource.ResourceWithConfigure   = &transformationResource{}
 	_ resource.ResourceWithImportState = &transformationResource{}
+	_ resource.ResourceWithMoveState   = &transformationResource{}
 )
 
-// NewTransformationResource is a helper function to simplify the provider implementation.
+// NewTransformationResource returns the hookdeck_gateway_transformation resource.
 func NewTransformationResource() resource.Resource {
-	return &transformationResource{}
+	return &transformationResource{naming: shared.Naming{Suffix: "_transformation"}}
+}
+
+// NewLegacyTransformationResource returns the deprecated hookdeck_transformation alias.
+func NewLegacyTransformationResource() resource.Resource {
+	return &transformationResource{naming: shared.Naming{Suffix: "_transformation", Legacy: true}}
 }
 
 // transformationResource is the resource implementation.
 type transformationResource struct {
+	naming shared.Naming
 	client sdkclient.Client
 }
 
 // Metadata returns the resource type name.
 func (r *transformationResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
-	resp.TypeName = req.ProviderTypeName + "_transformation"
+	resp.TypeName = r.naming.TypeName(req.ProviderTypeName)
 }
 
 // Schema returns the resource schema.
 func (r *transformationResource) Schema(_ context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
-	resp.Schema = schema.Schema{
-		Description: "Transformation Resource",
-		Attributes:  schemaAttributes(),
+	resp.Schema = r.schema()
+}
+
+func (r *transformationResource) schema() schema.Schema {
+	return schema.Schema{
+		DeprecationMessage: r.naming.DeprecationMessage(),
+		Description:        "Transformation Resource",
+		Attributes:         schemaAttributes(),
 	}
+}
+
+// MoveState accepts state from the v2 name via a moved block.
+func (r *transformationResource) MoveState(_ context.Context) []resource.StateMover {
+	if r.naming.Legacy {
+		return nil
+	}
+	return []resource.StateMover{shared.RenamedStateMover(r.naming.LegacyTypeName(), r.schema())}
 }
 
 // Configure adds the provider configured client to the resource.

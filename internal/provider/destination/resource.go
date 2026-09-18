@@ -15,30 +15,50 @@ var (
 	_ resource.Resource                   = &destinationResource{}
 	_ resource.ResourceWithConfigure      = &destinationResource{}
 	_ resource.ResourceWithImportState    = &destinationResource{}
+	_ resource.ResourceWithMoveState      = &destinationResource{}
 	_ resource.ResourceWithValidateConfig = &destinationResource{}
 )
 
-// NewDestinationResource is a helper function to simplify the provider implementation.
+// NewDestinationResource returns the hookdeck_gateway_destination resource.
 func NewDestinationResource() resource.Resource {
-	return &destinationResource{}
+	return &destinationResource{naming: shared.Naming{Suffix: "_destination"}}
+}
+
+// NewLegacyDestinationResource returns the deprecated hookdeck_destination alias.
+func NewLegacyDestinationResource() resource.Resource {
+	return &destinationResource{naming: shared.Naming{Suffix: "_destination", Legacy: true}}
 }
 
 // destinationResource is the resource implementation.
 type destinationResource struct {
+	naming shared.Naming
 	client sdkclient.Client
 }
 
 // Metadata returns the resource type name.
 func (r *destinationResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
-	resp.TypeName = req.ProviderTypeName + "_destination"
+	resp.TypeName = r.naming.TypeName(req.ProviderTypeName)
 }
 
 // Schema returns the resource schema.
 func (r *destinationResource) Schema(_ context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
-	resp.Schema = schema.Schema{
+	resp.Schema = r.schema()
+}
+
+func (r *destinationResource) schema() schema.Schema {
+	return schema.Schema{
+		DeprecationMessage:  r.naming.DeprecationMessage(),
 		MarkdownDescription: "Destination Resource",
 		Attributes:          schemaAttributes(),
 	}
+}
+
+// MoveState accepts state from the v2 name via a moved block.
+func (r *destinationResource) MoveState(_ context.Context) []resource.StateMover {
+	if r.naming.Legacy {
+		return nil
+	}
+	return []resource.StateMover{shared.RenamedStateMover(r.naming.LegacyTypeName(), r.schema())}
 }
 
 // Configure adds the provider configured client to the resource.

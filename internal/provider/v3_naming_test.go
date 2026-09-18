@@ -31,10 +31,12 @@ func TestAccV3_GatewayResourceNames(t *testing.T) {
 				),
 			},
 			{
-				ResourceName:            "hookdeck_gateway_source.test",
-				ImportState:             true,
-				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"config"},
+				ResourceName:      "hookdeck_gateway_source.test",
+				ImportState:       true,
+				ImportStateVerify: true,
+				// source_auth updates the source after creation, so
+				// updated_at in state predates the import.
+				ImportStateVerifyIgnore: []string{"config", "updated_at"},
 			},
 			{
 				ResourceName:            "hookdeck_gateway_destination.test",

@@ -17,26 +17,33 @@ var (
 	_ datasource.DataSourceWithConfigure = &connectionDataSource{}
 )
 
-// NewConnectionDataSource is a helper function to simplify the provider implementation.
+// NewConnectionDataSource returns the hookdeck_gateway_connection data source.
 func NewConnectionDataSource() datasource.DataSource {
-	return &connectionDataSource{}
+	return &connectionDataSource{naming: shared.Naming{Suffix: "_connection"}}
+}
+
+// NewLegacyConnectionDataSource returns the deprecated hookdeck_connection alias.
+func NewLegacyConnectionDataSource() datasource.DataSource {
+	return &connectionDataSource{naming: shared.Naming{Suffix: "_connection", Legacy: true}}
 }
 
 // connectionDataSource is the datasource implementation.
 type connectionDataSource struct {
+	naming shared.Naming
 	client sdkclient.Client
 }
 
 // Metadata returns the datasource type name.
 func (r *connectionDataSource) Metadata(_ context.Context, req datasource.MetadataRequest, resp *datasource.MetadataResponse) {
-	resp.TypeName = req.ProviderTypeName + "_connection"
+	resp.TypeName = r.naming.TypeName(req.ProviderTypeName)
 }
 
 // Schema returns the data source schema.
 func (r *connectionDataSource) Schema(_ context.Context, _ datasource.SchemaRequest, resp *datasource.SchemaResponse) {
 	resp.Schema = schema.Schema{
-		Description: "Connection Data Source",
-		Attributes:  dataSourceAttributes(),
+		DeprecationMessage: r.naming.DeprecationMessage(),
+		Description:        "Connection Data Source",
+		Attributes:         dataSourceAttributes(),
 	}
 }
 

@@ -17,26 +17,33 @@ var (
 	_ datasource.DataSourceWithConfigure = &destinationDataSource{}
 )
 
-// NewDestinationDataSource is a helper function to simplify the provider implementation.
+// NewDestinationDataSource returns the hookdeck_gateway_destination data source.
 func NewDestinationDataSource() datasource.DataSource {
-	return &destinationDataSource{}
+	return &destinationDataSource{naming: shared.Naming{Suffix: "_destination"}}
+}
+
+// NewLegacyDestinationDataSource returns the deprecated hookdeck_destination alias.
+func NewLegacyDestinationDataSource() datasource.DataSource {
+	return &destinationDataSource{naming: shared.Naming{Suffix: "_destination", Legacy: true}}
 }
 
 // destinationDataSource is the datasource implementation.
 type destinationDataSource struct {
+	naming shared.Naming
 	client sdkclient.Client
 }
 
 // Metadata returns the datasource type name.
 func (r *destinationDataSource) Metadata(_ context.Context, req datasource.MetadataRequest, resp *datasource.MetadataResponse) {
-	resp.TypeName = req.ProviderTypeName + "_destination"
+	resp.TypeName = r.naming.TypeName(req.ProviderTypeName)
 }
 
 // Schema returns the data source schema.
 func (r *destinationDataSource) Schema(_ context.Context, _ datasource.SchemaRequest, resp *datasource.SchemaResponse) {
 	resp.Schema = schema.Schema{
-		Description: "Destination Data Source",
-		Attributes:  dataSourceAttributes(),
+		DeprecationMessage: r.naming.DeprecationMessage(),
+		Description:        "Destination Data Source",
+		Attributes:         dataSourceAttributes(),
 	}
 }
 

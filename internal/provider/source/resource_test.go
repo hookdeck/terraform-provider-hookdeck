@@ -199,4 +199,3 @@ func TestAccSourceResource_RemoveAllowedHTTPMethodsResetsToDefault(t *testing.T)
 		},
 	})
 }
-

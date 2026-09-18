@@ -180,20 +180,32 @@ func (p *hookdeckProvider) Configure(ctx context.Context, req provider.Configure
 
 func (p *hookdeckProvider) Resources(ctx context.Context) []func() resource.Resource {
 	return []func() resource.Resource{
+		// Event Gateway
 		connection.NewConnectionResource,
 		destination.NewDestinationResource,
 		source.NewSourceResource,
 		sourceauth.NewSourceAuthResource,
 		transformation.NewTransformationResource,
 		webhookregistration.NewWebhookRegistrationResource,
+		// v2 names, deprecated, removed in v4
+		connection.NewLegacyConnectionResource,
+		destination.NewLegacyDestinationResource,
+		source.NewLegacySourceResource,
+		sourceauth.NewLegacySourceAuthResource,
+		transformation.NewLegacyTransformationResource,
 	}
 }
 
 func (p *hookdeckProvider) DataSources(_ context.Context) []func() datasource.DataSource {
 	return []func() datasource.DataSource{
+		// Event Gateway
 		connection.NewConnectionDataSource,
 		destination.NewDestinationDataSource,
 		source.NewSourceDataSource,
+		// v2 names, deprecated, removed in v4
+		connection.NewLegacyConnectionDataSource,
+		destination.NewLegacyDestinationDataSource,
+		source.NewLegacySourceDataSource,
 	}
 }
 

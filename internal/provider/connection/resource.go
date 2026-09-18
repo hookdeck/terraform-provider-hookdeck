@@ -15,30 +15,50 @@ var (
 	_ resource.Resource                = &connectionResource{}
 	_ resource.ResourceWithConfigure   = &connectionResource{}
 	_ resource.ResourceWithImportState = &connectionResource{}
+	_ resource.ResourceWithMoveState   = &connectionResource{}
 )
 
-// NewConnectionResource is a helper function to simplify the provider implementation.
+// NewConnectionResource returns the hookdeck_gateway_connection resource.
 func NewConnectionResource() resource.Resource {
-	return &connectionResource{}
+	return &connectionResource{naming: shared.Naming{Suffix: "_connection"}}
+}
+
+// NewLegacyConnectionResource returns the deprecated hookdeck_connection alias.
+func NewLegacyConnectionResource() resource.Resource {
+	return &connectionResource{naming: shared.Naming{Suffix: "_connection", Legacy: true}}
 }
 
 // connectionResource is the resource implementation.
 type connectionResource struct {
+	naming shared.Naming
 	client sdkclient.Client
 }
 
 // Metadata returns the resource type name.
 func (r *connectionResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
-	resp.TypeName = req.ProviderTypeName + "_connection"
+	resp.TypeName = r.naming.TypeName(req.ProviderTypeName)
 }
 
 // Schema returns the resource schema.
 func (r *connectionResource) Schema(_ context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
-	resp.Schema = schema.Schema{
+	resp.Schema = r.schema()
+}
+
+func (r *connectionResource) schema() schema.Schema {
+	return schema.Schema{
+		DeprecationMessage:  r.naming.DeprecationMessage(),
 		Version:             1,
 		MarkdownDescription: "Connection Resource",
 		Attributes:          schemaAttributes(),
 	}
+}
+
+// MoveState accepts state from the v2 name via a moved block.
+func (r *connectionResource) MoveState(_ context.Context) []resource.StateMover {
+	if r.naming.Legacy {
+		return nil
+	}
+	return []resource.StateMover{shared.RenamedStateMover(r.naming.LegacyTypeName(), r.schema())}
 }
 
 // Configure adds the provider configured client to the resource.

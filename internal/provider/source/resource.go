@@ -15,29 +15,49 @@ var (
 	_ resource.Resource                = &sourceResource{}
 	_ resource.ResourceWithConfigure   = &sourceResource{}
 	_ resource.ResourceWithImportState = &sourceResource{}
+	_ resource.ResourceWithMoveState   = &sourceResource{}
 )
 
-// NewSourceResource is a helper function to simplify the provider implementation.
+// NewSourceResource returns the hookdeck_gateway_source resource.
 func NewSourceResource() resource.Resource {
-	return &sourceResource{}
+	return &sourceResource{naming: shared.Naming{Suffix: "_source"}}
+}
+
+// NewLegacySourceResource returns the deprecated hookdeck_source alias.
+func NewLegacySourceResource() resource.Resource {
+	return &sourceResource{naming: shared.Naming{Suffix: "_source", Legacy: true}}
 }
 
 // sourceResource is the resource implementation.
 type sourceResource struct {
+	naming shared.Naming
 	client sdkclient.Client
 }
 
 // Metadata returns the resource type name.
 func (r *sourceResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
-	resp.TypeName = req.ProviderTypeName + "_source"
+	resp.TypeName = r.naming.TypeName(req.ProviderTypeName)
 }
 
 // Schema returns the resource schema.
 func (r *sourceResource) Schema(_ context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
-	resp.Schema = schema.Schema{
-		Description: "Source Resource",
-		Attributes:  schemaAttributes(),
+	resp.Schema = r.schema()
+}
+
+func (r *sourceResource) schema() schema.Schema {
+	return schema.Schema{
+		DeprecationMessage: r.naming.DeprecationMessage(),
+		Description:        "Source Resource",
+		Attributes:         schemaAttributes(),
 	}
+}
+
+// MoveState accepts state from the v2 name via a moved block.
+func (r *sourceResource) MoveState(_ context.Context) []resource.StateMover {
+	if r.naming.Legacy {
+		return nil
+	}
+	return []resource.StateMover{shared.RenamedStateMover(r.naming.LegacyTypeName(), r.schema())}
 }
 
 // Configure adds the provider configured client to the resource.
