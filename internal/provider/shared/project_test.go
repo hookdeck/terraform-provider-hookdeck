@@ -20,11 +20,11 @@ import (
 )
 
 // recordingClient answers 200 {} and records each request's project header
-// and path. Paths listed in missing answer 404.
+// and path. A request for a project listed in refused gets that status.
 type recordingClient struct {
 	projects []string
 	paths    []string
-	missing  map[string]bool
+	refused  map[string]int
 }
 
 func (c *recordingClient) SendRequest(_ context.Context, _, path string, opts *sdkclient.RequestOptions) (*http.Response, error) {
@@ -35,8 +35,11 @@ func (c *recordingClient) SendRequest(_ context.Context, _, path string, opts *s
 	c.projects = append(c.projects, project)
 	c.paths = append(c.paths, path)
 	status, body := http.StatusOK, "{}"
-	if c.missing[path] {
-		status, body = http.StatusNotFound, `{"message":"Not Found"}`
+	switch c.refused[project] {
+	case http.StatusNotFound:
+		status, body = http.StatusNotFound, `{"code":"NOT_FOUND","message":"Team Not Found"}`
+	case http.StatusForbidden:
+		status, body = http.StatusForbidden, `{"code":"INSUFFICIENT_SCOPE"}`
 	}
 	return &http.Response{StatusCode: status, Body: io.NopCloser(strings.NewReader(body))}, nil
 }
@@ -49,8 +52,8 @@ var (
 )
 
 func scopedResource(scope projectscope.Scope) (*ProjectScopedResource, *recordingClient) {
-	raw := &recordingClient{missing: map[string]bool{}}
-	r := &ProjectScopedResource{}
+	raw := &recordingClient{refused: map[string]int{}}
+	r := &ProjectScopedResource{ListPath: "/sources"}
 	r.client = sdkclient.Client{RawClient: raw, Scope: scope}
 	return r, raw
 }
@@ -308,22 +311,37 @@ func TestModifyPlan_destroyIsNotChecked(t *testing.T) {
 }
 
 // A replace deletes before it creates, so the target project is checked
-// first: a mistyped project must fail the plan, not the apply.
+// first, with the kind of request the create will send: a project that is
+// mistyped, or that the key has no grant on, must fail the plan, not the
+// apply.
 func TestModifyPlan_replaceChecksTheTargetProject(t *testing.T) {
 	existing := map[string]string{"id": "src_1", "name": "a", "project_id": "tm_old", "team_id": "tm_old"}
 	c := planCase{schema: testSchema, state: existing, config: map[string]string{"name": "a"}, plan: existing}
 
-	r, raw := scopedResource(orgSingle)
-	raw.missing["/"+sdkclient.APIVersion+"/projects/tm_prov"] = true
-	resp := modifyPlan(t, r, c)
+	for name, status := range map[string]int{"project does not exist": http.StatusNotFound, "no grant on the project": http.StatusForbidden} {
+		t.Run(name, func(t *testing.T) {
+			r, raw := scopedResource(orgSingle)
+			raw.refused["tm_prov"] = status
+			resp := modifyPlan(t, r, c)
 
-	assertSummary(t, resp.Diagnostics, "Project not accessible")
-	if len(resp.RequiresReplace) != 0 {
-		t.Error("an inaccessible target must not plan a replace")
+			assertSummary(t, resp.Diagnostics, "Project not accessible")
+			if len(resp.RequiresReplace) != 0 {
+				t.Error("an inaccessible target must not plan a replace")
+			}
+			if len(raw.projects) != 1 || raw.projects[0] != "tm_prov" || raw.paths[0] != "/"+sdkclient.APIVersion+"/sources" {
+				t.Errorf("check requests = %v %v, want one list request in tm_prov", raw.projects, raw.paths)
+			}
+		})
 	}
-	if len(raw.projects) != 1 || raw.projects[0] != "" {
-		t.Errorf("project check requests = %v, want one without a project header", raw.projects)
-	}
+
+	t.Run("reachable project", func(t *testing.T) {
+		r, raw := scopedResource(orgSingle)
+		resp := modifyPlan(t, r, c)
+		assertSummary(t, resp.Diagnostics, "")
+		if len(resp.RequiresReplace) != 1 || len(raw.projects) != 1 || raw.projects[0] != "tm_prov" {
+			t.Errorf("replace = %v, check requests = %v", resp.RequiresReplace, raw.projects)
+		}
+	})
 }
 
 func TestModifyPlan_parentAttribute(t *testing.T) {

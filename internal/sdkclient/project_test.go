@@ -44,7 +44,7 @@ func clientWith(kind projectscope.KeyKind, raw RawClientInterface) Client {
 	return Client{
 		RawClient:     raw,
 		Scope:         projectscope.Scope{KeyKind: kind},
-		projectChecks: &projectChecks{results: map[string]error{}},
+		projectChecks: &projectChecks{results: map[string]*projectCheck{}},
 	}
 }
 
@@ -242,43 +242,94 @@ func TestKeyProjectID(t *testing.T) {
 	}
 }
 
+// The check takes the path a create takes: a list request with the project
+// header. Every refusal the create would meet fails the check, including a
+// 403 for a key limited to other projects.
 func TestCheckProject(t *testing.T) {
+	const noScope = `{"code":"INSUFFICIENT_SCOPE","status":403,"message":"The API key does not have the required scope for this operation","data":{"required":"gateway.sources.read"}}`
+	cases := []struct {
+		name     string
+		response fakeResponse
+		refused  bool
+	}{
+		{"project the key can act in", fakeResponse{status: 200, body: `{"models":[]}`}, false},
+		{"project that does not exist", fakeResponse{status: 404, body: `{"code":"NOT_FOUND","message":"Team Not Found","data":{"id":"tm_target"}}`}, true},
+		{"project the key has no grant on", fakeResponse{status: 403, body: noScope}, true},
+		{"project in another organization", fakeResponse{status: 401, body: "Unauthorized"}, true},
+	}
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			raw := &fakeRawClient{responses: []fakeResponse{tc.response}}
+			client := clientWith(projectscope.KeyKindOrganization, raw)
+
+			err := client.CheckProject(t.Context(), "tm_target", "/sources", "hint")
+
+			var accessErr *ProjectAccessError
+			if refused := errors.As(err, &accessErr); refused != tc.refused {
+				t.Fatalf("err = %v, want refused = %v", err, tc.refused)
+			}
+			if !tc.refused && err != nil {
+				t.Fatalf("err = %v", err)
+			}
+			if tc.refused && (accessErr.ProjectID != "tm_target" || accessErr.Hint != "hint") {
+				t.Errorf("got %+v", accessErr)
+			}
+			if raw.methods[0] != "GET" || raw.paths[0] != "/"+APIVersion+"/sources" {
+				t.Errorf("sent %s %s", raw.methods[0], raw.paths[0])
+			}
+			if got := raw.opts[0].Headers.Get(ProjectHeader); got != "tm_target" {
+				t.Errorf("%s = %q, want tm_target", ProjectHeader, got)
+			}
+			if got := raw.opts[0].QueryParams.Get("limit"); got != "1" {
+				t.Errorf("limit = %q, want 1", got)
+			}
+		})
+	}
+}
+
+func TestCheckProject_answersAreKept(t *testing.T) {
 	boom := errors.New("boom")
 	raw := &fakeRawClient{responses: []fakeResponse{
-		{status: 200, body: `{"id":"tm_ok"}`},
-		{status: 404, body: `{"message":"Not Found"}`},
-		{status: 403, body: `{"code":"INSUFFICIENT_SCOPE"}`},
+		{status: 200, body: `{"models":[]}`},
+		{status: 404, body: `{"message":"Team Not Found"}`},
 		{err: boom},
-		{status: 200, body: `{"id":"tm_flaky"}`},
+		{status: 500, body: "{}"},
+		{status: 200, body: `{"models":[]}`},
+		{status: 200, body: `{"models":[]}`},
 	}}
 	client := clientWith(projectscope.KeyKindOrganization, raw)
 	ctx := t.Context()
-
-	if err := client.CheckProject(ctx, "tm_ok", ""); err != nil {
-		t.Errorf("visible project: %v", err)
-	}
 	var accessErr *ProjectAccessError
-	if err := client.CheckProject(ctx, "tm_missing", "hint"); !errors.As(err, &accessErr) || accessErr.ProjectID != "tm_missing" || accessErr.Hint != "hint" {
-		t.Errorf("missing project: %#v", err)
+
+	if err := client.CheckProject(ctx, "tm_ok", "/sources", ""); err != nil {
+		t.Fatal(err)
 	}
-	if err := client.CheckProject(ctx, "tm_unreadable", ""); err != nil {
-		t.Errorf("a key that may not read projects cannot tell: %v", err)
+	if err := client.CheckProject(ctx, "tm_missing", "/sources", ""); !errors.As(err, &accessErr) {
+		t.Fatal(err)
 	}
-	if err := client.CheckProject(ctx, "tm_flaky", ""); !errors.Is(err, boom) {
-		t.Errorf("transport error: %v", err)
+	if err := client.CheckProject(ctx, "tm_flaky", "/sources", ""); !errors.Is(err, boom) {
+		t.Fatalf("transport error: %v", err)
+	}
+	var apiErr *APIError
+	if err := client.CheckProject(ctx, "tm_flaky", "/sources", ""); !errors.As(err, &apiErr) || apiErr.Status != 500 {
+		t.Fatalf("server error: %v", err)
 	}
 
-	// Answers are kept; a failed check is asked again.
-	if err := client.CheckProject(ctx, "tm_ok", ""); err != nil {
+	// A kept answer costs no request. A check that failed for another
+	// reason is asked again, and each resource type is asked on its own.
+	if err := client.CheckProject(ctx, "tm_ok", "/sources", ""); err != nil {
 		t.Error(err)
 	}
-	if err := client.CheckProject(ctx, "tm_missing", ""); !errors.As(err, &accessErr) {
+	if err := client.CheckProject(ctx, "tm_missing", "/sources", ""); !errors.As(err, &accessErr) {
 		t.Error(err)
 	}
-	if err := client.CheckProject(ctx, "tm_flaky", ""); err != nil {
-		t.Errorf("retry after a transport error: %v", err)
+	if err := client.CheckProject(ctx, "tm_flaky", "/sources", ""); err != nil {
+		t.Errorf("retry after failures: %v", err)
 	}
-	if len(raw.paths) != 5 {
-		t.Errorf("%d requests, want 5: %v", len(raw.paths), raw.paths)
+	if err := client.CheckProject(ctx, "tm_ok", "/destinations", ""); err != nil {
+		t.Error(err)
+	}
+	if len(raw.paths) != 6 {
+		t.Errorf("%d requests, want 6: %v", len(raw.paths), raw.paths)
 	}
 }

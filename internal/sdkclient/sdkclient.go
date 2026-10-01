@@ -192,7 +192,7 @@ func InitHookdeckSDKClient(apiBase string, apiKey string, providerVersion string
 	return Client{
 		RawClient:     rawClient,
 		Scope:         projectscope.Scope{KeyKind: projectscope.KindOfKey(apiKey)},
-		projectChecks: &projectChecks{results: map[string]error{}},
+		projectChecks: &projectChecks{results: map[string]*projectCheck{}},
 	}
 }
 

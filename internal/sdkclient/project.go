@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"net/url"
 	"strings"
 	"sync"
 
@@ -157,40 +158,47 @@ func (c Client) KeyProjectID(ctx context.Context) (string, error) {
 
 type projectChecks struct {
 	mu      sync.Mutex
-	results map[string]error
+	results map[string]*projectCheck
 }
 
-// CheckProject reports whether an organization API key can see projectID.
-// It returns *ProjectAccessError when the project is not visible and nil
-// when it is, or when the key may not read projects and the answer is
-// unknown. Results are kept for the life of the provider instance.
-func (c Client) CheckProject(ctx context.Context, projectID, hint string) error {
-	if c.projectChecks != nil {
-		c.projectChecks.mu.Lock()
-		defer c.projectChecks.mu.Unlock()
-		if err, ok := c.projectChecks.results[projectID]; ok {
-			return err
-		}
+type projectCheck struct {
+	once sync.Once
+	err  error
+}
+
+// CheckProject reports whether the key can act in projectID, by listing one
+// item of listPath there. The request takes the path a create takes, so it
+// meets the same refusals: a project that does not exist, one in another
+// organization, one the key has no grant on, a missing scope. A refusal is
+// returned as *ProjectAccessError. Answers are kept for the life of the
+// provider instance; a request that failed for another reason is asked
+// again.
+func (c Client) CheckProject(ctx context.Context, projectID, listPath, hint string) error {
+	probe := func() error {
+		return c.WithProject(projectID, hint).Do(ctx, http.MethodGet, listPath, nil, url.Values{"limit": []string{"1"}}, nil)
 	}
-	err := c.Do(ctx, http.MethodGet, "/projects/"+projectID, nil, nil, nil)
-	var apiErr *APIError
-	if errors.As(err, &apiErr) {
-		switch apiErr.Status {
-		case http.StatusForbidden:
-			err = nil
-		case http.StatusNotFound:
-			err = &ProjectAccessError{
-				ProjectID: projectID,
-				KeyKind:   c.Scope.KeyKind,
-				Status:    apiErr.Status,
-				Body:      apiErr.Body,
-				Hint:      hint,
-			}
-		}
+	if c.projectChecks == nil {
+		return probe()
 	}
+
+	key := projectID + " " + listPath
+	c.projectChecks.mu.Lock()
+	check, ok := c.projectChecks.results[key]
+	if !ok {
+		check = &projectCheck{}
+		c.projectChecks.results[key] = check
+	}
+	c.projectChecks.mu.Unlock()
+
+	check.once.Do(func() { check.err = probe() })
+
 	var accessErr *ProjectAccessError
-	if c.projectChecks != nil && (err == nil || errors.As(err, &accessErr)) {
-		c.projectChecks.results[projectID] = err
+	if check.err != nil && !errors.As(check.err, &accessErr) {
+		c.projectChecks.mu.Lock()
+		if c.projectChecks.results[key] == check {
+			delete(c.projectChecks.results, key)
+		}
+		c.projectChecks.mu.Unlock()
 	}
-	return err
+	return check.err
 }

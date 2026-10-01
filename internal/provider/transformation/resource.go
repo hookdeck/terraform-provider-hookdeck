@@ -19,12 +19,19 @@ var (
 
 // NewTransformationResource returns the hookdeck_gateway_transformation resource.
 func NewTransformationResource() resource.Resource {
-	return &transformationResource{naming: shared.Naming{Suffix: "_transformation"}}
+	return newTransformationResource(false)
 }
 
 // NewLegacyTransformationResource returns the deprecated hookdeck_transformation alias.
 func NewLegacyTransformationResource() resource.Resource {
-	return &transformationResource{naming: shared.Naming{Suffix: "_transformation", Legacy: true}}
+	return newTransformationResource(true)
+}
+
+func newTransformationResource(legacy bool) *transformationResource {
+	return &transformationResource{
+		ProjectScopedResource: shared.ProjectScopedResource{ListPath: "/transformations"},
+		naming:                shared.Naming{Suffix: "_transformation", Legacy: legacy},
+	}
 }
 
 // transformationResource is the resource implementation.

@@ -68,7 +68,9 @@ Only an organization admin can create an organization API key. When creating one
 | `gateway.connections.write` | `hookdeck_gateway_connection` |
 | `gateway.transformations.write` | `hookdeck_gateway_transformation` |
 | `projects.read` | the `hookdeck_gateway_project` data source |
-| `projects.write` | the `hookdeck_gateway_project` resource |
+| `projects.write` | the `hookdeck_gateway_project` resource, which also reads the project |
+
+A project API key uses the same `gateway.*` scopes. It uses `projects.read` for the `hookdeck_gateway_project` data source and for the lookup of its own project at startup; the lookup is optional, as described under [Project API key](#project-api-key).
 
 A key created with "Specific projects" also gets access to each project it creates.
 
@@ -258,7 +260,7 @@ resource "hookdeck_gateway_source" "orders_staging" {
 Notes on replacement:
 
 - A replaced source gets a new ID and a new URL.
-- Before planning a replacement the provider checks that the key can see the new project, so a mistyped project ID fails the plan instead of deleting the resource first.
+- Before planning a replacement the provider sends one list request for that resource type to the new project. If the project does not exist, belongs to another organization, or the key has no access to it, the plan fails and nothing is deleted. The request needs only the scope the resource already needs.
 - `hookdeck_gateway_source_auth` is part of its source. It moves with the source and is never replaced on its own.
 
 ### When the key cannot reach a resource's project

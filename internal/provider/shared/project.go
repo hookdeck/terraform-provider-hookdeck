@@ -130,6 +130,11 @@ type ProjectScopedResource struct {
 	// a resource is in its parent's project: it moves with a new parent and
 	// is never replaced to change project.
 	ParentAttribute string
+
+	// ListPath is the API path that lists resources of this type, e.g.
+	// "/sources". A replace into another project is planned only after a
+	// list request there succeeds.
+	ListPath string
 }
 
 func (r *ProjectScopedResource) Configure(_ context.Context, req resource.ConfigureRequest, resp *resource.ConfigureResponse) {
@@ -207,7 +212,7 @@ func (r *ProjectScopedResource) ModifyPlan(ctx context.Context, req resource.Mod
 		return
 	}
 	if action == projectscope.ActionReplace {
-		if err := r.client.CheckProject(ctx, target, targetProjectHint); err != nil {
+		if err := r.client.CheckProject(ctx, target, r.ListPath, targetProjectHint); err != nil {
 			resp.Diagnostics.Append(ProjectDiagnostics(err)...)
 			return
 		}

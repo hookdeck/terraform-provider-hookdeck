@@ -183,12 +183,15 @@ func (m *mockAPI) handleProjects(w http.ResponseWriter, method string, key *mock
 		unauthorized(w)
 		return
 	}
-	if !ok || p.OrganizationID != key.org || (!organizationKey && p.ID != key.project) {
-		apiError(w, 404, "NOT_FOUND", "Not Found", map[string]any{"id": id})
+	// The API checks the scope for the project named in the path before it
+	// looks the project up: a key limited to other projects gets 403 for a
+	// project that does not exist too.
+	if key.noProjectsRead || (organizationKey && key.grants != nil && !key.grants[id]) {
+		insufficientScope(w, "projects.read")
 		return
 	}
-	if key.noProjectsRead || !visible(p) {
-		insufficientScope(w, "projects.read")
+	if !ok || p.OrganizationID != key.org || (!organizationKey && p.ID != key.project) {
+		apiError(w, 404, "NOT_FOUND", "Not Found", map[string]any{"id": id})
 		return
 	}
 	switch method {
@@ -272,6 +275,16 @@ func (m *mockAPI) handleSources(w http.ResponseWriter, method string, key *mockK
 		}
 		m.sources[source["id"].(string)] = source //nolint:forcetypeassert
 		writeJSON(w, 200, source)
+		return
+	}
+	if id == "" && method == http.MethodGet {
+		models := []map[string]any{}
+		for _, source := range m.sources {
+			if source["team_id"] == project {
+				models = append(models, source)
+			}
+		}
+		writeJSON(w, 200, map[string]any{"models": models, "count": len(models)})
 		return
 	}
 	source, ok := m.sources[id]

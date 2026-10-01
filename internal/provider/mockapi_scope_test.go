@@ -258,6 +258,74 @@ func TestAccMock_OrgKeyModes(t *testing.T) {
 	})
 }
 
+// An organization key limited to specific projects, and one that may not
+// read projects, cannot look a project up. A replace into a project that
+// does not exist, or that the key has no grant on, still fails the plan,
+// and nothing is deleted.
+func TestAccMock_ReplaceIntoUnreachableProjectFailsThePlan(t *testing.T) {
+	skipUnlessAcc(t)
+
+	keys := map[string]func(m *mockAPI){
+		"key limited to specific projects": func(m *mockAPI) {
+			m.keys[mockOrgKey].grants = map[string]bool{"tm_a": true}
+		},
+		"key without projects.read": func(m *mockAPI) {
+			m.keys[mockOrgKey].noProjectsRead = true
+		},
+	}
+	for name, limit := range keys {
+		t.Run(name, func(t *testing.T) {
+			m := mockOrganization(t)
+			m.update(func() { limit(m) })
+			useAPIKey(t, mockOrgKey)
+			var sourceID string
+
+			steps := []resource.TestStep{
+				{
+					Config: sourceConfig(t, "mock", "tm_a"),
+					Check:  captureID(sourceAddr, &sourceID),
+				},
+				{
+					Config:      sourceConfig(t, "mock", "tm_missing"),
+					ExpectError: regexp.MustCompile(`(?s)cannot access project tm_missing.*does not exist`),
+				},
+			}
+			if m.keys[mockOrgKey].grants != nil {
+				steps = append(steps, resource.TestStep{
+					Config:      sourceConfig(t, "mock", "tm_b"),
+					ExpectError: regexp.MustCompile(`(?s)cannot access project tm_b.*no grant`),
+				})
+			}
+			deletesBeforeDestroy := -1
+			steps = append(steps, resource.TestStep{
+				Config:           sourceConfig(t, "mock", "tm_a"),
+				ConfigPlanChecks: emptyPlan(),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					checkIDEquals(sourceAddr, &sourceID),
+					func(_ *terraform.State) error {
+						deletesBeforeDestroy = 0
+						for _, r := range m.requestsTo("/sources") {
+							if r.method == "DELETE" {
+								deletesBeforeDestroy++
+							}
+						}
+						return nil
+					},
+				),
+			})
+
+			resource.Test(t, resource.TestCase{
+				ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+				Steps:                    steps,
+			})
+
+			if deletesBeforeDestroy != 0 {
+				t.Errorf("%d deletes before destroy, want 0", deletesBeforeDestroy)
+			}
+		})
+	}
+}
+
 // With an organization key every request for a resource names the
 // resource's project, and the provider looks nothing up at configure time.
 func TestAccMock_OrgKeySendsTheProjectOnEveryRequest(t *testing.T) {

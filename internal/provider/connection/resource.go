@@ -19,12 +19,19 @@ var (
 
 // NewConnectionResource returns the hookdeck_gateway_connection resource.
 func NewConnectionResource() resource.Resource {
-	return &connectionResource{naming: shared.Naming{Suffix: "_connection"}}
+	return newConnectionResource(false)
 }
 
 // NewLegacyConnectionResource returns the deprecated hookdeck_connection alias.
 func NewLegacyConnectionResource() resource.Resource {
-	return &connectionResource{naming: shared.Naming{Suffix: "_connection", Legacy: true}}
+	return newConnectionResource(true)
+}
+
+func newConnectionResource(legacy bool) *connectionResource {
+	return &connectionResource{
+		ProjectScopedResource: shared.ProjectScopedResource{ListPath: "/connections"},
+		naming:                shared.Naming{Suffix: "_connection", Legacy: legacy},
+	}
 }
 
 // connectionResource is the resource implementation.

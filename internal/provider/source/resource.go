@@ -19,12 +19,19 @@ var (
 
 // NewSourceResource returns the hookdeck_gateway_source resource.
 func NewSourceResource() resource.Resource {
-	return &sourceResource{naming: shared.Naming{Suffix: "_source"}}
+	return newSourceResource(false)
 }
 
 // NewLegacySourceResource returns the deprecated hookdeck_source alias.
 func NewLegacySourceResource() resource.Resource {
-	return &sourceResource{naming: shared.Naming{Suffix: "_source", Legacy: true}}
+	return newSourceResource(true)
+}
+
+func newSourceResource(legacy bool) *sourceResource {
+	return &sourceResource{
+		ProjectScopedResource: shared.ProjectScopedResource{ListPath: "/sources"},
+		naming:                shared.Naming{Suffix: "_source", Legacy: legacy},
+	}
 }
 
 // sourceResource is the resource implementation.

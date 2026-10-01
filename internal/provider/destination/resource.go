@@ -20,12 +20,19 @@ var (
 
 // NewDestinationResource returns the hookdeck_gateway_destination resource.
 func NewDestinationResource() resource.Resource {
-	return &destinationResource{naming: shared.Naming{Suffix: "_destination"}}
+	return newDestinationResource(false)
 }
 
 // NewLegacyDestinationResource returns the deprecated hookdeck_destination alias.
 func NewLegacyDestinationResource() resource.Resource {
-	return &destinationResource{naming: shared.Naming{Suffix: "_destination", Legacy: true}}
+	return newDestinationResource(true)
+}
+
+func newDestinationResource(legacy bool) *destinationResource {
+	return &destinationResource{
+		ProjectScopedResource: shared.ProjectScopedResource{ListPath: "/destinations"},
+		naming:                shared.Naming{Suffix: "_destination", Legacy: legacy},
+	}
 }
 
 // destinationResource is the resource implementation.
