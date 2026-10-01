@@ -9,8 +9,10 @@ import (
 	resourceschema "github.com/hashicorp/terraform-plugin-framework/resource/schema"
 )
 
-// GatewayPrefix is the type-name prefix of Event Gateway resources.
-const GatewayPrefix = "_gateway"
+const (
+	providerName = "hookdeck"
+	gatewayInfix = "_gateway"
+)
 
 // Naming describes one resource type under its v3 name and its v2 alias.
 type Naming struct {
@@ -20,25 +22,41 @@ type Naming struct {
 	Legacy bool
 }
 
-// TypeName returns the full type name for the provider type name.
 func (n Naming) TypeName(providerTypeName string) string {
 	if n.Legacy {
 		return providerTypeName + n.Suffix
 	}
-	return providerTypeName + GatewayPrefix + n.Suffix
+	return providerTypeName + gatewayInfix + n.Suffix
 }
 
-// LegacyTypeName is the v2 name this resource moves from.
 func (n Naming) LegacyTypeName() string {
-	return "hookdeck" + n.Suffix
+	return providerName + n.Suffix
 }
 
-// DeprecationMessage is set on the v2 alias schema.
-func (n Naming) DeprecationMessage() string {
+func (n Naming) currentTypeName() string {
+	return providerName + gatewayInfix + n.Suffix
+}
+
+func (n Naming) ResourceDeprecation() string {
 	if !n.Legacy {
 		return ""
 	}
-	return fmt.Sprintf("hookdeck%s is deprecated and will be removed in v4. Rename to hookdeck%s%s with a moved block; see the v3 upgrade guide.", n.Suffix, GatewayPrefix, n.Suffix)
+	return fmt.Sprintf("%s is deprecated and will be removed in v4. Rename it to %s with a moved block. See the v2 to v3 migration guide.", n.LegacyTypeName(), n.currentTypeName())
+}
+
+func (n Naming) DataSourceDeprecation() string {
+	if !n.Legacy {
+		return ""
+	}
+	return fmt.Sprintf("%s is deprecated and will be removed in v4. Use the %s data source instead. See the v2 to v3 migration guide.", n.LegacyTypeName(), n.currentTypeName())
+}
+
+// Description returns description, with a deprecation note on the v2 alias.
+func (n Naming) Description(description string) string {
+	if !n.Legacy {
+		return description
+	}
+	return fmt.Sprintf("%s. Deprecated: renamed to `%s`; `%s` will be removed in v4.", description, n.currentTypeName(), n.LegacyTypeName())
 }
 
 // RenamedStateMover moves state from the v2 alias into the v3 resource.
@@ -58,7 +76,10 @@ func RenamedStateMover(legacyTypeName string, schema resourceschema.Schema) reso
 				return
 			}
 			if req.SourceState == nil {
-				resp.Diagnostics.AddError("Unsupported state for move", fmt.Sprintf("%s state could not be decoded.", legacyTypeName))
+				resp.Diagnostics.AddError(
+					"Unsupported state for move",
+					fmt.Sprintf("%s state could not be decoded. Please report this issue to the provider developers.", legacyTypeName),
+				)
 				return
 			}
 			resp.TargetState = *req.SourceState
@@ -70,5 +91,5 @@ func RenamedStateMover(legacyTypeName string, schema resourceschema.Schema) reso
 // isThisProvider matches any registry host and namespace, since mirrors
 // report their own. OpenTofu 1.10.0 to 1.12.3 send the bare provider type.
 func isThisProvider(address string) bool {
-	return address == "hookdeck" || strings.HasSuffix(address, "/hookdeck")
+	return address == providerName || strings.HasSuffix(address, "/"+providerName)
 }

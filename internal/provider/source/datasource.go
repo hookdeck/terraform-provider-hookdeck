@@ -39,8 +39,8 @@ func (r *sourceDataSource) Metadata(_ context.Context, req datasource.MetadataRe
 // Schema returns the data source schema.
 func (r *sourceDataSource) Schema(_ context.Context, _ datasource.SchemaRequest, resp *datasource.SchemaResponse) {
 	resp.Schema = schema.Schema{
-		DeprecationMessage: r.naming.DeprecationMessage(),
-		Description:        "Source Data Source",
+		DeprecationMessage: r.naming.DataSourceDeprecation(),
+		Description:        r.naming.Description("Source Data Source"),
 		Attributes:         dataSourceAttributes(),
 	}
 }

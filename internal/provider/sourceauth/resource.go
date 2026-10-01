@@ -52,8 +52,8 @@ func (r *sourceAuthResource) Schema(_ context.Context, _ resource.SchemaRequest,
 
 func (r *sourceAuthResource) schema() schema.Schema {
 	return schema.Schema{
-		DeprecationMessage: r.naming.DeprecationMessage(),
-		Description:        "Source Auth Resource",
+		DeprecationMessage: r.naming.ResourceDeprecation(),
+		Description:        r.naming.Description("Source Auth Resource"),
 		Attributes:         schemaAttributes(),
 	}
 }

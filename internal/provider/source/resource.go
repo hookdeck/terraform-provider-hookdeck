@@ -45,8 +45,8 @@ func (r *sourceResource) Schema(_ context.Context, _ resource.SchemaRequest, res
 
 func (r *sourceResource) schema() schema.Schema {
 	return schema.Schema{
-		DeprecationMessage: r.naming.DeprecationMessage(),
-		Description:        "Source Resource",
+		DeprecationMessage: r.naming.ResourceDeprecation(),
+		Description:        r.naming.Description("Source Resource"),
 		Attributes:         schemaAttributes(),
 	}
 }

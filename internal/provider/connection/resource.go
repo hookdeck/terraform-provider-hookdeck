@@ -45,9 +45,9 @@ func (r *connectionResource) Schema(_ context.Context, _ resource.SchemaRequest,
 
 func (r *connectionResource) schema() schema.Schema {
 	return schema.Schema{
-		DeprecationMessage:  r.naming.DeprecationMessage(),
+		DeprecationMessage:  r.naming.ResourceDeprecation(),
 		Version:             1,
-		MarkdownDescription: "Connection Resource",
+		MarkdownDescription: r.naming.Description("Connection Resource"),
 		Attributes:          schemaAttributes(),
 	}
 }

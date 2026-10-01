@@ -39,8 +39,8 @@ func (r *connectionDataSource) Metadata(_ context.Context, req datasource.Metada
 // Schema returns the data source schema.
 func (r *connectionDataSource) Schema(_ context.Context, _ datasource.SchemaRequest, resp *datasource.SchemaResponse) {
 	resp.Schema = schema.Schema{
-		DeprecationMessage: r.naming.DeprecationMessage(),
-		Description:        "Connection Data Source",
+		DeprecationMessage: r.naming.DataSourceDeprecation(),
+		Description:        r.naming.Description("Connection Data Source"),
 		Attributes:         dataSourceAttributes(),
 	}
 }
