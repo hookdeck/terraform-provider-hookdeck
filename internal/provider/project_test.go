@@ -9,6 +9,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/plancheck"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 )
 
@@ -89,7 +90,7 @@ func TestAccGatewayProject_OrgKey_Lifecycle(t *testing.T) {
 	orgKey := os.Getenv(envOrgAPIKey)
 	useAPIKey(t, orgKey)
 	suffix := acctest.RandStringFromCharSet(8, acctest.CharSetAlphaNum)
-	var projectID string
+	var projectID, sourceID string
 
 	config := func(name string) string {
 		return projectConfig(name) + loadFixture(t, "source_in_project.tf", suffix)
@@ -112,6 +113,7 @@ func TestAccGatewayProject_OrgKey_Lifecycle(t *testing.T) {
 				Config: config("tf-v3-" + suffix),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					captureID(projectAddr, &projectID),
+					captureID(sourceAddr, &sourceID),
 					resource.TestCheckResourceAttr(projectAddr, "name", "tf-v3-"+suffix),
 					resource.TestCheckResourceAttr(projectAddr, "type", "event_gateway"),
 					resource.TestCheckResourceAttrSet(projectAddr, "organization_id"),
@@ -121,8 +123,13 @@ func TestAccGatewayProject_OrgKey_Lifecycle(t *testing.T) {
 			},
 			{
 				Config: config("tf-v3-" + suffix + "-renamed"),
+				ConfigPlanChecks: resource.ConfigPlanChecks{PreApply: []plancheck.PlanCheck{
+					plancheck.ExpectResourceAction(projectAddr, plancheck.ResourceActionUpdate),
+					plancheck.ExpectResourceAction(sourceAddr, plancheck.ResourceActionNoop),
+				}},
 				Check: resource.ComposeAggregateTestCheckFunc(
 					checkIDEquals(projectAddr, &projectID),
+					checkIDEquals(sourceAddr, &sourceID),
 					resource.TestCheckResourceAttr(projectAddr, "name", "tf-v3-"+suffix+"-renamed"),
 					resource.TestCheckResourceAttrPair(sourceAddr, "project_id", projectAddr, "id"),
 				),
