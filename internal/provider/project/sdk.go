@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 
-	"terraform-provider-hookdeck/internal/provider/shared"
 	"terraform-provider-hookdeck/internal/sdkclient"
 
 	"github.com/hashicorp/terraform-plugin-framework/attr"
@@ -57,8 +56,8 @@ func (m *projectResourceModel) refresh(project map[string]interface{}) diag.Diag
 func (m *projectResourceModel) retrieve(ctx context.Context, client sdkclient.Client) (bool, diag.Diagnostics) {
 	var diags diag.Diagnostics
 	var project map[string]interface{}
-	err := shared.Request(ctx, client, "GET", "/projects/"+m.ID.ValueString(), nil, nil, &project)
-	if shared.IsNotFound(err) {
+	err := client.Do(ctx, "GET", "/projects/"+m.ID.ValueString(), nil, nil, &project)
+	if sdkclient.IsNotFound(err) {
 		return false, diags
 	}
 	if err != nil {
@@ -71,7 +70,7 @@ func (m *projectResourceModel) retrieve(ctx context.Context, client sdkclient.Cl
 func (m *projectResourceModel) create(ctx context.Context, client sdkclient.Client) diag.Diagnostics {
 	var diags diag.Diagnostics
 	var project map[string]interface{}
-	err := shared.Request(ctx, client, "POST", "/projects", map[string]interface{}{
+	err := client.Do(ctx, "POST", "/projects", map[string]interface{}{
 		"name": m.Name.ValueString(),
 		"type": projectType,
 	}, nil, &project)
@@ -107,7 +106,7 @@ func (m *projectResourceModel) update(ctx context.Context, client sdkclient.Clie
 		payload["notification_methods"] = methods
 	}
 	var project map[string]interface{}
-	if err := shared.Request(ctx, client, "PUT", "/projects/"+m.ID.ValueString(), payload, nil, &project); err != nil {
+	if err := client.Do(ctx, "PUT", "/projects/"+m.ID.ValueString(), payload, nil, &project); err != nil {
 		diags.AddError("Error updating project", err.Error())
 		return diags
 	}
@@ -117,8 +116,8 @@ func (m *projectResourceModel) update(ctx context.Context, client sdkclient.Clie
 
 func (m *projectResourceModel) delete(ctx context.Context, client sdkclient.Client) diag.Diagnostics {
 	var diags diag.Diagnostics
-	err := shared.Request(ctx, client, "DELETE", "/projects/"+m.ID.ValueString(), nil, nil, nil)
-	if err != nil && !shared.IsNotFound(err) {
+	err := client.Do(ctx, "DELETE", "/projects/"+m.ID.ValueString(), nil, nil, nil)
+	if err != nil && !sdkclient.IsNotFound(err) {
 		diags.AddError("Error deleting project", err.Error())
 	}
 	return diags
@@ -129,7 +128,7 @@ func (m *projectResourceModel) delete(ctx context.Context, client sdkclient.Clie
 func findByName(ctx context.Context, client sdkclient.Client, name string) (map[string]interface{}, diag.Diagnostics) {
 	var diags diag.Diagnostics
 	var projects []map[string]interface{}
-	if err := shared.Request(ctx, client, "GET", "/projects", nil, nil, &projects); err != nil {
+	if err := client.Do(ctx, "GET", "/projects", nil, nil, &projects); err != nil {
 		diags.AddError("Error listing projects", err.Error())
 		return nil, diags
 	}

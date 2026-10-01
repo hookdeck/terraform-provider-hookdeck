@@ -1,4 +1,4 @@
-package shared
+package sdkclient
 
 import (
 	"bytes"
@@ -9,10 +9,6 @@ import (
 	"io"
 	"net/http"
 	"net/url"
-
-	"terraform-provider-hookdeck/internal/sdkclient"
-
-	"github.com/hashicorp/terraform-plugin-framework/diag"
 )
 
 // APIError is a non-2xx response.
@@ -38,10 +34,11 @@ func IsNotFound(err error) bool {
 	return errors.As(err, &apiErr) && IsGoneStatus(apiErr.Status)
 }
 
-// Request sends a JSON request and decodes the response into out. A non-2xx
-// status is returned as *APIError. out may be nil.
-func Request(ctx context.Context, client sdkclient.Client, method, path string, payload any, query url.Values, out any) error {
-	opts := &sdkclient.RequestOptions{QueryParams: query}
+// Do sends a JSON request to path under the API version and decodes the
+// response into out. A non-2xx status is returned as *APIError. payload and
+// out may be nil.
+func (c Client) Do(ctx context.Context, method, path string, payload any, query url.Values, out any) error {
+	opts := &RequestOptions{QueryParams: query}
 	if payload != nil {
 		data, err := json.Marshal(payload)
 		if err != nil {
@@ -50,7 +47,7 @@ func Request(ctx context.Context, client sdkclient.Client, method, path string, 
 		opts.Body = bytes.NewReader(data)
 		opts.Headers = http.Header{"Content-Type": []string{"application/json"}}
 	}
-	resp, err := client.RawClient.SendRequest(ctx, method, "/"+sdkclient.APIVersion+path, opts)
+	resp, err := c.RawClient.SendRequest(ctx, method, "/"+APIVersion+path, opts)
 	if err != nil {
 		return err
 	}
@@ -66,22 +63,4 @@ func Request(ctx context.Context, client sdkclient.Client, method, path string, 
 		return nil
 	}
 	return json.Unmarshal(body, out)
-}
-
-const notFoundSummary = "Resource not found"
-
-// NotFoundDiagnostic marks a Retrieve that got a 404. Resource Read uses
-// IsNotFoundDiagnostics to drop the resource from state instead of failing.
-func NotFoundDiagnostic(kind, id string) diag.Diagnostic {
-	return diag.NewErrorDiagnostic(notFoundSummary, fmt.Sprintf("%s %s no longer exists.", kind, id))
-}
-
-// IsNotFoundDiagnostics reports whether diags carries NotFoundDiagnostic.
-func IsNotFoundDiagnostics(diags diag.Diagnostics) bool {
-	for _, d := range diags {
-		if d.Severity() == diag.SeverityError && d.Summary() == notFoundSummary {
-			return true
-		}
-	}
-	return false
 }

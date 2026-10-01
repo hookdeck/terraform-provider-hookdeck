@@ -2,7 +2,9 @@ package provider
 
 import (
 	"context"
+	"errors"
 	"fmt"
+	"net/http"
 	"os"
 
 	"terraform-provider-hookdeck/internal/projectscope"
@@ -16,6 +18,7 @@ import (
 	"terraform-provider-hookdeck/internal/sdkclient"
 	"terraform-provider-hookdeck/internal/validators"
 
+	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/provider"
@@ -66,7 +69,10 @@ func (p *hookdeckProvider) Schema(ctx context.Context, req provider.SchemaReques
 			},
 			"project_id": schema.StringAttribute{
 				Optional:            true,
-				MarkdownDescription: fmt.Sprintf("Default project for every resource that does not set its own `project_id`. Required with an organization API key unless each resource sets `project_id`. With a project API key it must match the key's project. Alternatively, can be configured using the `%s` environment variable.", projectIDEnvVarKey),
+				MarkdownDescription: fmt.Sprintf("Project that every resource and data source of this provider configuration belongs to. Not needed with a project API key, which is bound to its project. With an organization API key, set it to manage a single project, or leave it unset and set `project_id` on each resource. Changing it replaces every resource. Alternatively, can be configured using the `%s` environment variable.", projectIDEnvVarKey),
+				Validators: []validator.String{
+					stringvalidator.LengthAtLeast(1),
+				},
 			},
 		},
 	}
@@ -160,13 +166,24 @@ func (p *hookdeckProvider) Configure(ctx context.Context, req provider.Configure
 
 	// Create a new Hookdeck client using the configuration values
 	client := sdkclient.InitHookdeckSDKClient(apiBase, apiKey, p.version)
-	client.DefaultProjectID = projectID
+	client.Scope.ProjectID = projectID
 
-	// A project key with a provider default that is not its own project is
-	// a configuration error; fail here rather than on the first resource.
-	if projectID != "" && client.KeyKind == projectscope.KeyKindProject {
-		if _, err := client.ForProject(ctx, ""); err != nil {
-			resp.Diagnostics.AddAttributeError(path.Root("project_id"), "Project mismatch", err.Error())
+	if projectID == "" && client.Scope.KeyKind == projectscope.KeyKindProject {
+		keyProject, err := client.KeyProjectID(ctx)
+		var apiErr *sdkclient.APIError
+		switch {
+		case err == nil:
+			client.Scope.ProjectID = keyProject
+		case errors.As(err, &apiErr) && apiErr.Status == http.StatusForbidden:
+			// The key may not list projects. Each resource's project is
+			// then taken from the API's responses.
+			tflog.Debug(ctx, "API key cannot read its project, continuing without it")
+		default:
+			resp.Diagnostics.AddError(
+				"Unable to look up the API key's project",
+				"The provider asks the Hookdeck API which project the API key belongs to. "+
+					fmt.Sprintf("Check the API key, or set project_id (or %s) to skip the lookup.\n\n%s", projectIDEnvVarKey, err.Error()),
+			)
 			return
 		}
 	}
@@ -188,6 +205,7 @@ func (p *hookdeckProvider) Resources(ctx context.Context) []func() resource.Reso
 		source.NewSourceResource,
 		sourceauth.NewSourceAuthResource,
 		transformation.NewTransformationResource,
+		// Third-party services
 		webhookregistration.NewWebhookRegistrationResource,
 		// v2 names, deprecated, removed in v4
 		connection.NewLegacyConnectionResource,

@@ -9,7 +9,6 @@ import (
 	"net/http"
 	"net/url"
 	"strconv"
-	"terraform-provider-hookdeck/internal/provider/shared"
 	"terraform-provider-hookdeck/internal/sdkclient"
 
 	"github.com/hashicorp/terraform-plugin-framework/diag"
@@ -56,6 +55,7 @@ func (m *destinationResourceModel) Refresh(destination map[string]interface{}) d
 
 	if teamID, ok := destination["team_id"].(string); ok {
 		m.TeamID = types.StringValue(teamID)
+		m.ProjectID = m.TeamID
 	} else {
 		diags.AddError("Error parsing team_id", "Expected string value")
 		return diags
@@ -77,7 +77,7 @@ func (m *destinationResourceModel) Refresh(destination map[string]interface{}) d
 	return diags
 }
 
-func (m *destinationResourceModel) Retrieve(ctx context.Context, client *sdkclient.Client) diag.Diagnostics {
+func (m *destinationResourceModel) Retrieve(ctx context.Context, client *sdkclient.Client) (bool, diag.Diagnostics) {
 	var diags diag.Diagnostics
 	response, err := client.RawClient.SendRequest(ctx, "GET", fmt.Sprintf("/%s/destinations/%s", apiVersion, m.ID.ValueString()), &sdkclient.RequestOptions{
 		QueryParams: url.Values{
@@ -86,12 +86,11 @@ func (m *destinationResourceModel) Retrieve(ctx context.Context, client *sdkclie
 	})
 	if err != nil {
 		diags.AddError("Error reading destination", err.Error())
-		return diags
+		return false, diags
 	}
 
-	if shared.IsGoneStatus(response.StatusCode) {
-		diags.Append(shared.NotFoundDiagnostic("Destination", m.ID.ValueString()))
-		return diags
+	if sdkclient.IsGoneStatus(response.StatusCode) {
+		return false, diags
 	}
 
 	if response.StatusCode > 299 {
@@ -100,23 +99,23 @@ func (m *destinationResourceModel) Retrieve(ctx context.Context, client *sdkclie
 		} else {
 			diags.AddError("Error reading destination", "Status code: "+strconv.Itoa(response.StatusCode))
 		}
-		return diags
+		return false, diags
 	}
 
 	body, err := io.ReadAll(response.Body)
 	if err != nil {
 		diags.AddError("Error reading destination", err.Error())
-		return diags
+		return false, diags
 	}
 
 	var destination map[string]interface{}
 	err = json.Unmarshal(body, &destination)
 	if err != nil {
 		diags.AddError("Error reading destination", err.Error())
-		return diags
+		return false, diags
 	}
 
-	return m.Refresh(destination)
+	return true, m.Refresh(destination)
 }
 
 func (m *destinationResourceModel) Create(ctx context.Context, client *sdkclient.Client) diag.Diagnostics {

@@ -2,9 +2,7 @@ package sourceauth
 
 import (
 	"context"
-	"fmt"
 	"terraform-provider-hookdeck/internal/provider/shared"
-	"terraform-provider-hookdeck/internal/sdkclient"
 
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
@@ -15,23 +13,31 @@ var (
 	_ resource.Resource                = &sourceAuthResource{}
 	_ resource.ResourceWithConfigure   = &sourceAuthResource{}
 	_ resource.ResourceWithImportState = &sourceAuthResource{}
+	_ resource.ResourceWithModifyPlan  = &sourceAuthResource{}
 	_ resource.ResourceWithMoveState   = &sourceAuthResource{}
 )
 
+func newSourceAuthResource(legacy bool) *sourceAuthResource {
+	return &sourceAuthResource{
+		ProjectScopedResource: shared.ProjectScopedResource{ParentAttribute: "source_id"},
+		naming:                shared.Naming{Suffix: "_source_auth", Legacy: legacy},
+	}
+}
+
 // NewSourceAuthResource returns the hookdeck_gateway_source_auth resource.
 func NewSourceAuthResource() resource.Resource {
-	return &sourceAuthResource{naming: shared.Naming{Suffix: "_source_auth"}}
+	return newSourceAuthResource(false)
 }
 
 // NewLegacySourceAuthResource returns the deprecated hookdeck_source_auth alias.
 func NewLegacySourceAuthResource() resource.Resource {
-	return &sourceAuthResource{naming: shared.Naming{Suffix: "_source_auth", Legacy: true}}
+	return newSourceAuthResource(true)
 }
 
 // sourceAuthResource is the resource implementation.
 type sourceAuthResource struct {
+	shared.ProjectScopedResource
 	naming shared.Naming
-	client sdkclient.Client
 }
 
 // Metadata returns the resource type name.
@@ -60,26 +66,6 @@ func (r *sourceAuthResource) MoveState(_ context.Context) []resource.StateMover 
 	return []resource.StateMover{shared.RenamedStateMover(r.naming.LegacyTypeName(), r.schema())}
 }
 
-// Configure adds the provider configured client to the resource.
-func (r *sourceAuthResource) Configure(_ context.Context, req resource.ConfigureRequest, resp *resource.ConfigureResponse) {
-	if req.ProviderData == nil {
-		return
-	}
-
-	client, ok := req.ProviderData.(sdkclient.Client)
-
-	if !ok {
-		resp.Diagnostics.AddError(
-			"Unexpected Resource Configure Type",
-			fmt.Sprintf("Expected sdkclient.Client, got: %T. Please report this issue to the provider developers.", req.ProviderData),
-		)
-
-		return
-	}
-
-	r.client = client
-}
-
 // Create creates the resource and sets the initial Terraform state.
 func (r *sourceAuthResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
 	var data *sourceAuthResourceModel
@@ -88,13 +74,11 @@ func (r *sourceAuthResource) Create(ctx context.Context, req resource.CreateRequ
 		return
 	}
 
-	client, clientDiags := shared.ClientFor(ctx, r.client, data.ProjectID)
-	resp.Diagnostics.Append(clientDiags...)
-	if resp.Diagnostics.HasError() {
+	client, ok := r.ClientForCreate(data.ProjectID, &resp.Diagnostics)
+	if !ok {
 		return
 	}
-	diags := data.Create(ctx, &client)
-	resp.Diagnostics.Append(diags...)
+	resp.Diagnostics.Append(data.Update(ctx, client)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -110,18 +94,23 @@ func (r *sourceAuthResource) Read(ctx context.Context, req resource.ReadRequest,
 		return
 	}
 
-	client, clientDiags := shared.ClientFor(ctx, r.client, data.ProjectID)
-	resp.Diagnostics.Append(clientDiags...)
-	if resp.Diagnostics.HasError() {
+	// State written by v2 records no project. Without a provider project
+	// there is nothing to read with until the first apply stores project_id.
+	if data.ProjectID.ValueString() == "" && !r.SingleProject() {
 		return
 	}
-	diags := data.Retrieve(ctx, &client)
-	if shared.IsNotFoundDiagnostics(diags) {
-		resp.State.RemoveResource(ctx)
+
+	client, ok := r.ClientForState(data.ProjectID.ValueString(), &resp.Diagnostics)
+	if !ok {
 		return
 	}
+	found, diags := data.Retrieve(ctx, client)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
+		return
+	}
+	if !found {
+		resp.State.RemoveResource(ctx)
 		return
 	}
 
@@ -136,13 +125,13 @@ func (r *sourceAuthResource) Update(ctx context.Context, req resource.UpdateRequ
 		return
 	}
 
-	client, clientDiags := shared.ClientFor(ctx, r.client, data.ProjectID)
-	resp.Diagnostics.Append(clientDiags...)
-	if resp.Diagnostics.HasError() {
+	// The plan's project, not the state's: the auth follows its source,
+	// and a new source_id can be in another project.
+	client, ok := r.ClientForCreate(data.ProjectID, &resp.Diagnostics)
+	if !ok {
 		return
 	}
-	diags := data.Update(ctx, &client)
-	resp.Diagnostics.Append(diags...)
+	resp.Diagnostics.Append(data.Update(ctx, client)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -158,18 +147,13 @@ func (r *sourceAuthResource) Delete(ctx context.Context, req resource.DeleteRequ
 		return
 	}
 
-	client, clientDiags := shared.ClientFor(ctx, r.client, data.ProjectID)
-	resp.Diagnostics.Append(clientDiags...)
-	if resp.Diagnostics.HasError() {
+	client, ok := r.ClientForState(data.ProjectID.ValueString(), &resp.Diagnostics)
+	if !ok {
 		return
 	}
-	diags := data.Delete(ctx, &client)
-	resp.Diagnostics.Append(diags...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
+	resp.Diagnostics.Append(data.Delete(ctx, client)...)
 }
 
 func (r *sourceAuthResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
-	shared.ImportState(ctx, "source_id", req, resp)
+	r.ImportProjectState(ctx, "source_id", req, resp)
 }

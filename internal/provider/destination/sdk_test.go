@@ -92,8 +92,8 @@ func TestDestinationUsesNewAPIVersion(t *testing.T) {
 	if d := m.Update(ctx, &client, nil); d.HasError() {
 		t.Fatal(d)
 	}
-	if d := m.Retrieve(ctx, &client); d.HasError() {
-		t.Fatal(d)
+	if found, d := m.Retrieve(ctx, &client); d.HasError() || !found {
+		t.Fatal(found, d)
 	}
 	if d := m.Delete(ctx, &client); d.HasError() {
 		t.Fatal(d)

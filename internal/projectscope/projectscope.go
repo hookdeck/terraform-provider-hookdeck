@@ -1,13 +1,15 @@
-// Package projectscope resolves which Hookdeck project a request targets.
+// Package projectscope holds the rules for which Hookdeck project a resource
+// belongs to.
 //
-// An organization API key (prefix hd_org_) can address several projects, so
-// every project-scoped resource needs a project id: from the resource, then
-// the provider default. A project API key addresses exactly one project and
-// any explicit project id must match it.
+// A provider configuration works in one of two modes. In single-project mode
+// (a project API key, or a provider project_id) every resource is in that one
+// project. In explicit mode (an organization API key without a provider
+// project_id) every resource names its project.
 package projectscope
 
 import (
 	"errors"
+	"fmt"
 	"strings"
 )
 
@@ -21,22 +23,8 @@ const (
 	KeyKindOrganization
 )
 
-// OrganizationKeyPrefix is the prefix of organization API keys.
 const OrganizationKeyPrefix = "hd_org_"
 
-var (
-	// ErrProjectRequired is returned when an organization key has no
-	// project to target.
-	ErrProjectRequired = errors.New("project_id is required")
-	// ErrProjectMismatch is returned when a project key is used with a
-	// different project id.
-	ErrProjectMismatch = errors.New("project_id does not match the API key's project")
-	// ErrInvalidImportID is returned for import ids that are neither
-	// <id> nor <project_id>/<id>.
-	ErrInvalidImportID = errors.New("import id must be <id> or <project_id>/<id>")
-)
-
-// KindOfKey derives the key kind from the key's prefix.
 func KindOfKey(apiKey string) KeyKind {
 	if strings.HasPrefix(apiKey, OrganizationKeyPrefix) {
 		return KeyKindOrganization
@@ -44,37 +32,106 @@ func KindOfKey(apiKey string) KeyKind {
 	return KeyKindProject
 }
 
-// Resolve returns the project id requests should target, or "" when the
-// key's own project applies and no header is needed.
-//
-// keyProject is called at most once, only when the resolution needs the
-// project key's own project id to validate an explicit project_id.
-func Resolve(kind KeyKind, resourceProjectID, providerProjectID string, keyProject func() (string, error)) (string, error) {
-	if kind == KeyKindOrganization {
-		if resourceProjectID != "" {
-			return resourceProjectID, nil
-		}
-		if providerProjectID != "" {
-			return providerProjectID, nil
-		}
-		return "", ErrProjectRequired
-	}
+var (
+	// ErrProjectRequired is returned in explicit mode when a resource does
+	// not name its project.
+	ErrProjectRequired = errors.New("project_id is required")
+	// ErrInvalidImportID is returned for import IDs that are neither
+	// <id> nor <project_id>/<id>.
+	ErrInvalidImportID = errors.New("import ID must be <id> or <project_id>/<id>")
+)
 
-	want := resourceProjectID
-	if want == "" {
-		want = providerProjectID
+// MismatchError is returned in single-project mode when a resource names a
+// project other than the provider's.
+type MismatchError struct {
+	Provider   string
+	Configured string
+}
+
+func (e *MismatchError) Error() string {
+	return fmt.Sprintf("project_id %s does not match the provider's project %s", e.Configured, e.Provider)
+}
+
+// UnreachableError is returned when a resource is recorded in a project the
+// project API key cannot act on.
+type UnreachableError struct {
+	Stored string
+	Target string
+}
+
+func (e *UnreachableError) Error() string {
+	return fmt.Sprintf("the resource is in project %s, the provider targets project %s", e.Stored, e.Target)
+}
+
+// Action is what a plan does about a resource's project.
+type Action int
+
+const (
+	// ActionKeep leaves the resource in its project.
+	ActionKeep Action = iota
+	// ActionReplace deletes the resource in its project and creates it in
+	// the target project.
+	ActionReplace
+)
+
+// Scope is what the provider configuration says about projects.
+type Scope struct {
+	KeyKind KeyKind
+	// ProjectID is the provider project_id, else the project API key's own
+	// project when it is known. Empty in explicit mode.
+	ProjectID string
+}
+
+func (s Scope) SingleProject() bool {
+	return s.KeyKind == KeyKindProject || s.ProjectID != ""
+}
+
+// Target returns the project a resource or data source configured with
+// project_id configured ("" when unset) belongs to. It returns "" for a
+// project API key whose project is not known yet.
+func (s Scope) Target(configured string) (string, error) {
+	if !s.SingleProject() {
+		if configured == "" {
+			return "", ErrProjectRequired
+		}
+		return configured, nil
 	}
-	if want == "" {
-		return "", nil
+	if s.ProjectID == "" {
+		return configured, nil
 	}
-	actual, err := keyProject()
+	if configured != "" && configured != s.ProjectID {
+		return "", &MismatchError{Provider: s.ProjectID, Configured: configured}
+	}
+	return s.ProjectID, nil
+}
+
+// Reach reports whether the key can act on the project a resource is
+// recorded in.
+func (s Scope) Reach(stored string) error {
+	if s.KeyKind == KeyKindProject && s.ProjectID != "" && stored != s.ProjectID {
+		return &UnreachableError{Stored: stored, Target: s.ProjectID}
+	}
+	return nil
+}
+
+// Plan returns the project a resource ends up in and what gets it there.
+// stored is the project recorded in state, "" for a new resource or for
+// state that does not record one.
+func (s Scope) Plan(configured, stored string) (string, Action, error) {
+	target, err := s.Target(configured)
 	if err != nil {
-		return "", err
+		return "", ActionKeep, err
 	}
-	if actual != want {
-		return "", ErrProjectMismatch
+	if stored == "" {
+		return target, ActionKeep, nil
 	}
-	return want, nil
+	if target == "" || target == stored {
+		return stored, ActionKeep, nil
+	}
+	if s.KeyKind == KeyKindProject {
+		return "", ActionKeep, &UnreachableError{Stored: stored, Target: target}
+	}
+	return target, ActionReplace, nil
 }
 
 // ParseImportID splits "<project_id>/<id>" or "<id>".

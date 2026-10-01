@@ -2,9 +2,7 @@ package connection
 
 import (
 	"context"
-	"fmt"
 	"terraform-provider-hookdeck/internal/provider/shared"
-	"terraform-provider-hookdeck/internal/sdkclient"
 
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
@@ -15,6 +13,7 @@ var (
 	_ resource.Resource                = &connectionResource{}
 	_ resource.ResourceWithConfigure   = &connectionResource{}
 	_ resource.ResourceWithImportState = &connectionResource{}
+	_ resource.ResourceWithModifyPlan  = &connectionResource{}
 	_ resource.ResourceWithMoveState   = &connectionResource{}
 )
 
@@ -30,8 +29,8 @@ func NewLegacyConnectionResource() resource.Resource {
 
 // connectionResource is the resource implementation.
 type connectionResource struct {
+	shared.ProjectScopedResource
 	naming shared.Naming
-	client sdkclient.Client
 }
 
 // Metadata returns the resource type name.
@@ -61,26 +60,6 @@ func (r *connectionResource) MoveState(_ context.Context) []resource.StateMover 
 	return []resource.StateMover{shared.RenamedStateMover(r.naming.LegacyTypeName(), r.schema())}
 }
 
-// Configure adds the provider configured client to the resource.
-func (r *connectionResource) Configure(_ context.Context, req resource.ConfigureRequest, resp *resource.ConfigureResponse) {
-	if req.ProviderData == nil {
-		return
-	}
-
-	client, ok := req.ProviderData.(sdkclient.Client)
-
-	if !ok {
-		resp.Diagnostics.AddError(
-			"Unexpected Resource Configure Type",
-			fmt.Sprintf("Expected sdkclient.Client, got: %T. Please report this issue to the provider developers.", req.ProviderData),
-		)
-
-		return
-	}
-
-	r.client = client
-}
-
 // Create creates the resource and sets the initial Terraform state.
 func (r *connectionResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
 	var data *connectionResourceModel
@@ -89,13 +68,11 @@ func (r *connectionResource) Create(ctx context.Context, req resource.CreateRequ
 		return
 	}
 
-	client, clientDiags := shared.ClientFor(ctx, r.client, data.ProjectID)
-	resp.Diagnostics.Append(clientDiags...)
-	if resp.Diagnostics.HasError() {
+	client, ok := r.ClientForCreate(data.ProjectID, &resp.Diagnostics)
+	if !ok {
 		return
 	}
-	diags := data.Create(ctx, &client)
-	resp.Diagnostics.Append(diags...)
+	resp.Diagnostics.Append(data.Create(ctx, client)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -111,18 +88,17 @@ func (r *connectionResource) Read(ctx context.Context, req resource.ReadRequest,
 		return
 	}
 
-	client, clientDiags := shared.ClientFor(ctx, r.client, data.ProjectID)
-	resp.Diagnostics.Append(clientDiags...)
-	if resp.Diagnostics.HasError() {
+	client, ok := r.ClientForState(shared.StoredProject(data.ProjectID, data.TeamID), &resp.Diagnostics)
+	if !ok {
 		return
 	}
-	diags := data.Retrieve(ctx, &client)
-	if shared.IsNotFoundDiagnostics(diags) {
-		resp.State.RemoveResource(ctx)
-		return
-	}
+	found, diags := data.Retrieve(ctx, client)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
+		return
+	}
+	if !found {
+		resp.State.RemoveResource(ctx)
 		return
 	}
 
@@ -137,13 +113,17 @@ func (r *connectionResource) Update(ctx context.Context, req resource.UpdateRequ
 		return
 	}
 
-	client, clientDiags := shared.ClientFor(ctx, r.client, data.ProjectID)
-	resp.Diagnostics.Append(clientDiags...)
+	var state *connectionResourceModel
+	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	diags := data.Update(ctx, &client)
-	resp.Diagnostics.Append(diags...)
+
+	client, ok := r.ClientForState(shared.StoredProject(state.ProjectID, state.TeamID), &resp.Diagnostics)
+	if !ok {
+		return
+	}
+	resp.Diagnostics.Append(data.Update(ctx, client)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -159,18 +139,13 @@ func (r *connectionResource) Delete(ctx context.Context, req resource.DeleteRequ
 		return
 	}
 
-	client, clientDiags := shared.ClientFor(ctx, r.client, data.ProjectID)
-	resp.Diagnostics.Append(clientDiags...)
-	if resp.Diagnostics.HasError() {
+	client, ok := r.ClientForState(shared.StoredProject(data.ProjectID, data.TeamID), &resp.Diagnostics)
+	if !ok {
 		return
 	}
-	diags := data.Delete(ctx, &client)
-	resp.Diagnostics.Append(diags...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
+	resp.Diagnostics.Append(data.Delete(ctx, client)...)
 }
 
 func (r *connectionResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
-	shared.ImportState(ctx, "id", req, resp)
+	r.ImportProjectState(ctx, "id", req, resp)
 }

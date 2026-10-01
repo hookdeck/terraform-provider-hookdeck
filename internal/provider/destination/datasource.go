@@ -2,10 +2,8 @@ package destination
 
 import (
 	"context"
-	"fmt"
 	"terraform-provider-hookdeck/internal/provider/shared"
 	"terraform-provider-hookdeck/internal/schemahelpers"
-	"terraform-provider-hookdeck/internal/sdkclient"
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
@@ -29,8 +27,8 @@ func NewLegacyDestinationDataSource() datasource.DataSource {
 
 // destinationDataSource is the datasource implementation.
 type destinationDataSource struct {
+	shared.ProjectScopedDataSource
 	naming shared.Naming
-	client sdkclient.Client
 }
 
 // Metadata returns the datasource type name.
@@ -47,26 +45,6 @@ func (r *destinationDataSource) Schema(_ context.Context, _ datasource.SchemaReq
 	}
 }
 
-// Configure adds the provider configured client to the datasource.
-func (r *destinationDataSource) Configure(_ context.Context, req datasource.ConfigureRequest, resp *datasource.ConfigureResponse) {
-	if req.ProviderData == nil {
-		return
-	}
-
-	client, ok := req.ProviderData.(sdkclient.Client)
-
-	if !ok {
-		resp.Diagnostics.AddError(
-			"Unexpected Data Source Configure Type",
-			fmt.Sprintf("Expected sdkclient.Client, got: %T. Please report this issue to the provider developers.", req.ProviderData),
-		)
-
-		return
-	}
-
-	r.client = client
-}
-
 // Read refreshes the Terraform state with the latest data.
 func (r *destinationDataSource) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {
 	var data *destinationResourceModel
@@ -75,14 +53,17 @@ func (r *destinationDataSource) Read(ctx context.Context, req datasource.ReadReq
 		return
 	}
 
-	client, clientDiags := shared.ClientFor(ctx, r.client, data.ProjectID)
-	resp.Diagnostics.Append(clientDiags...)
+	client, ok := r.Client(data.ProjectID, &resp.Diagnostics)
+	if !ok {
+		return
+	}
+	found, diags := data.Retrieve(ctx, client)
+	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	diags := data.Retrieve(ctx, &client)
-	resp.Diagnostics.Append(diags...)
-	if resp.Diagnostics.HasError() {
+	if !found {
+		resp.Diagnostics.AddError("Destination not found", "No destination with ID "+data.ID.ValueString()+" in this project.")
 		return
 	}
 

@@ -20,16 +20,17 @@ import (
 type Client struct {
 	RawClient RawClientInterface
 
-	// KeyKind is derived from the API key prefix.
-	KeyKind projectscope.KeyKind
-	// DefaultProjectID is the provider-level project_id, "" when unset.
-	DefaultProjectID string
+	// Scope is the key kind and the provider's project.
+	Scope projectscope.Scope
 
-	keyProject *keyProjectLookup
+	projectChecks *projectChecks
 }
 
 const (
 	defaultAPIBase = "api.hookdeck.com"
+
+	// APIVersion is the Hookdeck API version every request targets.
+	APIVersion = "2026-09-01"
 )
 
 // RawClientInterface defines the contract for sending requests.
@@ -189,9 +190,9 @@ func InitHookdeckSDKClient(apiBase string, apiKey string, providerVersion string
 	}
 
 	return Client{
-		RawClient:  rawClient,
-		KeyKind:    projectscope.KindOfKey(apiKey),
-		keyProject: &keyProjectLookup{},
+		RawClient:     rawClient,
+		Scope:         projectscope.Scope{KeyKind: projectscope.KindOfKey(apiKey)},
+		projectChecks: &projectChecks{results: map[string]error{}},
 	}
 }
 

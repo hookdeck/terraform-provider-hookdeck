@@ -10,8 +10,10 @@ import (
 )
 
 func schemaAttributes() map[string]schema.Attribute {
+	projectID := shared.ProjectIDResourceAttribute()
+	projectID.Description = "ID of the project the source belongs to. With a project API key or a provider `project_id`, it can be omitted. With an organization API key and no provider `project_id`, it is required."
 	return map[string]schema.Attribute{
-		"project_id": shared.ProjectIDResourceAttribute(),
+		"project_id": projectID,
 		"auth": schema.StringAttribute{
 			Required:    true,
 			Sensitive:   true,
