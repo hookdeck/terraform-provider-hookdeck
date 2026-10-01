@@ -13,7 +13,7 @@ Source Resource
 ## Example Usage
 
 ```terraform
-resource "hookdeck_source" "example" {
+resource "hookdeck_gateway_source" "example" {
   name = "example"
   type = "HTTP"
   config = jsonencode({
@@ -45,7 +45,7 @@ resource "hookdeck_source" "example" {
 - `created_at` (String) Date the source was created
 - `disabled_at` (String) Date the source was disabled
 - `id` (String) ID of the source
-- `team_id` (String) ID of the workspace
+- `team_id` (String) ID of the project the resource belongs to. Same value as `project_id`.
 - `updated_at` (String) Date the source was last updated
 - `url` (String) A unique URL that must be supplied to your webhook's provider
 
@@ -58,6 +58,6 @@ The [`terraform import` command](https://developer.hashicorp.com/terraform/cli/c
 ```shell
 $ terraform import hookdeck_gateway_source.example <id>
 
-# With an organization API key and no provider project_id:
+# With an organization API key and no provider project_id, name the project:
 $ terraform import hookdeck_gateway_source.example <project_id>/<id>
 ```

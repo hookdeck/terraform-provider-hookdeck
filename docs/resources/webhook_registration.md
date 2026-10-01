@@ -13,6 +13,16 @@ Webhook Registration Resource
 ## Example Usage
 
 ```terraform
+variable "stripe_secret_key" {
+  type      = string
+  sensitive = true
+}
+
+resource "hookdeck_gateway_source" "source_example" {
+  name = "stripe"
+  type = "STRIPE"
+}
+
 resource "hookdeck_webhook_registration" "webhook_stripe" {
   register = {
     request = {

@@ -1,4 +1,9 @@
-resource "hookdeck_transformation" "example" {
+variable "secret" {
+  type      = string
+  sensitive = true
+}
+
+resource "hookdeck_gateway_transformation" "example" {
   name = "example"
   code = file("${path.module}/transformations/transformation_example.js")
   env = jsonencode({

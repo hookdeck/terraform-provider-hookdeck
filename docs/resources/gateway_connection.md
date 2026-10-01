@@ -13,15 +13,33 @@ Connection Resource
 ## Example Usage
 
 ```terraform
-resource "hookdeck_connection" "connection_example" {
+resource "hookdeck_gateway_source" "source_example" {
+  name = "example"
+  type = "HTTP"
+}
+
+resource "hookdeck_gateway_destination" "destination_example" {
+  name = "example"
+  type = "HTTP"
+  config = jsonencode({
+    url = "https://example.test/webhook"
+  })
+}
+
+resource "hookdeck_gateway_transformation" "transformation_example" {
+  name = "example"
+  code = "addHandler('transform', (request, context) => request);"
+}
+
+resource "hookdeck_gateway_connection" "connection_example" {
   name           = "example"
   description    = "example connection"
-  source_id      = hookdeck_source.source_example.id
-  destination_id = hookdeck_destination.destination_example.id
+  source_id      = hookdeck_gateway_source.source_example.id
+  destination_id = hookdeck_gateway_destination.destination_example.id
   rules = [
     {
       transform_rule = {
-        transformation_id = hookdeck_transformation.transformation_example.id
+        transformation_id = hookdeck_gateway_transformation.transformation_example.id
       }
     },
     {
@@ -86,7 +104,7 @@ resource "hookdeck_connection" "connection_example" {
 - `disabled_at` (String) Date the connection was disabled
 - `id` (String) ID of the connection
 - `paused_at` (String) Date the connection was paused
-- `team_id` (String) ID of the workspace
+- `team_id` (String) ID of the project the resource belongs to. Same value as `project_id`.
 - `updated_at` (String) Date the connection was last updated
 
 <a id="nestedatt--rules"></a>
@@ -207,6 +225,6 @@ The [`terraform import` command](https://developer.hashicorp.com/terraform/cli/c
 ```shell
 $ terraform import hookdeck_gateway_connection.example <id>
 
-# With an organization API key and no provider project_id:
+# With an organization API key and no provider project_id, name the project:
 $ terraform import hookdeck_gateway_connection.example <project_id>/<id>
 ```

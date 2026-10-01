@@ -13,7 +13,7 @@ Connection Data Source
 ## Example Usage
 
 ```terraform
-data "hookdeck_connection" "example" {
+data "hookdeck_gateway_connection" "example" {
   id = "<your_connection_id>"
 }
 ```
@@ -39,7 +39,7 @@ data "hookdeck_connection" "example" {
 - `paused_at` (String) Date the connection was paused
 - `rules` (Attributes List) (see [below for nested schema](#nestedatt--rules))
 - `source_id` (String) ID of a source to bind to the connection
-- `team_id` (String) ID of the workspace
+- `team_id` (String) ID of the project the resource belongs to. Same value as `project_id`.
 - `updated_at` (String) Date the connection was last updated
 
 <a id="nestedatt--rules"></a>

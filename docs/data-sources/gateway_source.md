@@ -13,7 +13,7 @@ Source Data Source
 ## Example Usage
 
 ```terraform
-data "hookdeck_source" "example" {
+data "hookdeck_gateway_source" "example" {
   id = "<your_source_id>"
 }
 ```
@@ -36,7 +36,7 @@ data "hookdeck_source" "example" {
 - `description` (String) Description for the source
 - `disabled_at` (String) Date the source was disabled
 - `name` (String) A unique, human-friendly name for the source
-- `team_id` (String) ID of the workspace
+- `team_id` (String) ID of the project the resource belongs to. Same value as `project_id`.
 - `type` (String) Type of the source
 - `updated_at` (String) Date the source was last updated
 - `url` (String) A unique URL that must be supplied to your webhook's provider

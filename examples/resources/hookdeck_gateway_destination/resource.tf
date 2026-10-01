@@ -1,4 +1,4 @@
-resource "hookdeck_destination" "example" {
+resource "hookdeck_gateway_destination" "example" {
   name = "example"
   type = "HTTP"
   config = jsonencode({

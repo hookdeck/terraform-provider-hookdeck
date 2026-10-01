@@ -49,7 +49,7 @@ func schemaAttributes() map[string]schema.Attribute {
 			PlanModifiers: []planmodifier.String{
 				stringplanmodifier.UseStateForUnknown(),
 			},
-			Description: "ID of the workspace",
+			Description: "ID of the project the resource belongs to. Same value as `project_id`.",
 		},
 		"updated_at": schema.StringAttribute{
 			Computed: true,

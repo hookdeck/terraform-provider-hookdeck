@@ -2,13 +2,13 @@
 
 _The [Hookdeck Event Gateway](https://hookdeck.com) enables engineering teams to build, deploy, observe, and scale event-driven applications. For more information, see the [Hookdeck documentation](https://hookdeck.com/docs)._
 
-The Hookdeck Terraform provider enables you to manage your Hookdeck workspaces using IaC (Infrastructure-as-Code), including managing your sources, destinations, connections, transformations, and more. It also supports webhook registration workflow that allows you to configure webhooks as part of your CI/CD processes.
+The Hookdeck Terraform provider enables you to manage your Hookdeck projects using IaC (Infrastructure-as-Code), including managing your sources, destinations, connections, transformations, and more. It also supports webhook registration workflow that allows you to configure webhooks as part of your CI/CD processes.
 
 ## Installation
 
 To install Hookdeck Terraform provider:
 
-1. Obtain your Hookdeck API key from [the dashboard](https://dashboard.hookdeck.com/workspace/secrets)
+1. Obtain a project API key from [the dashboard](https://dashboard.hookdeck.com/settings/project/secrets). To manage several projects or to create projects, use an organization API key instead: see [API Keys](https://registry.terraform.io/providers/hookdeck/hookdeck/latest/docs#api-keys) in the provider documentation.
 2. Add the following to your Terraform configuration file:
 
 ```hcl
@@ -16,8 +16,14 @@ terraform {
   required_providers {
     hookdeck = {
       source  = "hookdeck/hookdeck"
+      version = "~> 3.0"
     }
   }
+}
+
+variable "hookdeck_api_key" {
+  type      = string
+  sensitive = true
 }
 
 provider "hookdeck" {
@@ -25,6 +31,8 @@ provider "hookdeck" {
   api_key = var.hookdeck_api_key
 }
 ```
+
+Upgrading from v2? See the [v2 to v3 migration guide](https://registry.terraform.io/providers/hookdeck/hookdeck/latest/docs/guides/v2-to-v3-migration). Renaming existing resources to the v3 names with `moved` blocks needs Terraform 1.8 or OpenTofu 1.10, or later.
 
 ## Using the provider
 
@@ -41,7 +49,7 @@ resource "hookdeck_gateway_destination" "my_destination" {
   name = "my_destination"
   type = "HTTP"
   config = jsonencode({
-    url  = "https://myapp.example.com/api"
+    url = "https://myapp.example.com/api"
   })
 }
 

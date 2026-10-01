@@ -13,8 +13,13 @@ Source Auth Resource
 ## Example Usage
 
 ```terraform
-resource "hookdeck_source_auth" "example" {
-  source_id = hookdeck_source.example.id
+resource "hookdeck_gateway_source" "example" {
+  name = "example"
+  type = "HTTP"
+}
+
+resource "hookdeck_gateway_source_auth" "example" {
+  source_id = hookdeck_gateway_source.example.id
   auth_type = "BASIC_AUTH"
   auth = jsonencode({
     username = "username"
@@ -35,3 +40,17 @@ resource "hookdeck_source_auth" "example" {
 
 - `auth_type` (String) Type of the source auth
 - `project_id` (String) ID of the project the source belongs to. With a project API key or a provider `project_id`, it can be omitted. With an organization API key and no provider `project_id`, it is required.
+
+## Import
+
+Import is supported using the following syntax:
+
+The [`terraform import` command](https://developer.hashicorp.com/terraform/cli/commands/import) can be used, for example:
+
+```shell
+# A source auth is imported by the ID of its source.
+$ terraform import hookdeck_gateway_source_auth.example <source_id>
+
+# With an organization API key and no provider project_id, name the project:
+$ terraform import hookdeck_gateway_source_auth.example <project_id>/<source_id>
+```

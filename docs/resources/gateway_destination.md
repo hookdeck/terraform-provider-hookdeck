@@ -13,7 +13,7 @@ Destination Resource
 ## Example Usage
 
 ```terraform
-resource "hookdeck_destination" "example" {
+resource "hookdeck_gateway_destination" "example" {
   name = "example"
   type = "HTTP"
   config = jsonencode({
@@ -55,7 +55,7 @@ resource "hookdeck_destination" "example" {
 - `created_at` (String) Date the destination was created
 - `disabled_at` (String) Date the destination was disabled
 - `id` (String) ID of the destination
-- `team_id` (String) ID of the workspace
+- `team_id` (String) ID of the project the resource belongs to. Same value as `project_id`.
 - `updated_at` (String) Date the destination was last updated
 
 ## Import
@@ -67,6 +67,6 @@ The [`terraform import` command](https://developer.hashicorp.com/terraform/cli/c
 ```shell
 $ terraform import hookdeck_gateway_destination.example <id>
 
-# With an organization API key and no provider project_id:
+# With an organization API key and no provider project_id, name the project:
 $ terraform import hookdeck_gateway_destination.example <project_id>/<id>
 ```

@@ -13,7 +13,8 @@ Event Gateway project. Managing a project requires an organization API key with 
 ## Example Usage
 
 ```terraform
-# Requires an organization API key with `projects.write`.
+# Managing projects requires an organization API key with the
+# `projects.write` scope.
 resource "hookdeck_gateway_project" "example" {
   name = "production"
 }

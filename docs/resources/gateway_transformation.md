@@ -13,7 +13,12 @@ Transformation Resource
 ## Example Usage
 
 ```terraform
-resource "hookdeck_transformation" "example" {
+variable "secret" {
+  type      = string
+  sensitive = true
+}
+
+resource "hookdeck_gateway_transformation" "example" {
   name = "example"
   code = file("${path.module}/transformations/transformation_example.js")
   env = jsonencode({
@@ -45,7 +50,7 @@ resource "hookdeck_transformation" "example" {
 
 - `created_at` (String) Date the transformation was created
 - `id` (String) ID of the transformation
-- `team_id` (String) ID of the workspace
+- `team_id` (String) ID of the project the resource belongs to. Same value as `project_id`.
 - `updated_at` (String) Date the transformation was last updated
 
 ## Import
@@ -57,6 +62,6 @@ The [`terraform import` command](https://developer.hashicorp.com/terraform/cli/c
 ```shell
 $ terraform import hookdeck_gateway_transformation.example <id>
 
-# With an organization API key and no provider project_id:
+# With an organization API key and no provider project_id, name the project:
 $ terraform import hookdeck_gateway_transformation.example <project_id>/<id>
 ```

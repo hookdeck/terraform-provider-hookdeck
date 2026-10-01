@@ -1,12 +1,30 @@
-resource "hookdeck_connection" "connection_example" {
+resource "hookdeck_gateway_source" "source_example" {
+  name = "example"
+  type = "HTTP"
+}
+
+resource "hookdeck_gateway_destination" "destination_example" {
+  name = "example"
+  type = "HTTP"
+  config = jsonencode({
+    url = "https://example.test/webhook"
+  })
+}
+
+resource "hookdeck_gateway_transformation" "transformation_example" {
+  name = "example"
+  code = "addHandler('transform', (request, context) => request);"
+}
+
+resource "hookdeck_gateway_connection" "connection_example" {
   name           = "example"
   description    = "example connection"
-  source_id      = hookdeck_source.source_example.id
-  destination_id = hookdeck_destination.destination_example.id
+  source_id      = hookdeck_gateway_source.source_example.id
+  destination_id = hookdeck_gateway_destination.destination_example.id
   rules = [
     {
       transform_rule = {
-        transformation_id = hookdeck_transformation.transformation_example.id
+        transformation_id = hookdeck_gateway_transformation.transformation_example.id
       }
     },
     {

@@ -8,6 +8,22 @@ description: "Connection Rules"
 A rule is a piece of instructional logic that dictates the behavior of events
 routed through a connection.
 
+The examples on this page add rules to a connection between this source and destination:
+
+```hcl
+resource "hookdeck_gateway_source" "my_source" {
+  name = "my_source"
+}
+
+resource "hookdeck_gateway_destination" "my_destination" {
+  name = "my_destination"
+  type = "HTTP"
+  config = jsonencode({
+    url = "https://mock.hookdeck.com"
+  })
+}
+```
+
 ### Rule Execution Order
 
 The order of rules in the `rules` list matters. `filter_rule` and `transform_rule` blocks are executed sequentially in the order they are defined. This allows you to create powerful workflows, such as filtering a request *before* transforming it to avoid unnecessary processing.
@@ -17,8 +33,9 @@ Other rule types, like `retry_rule` and `delay_rule`, are not affected by orderi
 For example, you can define a `filter_rule` to run before a `transform_rule`:
 
 ```hcl
-resource "hookdeck_connection" "my_connection" {
-  # ...
+resource "hookdeck_gateway_connection" "my_connection" {
+  source_id      = hookdeck_gateway_source.my_source.id
+  destination_id = hookdeck_gateway_destination.my_destination.id
   rules = [
     {
       filter_rule = {
@@ -29,7 +46,7 @@ resource "hookdeck_connection" "my_connection" {
     },
     {
       transform_rule = {
-        transformation_id = hookdeck_transformation.my_transformation.id
+        transformation_id = hookdeck_gateway_transformation.my_transformation.id
       }
     }
   ]
@@ -59,9 +76,9 @@ Here's what a connection with a linear retry strategy with five attempts per
 hour looks like:
 
 ```hcl
-resource "hookdeck_connection" "my_connection" {
-  source_id      = hookdeck_source.my_source.id
-  destination_id = hookdeck_destination.my_destination.id
+resource "hookdeck_gateway_connection" "my_connection" {
+  source_id      = hookdeck_gateway_source.my_source.id
+  destination_id = hookdeck_gateway_destination.my_destination.id
   rules = [
     {
       retry_rule = {
@@ -82,9 +99,9 @@ receives an event, and when it's forwarded to your destination.
 Here's how to configure a connection with a 10-second delay:
 
 ```hcl
-resource "hookdeck_connection" "my_connection" {
-  source_id      = hookdeck_source.my_source.id
-  destination_id = hookdeck_destination.my_destination.id
+resource "hookdeck_gateway_connection" "my_connection" {
+  source_id      = hookdeck_gateway_source.my_source.id
+  destination_id = hookdeck_gateway_destination.my_destination.id
   rules = [
     {
       delay_rule = {
@@ -106,9 +123,9 @@ For more information on how to set up filters, see our
 Here's how a connection with a filter look like:
 
 ```hcl
-resource "hookdeck_connection" "my_connection" {
-  source_id      = hookdeck_source.my_source.id
-  destination_id = hookdeck_destination.my_destination.id
+resource "hookdeck_gateway_connection" "my_connection" {
+  source_id      = hookdeck_gateway_source.my_source.id
+  destination_id = hookdeck_gateway_destination.my_destination.id
   rules = [
     {
       filter_rule = {
@@ -139,9 +156,9 @@ your liking:
   for better readbility inline:
 
 ```hcl
-resource "hookdeck_connection" "my_connection" {
-  source_id      = hookdeck_source.my_source.id
-  destination_id = hookdeck_destination.my_destination.id
+resource "hookdeck_gateway_connection" "my_connection" {
+  source_id      = hookdeck_gateway_source.my_source.id
+  destination_id = hookdeck_gateway_destination.my_destination.id
   rules = [
     {
       filter_rule = {
@@ -161,9 +178,9 @@ resource "hookdeck_connection" "my_connection" {
   write your filter code in a separate file:
 
 ```hcl
-resource "hookdeck_connection" "my_connection" {
-  source_id      = hookdeck_source.my_source.id
-  destination_id = hookdeck_destination.my_destination.id
+resource "hookdeck_gateway_connection" "my_connection" {
+  source_id      = hookdeck_gateway_source.my_source.id
+  destination_id = hookdeck_gateway_destination.my_destination.id
   rules = [
     {
       filter_rule = {
@@ -188,18 +205,18 @@ To use transformation with Terraform, you must create a new transformation
 before using it with your connection. Here's an example transformation:
 
 ```hcl
-resource "hookdeck_transformation" "my_transformation" {
+resource "hookdeck_gateway_transformation" "my_transformation" {
   name = "my_transformation"
   code = "addHandler('transform', (request, context) => request);"
 }
 
-resource "hookdeck_connection" "my_connection" {
-  source_id      = hookdeck_source.my_source.id
-  destination_id = hookdeck_destination.my_destination.id
+resource "hookdeck_gateway_connection" "my_connection" {
+  source_id      = hookdeck_gateway_source.my_source.id
+  destination_id = hookdeck_gateway_destination.my_destination.id
   rules = [
     {
       transform_rule = {
-        transformation_id = hookdeck_transformation.my_transformation.id
+        transformation_id = hookdeck_gateway_transformation.my_transformation.id
       }
     }
   ]
@@ -210,7 +227,7 @@ As the transformation code also expects a stringified function handler, you can
 also keep your transformation code in a separate file:
 
 ```hcl
-resource "hookdeck_transformation" "my_transformation" {
+resource "hookdeck_gateway_transformation" "my_transformation" {
   name = "my_transformation"
   code = file("${path.module}/transformations/my_transformation.js")
 }
