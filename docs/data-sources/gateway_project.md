@@ -3,12 +3,12 @@
 page_title: "hookdeck_gateway_project Data Source - terraform-provider-hookdeck"
 subcategory: ""
 description: |-
-  Event Gateway project, looked up by id or name.
+  Event Gateway project, looked up by ID or name.
 ---
 
 # hookdeck_gateway_project (Data Source)
 
-Event Gateway project, looked up by id or name.
+Event Gateway project, looked up by ID or name.
 
 ## Example Usage
 
@@ -28,14 +28,11 @@ data "hookdeck_gateway_project" "by_name" {
 ### Optional
 
 - `id` (String) ID of the project. One of `id` or `name` is required.
-- `name` (String) Name of the project. One of `id` or `name` is required; the name must be unique among the projects the API key can see.
+- `name` (String) Name of the project. One of `id` or `name` is required; the name must be unique among the Event Gateway projects the API key can see.
 
 ### Read-Only
 
 - `created_at` (String) Date the project was created
-- `headers_prefix` (String) Prefix for the headers Hookdeck adds to delivered requests
-- `max_events_per_second` (Number) Maximum events per second for the project
-- `notification_methods` (List of String) Notification methods enabled for the project: `email`, `webhook`
 - `organization_id` (String) ID of the organization the project belongs to
 - `type` (String) Project type, always `event_gateway`
 - `updated_at` (String) Date the project was last updated

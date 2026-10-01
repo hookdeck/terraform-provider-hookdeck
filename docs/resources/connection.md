@@ -3,12 +3,12 @@
 page_title: "hookdeck_connection Resource - terraform-provider-hookdeck"
 subcategory: ""
 description: |-
-  Connection Resource
+  Connection Resource. Deprecated: renamed to hookdeck_gateway_connection; hookdeck_connection will be removed in v4.
 ---
 
 # hookdeck_connection (Resource)
 
-Connection Resource
+Connection Resource. Deprecated: renamed to `hookdeck_gateway_connection`; `hookdeck_connection` will be removed in v4.
 
 
 
@@ -24,7 +24,7 @@ Connection Resource
 
 - `description` (String) Description for the connection
 - `name` (String) A unique, human-friendly name for the connection
-- `project_id` (String) ID of the project the resource belongs to. Defaults to the provider `project_id`, then to the API key's own project. Required with an organization API key when the provider sets no default. Changing it replaces the resource.
+- `project_id` (String) ID of the project the resource belongs to. With a project API key or a provider `project_id`, every resource is in that project and this can be omitted. With an organization API key and no provider `project_id`, it is required. Changing it replaces the resource.
 - `rules` (Attributes List) (see [below for nested schema](#nestedatt--rules))
 
 ### Read-Only

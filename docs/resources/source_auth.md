@@ -3,12 +3,12 @@
 page_title: "hookdeck_source_auth Resource - terraform-provider-hookdeck"
 subcategory: ""
 description: |-
-  Source Auth Resource
+  Source Auth Resource. Deprecated: renamed to hookdeck_gateway_source_auth; hookdeck_source_auth will be removed in v4.
 ---
 
 # hookdeck_source_auth (Resource)
 
-Source Auth Resource
+Source Auth Resource. Deprecated: renamed to `hookdeck_gateway_source_auth`; `hookdeck_source_auth` will be removed in v4.
 
 
 
@@ -23,4 +23,4 @@ Source Auth Resource
 ### Optional
 
 - `auth_type` (String) Type of the source auth
-- `project_id` (String) ID of the project the resource belongs to. Defaults to the provider `project_id`, then to the API key's own project. Required with an organization API key when the provider sets no default. Changing it replaces the resource.
+- `project_id` (String) ID of the project the source belongs to. With a project API key or a provider `project_id`, it can be omitted. With an organization API key and no provider `project_id`, it is required.

@@ -3,12 +3,12 @@
 page_title: "hookdeck_destination Resource - terraform-provider-hookdeck"
 subcategory: ""
 description: |-
-  Destination Resource
+  Destination Resource. Deprecated: renamed to hookdeck_gateway_destination; hookdeck_destination will be removed in v4.
 ---
 
 # hookdeck_destination (Resource)
 
-Destination Resource
+Destination Resource. Deprecated: renamed to `hookdeck_gateway_destination`; `hookdeck_destination` will be removed in v4.
 
 
 
@@ -23,7 +23,7 @@ Destination Resource
 
 - `config` (String, Sensitive) Destination configuration as JSON using API version 2026-09-01.
 - `description` (String) Description for the destination
-- `project_id` (String) ID of the project the resource belongs to. Defaults to the provider `project_id`, then to the API key's own project. Required with an organization API key when the provider sets no default. Changing it replaces the resource.
+- `project_id` (String) ID of the project the resource belongs to. With a project API key or a provider `project_id`, every resource is in that project and this can be omitted. With an organization API key and no provider `project_id`, it is required. Changing it replaces the resource.
 - `type` (String) Type of the destination
 
 ### Read-Only

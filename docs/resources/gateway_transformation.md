@@ -39,7 +39,7 @@ resource "hookdeck_transformation" "example" {
 ### Optional
 
 - `env` (String, Sensitive) Key-value environment variables to be passed to the transformation
-- `project_id` (String) ID of the project the resource belongs to. Defaults to the provider `project_id`, then to the API key's own project. Required with an organization API key when the provider sets no default. Changing it replaces the resource.
+- `project_id` (String) ID of the project the resource belongs to. With a project API key or a provider `project_id`, every resource is in that project and this can be omitted. With an organization API key and no provider `project_id`, it is required. Changing it replaces the resource.
 
 ### Read-Only
 

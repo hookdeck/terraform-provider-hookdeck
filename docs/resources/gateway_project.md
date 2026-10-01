@@ -3,20 +3,19 @@
 page_title: "hookdeck_gateway_project Resource - terraform-provider-hookdeck"
 subcategory: ""
 description: |-
-  Event Gateway project. Creating a project requires an organization API key with projects.write.
+  Event Gateway project. Managing a project requires an organization API key with projects.write. Deleting a project deletes everything in it.
 ---
 
 # hookdeck_gateway_project (Resource)
 
-Event Gateway project. Creating a project requires an organization API key with `projects.write`.
+Event Gateway project. Managing a project requires an organization API key with `projects.write`. Deleting a project deletes everything in it.
 
 ## Example Usage
 
 ```terraform
 # Requires an organization API key with `projects.write`.
 resource "hookdeck_gateway_project" "example" {
-  name                 = "production"
-  notification_methods = ["email"]
+  name = "production"
 }
 
 resource "hookdeck_gateway_source" "example" {
@@ -33,16 +32,10 @@ resource "hookdeck_gateway_source" "example" {
 
 - `name` (String) Name of the project
 
-### Optional
-
-- `headers_prefix` (String) Prefix for the headers Hookdeck adds to delivered requests
-- `notification_methods` (List of String) Notification methods enabled for the project: `email`, `webhook`
-
 ### Read-Only
 
 - `created_at` (String) Date the project was created
 - `id` (String) ID of the project
-- `max_events_per_second` (Number) Maximum events per second for the project
 - `organization_id` (String) ID of the organization the project belongs to
 - `type` (String) Project type, always `event_gateway`
 - `updated_at` (String) Date the project was last updated

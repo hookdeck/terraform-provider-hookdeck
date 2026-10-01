@@ -3,12 +3,12 @@
 page_title: "hookdeck_source Data Source - terraform-provider-hookdeck"
 subcategory: ""
 description: |-
-  Source Data Source
+  Source Data Source. Deprecated: renamed to hookdeck_gateway_source; hookdeck_source will be removed in v4.
 ---
 
 # hookdeck_source (Data Source)
 
-Source Data Source
+Source Data Source. Deprecated: renamed to `hookdeck_gateway_source`; `hookdeck_source` will be removed in v4.
 
 
 
@@ -21,7 +21,7 @@ Source Data Source
 
 ### Optional
 
-- `project_id` (String) ID of the project to read from. Defaults to the provider `project_id`, then to the API key's own project.
+- `project_id` (String) ID of the project to read from. With a project API key or a provider `project_id`, that project is used and this can be omitted. With an organization API key and no provider `project_id`, it is required.
 
 ### Read-Only
 

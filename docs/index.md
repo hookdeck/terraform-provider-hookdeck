@@ -54,4 +54,4 @@ resource "hookdeck_gateway_connection" "connection" {
 
 - `api_base` (String) Hookdeck API Base URL. Alternatively, can be configured using the `HOOKDECK_API_BASE` environment variable.
 - `api_key` (String, Sensitive) Hookdeck API Key, either a project key or an organization key (`hd_org_` prefix). Alternatively, can be configured using the `HOOKDECK_API_KEY` environment variable.
-- `project_id` (String) Default project for every resource that does not set its own `project_id`. Required with an organization API key unless each resource sets `project_id`. With a project API key it must match the key's project. Alternatively, can be configured using the `HOOKDECK_PROJECT_ID` environment variable.
+- `project_id` (String) Project that every resource and data source of this provider configuration belongs to. Not needed with a project API key, which is bound to its project. With an organization API key, set it to manage a single project, or leave it unset and set `project_id` on each resource. Changing it replaces every resource. Alternatively, can be configured using the `HOOKDECK_PROJECT_ID` environment variable.
