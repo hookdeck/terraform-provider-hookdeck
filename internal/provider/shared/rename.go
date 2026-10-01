@@ -47,7 +47,7 @@ func RenamedStateMover(legacyTypeName string, schema resourceschema.Schema) reso
 	return resource.StateMover{
 		SourceSchema: &schema,
 		StateMover: func(ctx context.Context, req resource.MoveStateRequest, resp *resource.MoveStateResponse) {
-			if req.SourceTypeName != legacyTypeName || !strings.HasSuffix(req.SourceProviderAddress, "/hookdeck") {
+			if req.SourceTypeName != legacyTypeName || !isThisProvider(req.SourceProviderAddress) {
 				return
 			}
 			if req.SourceSchemaVersion != schema.Version {
@@ -65,4 +65,10 @@ func RenamedStateMover(legacyTypeName string, schema resourceschema.Schema) reso
 			resp.TargetPrivate = req.SourcePrivate
 		},
 	}
+}
+
+// isThisProvider matches any registry host and namespace, since mirrors
+// report their own. OpenTofu 1.10.0 to 1.12.3 send the bare provider type.
+func isThisProvider(address string) bool {
+	return address == "hookdeck" || strings.HasSuffix(address, "/hookdeck")
 }
