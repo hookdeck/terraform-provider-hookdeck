@@ -5,7 +5,11 @@ This file is for AI coding agents (Claude Code, Cursor, Copilot, and similar) wo
 ## Project layout
 
 - [`internal/provider/`](internal/provider/) — resource and data-source implementations built on the [Terraform Plugin Framework](https://developer.hashicorp.com/terraform/plugin/framework). Each resource package (`source/`, `destination/`, `connection/`, `transformation/`, `sourceauth/`, `webhookregistration/`) typically contains `resource.go`, `model.go`, `sdk.go`, and `resource_test.go` (acceptance tests).
-- [`internal/sdkclient/`](internal/sdkclient/) — thin wrapper around the [Hookdeck Go SDK](https://github.com/hookdeck/hookdeck-go-sdk).
+- [`internal/provider/project/`](internal/provider/project/) — the `hookdeck_gateway_project` resource and data source.
+- [`internal/provider/shared/`](internal/provider/shared/) — what every project-scoped resource and data source embeds (client for the right project, plan-time project checks, import) and the v2 alias naming.
+- [`internal/provider/*_test.go`](internal/provider/) — acceptance tests that span resources, and an in-process mock API for cases test credentials cannot reach.
+- [`internal/projectscope/`](internal/projectscope/) — the rules for which project a resource belongs to. No I/O.
+- [`internal/sdkclient/`](internal/sdkclient/) — HTTP client for the Hookdeck API: rate limiting, the project header, API errors.
 - [`docs/`](docs/) — **generated** from the provider schema. Do not edit by hand; run `go generate ./...` after schema changes.
 - [`examples/`](examples/) — example Terraform configurations referenced by the generated docs.
 - [`templates/`](templates/) — `tfplugindocs` templates for the generated `docs/`.
@@ -13,7 +17,7 @@ This file is for AI coding agents (Claude Code, Cursor, Copilot, and similar) wo
 
 ## Commands and setup
 
-See [`CONTRIBUTING.md`](CONTRIBUTING.md) for build, test, lint, and codegen commands, as well as `.env.test` setup for acceptance tests. Acceptance tests hit the live Hookdeck API and create/destroy real resources — always use a dedicated test workspace.
+See [`CONTRIBUTING.md`](CONTRIBUTING.md) for build, test, lint, and codegen commands, as well as `.env.test` setup for acceptance tests. Acceptance tests hit the live Hookdeck API and create/destroy real resources — always use a dedicated test project.
 
 ## Norms
 
