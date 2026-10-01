@@ -3,6 +3,15 @@ resource "hookdeck_gateway_source" "test" {
   type = "HTTP"
 }
 
+resource "hookdeck_gateway_source_auth" "test" {
+  source_id = hookdeck_gateway_source.test.id
+  auth_type = "API_KEY"
+  auth = jsonencode({
+    header_key = "x-api-key"
+    api_key    = "secret-%[1]s"
+  })
+}
+
 resource "hookdeck_gateway_destination" "test" {
   name = "v2-dst-%[1]s"
   type = "HTTP"
@@ -30,6 +39,11 @@ resource "hookdeck_gateway_connection" "test" {
 moved {
   from = hookdeck_source.test
   to   = hookdeck_gateway_source.test
+}
+
+moved {
+  from = hookdeck_source_auth.test
+  to   = hookdeck_gateway_source_auth.test
 }
 
 moved {

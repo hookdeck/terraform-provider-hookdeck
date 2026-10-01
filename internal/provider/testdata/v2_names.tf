@@ -3,6 +3,15 @@ resource "hookdeck_source" "test" {
   type = "HTTP"
 }
 
+resource "hookdeck_source_auth" "test" {
+  source_id = hookdeck_source.test.id
+  auth_type = "API_KEY"
+  auth = jsonencode({
+    header_key = "x-api-key"
+    api_key    = "secret-%[1]s"
+  })
+}
+
 resource "hookdeck_destination" "test" {
   name = "v2-dst-%[1]s"
   type = "HTTP"

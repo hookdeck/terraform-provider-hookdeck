@@ -6,12 +6,12 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
-	"github.com/hashicorp/terraform-plugin-testing/plancheck"
+	"github.com/hashicorp/terraform-plugin-testing/tfversion"
 )
 
 // Every Event Gateway resource is reachable under its gateway_ name and
 // round-trips through import.
-func TestAccV3_GatewayResourceNames(t *testing.T) {
+func TestAccNaming_GatewayResourceNames(t *testing.T) {
 	suffix := acctest.RandStringFromCharSet(8, acctest.CharSetAlphaNum)
 
 	resource.Test(t, resource.TestCase{
@@ -24,6 +24,7 @@ func TestAccV3_GatewayResourceNames(t *testing.T) {
 					resource.TestCheckResourceAttr("hookdeck_gateway_source.test", "name", "v3-src-"+suffix),
 					resource.TestCheckResourceAttrSet("hookdeck_gateway_source.test", "url"),
 					resource.TestCheckResourceAttr("hookdeck_gateway_source_auth.test", "auth_type", "API_KEY"),
+					resource.TestCheckResourceAttrPair("hookdeck_gateway_source_auth.test", "project_id", "hookdeck_gateway_source.test", "project_id"),
 					resource.TestCheckResourceAttr("hookdeck_gateway_destination.test", "name", "v3-dst-"+suffix),
 					resource.TestCheckResourceAttr("hookdeck_gateway_transformation.test", "name", "v3-trs-"+suffix),
 					resource.TestCheckResourceAttr("hookdeck_gateway_connection.test", "name", "v3-con-"+suffix),
@@ -54,53 +55,62 @@ func TestAccV3_GatewayResourceNames(t *testing.T) {
 				ImportState:       true,
 				ImportStateVerify: true,
 			},
+			{
+				ResourceName:                         "hookdeck_gateway_source_auth.test",
+				ImportState:                          true,
+				ImportStateIdFunc:                    importIDFromAttribute("hookdeck_gateway_source_auth.test", "source_id"),
+				ImportStateVerify:                    true,
+				ImportStateVerifyIdentifierAttribute: "source_id",
+			},
+			{
+				ResourceName:  "hookdeck_gateway_source.test",
+				ImportState:   true,
+				ImportStateId: "not/a/valid/id",
+				ExpectError:   regexp.MustCompile(`import ID must be`),
+			},
+			{
+				ResourceName:  "hookdeck_gateway_source.test",
+				ImportState:   true,
+				ImportStateId: "src_doesnotexist",
+				ExpectError:   regexp.MustCompile(`Cannot import non-existent remote object`),
+			},
 		},
 	})
 }
 
-// A v2 configuration renamed with moved blocks plans as no-op and keeps
-// every resource id.
-func TestAccV3_MovedFromV2Names(t *testing.T) {
+// The gateway_ data sources read what the resources created, and record
+// the project they read from.
+func TestAccNaming_GatewayDataSources(t *testing.T) {
+	skipUnlessAcc(t)
 	suffix := acctest.RandStringFromCharSet(8, acctest.CharSetAlphaNum)
-	var sourceID, destinationID, transformationID, connectionID string
+	projectID := currentProjectID(t)
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { testAccPreCheck(t) },
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: loadFixture(t, "v2_names.tf", suffix),
+				Config: loadFixture(t, "gateway_basic.tf", suffix) + loadFixture(t, "gateway_datasources.tf", projectID),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					captureID("hookdeck_source.test", &sourceID),
-					captureID("hookdeck_destination.test", &destinationID),
-					captureID("hookdeck_transformation.test", &transformationID),
-					captureID("hookdeck_connection.test", &connectionID),
+					resource.TestCheckResourceAttr("data.hookdeck_gateway_source.test", "name", "v3-src-"+suffix),
+					resource.TestCheckResourceAttr("data.hookdeck_gateway_source.test", "project_id", projectID),
+					resource.TestCheckResourceAttr("data.hookdeck_gateway_destination.test", "name", "v3-dst-"+suffix),
+					resource.TestCheckResourceAttr("data.hookdeck_gateway_destination.test", "project_id", projectID),
+					resource.TestCheckResourceAttr("data.hookdeck_gateway_connection.test", "name", "v3-con-"+suffix),
+					resource.TestCheckResourceAttr("data.hookdeck_gateway_connection.test", "project_id", projectID),
+					resource.TestCheckResourceAttr("data.hookdeck_source.legacy", "name", "v3-src-"+suffix),
 				),
 			},
 			{
-				Config: loadFixture(t, "v3_names_moved.tf", suffix),
-				ConfigPlanChecks: resource.ConfigPlanChecks{
-					PreApply: []plancheck.PlanCheck{
-						plancheck.ExpectEmptyPlan(),
-						plancheck.ExpectResourceAction("hookdeck_gateway_source.test", plancheck.ResourceActionNoop),
-						plancheck.ExpectResourceAction("hookdeck_gateway_destination.test", plancheck.ResourceActionNoop),
-						plancheck.ExpectResourceAction("hookdeck_gateway_transformation.test", plancheck.ResourceActionNoop),
-						plancheck.ExpectResourceAction("hookdeck_gateway_connection.test", plancheck.ResourceActionNoop),
-					},
-				},
-				Check: resource.ComposeAggregateTestCheckFunc(
-					checkIDEquals("hookdeck_gateway_source.test", &sourceID),
-					checkIDEquals("hookdeck_gateway_destination.test", &destinationID),
-					checkIDEquals("hookdeck_gateway_transformation.test", &transformationID),
-					checkIDEquals("hookdeck_gateway_connection.test", &connectionID),
-				),
+				Config:      loadFixture(t, "source_datasource.tf", "src_doesnotexist", ""),
+				ExpectError: regexp.MustCompile(`Source not found`),
 			},
 		},
 	})
 }
 
 // v2 names keep working in v3 as deprecated aliases.
-func TestAccV3_V2NamesStillWork(t *testing.T) {
+func TestAccNaming_V2NamesStillWork(t *testing.T) {
 	suffix := acctest.RandStringFromCharSet(8, acctest.CharSetAlphaNum)
 
 	resource.Test(t, resource.TestCase{
@@ -111,6 +121,7 @@ func TestAccV3_V2NamesStillWork(t *testing.T) {
 				Config: loadFixture(t, "v2_names.tf", suffix),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("hookdeck_source.test", "name", "v2-src-"+suffix),
+					resource.TestCheckResourceAttr("hookdeck_source_auth.test", "auth_type", "API_KEY"),
 					resource.TestCheckResourceAttrPair("hookdeck_connection.test", "destination_id", "hookdeck_destination.test", "id"),
 				),
 			},
@@ -118,29 +129,32 @@ func TestAccV3_V2NamesStillWork(t *testing.T) {
 	})
 }
 
-// The v2 and v3 names are the same resource; a v2 import id works under
-// the v3 name.
-func TestAccV3_ImportUnderNewName(t *testing.T) {
+// State written under the v2 aliases moves to the gateway_ names with moved
+// blocks: nothing is recreated.
+func TestAccNaming_MovedFromV2Names(t *testing.T) {
 	suffix := acctest.RandStringFromCharSet(8, acctest.CharSetAlphaNum)
+	var capture, compare []resource.TestCheckFunc
+	for _, name := range []string{"source", "destination", "transformation", "connection"} {
+		id := new(string)
+		capture = append(capture, captureID("hookdeck_"+name+".test", id))
+		compare = append(compare, checkIDEquals("hookdeck_gateway_"+name+".test", id))
+	}
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { testAccPreCheck(t) },
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		TerraformVersionChecks:   []tfversion.TerraformVersionCheck{tfversion.SkipBelow(tfversion.Version1_8_0)},
 		Steps: []resource.TestStep{
 			{
-				Config: loadFixture(t, "source_without_project_id.tf", suffix),
+				Config: loadFixture(t, "v2_names.tf", suffix),
+				Check:  resource.ComposeAggregateTestCheckFunc(capture...),
 			},
 			{
-				ResourceName:            "hookdeck_gateway_source.test",
-				ImportState:             true,
-				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"config"},
-			},
-			{
-				ResourceName:  "hookdeck_gateway_source.test",
-				ImportState:   true,
-				ImportStateId: "not/a/valid/id",
-				ExpectError:   regexp.MustCompile(`import id must be`),
+				Config:           loadFixture(t, "v3_names_moved.tf", suffix),
+				ConfigPlanChecks: emptyPlan(),
+				Check: resource.ComposeAggregateTestCheckFunc(append(compare,
+					resource.TestCheckResourceAttrPair("hookdeck_gateway_source_auth.test", "source_id", "hookdeck_gateway_source.test", "id"),
+				)...),
 			},
 		},
 	})
