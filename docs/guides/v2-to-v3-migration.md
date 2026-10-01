@@ -23,7 +23,7 @@ A v2 configuration keeps working with v3 as it is, unless it sets `disabled_at`.
 
 | What | Terraform | OpenTofu |
 |---|---|---|
-| Using v3, with the v2 names or the new names | no change from v2 | no change from v2 |
+| Using v3, with the v2 names or the new names | 1.0 or later | 1.6 or later |
 | Renaming existing resources with `moved` blocks | 1.8 or later | 1.10 or later |
 
 Earlier versions cannot move a resource to a different resource type. On those versions, keep the v2 names or rename with [`state rm` and `import`](#renaming-without-moved-blocks).
