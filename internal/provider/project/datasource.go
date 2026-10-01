@@ -2,6 +2,7 @@ package project
 
 import (
 	"context"
+	"fmt"
 
 	"terraform-provider-hookdeck/internal/provider/shared"
 	"terraform-provider-hookdeck/internal/schemahelpers"
@@ -21,19 +22,20 @@ var (
 
 // NewProjectDataSource returns the hookdeck_gateway_project data source.
 func NewProjectDataSource() datasource.DataSource {
-	return &projectDataSource{}
+	return &projectDataSource{kind: gateway}
 }
 
 type projectDataSource struct {
+	kind   kind
 	client sdkclient.Client
 }
 
 func (d *projectDataSource) Metadata(_ context.Context, req datasource.MetadataRequest, resp *datasource.MetadataResponse) {
-	resp.TypeName = req.ProviderTypeName + "_gateway_project"
+	resp.TypeName = d.kind.typeName(req.ProviderTypeName)
 }
 
 func (d *projectDataSource) Schema(_ context.Context, _ datasource.SchemaRequest, resp *datasource.SchemaResponse) {
-	attributes := schemahelpers.DataSourceSchemaFromResourceSchema(schemaAttributes(), "id")
+	attributes := schemahelpers.DataSourceSchemaFromResourceSchema(schemaAttributes(d.kind), "id")
 	attributes["id"] = schema.StringAttribute{
 		Optional:    true,
 		Computed:    true,
@@ -42,10 +44,10 @@ func (d *projectDataSource) Schema(_ context.Context, _ datasource.SchemaRequest
 	attributes["name"] = schema.StringAttribute{
 		Optional:    true,
 		Computed:    true,
-		Description: "Name of the project. One of `id` or `name` is required; the name must be unique among the projects the API key can see.",
+		Description: fmt.Sprintf("Name of the project. One of `id` or `name` is required; the name must be unique among the %s projects the API key can see.", d.kind.label),
 	}
 	resp.Schema = schema.Schema{
-		Description: "Event Gateway project, looked up by id or name.",
+		Description: fmt.Sprintf("%s project, looked up by ID or name.", d.kind.label),
 		Attributes:  attributes,
 	}
 }
@@ -73,16 +75,16 @@ func (d *projectDataSource) Read(ctx context.Context, req datasource.ReadRequest
 	}
 
 	if !data.ID.IsNull() {
-		found, diags := data.retrieve(ctx, d.client)
+		found, diags := data.retrieve(ctx, d.kind, d.client)
 		resp.Diagnostics.Append(diags...)
 		if !found && !resp.Diagnostics.HasError() {
-			resp.Diagnostics.AddError("Project not found", "No project with id "+data.ID.ValueString()+" is visible to this API key.")
+			resp.Diagnostics.AddError("Project not found", "No project with ID "+data.ID.ValueString()+" is visible to this API key.")
 		}
 	} else {
-		project, diags := findByName(ctx, d.client, data.Name.ValueString())
+		project, diags := findByName(ctx, d.kind, d.client, data.Name.ValueString())
 		resp.Diagnostics.Append(diags...)
 		if !resp.Diagnostics.HasError() {
-			resp.Diagnostics.Append(data.refresh(project)...)
+			resp.Diagnostics.Append(data.refresh(d.kind, project)...)
 		}
 	}
 	if resp.Diagnostics.HasError() {

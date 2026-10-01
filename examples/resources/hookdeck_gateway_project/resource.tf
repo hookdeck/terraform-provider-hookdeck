@@ -1,7 +1,6 @@
 # Requires an organization API key with `projects.write`.
 resource "hookdeck_gateway_project" "example" {
-  name                 = "production"
-  notification_methods = ["email"]
+  name = "production"
 }
 
 resource "hookdeck_gateway_source" "example" {
