@@ -31,6 +31,10 @@ jobs:
           cache: false
       - run: go mod download
       - run: go build -v .
+      # Acceptance tests skip themselves without TF_ACC, so this runs the
+      # unit tests of every package and needs no credentials.
+      - name: Run unit tests
+        run: go test ./...
       - name: Run linters
         uses: golangci/golangci-lint-action@v9
         with:
@@ -92,7 +96,9 @@ jobs:
       - env:
           TF_ACC: "1"
           HOOKDECK_API_KEY: ${{ secrets.HOOKDECK_API_KEY }}
-          # Organization key tests skip when these are unset.
+          # Organization key tests skip when these are unset. The same
+          # behaviour is covered without credentials by the TestAccMock_
+          # tests, which run against an in-process API.
           HOOKDECK_ORG_API_KEY: ${{ secrets.HOOKDECK_ORG_API_KEY }}
           HOOKDECK_ORG_PROJECT_ID: ${{ secrets.HOOKDECK_ORG_PROJECT_ID }}
         run: go test -v -cover -timeout 25m ./internal/provider/...
