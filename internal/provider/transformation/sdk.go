@@ -14,7 +14,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-const apiVersion = "2025-07-01"
+const apiVersion = sdkclient.APIVersion
 
 func (m *transformationResourceModel) Refresh(transformation map[string]interface{}) diag.Diagnostics {
 	var diags diag.Diagnostics
@@ -50,6 +50,7 @@ func (m *transformationResourceModel) Refresh(transformation map[string]interfac
 
 	if teamID, ok := transformation["team_id"].(string); ok {
 		m.TeamID = types.StringValue(teamID)
+		m.ProjectID = m.TeamID
 	} else {
 		diags.AddError("Error parsing team_id", "Expected string value")
 		return diags
@@ -88,13 +89,17 @@ func (m *transformationResourceModel) Refresh(transformation map[string]interfac
 	return diags
 }
 
-func (m *transformationResourceModel) Retrieve(ctx context.Context, client *sdkclient.Client) diag.Diagnostics {
+func (m *transformationResourceModel) Retrieve(ctx context.Context, client *sdkclient.Client) (bool, diag.Diagnostics) {
 	var diags diag.Diagnostics
 
 	response, err := client.RawClient.SendRequest(ctx, "GET", fmt.Sprintf("/%s/transformations/%s", apiVersion, m.ID.ValueString()), &sdkclient.RequestOptions{})
 	if err != nil {
 		diags.AddError("Error reading transformation", err.Error())
-		return diags
+		return false, diags
+	}
+
+	if sdkclient.IsGoneStatus(response.StatusCode) {
+		return false, diags
 	}
 
 	if response.StatusCode > 299 {
@@ -103,23 +108,23 @@ func (m *transformationResourceModel) Retrieve(ctx context.Context, client *sdkc
 		} else {
 			diags.AddError("Error reading transformation", "Status code: "+strconv.Itoa(response.StatusCode))
 		}
-		return diags
+		return false, diags
 	}
 
 	body, err := io.ReadAll(response.Body)
 	if err != nil {
 		diags.AddError("Error reading transformation", err.Error())
-		return diags
+		return false, diags
 	}
 
 	var transformation map[string]interface{}
 	err = json.Unmarshal(body, &transformation)
 	if err != nil {
 		diags.AddError("Error reading transformation", err.Error())
-		return diags
+		return false, diags
 	}
 
-	return m.Refresh(transformation)
+	return true, m.Refresh(transformation)
 }
 
 func (m *transformationResourceModel) Create(ctx context.Context, client *sdkclient.Client) diag.Diagnostics {

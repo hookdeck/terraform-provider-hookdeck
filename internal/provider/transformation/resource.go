@@ -2,10 +2,8 @@ package transformation
 
 import (
 	"context"
-	"fmt"
-	"terraform-provider-hookdeck/internal/sdkclient"
+	"terraform-provider-hookdeck/internal/provider/shared"
 
-	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 )
@@ -15,126 +13,145 @@ var (
 	_ resource.Resource                = &transformationResource{}
 	_ resource.ResourceWithConfigure   = &transformationResource{}
 	_ resource.ResourceWithImportState = &transformationResource{}
+	_ resource.ResourceWithModifyPlan  = &transformationResource{}
+	_ resource.ResourceWithMoveState   = &transformationResource{}
 )
 
-// NewTransformationResource is a helper function to simplify the provider implementation.
+// NewTransformationResource returns the hookdeck_gateway_transformation resource.
 func NewTransformationResource() resource.Resource {
-	return &transformationResource{}
+	return newTransformationResource(false)
+}
+
+// NewLegacyTransformationResource returns the deprecated hookdeck_transformation alias.
+func NewLegacyTransformationResource() resource.Resource {
+	return newTransformationResource(true)
+}
+
+func newTransformationResource(legacy bool) *transformationResource {
+	return &transformationResource{
+		ProjectScopedResource: shared.ProjectScopedResource{ListPath: "/transformations"},
+		naming:                shared.Naming{Suffix: "_transformation", Legacy: legacy},
+	}
 }
 
 // transformationResource is the resource implementation.
 type transformationResource struct {
-	client *sdkclient.Client
+	shared.ProjectScopedResource
+	naming shared.Naming
 }
 
 // Metadata returns the resource type name.
 func (r *transformationResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
-	resp.TypeName = req.ProviderTypeName + "_transformation"
+	resp.TypeName = r.naming.TypeName(req.ProviderTypeName)
 }
 
 // Schema returns the resource schema.
 func (r *transformationResource) Schema(_ context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
-	resp.Schema = schema.Schema{
-		Description: "Transformation Resource",
-		Attributes:  schemaAttributes(),
+	resp.Schema = r.schema()
+}
+
+func (r *transformationResource) schema() schema.Schema {
+	return schema.Schema{
+		DeprecationMessage: r.naming.ResourceDeprecation(),
+		Description:        r.naming.Description("Transformation Resource"),
+		Attributes:         schemaAttributes(),
 	}
 }
 
-// Configure adds the provider configured client to the resource.
-func (r *transformationResource) Configure(_ context.Context, req resource.ConfigureRequest, resp *resource.ConfigureResponse) {
-	if req.ProviderData == nil {
-		return
+// MoveState accepts state from the v2 name via a moved block.
+func (r *transformationResource) MoveState(_ context.Context) []resource.StateMover {
+	if r.naming.Legacy {
+		return nil
 	}
-
-	client, ok := req.ProviderData.(sdkclient.Client)
-
-	if !ok {
-		resp.Diagnostics.AddError(
-			"Unexpected Resource Configure Type",
-			fmt.Sprintf("Expected sdkclient.Client, got: %T. Please report this issue to the provider developers.", req.ProviderData),
-		)
-
-		return
-	}
-
-	r.client = &client
+	return []resource.StateMover{shared.RenamedStateMover(r.naming.LegacyTypeName(), r.schema())}
 }
 
 // Create creates the resource and sets the initial Terraform state.
 func (r *transformationResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
-	// Get data from Terraform plan
 	var data *transformationResourceModel
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	// Create resource
-	diags := data.Create(ctx, r.client)
-	resp.Diagnostics.Append(diags...)
+	client, ok := r.ClientForCreate(data.ProjectID, &resp.Diagnostics)
+	if !ok {
+		return
+	}
+	resp.Diagnostics.Append(data.Create(ctx, client)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	// Save updated data into Terraform state
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
 // Read refreshes the Terraform state with the latest data.
 func (r *transformationResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
-	// Get data from Terraform state
 	var data *transformationResourceModel
 	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	// Get refreshed resource value
-	diags := data.Retrieve(ctx, r.client)
+	client, ok := r.ClientForState(shared.StoredProject(data.ProjectID, data.TeamID), &resp.Diagnostics)
+	if !ok {
+		return
+	}
+	found, diags := data.Retrieve(ctx, client)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
+	if !found {
+		resp.State.RemoveResource(ctx)
+		return
+	}
 
-	// Save refreshed data into Terraform state
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
 // Update updates the resource and sets the updated Terraform state on success.
 func (r *transformationResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
-	// Get data from Terraform plan
 	var data *transformationResourceModel
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	// Update existing resource
-	diags := data.Update(ctx, r.client)
-	resp.Diagnostics.Append(diags...)
+	var state *transformationResourceModel
+	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	// Save updated data into Terraform state
+	client, ok := r.ClientForState(shared.StoredProject(state.ProjectID, state.TeamID), &resp.Diagnostics)
+	if !ok {
+		return
+	}
+	resp.Diagnostics.Append(data.Update(ctx, client)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
 // Delete deletes the resource and removes the Terraform state on success.
 func (r *transformationResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
-	// Get data from Terraform state
 	var data *transformationResourceModel
 	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	// Delete existing resource
-	diags := data.Delete(ctx, r.client)
-	resp.Diagnostics.Append(diags...)
+	client, ok := r.ClientForState(shared.StoredProject(data.ProjectID, data.TeamID), &resp.Diagnostics)
+	if !ok {
+		return
+	}
+	resp.Diagnostics.Append(data.Delete(ctx, client)...)
 }
 
 func (r *transformationResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
-	// Retrieve import ID and save to id attribute
-	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
+	r.ImportProjectState(ctx, "id", req, resp)
 }

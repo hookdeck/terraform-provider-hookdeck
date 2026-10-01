@@ -1,3 +1,13 @@
+variable "stripe_secret_key" {
+  type      = string
+  sensitive = true
+}
+
+resource "hookdeck_gateway_source" "source_example" {
+  name = "stripe"
+  type = "STRIPE"
+}
+
 resource "hookdeck_webhook_registration" "webhook_stripe" {
   register = {
     request = {
@@ -7,7 +17,7 @@ resource "hookdeck_webhook_registration" "webhook_stripe" {
         "content-type" = "application/json"
         authorization  = "Bearer ${var.stripe_secret_key}"
       })
-      body = "url=${hookdeck_source.source_example.url}&enabled_events[]=charge.failed&enabled_events[]=charge.succeeded"
+      body = "url=${hookdeck_gateway_source.source_example.url}&enabled_events[]=charge.failed&enabled_events[]=charge.succeeded"
     }
   }
   unregister = {

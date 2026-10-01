@@ -15,7 +15,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-const apiVersion = "2025-07-01"
+const apiVersion = sdkclient.APIVersion
 
 func (m *sourceResourceModel) Refresh(source map[string]interface{}) diag.Diagnostics {
 	var diags diag.Diagnostics
@@ -55,6 +55,7 @@ func (m *sourceResourceModel) Refresh(source map[string]interface{}) diag.Diagno
 
 	if teamID, ok := source["team_id"].(string); ok {
 		m.TeamID = types.StringValue(teamID)
+		m.ProjectID = m.TeamID
 	} else {
 		diags.AddError("Error parsing team_id", "Expected string value")
 		return diags
@@ -83,7 +84,7 @@ func (m *sourceResourceModel) Refresh(source map[string]interface{}) diag.Diagno
 	return diags
 }
 
-func (m *sourceResourceModel) Retrieve(ctx context.Context, client *sdkclient.Client) diag.Diagnostics {
+func (m *sourceResourceModel) Retrieve(ctx context.Context, client *sdkclient.Client) (bool, diag.Diagnostics) {
 	var diags diag.Diagnostics
 	response, err := client.RawClient.SendRequest(ctx, "GET", fmt.Sprintf("/%s/sources/%s", apiVersion, m.ID.ValueString()), &sdkclient.RequestOptions{
 		QueryParams: url.Values{
@@ -92,7 +93,11 @@ func (m *sourceResourceModel) Retrieve(ctx context.Context, client *sdkclient.Cl
 	})
 	if err != nil {
 		diags.AddError("Error reading source", err.Error())
-		return diags
+		return false, diags
+	}
+
+	if sdkclient.IsGoneStatus(response.StatusCode) {
+		return false, diags
 	}
 
 	if response.StatusCode > 299 {
@@ -101,23 +106,23 @@ func (m *sourceResourceModel) Retrieve(ctx context.Context, client *sdkclient.Cl
 		} else {
 			diags.AddError("Error reading source", "Status code: "+strconv.Itoa(response.StatusCode))
 		}
-		return diags
+		return false, diags
 	}
 
 	body, err := io.ReadAll(response.Body)
 	if err != nil {
 		diags.AddError("Error reading source", err.Error())
-		return diags
+		return false, diags
 	}
 
 	var source map[string]interface{}
 	err = json.Unmarshal(body, &source)
 	if err != nil {
 		diags.AddError("Error reading source", err.Error())
-		return diags
+		return false, diags
 	}
 
-	return m.Refresh(source)
+	return true, m.Refresh(source)
 }
 
 func (m *sourceResourceModel) Create(ctx context.Context, client *sdkclient.Client) diag.Diagnostics {

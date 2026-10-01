@@ -2,10 +2,8 @@ package source
 
 import (
 	"context"
-	"fmt"
-	"terraform-provider-hookdeck/internal/sdkclient"
+	"terraform-provider-hookdeck/internal/provider/shared"
 
-	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 )
@@ -15,49 +13,57 @@ var (
 	_ resource.Resource                = &sourceResource{}
 	_ resource.ResourceWithConfigure   = &sourceResource{}
 	_ resource.ResourceWithImportState = &sourceResource{}
+	_ resource.ResourceWithModifyPlan  = &sourceResource{}
+	_ resource.ResourceWithMoveState   = &sourceResource{}
 )
 
-// NewSourceResource is a helper function to simplify the provider implementation.
+// NewSourceResource returns the hookdeck_gateway_source resource.
 func NewSourceResource() resource.Resource {
-	return &sourceResource{}
+	return newSourceResource(false)
+}
+
+// NewLegacySourceResource returns the deprecated hookdeck_source alias.
+func NewLegacySourceResource() resource.Resource {
+	return newSourceResource(true)
+}
+
+func newSourceResource(legacy bool) *sourceResource {
+	return &sourceResource{
+		ProjectScopedResource: shared.ProjectScopedResource{ListPath: "/sources"},
+		naming:                shared.Naming{Suffix: "_source", Legacy: legacy},
+	}
 }
 
 // sourceResource is the resource implementation.
 type sourceResource struct {
-	client sdkclient.Client
+	shared.ProjectScopedResource
+	naming shared.Naming
 }
 
 // Metadata returns the resource type name.
 func (r *sourceResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
-	resp.TypeName = req.ProviderTypeName + "_source"
+	resp.TypeName = r.naming.TypeName(req.ProviderTypeName)
 }
 
 // Schema returns the resource schema.
 func (r *sourceResource) Schema(_ context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
-	resp.Schema = schema.Schema{
-		Description: "Source Resource",
-		Attributes:  schemaAttributes(),
+	resp.Schema = r.schema()
+}
+
+func (r *sourceResource) schema() schema.Schema {
+	return schema.Schema{
+		DeprecationMessage: r.naming.ResourceDeprecation(),
+		Description:        r.naming.Description("Source Resource"),
+		Attributes:         schemaAttributes(),
 	}
 }
 
-// Configure adds the provider configured client to the resource.
-func (r *sourceResource) Configure(_ context.Context, req resource.ConfigureRequest, resp *resource.ConfigureResponse) {
-	if req.ProviderData == nil {
-		return
+// MoveState accepts state from the v2 name via a moved block.
+func (r *sourceResource) MoveState(_ context.Context) []resource.StateMover {
+	if r.naming.Legacy {
+		return nil
 	}
-
-	client, ok := req.ProviderData.(sdkclient.Client)
-
-	if !ok {
-		resp.Diagnostics.AddError(
-			"Unexpected Resource Configure Type",
-			fmt.Sprintf("Expected sdkclient.Client, got: %T. Please report this issue to the provider developers.", req.ProviderData),
-		)
-
-		return
-	}
-
-	r.client = client
+	return []resource.StateMover{shared.RenamedStateMover(r.naming.LegacyTypeName(), r.schema())}
 }
 
 // Create creates the resource and sets the initial Terraform state.
@@ -68,8 +74,11 @@ func (r *sourceResource) Create(ctx context.Context, req resource.CreateRequest,
 		return
 	}
 
-	diags := data.Create(ctx, &r.client)
-	resp.Diagnostics.Append(diags...)
+	client, ok := r.ClientForCreate(data.ProjectID, &resp.Diagnostics)
+	if !ok {
+		return
+	}
+	resp.Diagnostics.Append(data.Create(ctx, client)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -85,9 +94,17 @@ func (r *sourceResource) Read(ctx context.Context, req resource.ReadRequest, res
 		return
 	}
 
-	diags := data.Retrieve(ctx, &r.client)
+	client, ok := r.ClientForState(shared.StoredProject(data.ProjectID, data.TeamID), &resp.Diagnostics)
+	if !ok {
+		return
+	}
+	found, diags := data.Retrieve(ctx, client)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
+		return
+	}
+	if !found {
+		resp.State.RemoveResource(ctx)
 		return
 	}
 
@@ -108,8 +125,11 @@ func (r *sourceResource) Update(ctx context.Context, req resource.UpdateRequest,
 		return
 	}
 
-	diags := data.Update(ctx, &r.client, state)
-	resp.Diagnostics.Append(diags...)
+	client, ok := r.ClientForState(shared.StoredProject(state.ProjectID, state.TeamID), &resp.Diagnostics)
+	if !ok {
+		return
+	}
+	resp.Diagnostics.Append(data.Update(ctx, client, state)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -125,14 +145,13 @@ func (r *sourceResource) Delete(ctx context.Context, req resource.DeleteRequest,
 		return
 	}
 
-	diags := data.Delete(ctx, &r.client)
-	resp.Diagnostics.Append(diags...)
-	if resp.Diagnostics.HasError() {
+	client, ok := r.ClientForState(shared.StoredProject(data.ProjectID, data.TeamID), &resp.Diagnostics)
+	if !ok {
 		return
 	}
+	resp.Diagnostics.Append(data.Delete(ctx, client)...)
 }
 
 func (r *sourceResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
-	// Retrieve import ID and save to id attribute
-	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
+	r.ImportProjectState(ctx, "id", req, resp)
 }

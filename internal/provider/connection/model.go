@@ -6,6 +6,7 @@ import (
 )
 
 type connectionResourceModel struct {
+	ProjectID     types.String `tfsdk:"project_id"`
 	CreatedAt     types.String `tfsdk:"created_at"`
 	Description   types.String `tfsdk:"description"`
 	DestinationID types.String `tfsdk:"destination_id"`

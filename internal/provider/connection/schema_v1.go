@@ -1,6 +1,8 @@
 package connection
 
 import (
+	"terraform-provider-hookdeck/internal/provider/shared"
+
 	"terraform-provider-hookdeck/internal/validators"
 
 	"github.com/hashicorp/terraform-plugin-framework-jsontypes/jsontypes"
@@ -38,6 +40,7 @@ func schemaAttributesV1() map[string]schema.Attribute {
 	}
 
 	return map[string]schema.Attribute{
+		"project_id": shared.ProjectIDResourceAttribute(),
 		"created_at": schema.StringAttribute{
 			Computed: true,
 			Validators: []validator.String{
@@ -64,7 +67,6 @@ func schemaAttributesV1() map[string]schema.Attribute {
 		},
 		"disabled_at": schema.StringAttribute{
 			Computed: true,
-			Optional: true,
 			Validators: []validator.String{
 				validators.IsRFC3339(),
 			},
@@ -197,7 +199,7 @@ func schemaAttributesV1() map[string]schema.Attribute {
 			PlanModifiers: []planmodifier.String{
 				stringplanmodifier.UseStateForUnknown(),
 			},
-			Description: `ID of the workspace`,
+			Description: "ID of the project the resource belongs to. Same value as `project_id`.",
 		},
 		"updated_at": schema.StringAttribute{
 			Computed: true,
