@@ -33,7 +33,7 @@ Earlier versions cannot move a resource to a different resource type. On those v
 
 1. Set the provider version constraint to `~> 3.0` and run `terraform init -upgrade`.
 2. If your configuration sets `disabled_at`, [remove it](#disabled_at-is-read-only).
-3. Run `terraform plan`. It reports no changes, plus one deprecation warning per v2 resource type.
+3. Run `terraform plan`. It reports no changes, plus a `Deprecated` warning for each resource and data source block that uses a v2 name. Terraform before 1.12 and OpenTofu show each of these warnings twice on `plan`, so 6 blocks give 12 warnings. Terraform 1.15 and later also warn with `Deprecated value used` wherever a v2-named resource is referenced.
 4. Run `terraform apply`. Nothing changes in Hookdeck; the apply records each resource's `project_id` in state.
 5. Rename the resources, now or any time before v4: see [Resource Renames](#resource-renames).
 
@@ -65,7 +65,7 @@ Every Event Gateway resource and data source gains a `gateway_` prefix.
 | `data.hookdeck_destination` | `data.hookdeck_gateway_destination` |
 | `data.hookdeck_connection` | `data.hookdeck_gateway_connection` |
 
-`hookdeck_webhook_registration` keeps its name.
+`hookdeck_webhook_registration` keeps its name: it registers webhooks with third-party services and is not specific to Event Gateway.
 
 The v2 names remain in v3 as deprecated aliases and give a warning on every plan. They are removed in v4.
 
