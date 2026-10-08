@@ -17,8 +17,13 @@ resource "hookdeck_gateway_source" "orders_staging" {
   type       = "HTTP"
 }
 
+# An existing project, looked up by name.
+data "hookdeck_gateway_project" "prod" {
+  name = "prod"
+}
+
 resource "hookdeck_gateway_source" "orders_prod" {
-  project_id = "tm_prod"
+  project_id = data.hookdeck_gateway_project.prod.id
   name       = "orders"
   type       = "HTTP"
 }

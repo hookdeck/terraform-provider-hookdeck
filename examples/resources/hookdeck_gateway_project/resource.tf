@@ -2,6 +2,11 @@
 # `projects.write` scope.
 resource "hookdeck_gateway_project" "example" {
   name = "production"
+
+  # Deleting a project deletes everything in it.
+  lifecycle {
+    prevent_destroy = true
+  }
 }
 
 resource "hookdeck_gateway_source" "example" {

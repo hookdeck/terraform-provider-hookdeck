@@ -42,6 +42,19 @@ A key created with "Specific projects" also gets access to each project it creat
 
 Every source, destination, connection, transformation and source auth belongs to a project. Each has a `project_id` attribute, which is always recorded in state, whether or not you set it. Project IDs start with `tm_`.
 
+To find a project's ID:
+
+- In Terraform, look the project up by name with the `hookdeck_gateway_project` data source and use its `id`:
+
+  ```terraform
+  data "hookdeck_gateway_project" "prod" {
+    name = "prod"
+  }
+  ```
+
+- With the [Hookdeck CLI](https://github.com/hookdeck/hookdeck-cli): `hookdeck project list --type gateway --output json`.
+- With the API: `GET /projects` lists the projects the key can see.
+
 A provider configuration works in one of two modes, single project or explicit:
 
 | | Provider `project_id` set (attribute or `HOOKDECK_PROJECT_ID`) | Provider `project_id` not set |
