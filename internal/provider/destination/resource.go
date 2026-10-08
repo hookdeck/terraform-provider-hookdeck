@@ -163,8 +163,8 @@ func (r *destinationResource) ImportState(ctx context.Context, req resource.Impo
 
 // ValidateConfig runs plan-time checks on the resource configuration.
 func (r *destinationResource) ValidateConfig(ctx context.Context, req resource.ValidateConfigRequest, resp *resource.ValidateConfigResponse) {
-	var data destinationResourceModel
-	resp.Diagnostics.Append(req.Config.Get(ctx, &data)...)
+	data, _, diags := getModel(ctx, req.Config, r.naming.Legacy)
+	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
