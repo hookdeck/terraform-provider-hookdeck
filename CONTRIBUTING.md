@@ -5,7 +5,7 @@ Thanks for your interest in contributing to the Hookdeck Terraform Provider. Thi
 ## Prerequisites
 
 - [Go](https://go.dev/dl/) — see [`go.mod`](go.mod) for the required version
-- [Terraform CLI](https://developer.hashicorp.com/terraform/install) 1.9 or newer
+- [Terraform CLI](https://developer.hashicorp.com/terraform/install) 1.9 or newer (the versions CI runs)
 - A [Hookdeck account](https://dashboard.hookdeck.com/signup) and API key for running acceptance tests
 
 ## Local development
@@ -62,12 +62,14 @@ golangci-lint run
 go test ./...
 ```
 
+Acceptance tests in the same packages skip unless `TF_ACC` is set, so this needs no credentials.
+
 ### Acceptance tests
 
-Acceptance tests provision real resources on a Hookdeck workspace, run assertions, then destroy them. They require `HOOKDECK_API_KEY` and `TF_ACC=1`.
+Acceptance tests provision real resources in a Hookdeck project, run assertions, then destroy them. They require `HOOKDECK_API_KEY` (a project API key) and `TF_ACC=1`. `HOOKDECK_PROJECT_ID` must be unset.
 
 > [!WARNING]
-> Use a dedicated test workspace, not your production workspace. Resources are created and destroyed on every run. If tests are interrupted, orphaned resources can be cleaned up with [`cmd/teardown`](cmd/teardown/README.md).
+> Use a dedicated test project, not your production project. Resources are created and destroyed on every run. If tests are interrupted, orphaned resources can be cleaned up with [`cmd/teardown`](cmd/teardown/README.md).
 
 Set up your environment once:
 
@@ -100,11 +102,30 @@ Point at a different environment (e.g. staging):
 HOOKDECK_API_BASE=https://api.staging.hookdeck.com make testacc
 ```
 
+`make testacc` passes `TESTARGS` to `go test`. Use `TESTARGS=-count=1` to rerun tests that Go would otherwise serve from its cache.
+
+#### Organization API key tests
+
+Tests named `OrgKey` need an organization API key and skip without one. Set both variables in `.env.test`:
+
+- `HOOKDECK_ORG_API_KEY`: an organization API key with `projects.write` and the `gateway.*.write` scopes.
+- `HOOKDECK_ORG_PROJECT_ID`: an Event Gateway project the key can access. Use a project other than the one `HOOKDECK_API_KEY` belongs to: `TestAccProjectScope_KeyCannotReachStoredProject` skips when they are the same.
+
+They create and delete projects in that organization. Project creation is rate limited per organization, so the tests share one extra project per run.
+
+#### Mock API tests
+
+Tests named `TestAccMock_` run the provider against an in-process copy of the API ([`internal/provider/mockapi_test.go`](internal/provider/mockapi_test.go)). They need `TF_ACC=1` and no API key, and cover cases that test credentials cannot reach, such as a key that loses access to a project.
+
+```sh
+TF_ACC=1 go test ./internal/provider/ -run TestAccMock_ -count=1
+```
+
 ## Continuous integration
 
 The [`Tests`](.github/workflows/test.yml) workflow runs on every pull request and push to `main`:
 
-- Build, lint, and `go generate` sync check on all PRs.
+- Build, unit tests, lint, and `go generate` sync check on all PRs.
 - Acceptance tests across a Terraform CLI version matrix, on same-repository PRs and pushes to `main`.
 - Fork PRs and Dependabot PRs **skip the acceptance job** because they cannot access `HOOKDECK_API_KEY` (GitHub policy for forks; restricted token scope for Dependabot). They are validated by the acceptance run that follows merge to `main`.
 - Acceptance runs are serialized via a `concurrency` group to stay within Hookdeck's 240 req/min API limit.

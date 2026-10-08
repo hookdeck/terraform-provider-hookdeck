@@ -37,11 +37,11 @@ provider "hookdeck" {
   api_key = var.HOOKDECK_API_KEY
 }
 
-resource "hookdeck_source" "standalone_source" {
+resource "hookdeck_gateway_source" "standalone_source" {
   name = "untyped_source"
 }
 
-resource "hookdeck_source" "first_source" {
+resource "hookdeck_gateway_source" "first_source" {
   name = "first_source"
   type = "HTTP"
   config = jsonencode({
@@ -53,7 +53,7 @@ resource "hookdeck_source" "first_source" {
   })
 }
 
-resource "hookdeck_source" "second_source" {
+resource "hookdeck_gateway_source" "second_source" {
   name = "second_source"
   type = "HTTP"
   config = jsonencode({
@@ -66,13 +66,13 @@ resource "hookdeck_source" "second_source" {
   })
 }
 
-resource "hookdeck_source" "third_source" {
+resource "hookdeck_gateway_source" "third_source" {
   name = "third_source"
   type = "HTTP"
 }
 
-resource "hookdeck_source_auth" "third_source_auth" {
-  source_id = hookdeck_source.third_source.id
+resource "hookdeck_gateway_source_auth" "third_source_auth" {
+  source_id = hookdeck_gateway_source.third_source.id
   auth_type = "BASIC_AUTH"
   auth = jsonencode({
     username = "some-username"
@@ -80,12 +80,12 @@ resource "hookdeck_source_auth" "third_source_auth" {
   })
 }
 
-resource "hookdeck_destination" "first_destination" {
+resource "hookdeck_gateway_destination" "first_destination" {
   name = "first_destination"
   type = "MOCK_API"
 }
 
-resource "hookdeck_destination" "second_destination" {
+resource "hookdeck_gateway_destination" "second_destination" {
   name = "second_destination"
   type = "HTTP"
   config = jsonencode({
@@ -102,7 +102,7 @@ resource "hookdeck_destination" "second_destination" {
   })
 }
 
-resource "hookdeck_destination" "aws_destination" {
+resource "hookdeck_gateway_destination" "aws_destination" {
   name = "aws_destination"
   config = jsonencode({
     url       = "https://mock.hookdeck.com"
@@ -116,7 +116,7 @@ resource "hookdeck_destination" "aws_destination" {
   })
 }
 
-resource "hookdeck_transformation" "example_transformation" {
+resource "hookdeck_gateway_transformation" "example_transformation" {
   name = "example_transformation"
   code = <<EOT
 addHandler("transform", (request, context) => {
@@ -132,13 +132,13 @@ EOT
   }
 }
 
-resource "hookdeck_connection" "first_connection" {
-  source_id      = hookdeck_source.first_source.id
-  destination_id = hookdeck_destination.first_destination.id
+resource "hookdeck_gateway_connection" "first_connection" {
+  source_id      = hookdeck_gateway_source.first_source.id
+  destination_id = hookdeck_gateway_destination.first_destination.id
   rules = [
     {
       transform_rule = {
-        transformation_id = hookdeck_transformation.example_transformation.id
+        transformation_id = hookdeck_gateway_transformation.example_transformation.id
       }
     },
     {
@@ -153,36 +153,36 @@ resource "hookdeck_connection" "first_connection" {
   ]
 }
 
-resource "hookdeck_connection" "second_connection" {
-  source_id      = hookdeck_source.second_source.id
-  destination_id = hookdeck_destination.first_destination.id
+resource "hookdeck_gateway_connection" "second_connection" {
+  source_id      = hookdeck_gateway_source.second_source.id
+  destination_id = hookdeck_gateway_destination.first_destination.id
 }
 
-data "hookdeck_source" "manually_created_source" {
+data "hookdeck_gateway_source" "manually_created_source" {
   id = var.EXISTING_SOURCE_ID
 }
 
-data "hookdeck_destination" "manually_created_destination" {
+data "hookdeck_gateway_destination" "manually_created_destination" {
   id = var.EXISTING_DESTINATION_ID
 }
 
-data "hookdeck_connection" "manually_created_connection" {
+data "hookdeck_gateway_connection" "manually_created_connection" {
   id = var.EXISTING_CONNECTION_ID
 }
 
-resource "hookdeck_connection" "first_connection_using_data_sources" {
+resource "hookdeck_gateway_connection" "first_connection_using_data_sources" {
   name           = "first_connection_using_data_sources"
-  source_id      = data.hookdeck_source.manually_created_source.id
-  destination_id = data.hookdeck_destination.manually_created_destination.id
+  source_id      = data.hookdeck_gateway_source.manually_created_source.id
+  destination_id = data.hookdeck_gateway_destination.manually_created_destination.id
 }
 
-resource "hookdeck_connection" "second_connection_using_data_sources" {
+resource "hookdeck_gateway_connection" "second_connection_using_data_sources" {
   name           = "second_connection_using_data_sources"
-  source_id      = data.hookdeck_connection.manually_created_connection.source_id
-  destination_id = data.hookdeck_connection.manually_created_connection.destination_id
+  source_id      = data.hookdeck_gateway_connection.manually_created_connection.source_id
+  destination_id = data.hookdeck_gateway_connection.manually_created_connection.destination_id
 }
 
-resource "hookdeck_source" "stripe_source" {
+resource "hookdeck_gateway_source" "stripe_source" {
   name = "stripe"
   type = "STRIPE"
 }
@@ -197,7 +197,7 @@ resource "hookdeck_webhook_registration" "stripe_registration" {
       headers = jsonencode({
         authorization = "Bearer ${var.STRIPE_SECRET_KEY}"
       })
-      body = "url=${hookdeck_source.stripe_source.url}&enabled_events[]=charge.failed&enabled_events[]=charge.succeeded"
+      body = "url=${hookdeck_gateway_source.stripe_source.url}&enabled_events[]=charge.failed&enabled_events[]=charge.succeeded"
     }
   }
   unregister = {
@@ -211,8 +211,8 @@ resource "hookdeck_webhook_registration" "stripe_registration" {
   }
 }
 
-resource "hookdeck_source_auth" "stripe_source_auth" {
-  source_id = hookdeck_source.stripe_source.id
+resource "hookdeck_gateway_source_auth" "stripe_source_auth" {
+  source_id = hookdeck_gateway_source.stripe_source.id
   auth = jsonencode({
     webhook_secret_key = jsondecode(hookdeck_webhook_registration.stripe_registration.register.response).body.secret
   })

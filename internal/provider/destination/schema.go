@@ -1,6 +1,8 @@
 package destination
 
 import (
+	"terraform-provider-hookdeck/internal/provider/shared"
+
 	"terraform-provider-hookdeck/internal/validators"
 
 	"github.com/hashicorp/terraform-plugin-framework-jsontypes/jsontypes"
@@ -12,6 +14,7 @@ import (
 
 func schemaAttributes() map[string]schema.Attribute {
 	return map[string]schema.Attribute{
+		"project_id": shared.ProjectIDResourceAttribute(),
 		"config": schema.StringAttribute{
 			Optional: true,
 			// Cannot be computed because some destinations may have default config value,
@@ -43,7 +46,6 @@ func schemaAttributes() map[string]schema.Attribute {
 		},
 		"disabled_at": schema.StringAttribute{
 			Computed: true,
-			Optional: true,
 			Validators: []validator.String{
 				validators.IsRFC3339(),
 			},
@@ -59,13 +61,6 @@ func schemaAttributes() map[string]schema.Attribute {
 		"name": schema.StringAttribute{
 			Required:    true,
 			Description: `A unique, human-friendly name for the destination`,
-		},
-		"team_id": schema.StringAttribute{
-			Computed: true,
-			PlanModifiers: []planmodifier.String{
-				stringplanmodifier.UseStateForUnknown(),
-			},
-			Description: `ID of the workspace`,
 		},
 		"type": schema.StringAttribute{
 			Optional:    true,

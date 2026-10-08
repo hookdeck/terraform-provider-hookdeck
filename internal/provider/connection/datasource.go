@@ -2,9 +2,8 @@ package connection
 
 import (
 	"context"
-	"fmt"
+	"terraform-provider-hookdeck/internal/provider/shared"
 	"terraform-provider-hookdeck/internal/schemahelpers"
-	"terraform-provider-hookdeck/internal/sdkclient"
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
@@ -16,65 +15,63 @@ var (
 	_ datasource.DataSourceWithConfigure = &connectionDataSource{}
 )
 
-// NewConnectionDataSource is a helper function to simplify the provider implementation.
+// NewConnectionDataSource returns the hookdeck_gateway_connection data source.
 func NewConnectionDataSource() datasource.DataSource {
-	return &connectionDataSource{}
+	return &connectionDataSource{naming: shared.Naming{Suffix: "_connection"}}
+}
+
+// NewLegacyConnectionDataSource returns the deprecated hookdeck_connection alias.
+func NewLegacyConnectionDataSource() datasource.DataSource {
+	return &connectionDataSource{naming: shared.Naming{Suffix: "_connection", Legacy: true}}
 }
 
 // connectionDataSource is the datasource implementation.
 type connectionDataSource struct {
-	client sdkclient.Client
+	shared.ProjectScopedDataSource
+	naming shared.Naming
 }
 
 // Metadata returns the datasource type name.
 func (r *connectionDataSource) Metadata(_ context.Context, req datasource.MetadataRequest, resp *datasource.MetadataResponse) {
-	resp.TypeName = req.ProviderTypeName + "_connection"
+	resp.TypeName = r.naming.TypeName(req.ProviderTypeName)
 }
 
 // Schema returns the data source schema.
 func (r *connectionDataSource) Schema(_ context.Context, _ datasource.SchemaRequest, resp *datasource.SchemaResponse) {
 	resp.Schema = schema.Schema{
-		Description: "Connection Data Source",
-		Attributes:  schemahelpers.DataSourceSchemaFromResourceSchema(schemaAttributes(), "id"),
+		DeprecationMessage: r.naming.DataSourceDeprecation(),
+		Description:        r.naming.Description("Connection Data Source"),
+		Attributes:         dataSourceAttributes(r.naming),
 	}
-}
-
-// Configure adds the provider configured client to the datasource.
-func (r *connectionDataSource) Configure(_ context.Context, req datasource.ConfigureRequest, resp *datasource.ConfigureResponse) {
-	if req.ProviderData == nil {
-		return
-	}
-
-	client, ok := req.ProviderData.(sdkclient.Client)
-
-	if !ok {
-		resp.Diagnostics.AddError(
-			"Unexpected Data Source Configure Type",
-			fmt.Sprintf("Expected sdkclient.Client, got: %T. Please report this issue to the provider developers.", req.ProviderData),
-		)
-
-		return
-	}
-
-	r.client = client
 }
 
 // Read refreshes the Terraform state with the latest data.
 func (r *connectionDataSource) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {
-	// Get data from Terraform state
-	var data *connectionResourceModel
-	resp.Diagnostics.Append(req.Config.Get(ctx, &data)...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
-
-	// Get refreshed datasource value
-	diags := data.Retrieve(ctx, &r.client)
+	data, _, diags := getModel(ctx, req.Config, r.naming.Legacy)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	// Save refreshed data into Terraform state
-	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
+	client, ok := r.Client(data.ProjectID, &resp.Diagnostics)
+	if !ok {
+		return
+	}
+	found, diags := data.Retrieve(ctx, client)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	if !found {
+		resp.Diagnostics.AddError("Connection not found", "No connection with ID "+data.ID.ValueString()+" in this project.")
+		return
+	}
+
+	resp.Diagnostics.Append(setModel(ctx, &resp.State, r.naming.Legacy, data)...)
+}
+
+func dataSourceAttributes(naming shared.Naming) map[string]schema.Attribute {
+	attributes := schemahelpers.DataSourceSchemaFromResourceSchema(naming.WithTeamID(schemaAttributes()), "id")
+	attributes["project_id"] = shared.ProjectIDDataSourceAttribute()
+	return attributes
 }

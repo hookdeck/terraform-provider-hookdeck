@@ -2,9 +2,8 @@ package source
 
 import (
 	"context"
-	"fmt"
+	"terraform-provider-hookdeck/internal/provider/shared"
 	"terraform-provider-hookdeck/internal/schemahelpers"
-	"terraform-provider-hookdeck/internal/sdkclient"
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
@@ -16,62 +15,63 @@ var (
 	_ datasource.DataSourceWithConfigure = &sourceDataSource{}
 )
 
-// NewSourceDataSource is a helper function to simplify the provider implementation.
+// NewSourceDataSource returns the hookdeck_gateway_source data source.
 func NewSourceDataSource() datasource.DataSource {
-	return &sourceDataSource{}
+	return &sourceDataSource{naming: shared.Naming{Suffix: "_source"}}
+}
+
+// NewLegacySourceDataSource returns the deprecated hookdeck_source alias.
+func NewLegacySourceDataSource() datasource.DataSource {
+	return &sourceDataSource{naming: shared.Naming{Suffix: "_source", Legacy: true}}
 }
 
 // sourceDataSource is the datasource implementation.
 type sourceDataSource struct {
-	client sdkclient.Client
+	shared.ProjectScopedDataSource
+	naming shared.Naming
 }
 
 // Metadata returns the datasource type name.
 func (r *sourceDataSource) Metadata(_ context.Context, req datasource.MetadataRequest, resp *datasource.MetadataResponse) {
-	resp.TypeName = req.ProviderTypeName + "_source"
+	resp.TypeName = r.naming.TypeName(req.ProviderTypeName)
 }
 
 // Schema returns the data source schema.
 func (r *sourceDataSource) Schema(_ context.Context, _ datasource.SchemaRequest, resp *datasource.SchemaResponse) {
 	resp.Schema = schema.Schema{
-		Description: "Source Data Source",
-		Attributes:  schemahelpers.DataSourceSchemaFromResourceSchema(schemaAttributes(), "id"),
+		DeprecationMessage: r.naming.DataSourceDeprecation(),
+		Description:        r.naming.Description("Source Data Source"),
+		Attributes:         dataSourceAttributes(r.naming),
 	}
-}
-
-// Configure adds the provider configured client to the datasource.
-func (r *sourceDataSource) Configure(_ context.Context, req datasource.ConfigureRequest, resp *datasource.ConfigureResponse) {
-	if req.ProviderData == nil {
-		return
-	}
-
-	client, ok := req.ProviderData.(sdkclient.Client)
-
-	if !ok {
-		resp.Diagnostics.AddError(
-			"Unexpected Data Source Configure Type",
-			fmt.Sprintf("Expected sdkclient.Client, got: %T. Please report this issue to the provider developers.", req.ProviderData),
-		)
-
-		return
-	}
-
-	r.client = client
 }
 
 // Read refreshes the Terraform state with the latest data.
 func (r *sourceDataSource) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {
-	var data *sourceResourceModel
-	resp.Diagnostics.Append(req.Config.Get(ctx, &data)...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
-
-	diags := data.Retrieve(ctx, &r.client)
+	data, _, diags := getModel(ctx, req.Config, r.naming.Legacy)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
+	client, ok := r.Client(data.ProjectID, &resp.Diagnostics)
+	if !ok {
+		return
+	}
+	found, diags := data.Retrieve(ctx, client)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	if !found {
+		resp.Diagnostics.AddError("Source not found", "No source with ID "+data.ID.ValueString()+" in this project.")
+		return
+	}
+
+	resp.Diagnostics.Append(setModel(ctx, &resp.State, r.naming.Legacy, data)...)
+}
+
+func dataSourceAttributes(naming shared.Naming) map[string]schema.Attribute {
+	attributes := schemahelpers.DataSourceSchemaFromResourceSchema(naming.WithTeamID(schemaAttributes()), "id")
+	attributes["project_id"] = shared.ProjectIDDataSourceAttribute()
+	return attributes
 }

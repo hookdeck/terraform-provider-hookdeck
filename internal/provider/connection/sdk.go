@@ -17,7 +17,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-const apiVersion = "2025-07-01"
+const apiVersion = sdkclient.APIVersion
 
 func (m *connectionResourceModel) Refresh(connection map[string]interface{}) diag.Diagnostics {
 	var diags diag.Diagnostics
@@ -38,7 +38,7 @@ func (m *connectionResourceModel) Refresh(connection map[string]interface{}) dia
 	}
 
 	if teamID, ok := connection["team_id"].(string); ok {
-		m.TeamID = types.StringValue(teamID)
+		m.ProjectID = types.StringValue(teamID)
 	} else {
 		diags.AddError("Error parsing team_id", "Expected string value")
 		return diags
@@ -109,13 +109,17 @@ func (m *connectionResourceModel) Refresh(connection map[string]interface{}) dia
 	return diags
 }
 
-func (m *connectionResourceModel) Retrieve(ctx context.Context, client *sdkclient.Client) diag.Diagnostics {
+func (m *connectionResourceModel) Retrieve(ctx context.Context, client *sdkclient.Client) (bool, diag.Diagnostics) {
 	var diags diag.Diagnostics
 
 	response, err := client.RawClient.SendRequest(ctx, "GET", fmt.Sprintf("/%s/connections/%s", apiVersion, m.ID.ValueString()), &sdkclient.RequestOptions{})
 	if err != nil {
 		diags.AddError("Error reading connection", err.Error())
-		return diags
+		return false, diags
+	}
+
+	if sdkclient.IsGoneStatus(response.StatusCode) {
+		return false, diags
 	}
 
 	if response.StatusCode > 299 {
@@ -124,23 +128,23 @@ func (m *connectionResourceModel) Retrieve(ctx context.Context, client *sdkclien
 		} else {
 			diags.AddError("Error reading connection", "Status code: "+strconv.Itoa(response.StatusCode))
 		}
-		return diags
+		return false, diags
 	}
 
 	body, err := io.ReadAll(response.Body)
 	if err != nil {
 		diags.AddError("Error reading connection", err.Error())
-		return diags
+		return false, diags
 	}
 
 	var connection map[string]interface{}
 	err = json.Unmarshal(body, &connection)
 	if err != nil {
 		diags.AddError("Error reading connection", err.Error())
-		return diags
+		return false, diags
 	}
 
-	return m.Refresh(connection)
+	return true, m.Refresh(connection)
 }
 
 func (m *connectionResourceModel) Create(ctx context.Context, client *sdkclient.Client) diag.Diagnostics {

@@ -14,19 +14,22 @@ For example, let's say you're using Stripe for payment and want to listen to `ch
 Let's start with a Hookdeck connection to start listening to incoming webhooks from Stripe:
 
 ```hcl
-resource "hookdeck_source" "stripe" {
+resource "hookdeck_gateway_source" "stripe" {
   name = "stripe"
   type = "STRIPE"
 }
 
-resource "hookdeck_destination" "payment_service" {
+resource "hookdeck_gateway_destination" "payment_service" {
   name = "my_destination"
-  url  = "https://api.my-app.com/webhooks/stripe"
+  type = "HTTP"
+  config = jsonencode({
+    url = "https://api.my-app.com/webhooks/stripe"
+  })
 }
 
-resource "hookdeck_connection" "stripe_payment_service" {
-  source_id      = hookdeck_source.stripe.id
-  destination_id = hookdeck_destination.payment_service.id
+resource "hookdeck_gateway_connection" "stripe_payment_service" {
+  source_id      = hookdeck_gateway_source.stripe.id
+  destination_id = hookdeck_gateway_destination.payment_service.id
 }
 ```
 
@@ -43,9 +46,9 @@ resource "hookdeck_webhook_registration" "stripe_webhook_registration" {
       method = "POST"
       url    = "https://api.stripe.com/v1/webhook_endpoints"
       headers = jsonencode({
-        authorization  = "Bearer <STRIPE_SECRET_KEY>"
+        authorization = "Bearer <STRIPE_SECRET_KEY>"
       })
-      body = "url=${hookdeck_source.stripe.url}&enabled_events[]=charge.failed&enabled_events[]=charge.succeeded"
+      body = "url=${hookdeck_gateway_source.stripe.url}&enabled_events[]=charge.failed&enabled_events[]=charge.succeeded"
     }
   }
   unregister = {
@@ -53,7 +56,7 @@ resource "hookdeck_webhook_registration" "stripe_webhook_registration" {
       method = "DELETE"
       url    = "https://api.stripe.com/v1/webhook_endpoints/{{.register.response.body.id}}"
       headers = jsonencode({
-        authorization  = "Bearer <STRIPE_SECRET_KEY>"
+        authorization = "Bearer <STRIPE_SECRET_KEY>"
       })
     }
   }
@@ -67,8 +70,8 @@ For many APIs, you will need the ID of the registered webhook to unregister. You
 Another way you can use the `hookdeck_webhook_registration` resource is to configure Hookdeck [source verification](https://hookdeck.com/docs/signature-verification) as part of your Terraform workflow. With the `hookdeck_webhook_registration` resource above, you can now configure Hookdeck verification like so:
 
 ```hcl
-resource "hookdeck_source_auth" "stripe_source_auth" {
-  source_id = hookdeck_source.stripe.id
+resource "hookdeck_gateway_source_auth" "stripe_source_auth" {
+  source_id = hookdeck_gateway_source.stripe.id
   auth = jsonencode({
     webhook_secret_key = jsondecode(hookdeck_webhook_registration.stripe_webhook_registration.register.response).body.secret
   })
@@ -82,19 +85,22 @@ Putting everything together to register Stripe webhook with Hookdeck source with
 ```hcl
 # Configure Hookdeck source, destination, and connection
 
-resource "hookdeck_source" "stripe" {
+resource "hookdeck_gateway_source" "stripe" {
   name = "stripe"
   type = "STRIPE"
 }
 
-resource "hookdeck_destination" "payment_service" {
+resource "hookdeck_gateway_destination" "payment_service" {
   name = "my_destination"
-  url  = "https://api.my-app.com/webhooks/stripe"
+  type = "HTTP"
+  config = jsonencode({
+    url = "https://api.my-app.com/webhooks/stripe"
+  })
 }
 
-resource "hookdeck_connection" "stripe_payment_service" {
-  source_id      = hookdeck_source.stripe.id
-  destination_id = hookdeck_destination.payment_service.id
+resource "hookdeck_gateway_connection" "stripe_payment_service" {
+  source_id      = hookdeck_gateway_source.stripe.id
+  destination_id = hookdeck_gateway_destination.payment_service.id
 }
 
 # Register Stripe webhook
@@ -107,9 +113,9 @@ resource "hookdeck_webhook_registration" "stripe_webhook_registration" {
       method = "POST"
       url    = "https://api.stripe.com/v1/webhook_endpoints"
       headers = jsonencode({
-        authorization  = "Bearer <STRIPE_SECRET_KEY>"
+        authorization = "Bearer <STRIPE_SECRET_KEY>"
       })
-      body = "url=${hookdeck_source.stripe.url}&enabled_events[]=charge.failed&enabled_events[]=charge.succeeded"
+      body = "url=${hookdeck_gateway_source.stripe.url}&enabled_events[]=charge.failed&enabled_events[]=charge.succeeded"
     }
   }
   unregister = {
@@ -117,7 +123,7 @@ resource "hookdeck_webhook_registration" "stripe_webhook_registration" {
       method = "DELETE"
       url    = "https://api.stripe.com/v1/webhook_endpoints/{{.register.response.body.id}}"
       headers = jsonencode({
-        authorization  = "Bearer <STRIPE_SECRET_KEY>"
+        authorization = "Bearer <STRIPE_SECRET_KEY>"
       })
     }
   }
@@ -125,8 +131,8 @@ resource "hookdeck_webhook_registration" "stripe_webhook_registration" {
 
 # Configure source verification
 
-resource "hookdeck_source_auth" "stripe_source_auth" {
-  source_id = hookdeck_source.stripe.id
+resource "hookdeck_gateway_source_auth" "stripe_source_auth" {
+  source_id = hookdeck_gateway_source.stripe.id
   auth = jsonencode({
     webhook_secret_key = jsondecode(hookdeck_webhook_registration.stripe_webhook_registration.register.response).body.secret
   })

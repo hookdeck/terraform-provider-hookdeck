@@ -2,11 +2,15 @@ package provider
 
 import (
 	"context"
+	"errors"
 	"fmt"
+	"net/http"
 	"os"
 
+	"terraform-provider-hookdeck/internal/projectscope"
 	"terraform-provider-hookdeck/internal/provider/connection"
 	"terraform-provider-hookdeck/internal/provider/destination"
+	"terraform-provider-hookdeck/internal/provider/project"
 	"terraform-provider-hookdeck/internal/provider/source"
 	"terraform-provider-hookdeck/internal/provider/sourceauth"
 	"terraform-provider-hookdeck/internal/provider/transformation"
@@ -14,6 +18,7 @@ import (
 	"terraform-provider-hookdeck/internal/sdkclient"
 	"terraform-provider-hookdeck/internal/validators"
 
+	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/provider"
@@ -37,8 +42,9 @@ type hookdeckProvider struct {
 
 // hookdeckProviderModel describes the provider data model.
 type hookdeckProviderModel struct {
-	APIBase types.String `tfsdk:"api_base"`
-	APIKey  types.String `tfsdk:"api_key"`
+	APIBase   types.String `tfsdk:"api_base"`
+	APIKey    types.String `tfsdk:"api_key"`
+	ProjectID types.String `tfsdk:"project_id"`
 }
 
 func (p *hookdeckProvider) Metadata(ctx context.Context, req provider.MetadataRequest, resp *provider.MetadataResponse) {
@@ -59,7 +65,14 @@ func (p *hookdeckProvider) Schema(ctx context.Context, req provider.SchemaReques
 			"api_key": schema.StringAttribute{
 				Optional:            true,
 				Sensitive:           true,
-				MarkdownDescription: fmt.Sprintf("Hookdeck API Key. Alternatively, can be configured using the `%s` environment variable.", apiKeyEnvVarKey),
+				MarkdownDescription: fmt.Sprintf("Hookdeck API Key, either a project key or an organization key (`hd_org_` prefix). Alternatively, can be configured using the `%s` environment variable.", apiKeyEnvVarKey),
+			},
+			"project_id": schema.StringAttribute{
+				Optional:            true,
+				MarkdownDescription: fmt.Sprintf("Project that every resource and data source of this provider configuration belongs to. Not needed with a project API key, which is bound to its project. With an organization API key, set it to manage a single project, or leave it unset and set `project_id` on each resource. Changing it replaces every resource. Alternatively, can be configured using the `%s` environment variable.", projectIDEnvVarKey),
+				Validators: []validator.String{
+					stringvalidator.LengthAtLeast(1),
+				},
 			},
 		},
 	}
@@ -97,6 +110,15 @@ func (p *hookdeckProvider) Configure(ctx context.Context, req provider.Configure
 		)
 	}
 
+	if config.ProjectID.IsUnknown() {
+		resp.Diagnostics.AddAttributeError(
+			path.Root("project_id"),
+			"Unknown Hookdeck Project ID",
+			"The provider cannot create the Hookdeck API client as there is an unknown configuration value for the Hookdeck project ID. "+
+				fmt.Sprintf("Either target apply the source of the value first, set the value statically in the configuration, or use the %s environment variable.", projectIDEnvVarKey),
+		)
+	}
+
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -106,6 +128,7 @@ func (p *hookdeckProvider) Configure(ctx context.Context, req provider.Configure
 
 	apiBase := os.Getenv(apiBaseEnvVarKey)
 	apiKey := os.Getenv(apiKeyEnvVarKey)
+	projectID := os.Getenv(projectIDEnvVarKey)
 
 	if !config.APIBase.IsNull() {
 		apiBase = config.APIBase.ValueString()
@@ -113,6 +136,10 @@ func (p *hookdeckProvider) Configure(ctx context.Context, req provider.Configure
 
 	if !config.APIKey.IsNull() {
 		apiKey = config.APIKey.ValueString()
+	}
+
+	if !config.ProjectID.IsNull() {
+		projectID = config.ProjectID.ValueString()
 	}
 
 	// If any of the expected configurations are missing, return
@@ -133,14 +160,33 @@ func (p *hookdeckProvider) Configure(ctx context.Context, req provider.Configure
 	}
 
 	ctx = tflog.SetField(ctx, "hookdeck_api_base", apiBase)
-	ctx = tflog.SetField(ctx, "hookdeck_api_key", apiKey)
-	ctx = tflog.MaskFieldValuesWithFieldKeys(ctx, "hookdeck_api_key")
+	ctx = tflog.SetField(ctx, "hookdeck_project_id", projectID)
 
 	tflog.Debug(ctx, "Creating Hookdeck client")
-	tflog.Debug(ctx, apiBase+" "+apiKey)
 
 	// Create a new Hookdeck client using the configuration values
 	client := sdkclient.InitHookdeckSDKClient(apiBase, apiKey, p.version)
+	client.Scope.ProjectID = projectID
+
+	if projectID == "" && client.Scope.KeyKind == projectscope.KeyKindProject {
+		keyProject, err := client.KeyProjectID(ctx)
+		var apiErr *sdkclient.APIError
+		switch {
+		case err == nil:
+			client.Scope.ProjectID = keyProject
+		case errors.As(err, &apiErr) && apiErr.Status == http.StatusForbidden:
+			// The key may not list projects. Each resource's project is
+			// then taken from the API's responses.
+			tflog.Debug(ctx, "API key cannot read its project, continuing without it")
+		default:
+			resp.Diagnostics.AddError(
+				"Unable to look up the API key's project",
+				"The provider asks the Hookdeck API which project the API key belongs to. "+
+					fmt.Sprintf("Check the API key, or set project_id (or %s) to skip the lookup.\n\n%s", projectIDEnvVarKey, err.Error()),
+			)
+			return
+		}
+	}
 
 	// Make the Hookdeck client available during DataSource and Resource
 	// type Configure methods.
@@ -152,20 +198,35 @@ func (p *hookdeckProvider) Configure(ctx context.Context, req provider.Configure
 
 func (p *hookdeckProvider) Resources(ctx context.Context) []func() resource.Resource {
 	return []func() resource.Resource{
+		// Event Gateway
+		project.NewProjectResource,
 		connection.NewConnectionResource,
 		destination.NewDestinationResource,
 		source.NewSourceResource,
 		sourceauth.NewSourceAuthResource,
 		transformation.NewTransformationResource,
+		// Third-party services
 		webhookregistration.NewWebhookRegistrationResource,
+		// v2 names, deprecated, removed in v4
+		connection.NewLegacyConnectionResource,
+		destination.NewLegacyDestinationResource,
+		source.NewLegacySourceResource,
+		sourceauth.NewLegacySourceAuthResource,
+		transformation.NewLegacyTransformationResource,
 	}
 }
 
 func (p *hookdeckProvider) DataSources(_ context.Context) []func() datasource.DataSource {
 	return []func() datasource.DataSource{
+		// Event Gateway
+		project.NewProjectDataSource,
 		connection.NewConnectionDataSource,
 		destination.NewDestinationDataSource,
 		source.NewSourceDataSource,
+		// v2 names, deprecated, removed in v4
+		connection.NewLegacyConnectionDataSource,
+		destination.NewLegacyDestinationDataSource,
+		source.NewLegacySourceDataSource,
 	}
 }
 
@@ -178,6 +239,7 @@ func New(version string) func() provider.Provider {
 }
 
 const (
-	apiBaseEnvVarKey = "HOOKDECK_API_BASE"
-	apiKeyEnvVarKey  = "HOOKDECK_API_KEY"
+	apiBaseEnvVarKey   = "HOOKDECK_API_BASE"
+	apiKeyEnvVarKey    = "HOOKDECK_API_KEY"
+	projectIDEnvVarKey = "HOOKDECK_PROJECT_ID"
 )
