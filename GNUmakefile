@@ -10,7 +10,7 @@ define run_test
 	@if [ -z "$$HOOKDECK_API_KEY" ] || [ -z "$$TF_ACC" ]; then \
 		if [ -f .env.test ]; then \
 			echo "📋 Loading from .env.test..."; \
-			set -a; source .env.test; set +a; \
+			set -a; . ./.env.test; set +a; \
 		else \
 			echo "❌ Missing configuration:"; \
 			[ -z "$$HOOKDECK_API_KEY" ] && echo "   - HOOKDECK_API_KEY not set"; \
