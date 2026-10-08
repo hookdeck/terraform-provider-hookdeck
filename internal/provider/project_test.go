@@ -118,7 +118,6 @@ func TestAccGatewayProject_OrgKey_Lifecycle(t *testing.T) {
 					resource.TestCheckResourceAttr(projectAddr, "type", "event_gateway"),
 					resource.TestCheckResourceAttrSet(projectAddr, "organization_id"),
 					resource.TestCheckResourceAttrPair(sourceAddr, "project_id", projectAddr, "id"),
-					resource.TestCheckResourceAttrPair(sourceAddr, "team_id", projectAddr, "id"),
 				),
 			},
 			{

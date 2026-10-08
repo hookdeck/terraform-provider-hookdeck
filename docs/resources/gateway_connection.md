@@ -104,7 +104,6 @@ resource "hookdeck_gateway_connection" "connection_example" {
 - `disabled_at` (String) Date the connection was disabled
 - `id` (String) ID of the connection
 - `paused_at` (String) Date the connection was paused
-- `team_id` (String) ID of the project the resource belongs to. Same value as `project_id`.
 - `updated_at` (String) Date the connection was last updated
 
 <a id="nestedatt--rules"></a>

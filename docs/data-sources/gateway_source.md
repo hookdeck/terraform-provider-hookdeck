@@ -36,7 +36,6 @@ data "hookdeck_gateway_source" "example" {
 - `description` (String) Description for the source
 - `disabled_at` (String) Date the source was disabled
 - `name` (String) A unique, human-friendly name for the source
-- `team_id` (String) ID of the project the resource belongs to. Same value as `project_id`.
 - `type` (String) Type of the source
 - `updated_at` (String) Date the source was last updated
 - `url` (String) A unique URL that must be supplied to your webhook's provider

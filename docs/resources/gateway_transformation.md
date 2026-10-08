@@ -50,7 +50,6 @@ resource "hookdeck_gateway_transformation" "example" {
 
 - `created_at` (String) Date the transformation was created
 - `id` (String) ID of the transformation
-- `team_id` (String) ID of the project the resource belongs to. Same value as `project_id`.
 - `updated_at` (String) Date the transformation was last updated
 
 ## Import

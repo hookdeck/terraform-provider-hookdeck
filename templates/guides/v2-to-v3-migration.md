@@ -13,6 +13,7 @@ A v2 configuration keeps working with v3 as it is, unless it sets `disabled_at`.
 |---|---|
 | Event Gateway resources renamed with a `gateway_` prefix | Rename, with `moved` blocks. Can be done later: the v2 names work until v4 |
 | Every resource records its `project_id` | None. Recorded in state on the first apply |
+| The new names have `project_id` and no `team_id` | When renaming, change references to `.team_id` into `.project_id` |
 | `disabled_at` on destinations and connections is read-only | Remove it from configuration if set |
 | Organization API keys, `project_id` on the provider and on resources | Optional |
 | New `hookdeck_gateway_project` resource and data source | Optional |
@@ -69,6 +70,8 @@ Every Event Gateway resource and data source gains a `gateway_` prefix.
 The v2 names remain in v3 as deprecated aliases and give a warning on every plan. They are removed in v4.
 
 To rename a resource, change its type, update every reference to it, and add a `moved` block. Without the `moved` block Terraform plans to destroy the resource and create a new one, and a new source has a new URL.
+
+The new names have no `team_id` attribute: it held the same value as `project_id`. A reference such as `hookdeck_source.stripe.team_id` becomes `hookdeck_gateway_source.stripe.project_id`. The v2 names keep `team_id` until v4.
 
 Before:
 

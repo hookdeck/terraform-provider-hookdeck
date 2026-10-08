@@ -54,8 +54,7 @@ func (m *sourceResourceModel) Refresh(source map[string]interface{}) diag.Diagno
 	}
 
 	if teamID, ok := source["team_id"].(string); ok {
-		m.TeamID = types.StringValue(teamID)
-		m.ProjectID = m.TeamID
+		m.ProjectID = types.StringValue(teamID)
 	} else {
 		diags.AddError("Error parsing team_id", "Expected string value")
 		return diags

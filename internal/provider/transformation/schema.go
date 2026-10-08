@@ -44,13 +44,6 @@ func schemaAttributes() map[string]schema.Attribute {
 			Required:    true,
 			Description: "A unique, human-friendly name for the transformation",
 		},
-		"team_id": schema.StringAttribute{
-			Computed: true,
-			PlanModifiers: []planmodifier.String{
-				stringplanmodifier.UseStateForUnknown(),
-			},
-			Description: "ID of the project the resource belongs to. Same value as `project_id`.",
-		},
 		"updated_at": schema.StringAttribute{
 			Computed: true,
 			Validators: []validator.String{

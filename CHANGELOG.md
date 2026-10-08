@@ -5,6 +5,7 @@ See the [v2 to v3 migration guide](https://registry.terraform.io/providers/hookd
 BREAKING CHANGES:
 
 * Event Gateway resources and data sources are renamed with a `gateway_` prefix: `hookdeck_gateway_source`, `hookdeck_gateway_source_auth`, `hookdeck_gateway_destination`, `hookdeck_gateway_connection`, `hookdeck_gateway_transformation`. The v2 names remain as deprecated aliases until v4. Rename with `moved` blocks; no resources are recreated. `moved` blocks between resource types need Terraform 1.8 or OpenTofu 1.10, or later; the guide has a route for earlier versions.
+* The new `gateway_` names have no `team_id` attribute; use `project_id`, which holds the same value. The v2 names keep `team_id`.
 * `disabled_at` on `hookdeck_gateway_destination` and `hookdeck_gateway_connection` is read-only. v2 accepted it in configuration but did not send it to Hookdeck. Remove it from configuration if set.
 
 FEATURES:

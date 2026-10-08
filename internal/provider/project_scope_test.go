@@ -54,7 +54,7 @@ func TestAccProjectScope_ProjectKey_StoresProject(t *testing.T) {
 				Check: resource.ComposeAggregateTestCheckFunc(
 					captureID(sourceAddr, &sourceID),
 					resource.TestCheckResourceAttr(sourceAddr, "project_id", projectID),
-					resource.TestCheckResourceAttr(sourceAddr, "team_id", projectID),
+					resource.TestCheckNoResourceAttr(sourceAddr, "team_id"),
 				),
 			},
 			{
@@ -265,9 +265,7 @@ func TestAccProjectScope_OrgKey_ExplicitMode(t *testing.T) {
 				Check: resource.ComposeAggregateTestCheckFunc(
 					captureID(sourceAddr, &sourceID),
 					resource.TestCheckResourceAttr(sourceAddr, "project_id", projectA),
-					resource.TestCheckResourceAttr(sourceAddr, "team_id", projectA),
 					resource.TestCheckResourceAttr(otherAddr, "project_id", projectB),
-					resource.TestCheckResourceAttr(otherAddr, "team_id", projectB),
 				),
 			},
 			{
@@ -304,7 +302,6 @@ func TestAccProjectScope_OrgKey_ExplicitMode(t *testing.T) {
 					checkIDChanged(sourceAddr, &sourceID),
 					captureID(sourceAddr, &movedID),
 					resource.TestCheckResourceAttr(sourceAddr, "project_id", projectB),
-					resource.TestCheckResourceAttr(sourceAddr, "team_id", projectB),
 					checkSourceGone(t, orgKey, projectA, &sourceID),
 				),
 			},

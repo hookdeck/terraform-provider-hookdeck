@@ -90,7 +90,6 @@ Terraform will perform the following actions:
       + id          = (known after apply)
       + name        = "my_source"
       + project_id  = "tm_xxxxxxxxxxxx"
-      + team_id     = (known after apply)
       + type        = (known after apply)
       + updated_at  = (known after apply)
       + url         = (known after apply)

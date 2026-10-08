@@ -54,8 +54,7 @@ func (m *destinationResourceModel) Refresh(destination map[string]interface{}) d
 	}
 
 	if teamID, ok := destination["team_id"].(string); ok {
-		m.TeamID = types.StringValue(teamID)
-		m.ProjectID = m.TeamID
+		m.ProjectID = types.StringValue(teamID)
 	} else {
 		diags.AddError("Error parsing team_id", "Expected string value")
 		return diags

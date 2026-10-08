@@ -55,7 +55,6 @@ resource "hookdeck_gateway_destination" "example" {
 - `created_at` (String) Date the destination was created
 - `disabled_at` (String) Date the destination was disabled
 - `id` (String) ID of the destination
-- `team_id` (String) ID of the project the resource belongs to. Same value as `project_id`.
 - `updated_at` (String) Date the destination was last updated
 
 ## Import

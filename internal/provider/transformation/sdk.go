@@ -49,8 +49,7 @@ func (m *transformationResourceModel) Refresh(transformation map[string]interfac
 	}
 
 	if teamID, ok := transformation["team_id"].(string); ok {
-		m.TeamID = types.StringValue(teamID)
-		m.ProjectID = m.TeamID
+		m.ProjectID = types.StringValue(teamID)
 	} else {
 		diags.AddError("Error parsing team_id", "Expected string value")
 		return diags

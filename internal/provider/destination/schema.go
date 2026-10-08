@@ -62,13 +62,6 @@ func schemaAttributes() map[string]schema.Attribute {
 			Required:    true,
 			Description: `A unique, human-friendly name for the destination`,
 		},
-		"team_id": schema.StringAttribute{
-			Computed: true,
-			PlanModifiers: []planmodifier.String{
-				stringplanmodifier.UseStateForUnknown(),
-			},
-			Description: "ID of the project the resource belongs to. Same value as `project_id`.",
-		},
 		"type": schema.StringAttribute{
 			Optional:    true,
 			Computed:    true,

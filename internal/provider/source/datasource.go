@@ -41,14 +41,14 @@ func (r *sourceDataSource) Schema(_ context.Context, _ datasource.SchemaRequest,
 	resp.Schema = schema.Schema{
 		DeprecationMessage: r.naming.DataSourceDeprecation(),
 		Description:        r.naming.Description("Source Data Source"),
-		Attributes:         dataSourceAttributes(),
+		Attributes:         dataSourceAttributes(r.naming),
 	}
 }
 
 // Read refreshes the Terraform state with the latest data.
 func (r *sourceDataSource) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {
-	var data *sourceResourceModel
-	resp.Diagnostics.Append(req.Config.Get(ctx, &data)...)
+	data, _, diags := getModel(ctx, req.Config, r.naming.Legacy)
+	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -67,11 +67,11 @@ func (r *sourceDataSource) Read(ctx context.Context, req datasource.ReadRequest,
 		return
 	}
 
-	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
+	resp.Diagnostics.Append(setModel(ctx, &resp.State, r.naming.Legacy, data)...)
 }
 
-func dataSourceAttributes() map[string]schema.Attribute {
-	attributes := schemahelpers.DataSourceSchemaFromResourceSchema(schemaAttributes(), "id")
+func dataSourceAttributes(naming shared.Naming) map[string]schema.Attribute {
+	attributes := schemahelpers.DataSourceSchemaFromResourceSchema(naming.WithTeamID(schemaAttributes()), "id")
 	attributes["project_id"] = shared.ProjectIDDataSourceAttribute()
 	return attributes
 }

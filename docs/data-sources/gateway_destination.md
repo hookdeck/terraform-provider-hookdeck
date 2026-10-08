@@ -36,6 +36,5 @@ data "hookdeck_gateway_destination" "example" {
 - `description` (String) Description for the destination
 - `disabled_at` (String) Date the destination was disabled
 - `name` (String) A unique, human-friendly name for the destination
-- `team_id` (String) ID of the project the resource belongs to. Same value as `project_id`.
 - `type` (String) Type of the destination
 - `updated_at` (String) Date the destination was last updated

@@ -156,3 +156,69 @@ func TestAccMock_UpgradeReleasedV2StateToOrgKey(t *testing.T) {
 		}
 	}
 }
+
+// Released v2 state moved to the v3 names: the v3 names have no team_id,
+// and the project it recorded is kept in project_id.
+func TestAccMock_UpgradeReleasedV2State_MovedDropsTeamID(t *testing.T) {
+	skipUnlessAcc(t)
+	t.Setenv("TF_ACC_PROVIDER_NAMESPACE", "hookdeck")
+	mockOrganization(t)
+	useAPIKey(t, mockProjectKeyA)
+	var sourceID string
+
+	const (
+		v2Source = "hookdeck_source.test"
+		v3Source = "hookdeck_gateway_source.test"
+		v3Auth   = "hookdeck_gateway_source_auth.test"
+	)
+	moved := `resource "hookdeck_gateway_source" "test" {
+  name = "v2-src"
+}
+
+resource "hookdeck_gateway_source_auth" "test" {
+  source_id = hookdeck_gateway_source.test.id
+  auth_type = "API_KEY"
+  auth = jsonencode({
+    header_key = "x-api-key"
+    api_key    = "secret"
+  })
+}
+
+moved {
+  from = hookdeck_source.test
+  to   = hookdeck_gateway_source.test
+}
+
+moved {
+  from = hookdeck_source_auth.test
+  to   = hookdeck_gateway_source_auth.test
+}
+`
+
+	resource.Test(t, resource.TestCase{
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{tfversion.SkipBelow(tfversion.Version1_8_0)},
+		Steps: []resource.TestStep{
+			{
+				ExternalProviders: map[string]resource.ExternalProvider{
+					"hookdeck": {Source: "hookdeck/hookdeck", VersionConstraint: releasedV2},
+				},
+				Config: requiredProviders(releasedV2) + loadFixture(t, "v2_source_with_auth.tf", ""),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					captureID(v2Source, &sourceID),
+					resource.TestCheckResourceAttr(v2Source, "team_id", "tm_a"),
+				),
+			},
+			{
+				ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+				Config:                   requiredProviders("") + moved,
+				ConfigPlanChecks:         emptyPlan(),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					checkIDEquals(v3Source, &sourceID),
+					resource.TestCheckResourceAttr(v3Source, "project_id", "tm_a"),
+					resource.TestCheckNoResourceAttr(v3Source, "team_id"),
+					resource.TestCheckResourceAttr(v3Auth, "project_id", "tm_a"),
+				),
+			},
+		},
+	})
+}

@@ -79,7 +79,7 @@ func TestRenamedStateMover(t *testing.T) {
 	}
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			mover := RenamedStateMover("hookdeck_source", schema)
+			mover := RenamedStateMover("hookdeck_source", schema, schema)
 			tc.req.SourceState = &state
 			resp := &resource.MoveStateResponse{}
 
@@ -113,11 +113,67 @@ func TestRenamedStateMover_undecodedState(t *testing.T) {
 		"id": resourceschema.StringAttribute{Computed: true},
 	}}
 	resp := &resource.MoveStateResponse{}
-	RenamedStateMover("hookdeck_source", schema).StateMover(t.Context(), resource.MoveStateRequest{
+	RenamedStateMover("hookdeck_source", schema, schema).StateMover(t.Context(), resource.MoveStateRequest{
 		SourceTypeName:        "hookdeck_source",
 		SourceProviderAddress: "registry.terraform.io/hookdeck/hookdeck",
 	}, resp)
 	if !resp.Diagnostics.HasError() || resp.Diagnostics[0].Summary() != "Unsupported state for move" {
 		t.Fatalf("diagnostics = %v", resp.Diagnostics)
+	}
+}
+
+// The v3 names have no team_id. Moving drops it, and state written before
+// project_id existed gets its project from it.
+func TestRenamedStateMover_teamID(t *testing.T) {
+	target := resourceschema.Schema{Version: 1, Attributes: map[string]resourceschema.Attribute{
+		"id":         resourceschema.StringAttribute{Computed: true},
+		"project_id": ProjectIDResourceAttribute(),
+	}}
+	source := resourceschema.Schema{Version: 1, Attributes: Naming{Suffix: "_source", Legacy: true}.WithTeamID(map[string]resourceschema.Attribute{
+		"id":         resourceschema.StringAttribute{Computed: true},
+		"project_id": ProjectIDResourceAttribute(),
+	})}
+	if _, ok := source.Attributes["team_id"]; !ok {
+		t.Fatal("the v2 schema has no team_id")
+	}
+	if _, ok := (Naming{Suffix: "_source"}).WithTeamID(map[string]resourceschema.Attribute{})["team_id"]; ok {
+		t.Fatal("the v3 schema has team_id")
+	}
+
+	str := func(v string) tftypes.Value {
+		if v == "" {
+			return tftypes.NewValue(tftypes.String, nil)
+		}
+		return tftypes.NewValue(tftypes.String, v)
+	}
+	cases := []struct {
+		name, projectID, teamID, want string
+	}{
+		{"v3 state", "tm_p", "tm_p", "tm_p"},
+		{"state written before project_id existed", "", "tm_t", "tm_t"},
+		{"project_id wins", "tm_p", "tm_t", "tm_p"},
+	}
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			state := tfsdk.State{Schema: source, Raw: tftypes.NewValue(source.Type().TerraformType(t.Context()), map[string]tftypes.Value{
+				"id": str("src_1"), "project_id": str(tc.projectID), "team_id": str(tc.teamID),
+			})}
+			resp := &resource.MoveStateResponse{TargetState: tfsdk.State{Schema: target}}
+			RenamedStateMover("hookdeck_source", source, target).StateMover(t.Context(), resource.MoveStateRequest{
+				SourceTypeName:        "hookdeck_source",
+				SourceProviderAddress: "registry.terraform.io/hookdeck/hookdeck",
+				SourceSchemaVersion:   1,
+				SourceState:           &state,
+			}, resp)
+			if resp.Diagnostics.HasError() {
+				t.Fatal(resp.Diagnostics)
+			}
+			want := tftypes.NewValue(target.Type().TerraformType(t.Context()), map[string]tftypes.Value{
+				"id": str("src_1"), "project_id": str(tc.want),
+			})
+			if !resp.TargetState.Raw.Equal(want) {
+				t.Errorf("moved state = %v, want %v", resp.TargetState.Raw, want)
+			}
+		})
 	}
 }

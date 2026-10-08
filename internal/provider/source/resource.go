@@ -51,10 +51,14 @@ func (r *sourceResource) Schema(_ context.Context, _ resource.SchemaRequest, res
 }
 
 func (r *sourceResource) schema() schema.Schema {
+	return resourceSchema(r.naming)
+}
+
+func resourceSchema(naming shared.Naming) schema.Schema {
 	return schema.Schema{
-		DeprecationMessage: r.naming.ResourceDeprecation(),
-		Description:        r.naming.Description("Source Resource"),
-		Attributes:         schemaAttributes(),
+		DeprecationMessage: naming.ResourceDeprecation(),
+		Description:        naming.Description("Source Resource"),
+		Attributes:         naming.WithTeamID(schemaAttributes()),
 	}
 }
 
@@ -63,13 +67,13 @@ func (r *sourceResource) MoveState(_ context.Context) []resource.StateMover {
 	if r.naming.Legacy {
 		return nil
 	}
-	return []resource.StateMover{shared.RenamedStateMover(r.naming.LegacyTypeName(), r.schema())}
+	return []resource.StateMover{shared.RenamedStateMover(r.naming.LegacyTypeName(), resourceSchema(r.naming.AsLegacy()), r.schema())}
 }
 
 // Create creates the resource and sets the initial Terraform state.
 func (r *sourceResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
-	var data *sourceResourceModel
-	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
+	data, _, diags := getModel(ctx, req.Plan, r.naming.Legacy)
+	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -83,18 +87,18 @@ func (r *sourceResource) Create(ctx context.Context, req resource.CreateRequest,
 		return
 	}
 
-	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
+	resp.Diagnostics.Append(setModel(ctx, &resp.State, r.naming.Legacy, data)...)
 }
 
 // Read refreshes the Terraform state with the latest data.
 func (r *sourceResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
-	var data *sourceResourceModel
-	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
+	data, teamID, diags := getModel(ctx, req.State, r.naming.Legacy)
+	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	client, ok := r.ClientForState(shared.StoredProject(data.ProjectID, data.TeamID), &resp.Diagnostics)
+	client, ok := r.ClientForState(shared.StoredProject(data.ProjectID, teamID), &resp.Diagnostics)
 	if !ok {
 		return
 	}
@@ -108,24 +112,24 @@ func (r *sourceResource) Read(ctx context.Context, req resource.ReadRequest, res
 		return
 	}
 
-	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
+	resp.Diagnostics.Append(setModel(ctx, &resp.State, r.naming.Legacy, data)...)
 }
 
 // Update updates the resource and sets the updated Terraform state on success.
 func (r *sourceResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
-	var data *sourceResourceModel
-	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
+	data, _, diags := getModel(ctx, req.Plan, r.naming.Legacy)
+	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	var state *sourceResourceModel
-	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
+	state, teamID, diags := getModel(ctx, req.State, r.naming.Legacy)
+	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	client, ok := r.ClientForState(shared.StoredProject(state.ProjectID, state.TeamID), &resp.Diagnostics)
+	client, ok := r.ClientForState(shared.StoredProject(state.ProjectID, teamID), &resp.Diagnostics)
 	if !ok {
 		return
 	}
@@ -134,18 +138,18 @@ func (r *sourceResource) Update(ctx context.Context, req resource.UpdateRequest,
 		return
 	}
 
-	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
+	resp.Diagnostics.Append(setModel(ctx, &resp.State, r.naming.Legacy, data)...)
 }
 
 // Delete deletes the resource and removes the Terraform state on success.
 func (r *sourceResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
-	var data *sourceResourceModel
-	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
+	data, teamID, diags := getModel(ctx, req.State, r.naming.Legacy)
+	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	client, ok := r.ClientForState(shared.StoredProject(data.ProjectID, data.TeamID), &resp.Diagnostics)
+	client, ok := r.ClientForState(shared.StoredProject(data.ProjectID, teamID), &resp.Diagnostics)
 	if !ok {
 		return
 	}

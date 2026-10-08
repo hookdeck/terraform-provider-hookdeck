@@ -63,7 +63,7 @@ func (r *sourceAuthResource) MoveState(_ context.Context) []resource.StateMover 
 	if r.naming.Legacy {
 		return nil
 	}
-	return []resource.StateMover{shared.RenamedStateMover(r.naming.LegacyTypeName(), r.schema())}
+	return []resource.StateMover{shared.RenamedStateMover(r.naming.LegacyTypeName(), r.schema(), r.schema())}
 }
 
 // Create creates the resource and sets the initial Terraform state.

@@ -1,7 +1,12 @@
 package connection
 
 import (
+	"context"
+
+	"terraform-provider-hookdeck/internal/provider/shared"
+
 	"github.com/hashicorp/terraform-plugin-framework-jsontypes/jsontypes"
+	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
@@ -16,7 +21,6 @@ type connectionResourceModel struct {
 	PausedAt      types.String `tfsdk:"paused_at"`
 	Rules         []rule       `tfsdk:"rules"`
 	SourceID      types.String `tfsdk:"source_id"`
-	TeamID        types.String `tfsdk:"team_id"`
 	UpdatedAt     types.String `tfsdk:"updated_at"`
 }
 
@@ -109,4 +113,32 @@ type retryRuleV0 struct {
 	Interval types.Int64  `tfsdk:"interval"`
 	Strategy types.String `tfsdk:"strategy"`
 	// Note: V0 did NOT have response_status_codes
+}
+
+// legacyConnectionResourceModel is the model of the v2 name, which also has team_id.
+type legacyConnectionResourceModel struct {
+	connectionResourceModel
+	TeamID types.String `tfsdk:"team_id"`
+}
+
+// getModel reads the model from a plan, state or configuration. On the v2
+// name it also returns team_id, which records the project in state written
+// before project_id existed.
+func getModel(ctx context.Context, from shared.ModelSource, legacy bool) (*connectionResourceModel, types.String, diag.Diagnostics) {
+	if legacy {
+		var m legacyConnectionResourceModel
+		diags := from.Get(ctx, &m)
+		return &m.connectionResourceModel, m.TeamID, diags
+	}
+	var m connectionResourceModel
+	diags := from.Get(ctx, &m)
+	return &m, types.StringNull(), diags
+}
+
+// setModel writes the model to state, with team_id on the v2 name.
+func setModel(ctx context.Context, to shared.ModelTarget, legacy bool, m *connectionResourceModel) diag.Diagnostics {
+	if legacy {
+		return to.Set(ctx, &legacyConnectionResourceModel{connectionResourceModel: *m, TeamID: m.ProjectID})
+	}
+	return to.Set(ctx, m)
 }
