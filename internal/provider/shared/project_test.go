@@ -522,8 +522,8 @@ func TestProjectDiagnostics(t *testing.T) {
 		summary string
 		detail  []string
 	}{
-		{projectscope.ErrProjectRequired, "Missing project_id", []string{"organization API key", "project_id is required"}},
-		{&projectscope.MismatchError{Provider: "tm_prov", Configured: "tm_res"}, "Project mismatch", []string{"tm_prov", "tm_res"}},
+		{projectscope.ErrProjectRequired, "Missing project_id", []string{"organization API key", "project_id is required", `data "hookdeck_gateway_project"`}},
+		{&projectscope.MismatchError{Provider: "tm_prov", Configured: "tm_res"}, "Project mismatch", []string{"tm_prov", "tm_res", `data "hookdeck_gateway_project"`}},
 		{&projectscope.UnreachableError{Stored: "tm_old", Target: "tm_new"}, "Project not reachable", []string{"tm_old", "tm_new", "terraform state rm", "removed block", "organization API key"}},
 		{&sdkclient.ProjectAccessError{ProjectID: "tm_x", Status: 404}, "Project not accessible", []string{"tm_x"}},
 		{io.ErrUnexpectedEOF, "Error resolving project", []string{io.ErrUnexpectedEOF.Error()}},

@@ -28,6 +28,8 @@ const (
 
 	storedProjectHint = "The resource is recorded in that project and nothing was changed. To stop managing it, remove it from state (terraform state rm, or a removed block). To move it to another project, use an organization API key with access to both projects."
 	targetProjectHint = "Check project_id and the API key's access to that project."
+
+	projectLookupHint = `To look up a project's ID by name, use the hookdeck_gateway_project data source: data "hookdeck_gateway_project" "prod" { name = "prod" }, then project_id = data.hookdeck_gateway_project.prod.id.`
 )
 
 func ProjectIDResourceAttribute() resourceschema.StringAttribute {
@@ -79,11 +81,11 @@ func ProjectDiagnostics(err error) diag.Diagnostics {
 	switch {
 	case errors.Is(err, projectscope.ErrProjectRequired):
 		diags.AddAttributeError(path.Root(projectIDAttribute), "Missing project_id",
-			"project_id is required: the provider is configured with an organization API key and no project_id, so every resource and data source names its project. To manage a single project instead, set project_id on the provider.")
+			"project_id is required: the provider is configured with an organization API key and no project_id, so every resource and data source names its project. To manage a single project instead, set project_id on the provider. "+projectLookupHint)
 	case errors.As(err, &mismatch):
 		diags.AddAttributeError(path.Root(projectIDAttribute), "Project mismatch",
-			fmt.Sprintf("project_id is %s, but this provider configuration manages the single project %s. Remove project_id here or set it to %s. To manage several projects with one provider configuration, use an organization API key without a provider project_id.",
-				mismatch.Configured, mismatch.Provider, mismatch.Provider))
+			fmt.Sprintf("project_id is %s, but this provider configuration manages the single project %s. Remove project_id here or set it to %s. To manage several projects with one provider configuration, use an organization API key without a provider project_id. %s",
+				mismatch.Configured, mismatch.Provider, mismatch.Provider, projectLookupHint))
 	case errors.As(err, &unreachable):
 		diags.AddError("Project not reachable",
 			fmt.Sprintf("This resource is in project %s, but the provider now targets project %s with a project API key, which only reaches its own project. Nothing was changed. If the API key or project_id changed by mistake, restore it. To stop managing the resource, remove it from state (terraform state rm, or a removed block). To move it to project %s, use an organization API key with access to both projects; the resource is then replaced.",
