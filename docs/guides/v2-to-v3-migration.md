@@ -33,7 +33,7 @@ Earlier versions cannot move a resource to a different resource type. On those v
 
 1. Set the provider version constraint to `~> 3.0` and run `terraform init -upgrade`.
 2. If your configuration sets `disabled_at`, [remove it](#disabled_at-is-read-only).
-3. Run `terraform plan`. It reports no changes, plus a `Deprecated` warning for each resource and data source block that uses a v2 name. Terraform before 1.12 and OpenTofu show each of these warnings twice on `plan`, so 6 blocks give 12 warnings. Terraform 1.15 and later also warn with `Deprecated value used` wherever a v2-named resource is referenced.
+3. Run `terraform plan`. It reports no changes, plus a `Deprecated` warning for each resource and data source block that uses a v2 name. On Terraform before 1.12 and on OpenTofu, `plan` shows each of these warnings twice (6 blocks give 12 warnings). Terraform 1.15 and later also warn with `Deprecated value used` wherever a v2-named resource is referenced.
 4. Run `terraform apply`. Nothing changes in Hookdeck; the apply records each resource's `project_id` in state.
 5. Rename the resources, now or any time before v4: see [Resource Renames](#resource-renames).
 
