@@ -109,7 +109,7 @@ HOOKDECK_API_BASE=https://api.staging.hookdeck.com make testacc
 Tests named `OrgKey` need an organization API key and skip without one. Set both variables in `.env.test`:
 
 - `HOOKDECK_ORG_API_KEY`: an organization API key with `projects.write` and the `gateway.*.write` scopes.
-- `HOOKDECK_ORG_PROJECT_ID`: an Event Gateway project the key can access.
+- `HOOKDECK_ORG_PROJECT_ID`: an Event Gateway project the key can access. Use a project other than the one `HOOKDECK_API_KEY` belongs to: `TestAccProjectScope_KeyCannotReachStoredProject` skips when they are the same.
 
 They create and delete projects in that organization. Project creation is rate limited per organization, so the tests share one extra project per run.
 

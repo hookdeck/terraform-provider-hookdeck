@@ -432,6 +432,9 @@ func TestAccProjectScope_KeyCannotReachStoredProject(t *testing.T) {
 	suffix := acctest.RandStringFromCharSet(8, acctest.CharSetAlphaNum)
 	orgProject := os.Getenv(envOrgProjectID)
 	keyProject := currentProjectID(t)
+	if keyProject == orgProject {
+		t.Skipf("%s belongs to %s, the project in %s; this test needs a project key for another project", envAPIKey, orgProject, envOrgProjectID)
+	}
 	var sourceID string
 
 	useAPIKey(t, orgKey)
