@@ -18,6 +18,7 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+	"regexp"
 	"sort"
 	"strings"
 	"sync"
@@ -29,6 +30,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework/providerserver"
 	"github.com/hashicorp/terraform-plugin-go/tfprotov6"
+	"github.com/hashicorp/terraform-plugin-testing/config"
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
@@ -56,8 +58,11 @@ const (
 )
 
 // ProviderFactories runs the provider under test in the test process.
+// Each server gets its own provider instance, so tests can run in parallel.
 var ProviderFactories = map[string]func() (tfprotov6.ProviderServer, error){
-	"hookdeck": providerserver.NewProtocol6WithError(provider.New("test")()),
+	"hookdeck": func() (tfprotov6.ProviderServer, error) {
+		return providerserver.NewProtocol6WithError(provider.New("test")())()
+	},
 }
 
 // Main is a package's TestMain. Credentials set for the provider in the
@@ -79,6 +84,11 @@ func SkipUnlessAcc(t *testing.T) {
 	}
 }
 
+// UseAPIKey (with UseProject) is for the tests that run against a mock API:
+// they set the process environment, so they cannot run in parallel. Tests
+// against the real API pass credentials as Terraform variables instead; see
+// Test.
+//
 // UseAPIKey makes the provider under test read apiKey from the environment
 // for the rest of the test, so that keys never appear in a configuration.
 func UseAPIKey(t *testing.T, apiKey string) {
@@ -93,27 +103,98 @@ func UseProject(t *testing.T, projectID string) {
 	t.Setenv(EnvProjectID, projectID)
 }
 
-// PreCheck points the provider at ProjectA with the organization key
+// Creds are the provider credentials a test runs with. They reach the
+// provider as Terraform variables, so tests using them can run in parallel.
+type Creds struct {
+	APIKey    string
+	ProjectID string
+}
+
+// Org is the organization key with ProjectA as the provider's project
 // (single-project mode). Most tests use it.
-func PreCheck(t *testing.T) {
+func Org(t *testing.T) Creds {
 	t.Helper()
-	UseAPIKey(t, OrgKey(t))
-	UseProject(t, ProjectA(t))
+	return Creds{APIKey: OrgKey(t), ProjectID: ProjectA(t)}
 }
 
-// PreCheckOrgKey selects the organization key without a project, for tests
-// that name projects themselves.
-func PreCheckOrgKey(t *testing.T) {
+// OrgNoProject is the organization key without a provider project, for
+// tests that name projects themselves.
+func OrgNoProject(t *testing.T) Creds {
 	t.Helper()
-	UseAPIKey(t, OrgKey(t))
-	UseProject(t, "")
+	return Creds{APIKey: OrgKey(t)}
 }
 
-// PreCheckProjectKey selects a project key for ProjectA.
-func PreCheckProjectKey(t *testing.T) {
+// ProjectKeyCreds is a project key for ProjectA.
+func ProjectKeyCreds(t *testing.T) Creds {
 	t.Helper()
-	UseAPIKey(t, ProjectKey(t))
-	UseProject(t, "")
+	return Creds{APIKey: ProjectKey(t)}
+}
+
+// Variables returns the Terraform variables carrying the credentials.
+func (c Creds) Variables() config.Variables {
+	vars := config.Variables{VarAPIKey: config.StringVariable(c.APIKey)}
+	if c.ProjectID != "" {
+		vars[VarProjectID] = config.StringVariable(c.ProjectID)
+	}
+	return vars
+}
+
+const (
+	VarAPIKey    = "hookdeck_api_key"
+	VarProjectID = "hookdeck_project_id"
+
+	variableDeclarations = `variable "hookdeck_api_key" {
+  type      = string
+  sensitive = true
+  default   = null
+}
+
+variable "hookdeck_project_id" {
+  type    = string
+  default = null
+}
+
+`
+	providerDeclaration = `provider "hookdeck" {
+  api_key    = var.hookdeck_api_key
+  project_id = var.hookdeck_project_id
+}
+
+`
+)
+
+var providerBlockPattern = regexp.MustCompile(`(?m)^\s*provider\s+"hookdeck"`)
+
+// Test runs a test case against the real API as ProjectA with the
+// organization key, in parallel with other tests.
+func Test(t *testing.T, tc resource.TestCase) {
+	t.Helper()
+	TestAs(t, Org(t), tc)
+}
+
+// TestAs is Test with other credentials. The credentials are passed to the
+// provider as variables of every step, unless a step sets its own
+// ConfigVariables. A step's configuration gets the variable declarations,
+// and a provider block unless it has one that reads var.hookdeck_api_key.
+func TestAs(t *testing.T, c Creds, tc resource.TestCase) {
+	t.Helper()
+	tc.ProtoV6ProviderFactories = ProviderFactories
+	steps := make([]resource.TestStep, len(tc.Steps))
+	for i, step := range tc.Steps {
+		if step.ConfigVariables == nil {
+			step.ConfigVariables = c.Variables()
+		}
+		if step.Config != "" {
+			header := variableDeclarations
+			if !providerBlockPattern.MatchString(step.Config) {
+				header += providerDeclaration
+			}
+			step.Config = header + step.Config
+		}
+		steps[i] = step
+	}
+	tc.Steps = steps
+	resource.ParallelTest(t, tc)
 }
 
 // OrgKey returns the organization API key.
@@ -242,6 +323,9 @@ func ProjectKey(t *testing.T) string {
 			"team_id": project,
 		}, nil, &created)
 		projectKeyID, projectKeyVal = created.ID, created.Key
+		if projectKeyVal != "" && os.Getenv("GITHUB_ACTIONS") == "true" {
+			fmt.Printf("::add-mask::%s\n", projectKeyVal)
+		}
 	})
 	if projectKeyErr != nil {
 		t.Fatalf("minting a project key: %v", projectKeyErr)
@@ -270,11 +354,11 @@ func Request(t *testing.T, apiKey, projectID, method, path string, payload any) 
 	return status, body
 }
 
-// RequestCurrent is Request with the credentials the provider under test
-// currently reads from the environment. It is for Check functions, which
-// have no *testing.T.
+// RequestCurrent is Request with the credentials of Org, for Check
+// functions, which have no *testing.T. The project is resolved by the time
+// a check runs.
 func RequestCurrent(method, path string, query url.Values, payload any) (int, map[string]any, error) {
-	return Send(os.Getenv(EnvAPIKey), os.Getenv(EnvProjectID), method, path, query, payload)
+	return Send(os.Getenv(EnvOrgAPIKey), projectA.id, method, path, query, payload)
 }
 
 // Send calls the API under the API version, in projectID when it is not

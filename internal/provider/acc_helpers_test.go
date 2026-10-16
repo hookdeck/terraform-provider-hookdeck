@@ -32,6 +32,12 @@ func providerBlock(projectID string) string {
 	return fmt.Sprintf("provider \"hookdeck\" {\n  project_id = %q\n}\n", projectID)
 }
 
+// liveProviderBlock is providerBlock for tests against the real API, which
+// pass their key as a variable.
+func liveProviderBlock(projectID string) string {
+	return fmt.Sprintf("provider \"hookdeck\" {\n  api_key    = var.hookdeck_api_key\n  project_id = %q\n}\n", projectID)
+}
+
 // sourceConfig returns a hookdeck_gateway_source named test. An empty
 // projectID omits project_id.
 func sourceConfig(t *testing.T, suffix, projectID string) string {

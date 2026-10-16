@@ -24,9 +24,7 @@ func projectConfig(name string) string {
 func TestAccGatewayProject_ProjectKeyIsPlanError(t *testing.T) {
 	suffix := acctest.RandStringFromCharSet(8, acctest.CharSetAlphaNum)
 
-	resource.Test(t, resource.TestCase{
-		PreCheck:                 func() { acc.PreCheckProjectKey(t) },
-		ProtoV6ProviderFactories: acc.ProviderFactories,
+	acc.TestAs(t, acc.ProjectKeyCreds(t), resource.TestCase{
 		Steps: []resource.TestStep{
 			{
 				Config:      projectConfig("tf-acc-v3-" + suffix),
@@ -41,7 +39,6 @@ func TestAccGatewayProject_ProjectKeyIsPlanError(t *testing.T) {
 // this runs without organization credentials.
 func TestAccGatewayProject_Validation(t *testing.T) {
 	acc.SkipUnlessAcc(t)
-	acc.UseAPIKey(t, acc.FakeOrgAPIKey)
 
 	var steps []resource.TestStep
 	for _, name := range []string{" padded", "padded ", strings.Repeat("x", 41)} {
@@ -52,9 +49,8 @@ func TestAccGatewayProject_Validation(t *testing.T) {
 		})
 	}
 
-	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: acc.ProviderFactories,
-		Steps:                    steps,
+	acc.TestAs(t, acc.Creds{APIKey: acc.FakeOrgAPIKey}, resource.TestCase{
+		Steps: steps,
 	})
 }
 
@@ -63,9 +59,7 @@ func TestAccGatewayProject_ProjectKey_DataSource(t *testing.T) {
 	acc.SkipUnlessAcc(t)
 	projectID := acc.ProjectA(t)
 
-	resource.Test(t, resource.TestCase{
-		PreCheck:                 func() { acc.PreCheckProjectKey(t) },
-		ProtoV6ProviderFactories: acc.ProviderFactories,
+	acc.TestAs(t, acc.ProjectKeyCreds(t), resource.TestCase{
 		Steps: []resource.TestStep{
 			{
 				Config: loadFixture(t, "project_datasource.tf", projectID),
@@ -87,7 +81,6 @@ func TestAccGatewayProject_ProjectKey_DataSource(t *testing.T) {
 // Create a project and a source in it, rename the project in place, import
 // it, then destroy both.
 func TestAccGatewayProject_OrgKey_Lifecycle(t *testing.T) {
-	acc.PreCheckOrgKey(t)
 	orgKey := acc.OrgKey(t)
 	suffix := acctest.RandStringFromCharSet(8, acctest.CharSetAlphaNum)
 	var projectID, sourceID string
@@ -96,8 +89,7 @@ func TestAccGatewayProject_OrgKey_Lifecycle(t *testing.T) {
 		return projectConfig(name) + loadFixture(t, "source_in_project.tf", suffix)
 	}
 
-	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: acc.ProviderFactories,
+	acc.TestAs(t, acc.Creds{APIKey: orgKey}, resource.TestCase{
 		CheckDestroy: func(_ *terraform.State) error {
 			if projectID == "" {
 				return nil
@@ -143,11 +135,9 @@ func TestAccGatewayProject_OrgKey_Lifecycle(t *testing.T) {
 }
 
 func TestAccGatewayProject_OrgKey_DataSource(t *testing.T) {
-	acc.PreCheckOrgKey(t)
 	projectID := acc.ProjectA(t)
 
-	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: acc.ProviderFactories,
+	acc.TestAs(t, acc.OrgNoProject(t), resource.TestCase{
 		Steps: []resource.TestStep{
 			{
 				Config: loadFixture(t, "project_datasource.tf", projectID),

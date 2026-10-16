@@ -25,9 +25,7 @@ func TestAccTransformationResource(t *testing.T) {
 	rName := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
 	resourceName := fmt.Sprintf("hookdeck_transformation.test_%s", rName)
 
-	resource.Test(t, resource.TestCase{
-		PreCheck:                 func() { acc.PreCheck(t) },
-		ProtoV6ProviderFactories: acc.ProviderFactories,
+	acc.Test(t, resource.TestCase{
 		Steps: []resource.TestStep{
 			// Create and Read testing
 			{
@@ -65,9 +63,7 @@ func TestAccTransformationResourceWithEnv(t *testing.T) {
 	rName := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
 	resourceName := fmt.Sprintf("hookdeck_transformation.test_%s", rName)
 
-	resource.Test(t, resource.TestCase{
-		PreCheck:                 func() { acc.PreCheck(t) },
-		ProtoV6ProviderFactories: acc.ProviderFactories,
+	acc.Test(t, resource.TestCase{
 		Steps: []resource.TestStep{
 			// Create with environment variables
 			{

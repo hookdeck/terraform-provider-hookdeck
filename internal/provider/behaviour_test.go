@@ -16,9 +16,7 @@ import (
 func TestAccBehaviour_DisabledAtIsReadOnly(t *testing.T) {
 	suffix := acctest.RandStringFromCharSet(8, acctest.CharSetAlphaNum)
 
-	resource.Test(t, resource.TestCase{
-		PreCheck:                 func() { acc.PreCheck(t) },
-		ProtoV6ProviderFactories: acc.ProviderFactories,
+	acc.Test(t, resource.TestCase{
 		Steps: []resource.TestStep{
 			{
 				Config:      loadFixture(t, "destination_disabled_at.tf", suffix),
@@ -54,9 +52,7 @@ func TestAccBehaviour_DeletedOutsideTerraform(t *testing.T) {
 		recreated = append(recreated, plancheck.ExpectResourceAction(address, plancheck.ResourceActionCreate))
 	}
 
-	resource.Test(t, resource.TestCase{
-		PreCheck:                 func() { acc.PreCheck(t) },
-		ProtoV6ProviderFactories: acc.ProviderFactories,
+	acc.Test(t, resource.TestCase{
 		Steps: []resource.TestStep{
 			{
 				Config: loadFixture(t, "gateway_basic.tf", suffix),

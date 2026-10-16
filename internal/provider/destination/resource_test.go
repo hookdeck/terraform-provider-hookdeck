@@ -97,9 +97,7 @@ func TestAccDestinationResource_RemoveRateLimit(t *testing.T) {
 	rName := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
 	resourceName := fmt.Sprintf("hookdeck_destination.test_%s", rName)
 
-	resource.Test(t, resource.TestCase{
-		PreCheck:                 func() { acc.PreCheck(t) },
-		ProtoV6ProviderFactories: acc.ProviderFactories,
+	acc.Test(t, resource.TestCase{
 		Steps: []resource.TestStep{
 			{
 				Config: loadTestConfigFormatted(t, "with_rate_limit.tf", rName),
@@ -129,9 +127,7 @@ func TestAccDestinationResource_AddRemoveReaddRateLimit(t *testing.T) {
 	rName := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
 	resourceName := fmt.Sprintf("hookdeck_destination.test_%s", rName)
 
-	resource.Test(t, resource.TestCase{
-		PreCheck:                 func() { acc.PreCheck(t) },
-		ProtoV6ProviderFactories: acc.ProviderFactories,
+	acc.Test(t, resource.TestCase{
 		Steps: []resource.TestStep{
 			// Start minimal — no rate_limit.
 			{
@@ -174,9 +170,7 @@ func TestAccDestinationResource_AddRemoveReaddRateLimit(t *testing.T) {
 func TestAccDestinationResource_NoDriftAfterRateLimitRemoval(t *testing.T) {
 	rName := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
 
-	resource.Test(t, resource.TestCase{
-		PreCheck:                 func() { acc.PreCheck(t) },
-		ProtoV6ProviderFactories: acc.ProviderFactories,
+	acc.Test(t, resource.TestCase{
 		Steps: []resource.TestStep{
 			// Apply with rate_limit set.
 			{
@@ -204,9 +198,7 @@ func TestAccDestinationResource_RemoveHTTPMethod(t *testing.T) {
 	rName := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
 	resourceName := fmt.Sprintf("hookdeck_destination.test_%s", rName)
 
-	resource.Test(t, resource.TestCase{
-		PreCheck:                 func() { acc.PreCheck(t) },
-		ProtoV6ProviderFactories: acc.ProviderFactories,
+	acc.Test(t, resource.TestCase{
 		Steps: []resource.TestStep{
 			{
 				Config: loadTestConfigFormatted(t, "with_http_method.tf", rName),
@@ -235,9 +227,7 @@ func TestAccDestinationResource_RemovePathForwardingDisabledResetsToDefault(t *t
 	rName := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
 	resourceName := fmt.Sprintf("hookdeck_destination.test_%s", rName)
 
-	resource.Test(t, resource.TestCase{
-		PreCheck:                 func() { acc.PreCheck(t) },
-		ProtoV6ProviderFactories: acc.ProviderFactories,
+	acc.Test(t, resource.TestCase{
 		Steps: []resource.TestStep{
 			{
 				Config: loadTestConfigFormatted(t, "with_path_forwarding_disabled.tf", rName),
@@ -274,9 +264,7 @@ func TestAccDestinationResource_RateLimitPeriodMergeBehavior(t *testing.T) {
 	rName := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
 	resourceName := fmt.Sprintf("hookdeck_destination.test_%s", rName)
 
-	resource.Test(t, resource.TestCase{
-		PreCheck:                 func() { acc.PreCheck(t) },
-		ProtoV6ProviderFactories: acc.ProviderFactories,
+	acc.Test(t, resource.TestCase{
 		Steps: []resource.TestStep{
 			{
 				Config: loadTestConfigFormatted(t, "with_rate_limit.tf", rName),

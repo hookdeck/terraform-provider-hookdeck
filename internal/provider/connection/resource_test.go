@@ -38,9 +38,7 @@ func TestAccConnectionResource(t *testing.T) {
 	rName := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
 	resourceName := fmt.Sprintf("hookdeck_connection.test_%s", rName)
 
-	resource.Test(t, resource.TestCase{
-		PreCheck:                 func() { acc.PreCheck(t) },
-		ProtoV6ProviderFactories: acc.ProviderFactories,
+	acc.Test(t, resource.TestCase{
 		Steps: []resource.TestStep{
 			// Create and Read testing
 			{
@@ -77,9 +75,7 @@ func TestAccConnectionResourceWithRules(t *testing.T) {
 	rName := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
 	resourceName := fmt.Sprintf("hookdeck_connection.test_%s", rName)
 
-	resource.Test(t, resource.TestCase{
-		PreCheck:                 func() { acc.PreCheck(t) },
-		ProtoV6ProviderFactories: acc.ProviderFactories,
+	acc.Test(t, resource.TestCase{
 		Steps: []resource.TestStep{
 			// Create with filter rule
 			{
@@ -157,9 +153,7 @@ func TestAccConnectionResourceDeduplicationRule(t *testing.T) {
 	rName := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
 	resourceName := fmt.Sprintf("hookdeck_connection.test_%s", rName)
 
-	resource.Test(t, resource.TestCase{
-		PreCheck:                 func() { acc.PreCheck(t) },
-		ProtoV6ProviderFactories: acc.ProviderFactories,
+	acc.Test(t, resource.TestCase{
 		Steps: []resource.TestStep{
 			// Test exact deduplication (no fields)
 			{
@@ -216,9 +210,7 @@ func TestAccConnectionResourceDeduplicationRule(t *testing.T) {
 func TestAccConnectionResourceDeduplicationValidation(t *testing.T) {
 	rName := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
 
-	resource.Test(t, resource.TestCase{
-		PreCheck:                 func() { acc.PreCheck(t) },
-		ProtoV6ProviderFactories: acc.ProviderFactories,
+	acc.Test(t, resource.TestCase{
 		Steps: []resource.TestStep{
 			// Test window validation - too small (< 1000ms)
 			{
@@ -243,9 +235,7 @@ func TestAccConnectionResourceRuleOrdering(t *testing.T) {
 	rName := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
 	resourceName := fmt.Sprintf("hookdeck_connection.test_%s", rName)
 
-	resource.Test(t, resource.TestCase{
-		PreCheck:                 func() { acc.PreCheck(t) },
-		ProtoV6ProviderFactories: acc.ProviderFactories,
+	acc.Test(t, resource.TestCase{
 		Steps: []resource.TestStep{
 			// Test all rule types maintain order: filter -> deduplicate -> delay -> transform -> retry
 			{
@@ -322,9 +312,7 @@ func TestAccConnectionResourceFilterJSONFormattingRawWorkaround(t *testing.T) {
 	rName := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
 	resourceName := fmt.Sprintf("hookdeck_connection.test_%s", rName)
 
-	resource.Test(t, resource.TestCase{
-		PreCheck:                 func() { acc.PreCheck(t) },
-		ProtoV6ProviderFactories: acc.ProviderFactories,
+	acc.Test(t, resource.TestCase{
 		Steps: []resource.TestStep{
 			{
 				Config: loadTestConfigFormatted("with_json_formatting_decode.tf", rName),
@@ -376,9 +364,7 @@ func TestAccConnectionResourceFilterJSONFormattingRaw(t *testing.T) {
 }
 `
 
-	resource.Test(t, resource.TestCase{
-		PreCheck:                 func() { acc.PreCheck(t) },
-		ProtoV6ProviderFactories: acc.ProviderFactories,
+	acc.Test(t, resource.TestCase{
 		Steps: []resource.TestStep{
 			{
 				Config: loadTestConfigFormatted("with_json_formatting_raw.tf", rName),
@@ -408,9 +394,7 @@ func TestAccConnectionResourceFilterJSONFormatting(t *testing.T) {
 	rName := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
 	resourceName := fmt.Sprintf("hookdeck_connection.test_%s", rName)
 
-	resource.Test(t, resource.TestCase{
-		PreCheck:                 func() { acc.PreCheck(t) },
-		ProtoV6ProviderFactories: acc.ProviderFactories,
+	acc.Test(t, resource.TestCase{
 		Steps: []resource.TestStep{
 			{
 				Config: loadTestConfigFormatted("with_json_formatting.tf", rName),
@@ -442,9 +426,7 @@ func TestAccConnectionResource_Issue191(t *testing.T) {
 	rName := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
 	resourceName := fmt.Sprintf("hookdeck_connection.test_%s", rName)
 
-	resource.Test(t, resource.TestCase{
-		PreCheck:                 func() { acc.PreCheck(t) },
-		ProtoV6ProviderFactories: acc.ProviderFactories,
+	acc.Test(t, resource.TestCase{
 		Steps: []resource.TestStep{
 			// Step 1: Create connection with retry rule (exact config from issue #191)
 			{

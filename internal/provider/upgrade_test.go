@@ -67,9 +67,10 @@ func TestAccUpgrade_ReleasedV2State_SameNames(t *testing.T) {
 	t.Setenv("TF_ACC_PROVIDER_NAMESPACE", "hookdeck")
 	suffix := acctest.RandStringFromCharSet(8, acctest.CharSetAlphaNum)
 
+	acc.UseAPIKey(t, acc.ProjectKey(t))
+
 	resource.Test(t, resource.TestCase{
-		PreCheck: func() { acc.PreCheckProjectKey(t) },
-		Steps:    upgradeSteps(t, suffix, "v2_names.tf", "hookdeck_"),
+		Steps: upgradeSteps(t, suffix, "v2_names.tf", "hookdeck_"),
 	})
 }
 
@@ -79,8 +80,9 @@ func TestAccUpgrade_ReleasedV2State_Moved(t *testing.T) {
 	t.Setenv("TF_ACC_PROVIDER_NAMESPACE", "hookdeck")
 	suffix := acctest.RandStringFromCharSet(8, acctest.CharSetAlphaNum)
 
+	acc.UseAPIKey(t, acc.ProjectKey(t))
+
 	resource.Test(t, resource.TestCase{
-		PreCheck:               func() { acc.PreCheckProjectKey(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{tfversion.SkipBelow(tfversion.Version1_8_0)},
 		Steps:                  upgradeSteps(t, suffix, "v3_names_moved.tf", "hookdeck_gateway_"),
 	})

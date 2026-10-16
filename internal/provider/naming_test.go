@@ -16,9 +16,7 @@ import (
 func TestAccNaming_GatewayResourceNames(t *testing.T) {
 	suffix := acctest.RandStringFromCharSet(8, acctest.CharSetAlphaNum)
 
-	resource.Test(t, resource.TestCase{
-		PreCheck:                 func() { acc.PreCheck(t) },
-		ProtoV6ProviderFactories: acc.ProviderFactories,
+	acc.Test(t, resource.TestCase{
 		Steps: []resource.TestStep{
 			{
 				Config: loadFixture(t, "gateway_basic.tf", suffix),
@@ -87,9 +85,7 @@ func TestAccNaming_GatewayDataSources(t *testing.T) {
 	suffix := acctest.RandStringFromCharSet(8, acctest.CharSetAlphaNum)
 	projectID := acc.ProjectA(t)
 
-	resource.Test(t, resource.TestCase{
-		PreCheck:                 func() { acc.PreCheck(t) },
-		ProtoV6ProviderFactories: acc.ProviderFactories,
+	acc.Test(t, resource.TestCase{
 		Steps: []resource.TestStep{
 			{
 				Config: loadFixture(t, "gateway_basic.tf", suffix) + loadFixture(t, "gateway_datasources.tf", projectID),
@@ -115,9 +111,7 @@ func TestAccNaming_GatewayDataSources(t *testing.T) {
 func TestAccNaming_V2NamesStillWork(t *testing.T) {
 	suffix := acctest.RandStringFromCharSet(8, acctest.CharSetAlphaNum)
 
-	resource.Test(t, resource.TestCase{
-		PreCheck:                 func() { acc.PreCheck(t) },
-		ProtoV6ProviderFactories: acc.ProviderFactories,
+	acc.Test(t, resource.TestCase{
 		Steps: []resource.TestStep{
 			{
 				Config: loadFixture(t, "v2_names.tf", suffix),
@@ -142,10 +136,8 @@ func TestAccNaming_MovedFromV2Names(t *testing.T) {
 		compare = append(compare, checkIDEquals("hookdeck_gateway_"+name+".test", id))
 	}
 
-	resource.Test(t, resource.TestCase{
-		PreCheck:                 func() { acc.PreCheck(t) },
-		ProtoV6ProviderFactories: acc.ProviderFactories,
-		TerraformVersionChecks:   []tfversion.TerraformVersionCheck{tfversion.SkipBelow(tfversion.Version1_8_0)},
+	acc.Test(t, resource.TestCase{
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{tfversion.SkipBelow(tfversion.Version1_8_0)},
 		Steps: []resource.TestStep{
 			{
 				Config: loadFixture(t, "v2_names.tf", suffix),

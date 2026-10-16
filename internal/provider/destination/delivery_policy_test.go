@@ -17,9 +17,7 @@ import (
 
 func TestAccDestinationResource_RejectsRemovedConfigFields(t *testing.T) {
 	name := acctest.RandomWithPrefix("tf-legacy")
-	resource.Test(t, resource.TestCase{
-		PreCheck:                 func() { acc.PreCheck(t) },
-		ProtoV6ProviderFactories: acc.ProviderFactories,
+	acc.Test(t, resource.TestCase{
 		Steps: []resource.TestStep{{
 			Config: fmt.Sprintf(`resource "hookdeck_destination" "test" {
  name = %q
@@ -65,9 +63,7 @@ func TestAccDestinationResource_DeliveryPolicy(t *testing.T) {
 	withGroups := `delivery_policy = {rate = 10, period = "second", groups = {key = "body.customer_id", rate = 5, rate_period = "second", overrides = {priority = {rate = 8, rate_period = "minute"}}}}`
 	withoutOverride := `delivery_policy = {rate = 10, period = "second", groups = {key = "body.customer_id", rate = 5, rate_period = "second"}}`
 	rateOnly := `delivery_policy = {rate = 10, period = "second"}`
-	resource.Test(t, resource.TestCase{
-		PreCheck:                 func() { acc.PreCheck(t) },
-		ProtoV6ProviderFactories: acc.ProviderFactories,
+	acc.Test(t, resource.TestCase{
 		Steps: []resource.TestStep{
 			{Config: config(rateOnly), Check: checkAPIConfigValue("hookdeck_destination.test", "delivery_policy.rate", float64(10))},
 			{Config: config(withGroups), Check: checkGroups(`{"key":"body.customer_id","rate":5,"rate_period":"second","overrides":{"priority":{"rate":8,"rate_period":"minute"}}}`)},
