@@ -1,4 +1,4 @@
-## 3.0.0 (Unreleased)
+## 3.0.0 (2026-10-17)
 
 See the [v2 to v3 migration guide](https://registry.terraform.io/providers/hookdeck/hookdeck/latest/docs/guides/v2-to-v3-migration).
 
