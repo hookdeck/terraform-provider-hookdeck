@@ -1,3 +1,13 @@
+// Command teardown deletes what acceptance tests leave behind.
+//
+// It touches only objects whose name (label, for API keys) starts with
+// "tf-acc-" and that are older than an hour, so a run in progress is never
+// disturbed:
+//
+//   - connections, sources, destinations and transformations in the two
+//     fixed test projects,
+//   - test projects,
+//   - test project API keys.
 package main
 
 import (
@@ -8,22 +18,173 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"net/url"
 	"os"
 	"strings"
+	"time"
+
+	"terraform-provider-hookdeck/internal/sdkclient"
 )
 
-const apiVersion = "2025-07-01"
-const baseURL = "https://api.hookdeck.com"
+const (
+	namePrefix   = "tf-acc-"
+	projectNameA = "tf-ci-a"
+	projectNameB = "tf-ci-b"
+	projectHdr   = sdkclient.ProjectHeader
+)
 
-type Resource struct {
-	ID   string
-	Name string
+var baseURL = "https://api.hookdeck.com"
+
+type resource struct {
+	ID        string
+	Name      string
+	CreatedAt time.Time
 }
 
-type ResourceList struct {
-	Type  string
-	Items []Resource
-	Count int
+// target is a set of deletable objects of one kind.
+type target struct {
+	Kind      string
+	Path      string // collection path, deleted at Path + "/" + id
+	ProjectID string // sent as the project header when not empty
+	Items     []resource
+}
+
+type api struct {
+	key    string
+	client *http.Client
+}
+
+func (a api) do(method, path, projectID string, query url.Values) ([]byte, int, error) {
+	u := fmt.Sprintf("%s/%s%s", baseURL, sdkclient.APIVersion, path)
+	if len(query) > 0 {
+		u += "?" + query.Encode()
+	}
+	req, err := http.NewRequest(method, u, nil)
+	if err != nil {
+		return nil, 0, err
+	}
+	req.Header.Set("Authorization", "Bearer "+a.key)
+	req.Header.Set("Content-Type", "application/json")
+	if projectID != "" {
+		req.Header.Set(projectHdr, projectID)
+	}
+	resp, err := a.client.Do(req)
+	if err != nil {
+		return nil, 0, err
+	}
+	defer resp.Body.Close()
+	body, err := io.ReadAll(resp.Body)
+	return body, resp.StatusCode, err
+}
+
+func parseResources(models []any) []resource {
+	var out []resource
+	for _, model := range models {
+		m, ok := model.(map[string]any)
+		if !ok {
+			continue
+		}
+		var r resource
+		r.ID, _ = m["id"].(string)
+		// API keys have a label where everything else has a name.
+		if name, ok := m["name"].(string); ok {
+			r.Name = name
+		} else if label, ok := m["label"].(string); ok {
+			r.Name = label
+		}
+		if created, ok := m["created_at"].(string); ok {
+			r.CreatedAt, _ = time.Parse(time.RFC3339, created)
+		}
+		out = append(out, r)
+	}
+	return out
+}
+
+// list returns every item of a collection. Collections answer with either
+// a bare array or a page object with "models" and a "pagination.next"
+// cursor.
+func (a api) list(path, projectID string) ([]resource, error) {
+	var all []resource
+	cursor := ""
+	for {
+		query := url.Values{"limit": []string{"100"}}
+		if cursor != "" {
+			query.Set("next", cursor)
+		}
+		body, status, err := a.do(http.MethodGet, path, projectID, query)
+		if err != nil {
+			return nil, err
+		}
+		if status != http.StatusOK {
+			return nil, fmt.Errorf("GET %s: API error (%d): %s", path, status, string(body))
+		}
+		var array []any
+		if json.Unmarshal(body, &array) == nil {
+			return append(all, parseResources(array)...), nil
+		}
+		var page struct {
+			Models     []any `json:"models"`
+			Pagination struct {
+				Next string `json:"next"`
+			} `json:"pagination"`
+		}
+		if err := json.Unmarshal(body, &page); err != nil {
+			return nil, err
+		}
+		all = append(all, parseResources(page.Models)...)
+		if page.Pagination.Next == "" {
+			return all, nil
+		}
+		cursor = page.Pagination.Next
+	}
+}
+
+// stale keeps the items a test left behind: named with the test prefix and
+// created before cutoff.
+func stale(items []resource, cutoff time.Time) []resource {
+	var out []resource
+	for _, r := range items {
+		if strings.HasPrefix(r.Name, namePrefix) && r.CreatedAt.Before(cutoff) {
+			out = append(out, r)
+		}
+	}
+	return out
+}
+
+func (a api) delete(t target, r resource) error {
+	body, status, err := a.do(http.MethodDelete, t.Path+"/"+r.ID, t.ProjectID, nil)
+	if err != nil {
+		return err
+	}
+	if status >= 300 && !sdkclient.IsGoneStatus(status) {
+		return fmt.Errorf("delete failed (%d): %s", status, string(body))
+	}
+	return nil
+}
+
+func printTarget(t target, dryRun bool) {
+	label := t.Kind
+	if !dryRun {
+		fmt.Printf("🗑️  Deleting %d %s...\n", len(t.Items), label)
+		return
+	}
+	fmt.Printf("\n📋 %s (%d):\n", label, len(t.Items))
+	if len(t.Items) == 0 {
+		fmt.Println("  None found")
+		return
+	}
+	fmt.Println("  IDs to be deleted:")
+	for _, r := range t.Items {
+		fmt.Printf("    - %s (%s)\n", r.ID, r.Name)
+	}
+}
+
+func confirmDeletion(total int) bool {
+	fmt.Printf("\n⚠️  WARNING: This will delete %d objects permanently!\n", total)
+	fmt.Print("Are you sure you want to proceed? (y/N): ")
+	input, _ := bufio.NewReader(os.Stdin).ReadString('\n')
+	input = strings.TrimSpace(strings.ToLower(input))
+	return input == "y" || input == "yes"
 }
 
 func loadEnvFile(filename string) error {
@@ -31,221 +192,91 @@ func loadEnvFile(filename string) error {
 	if err != nil {
 		return err
 	}
-
-	lines := strings.Split(string(data), "\n")
-	for _, line := range lines {
+	for _, line := range strings.Split(string(data), "\n") {
 		line = strings.TrimSpace(line)
 		if line == "" || strings.HasPrefix(line, "#") {
 			continue
 		}
-
 		parts := strings.SplitN(line, "=", 2)
 		if len(parts) != 2 {
 			continue
 		}
-
-		key := strings.TrimSpace(parts[0])
-		value := strings.TrimSpace(parts[1])
-		// Remove quotes if present
-		value = strings.Trim(value, "\"'")
-		_ = os.Setenv(key, value)
+		value := strings.Trim(strings.TrimSpace(parts[1]), "\"'")
+		_ = os.Setenv(strings.TrimSpace(parts[0]), value)
 	}
-
 	return nil
 }
 
-func getResources(apiKey, resourceType string) ([]Resource, error) {
-	var allResources []Resource
-	nextCursor := ""
-
-	for {
-		// Build URL with pagination
-		url := fmt.Sprintf("%s/%s/%s?limit=100", baseURL, apiVersion, resourceType)
-		if nextCursor != "" {
-			url += "&next=" + nextCursor
-		}
-
-		req, err := http.NewRequest("GET", url, nil)
-		if err != nil {
-			return nil, err
-		}
-
-		req.Header.Set("Authorization", "Bearer "+apiKey)
-		req.Header.Set("Content-Type", "application/json")
-
-		client := &http.Client{}
-		resp, err := client.Do(req)
-		if err != nil {
-			return nil, err
-		}
-		defer resp.Body.Close()
-
-		if resp.StatusCode != http.StatusOK {
-			body, _ := io.ReadAll(resp.Body)
-			return nil, fmt.Errorf("API error (%d): %s", resp.StatusCode, string(body))
-		}
-
-		body, err := io.ReadAll(resp.Body)
-		if err != nil {
-			return nil, err
-		}
-
-		var result map[string]interface{}
-		if err := json.Unmarshal(body, &result); err != nil {
-			return nil, err
-		}
-
-		// Extract resources from models array
-		if models, ok := result["models"].([]interface{}); ok {
-			for _, model := range models {
-				if m, ok := model.(map[string]interface{}); ok {
-					resource := Resource{}
-					if id, ok := m["id"].(string); ok {
-						resource.ID = id
-					}
-					if name, ok := m["name"].(string); ok {
-						resource.Name = name
-					}
-					allResources = append(allResources, resource)
-				}
-			}
-		}
-
-		// Check for pagination
-		if pagination, ok := result["pagination"].(map[string]interface{}); ok {
-			if next, ok := pagination["next"].(string); ok && next != "" {
-				nextCursor = next
-			} else {
-				break // No more pages
-			}
-		} else {
-			break // No pagination info
-		}
-	}
-
-	return allResources, nil
-}
-
-func deleteResource(apiKey, resourceType, resourceID string) error {
-	url := fmt.Sprintf("%s/%s/%s/%s", baseURL, apiVersion, resourceType, resourceID)
-
-	req, err := http.NewRequest("DELETE", url, nil)
+// collect finds everything to delete, in deletion order: the contents of the
+// fixed projects (connections first, they reference the rest), then API
+// keys, then projects.
+func collect(a api, cutoff time.Time) ([]target, error) {
+	projects, err := a.list("/projects", "")
 	if err != nil {
-		return err
+		return nil, fmt.Errorf("listing projects: %w", err)
 	}
-
-	req.Header.Set("Authorization", "Bearer "+apiKey)
-
-	client := &http.Client{}
-	resp, err := client.Do(req)
-	if err != nil {
-		return err
-	}
-	defer resp.Body.Close()
-
-	if resp.StatusCode >= 300 {
-		body, _ := io.ReadAll(resp.Body)
-		return fmt.Errorf("delete failed (%d): %s", resp.StatusCode, string(body))
-	}
-
-	return nil
-}
-
-func printResourceList(resources ResourceList, dryRun bool) {
-	if dryRun {
-		fmt.Printf("\n📋 %s (%d):\n", resources.Type, resources.Count)
-		if resources.Count > 0 {
-			fmt.Println("  IDs to be deleted:")
-			for _, r := range resources.Items {
-				if r.Name != "" {
-					fmt.Printf("    - %s (%s)\n", r.ID, r.Name)
-				} else {
-					fmt.Printf("    - %s\n", r.ID)
-				}
-			}
-		} else {
-			fmt.Println("  None found")
+	var targets []target
+	for _, p := range projects {
+		if p.Name != projectNameA && p.Name != projectNameB {
+			continue
 		}
+		for _, kind := range []string{"connections", "sources", "destinations", "transformations"} {
+			items, err := a.list("/"+kind, p.ID)
+			if err != nil {
+				log.Printf("Error getting %s of %s: %v", kind, p.Name, err)
+				continue
+			}
+			targets = append(targets, target{Kind: kind + " in " + p.Name, Path: "/" + kind, ProjectID: p.ID, Items: stale(items, cutoff)})
+		}
+	}
+	keys, err := a.list("/organizations/current/api-keys", "")
+	if err != nil {
+		log.Printf("Error getting API keys: %v", err)
 	} else {
-		fmt.Printf("🗑️  Deleting %d %s...\n", resources.Count, resources.Type)
+		targets = append(targets, target{Kind: "project API keys", Path: "/organizations/current/api-keys", Items: stale(keys, cutoff)})
 	}
-}
-
-func confirmDeletion(total int) bool {
-	if total == 0 {
-		fmt.Println("\n✨ No resources found to delete.")
-		return false
-	}
-
-	fmt.Printf("\n⚠️  WARNING: This will delete %d resources permanently!\n", total)
-	fmt.Print("Are you sure you want to proceed? (y/N): ")
-
-	reader := bufio.NewReader(os.Stdin)
-	input, _ := reader.ReadString('\n')
-	input = strings.TrimSpace(strings.ToLower(input))
-
-	return input == "y" || input == "yes"
+	targets = append(targets, target{Kind: "projects", Path: "/projects", Items: stale(projects, cutoff)})
+	return targets, nil
 }
 
 func main() {
-	// Parse flags
 	dryRun := flag.Bool("dry-run", false, "Show what would be deleted without actually deleting")
 	envFile := flag.String("env", ".env.test", "Path to environment file")
 	autoApprove := flag.Bool("auto-approve", false, "Skip confirmation prompt (useful for CI/CD)")
+	olderThan := flag.Duration("older-than", time.Hour, "Only delete objects created longer ago than this")
 	help := flag.Bool("help", false, "Show usage information")
 	flag.Usage = func() {
-		fmt.Fprintf(os.Stderr, "Hookdeck Teardown Tool\n")
-		fmt.Fprintf(os.Stderr, "======================\n\n")
-		fmt.Fprintf(os.Stderr, "Deletes all Hookdeck resources (connections, sources, destinations, transformations)\n")
-		fmt.Fprintf(os.Stderr, "from a project.\n\n")
-		fmt.Fprintf(os.Stderr, "Useful for cleaning up after acceptance tests or Terraform test runs. Normally, tests\n")
-		fmt.Fprintf(os.Stderr, "clean up after themselves, but if tests fail or are interrupted, resources may be left\n")
-		fmt.Fprintf(os.Stderr, "behind. This tool helps clean up those orphaned resources.\n\n")
-		fmt.Fprintf(os.Stderr, "Also helpful when 'terraform destroy' isn't sufficient (e.g., due to state inconsistencies,\n")
-		fmt.Fprintf(os.Stderr, "provider bugs, or interrupted operations) - this tool directly removes all resources.\n\n")
-		fmt.Fprintf(os.Stderr, "Usage:\n")
-		fmt.Fprintf(os.Stderr, "  %s [flags]\n\n", os.Args[0])
-		fmt.Fprintf(os.Stderr, "Flags:\n")
+		fmt.Fprintf(os.Stderr, "Hookdeck Teardown Tool\n======================\n\n")
+		fmt.Fprintf(os.Stderr, "Deletes what acceptance tests leave behind when they fail or are interrupted.\n")
+		fmt.Fprintf(os.Stderr, "Only objects named %q... and older than --older-than are deleted:\n", namePrefix)
+		fmt.Fprintf(os.Stderr, "  - connections, sources, destinations and transformations in the projects %s and %s\n", projectNameA, projectNameB)
+		fmt.Fprintf(os.Stderr, "  - projects\n  - project API keys (by label)\n\n")
+		fmt.Fprintf(os.Stderr, "Usage:\n  %s [flags]\n\nFlags:\n", os.Args[0])
 		flag.PrintDefaults()
-		fmt.Fprintf(os.Stderr, "\nExamples:\n")
-		fmt.Fprintf(os.Stderr, "  # See what would be deleted (dry run)\n")
-		fmt.Fprintf(os.Stderr, "  %s --dry-run\n\n", os.Args[0])
-		fmt.Fprintf(os.Stderr, "  # Delete all resources (with confirmation)\n")
-		fmt.Fprintf(os.Stderr, "  %s\n\n", os.Args[0])
-		fmt.Fprintf(os.Stderr, "  # Use a different environment file\n")
-		fmt.Fprintf(os.Stderr, "  %s --env .env.production --dry-run\n\n", os.Args[0])
-		fmt.Fprintf(os.Stderr, "  # Delete without confirmation (for CI/CD)\n")
-		fmt.Fprintf(os.Stderr, "  %s --auto-approve\n\n", os.Args[0])
-		fmt.Fprintf(os.Stderr, "Environment:\n")
-		fmt.Fprintf(os.Stderr, "  HOOKDECK_API_KEY    API key for authentication (required)\n\n")
-		fmt.Fprintf(os.Stderr, "Note: Resources are deleted in the following order:\n")
-		fmt.Fprintf(os.Stderr, "  1. Connections (must be deleted before sources/destinations)\n")
-		fmt.Fprintf(os.Stderr, "  2. Sources\n")
-		fmt.Fprintf(os.Stderr, "  3. Destinations\n")
-		fmt.Fprintf(os.Stderr, "  4. Transformations\n")
+		fmt.Fprintf(os.Stderr, "\nEnvironment:\n")
+		fmt.Fprintf(os.Stderr, "  HOOKDECK_ORG_API_KEY  organization API key (required)\n")
+		fmt.Fprintf(os.Stderr, "  HOOKDECK_API_BASE     API base URL (optional)\n")
 	}
 	flag.Parse()
-
-	// Show help if requested
 	if *help {
 		flag.Usage()
 		os.Exit(0)
 	}
 
-	// Check if API key is already set in environment
-	apiKey := os.Getenv("HOOKDECK_API_KEY")
-
-	// Only load env file if API key not already set
-	if apiKey == "" {
+	if os.Getenv("HOOKDECK_ORG_API_KEY") == "" {
 		if err := loadEnvFile(*envFile); err != nil {
 			log.Printf("Warning: Could not load %s: %v", *envFile, err)
 		}
-		apiKey = os.Getenv("HOOKDECK_API_KEY")
 	}
-
-	// Final check for API key
+	apiKey := os.Getenv("HOOKDECK_ORG_API_KEY")
 	if apiKey == "" {
-		log.Fatal("HOOKDECK_API_KEY not found in environment or env file")
+		log.Fatal("HOOKDECK_ORG_API_KEY not found in environment or env file")
+	}
+	if base := os.Getenv("HOOKDECK_API_BASE"); base != "" {
+		if !strings.HasPrefix(base, "http") {
+			base = "https://" + base
+		}
+		baseURL = strings.TrimRight(base, "/")
 	}
 
 	if *dryRun {
@@ -253,82 +284,52 @@ func main() {
 	} else {
 		fmt.Println("🧹 Hookdeck Resource Cleanup Tool")
 	}
-	fmt.Println("=" + strings.Repeat("=", 50))
+	fmt.Println(strings.Repeat("=", 51))
 
-	// Resource types in deletion order (connections first, then sources/destinations, then transformations)
-	resourceTypes := []string{"connections", "sources", "destinations", "transformations"}
-	allResources := make([]ResourceList, 0)
-	totalCount := 0
-
-	// Fetch all resources
-	for _, resourceType := range resourceTypes {
-		resources, err := getResources(apiKey, resourceType)
-		if err != nil {
-			log.Printf("Error getting %s: %v", resourceType, err)
-			continue
-		}
-
-		list := ResourceList{
-			Type:  resourceType,
-			Items: resources,
-			Count: len(resources),
-		}
-		allResources = append(allResources, list)
-		totalCount += len(resources)
+	a := api{key: apiKey, client: &http.Client{Timeout: 60 * time.Second}}
+	targets, err := collect(a, time.Now().Add(-*olderThan))
+	if err != nil {
+		log.Fatal(err)
 	}
-
-	// Display results
-	for _, resourceList := range allResources {
-		printResourceList(resourceList, *dryRun)
+	total := 0
+	for _, t := range targets {
+		printTarget(t, *dryRun)
+		total += len(t.Items)
 	}
+	fmt.Println(strings.Repeat("=", 51))
+	fmt.Printf("📊 Total objects: %d\n", total)
 
-	fmt.Println("=" + strings.Repeat("=", 50))
-	fmt.Printf("📊 Total Resources: %d\n", totalCount)
-
-	// If dry run, exit here
 	if *dryRun {
-		fmt.Println("\n💡 To delete these resources, run without --dry-run flag")
+		fmt.Println("\n💡 To delete these objects, run without --dry-run flag")
+		return
+	}
+	if total == 0 {
+		fmt.Println("\n✨ Nothing to delete.")
+		return
+	}
+	if *autoApprove {
+		fmt.Printf("\n🤖 Auto-approve enabled. Deleting %d objects...\n", total)
+	} else if !confirmDeletion(total) {
+		fmt.Println("❌ Deletion cancelled")
 		return
 	}
 
-	// Ask for confirmation unless auto-approve is set
-	if !*autoApprove {
-		if !confirmDeletion(totalCount) {
-			fmt.Println("❌ Deletion cancelled")
-			return
-		}
-	} else {
-		if totalCount == 0 {
-			fmt.Println("\n✨ No resources found to delete.")
-			return
-		}
-		fmt.Printf("\n🤖 Auto-approve enabled. Deleting %d resources...\n", totalCount)
-	}
-
-	// Perform deletion
 	fmt.Println("\n🚀 Starting deletion...")
-	deletedCount := 0
-
-	for _, resourceList := range allResources {
-		if resourceList.Count == 0 {
+	deleted := 0
+	for _, t := range targets {
+		if len(t.Items) == 0 {
 			continue
 		}
-
-		fmt.Printf("\nDeleting %s...\n", resourceList.Type)
-		for _, resource := range resourceList.Items {
-			if err := deleteResource(apiKey, resourceList.Type, resource.ID); err != nil {
-				log.Printf("  ❌ Failed to delete %s %s: %v", resourceList.Type, resource.ID, err)
-			} else {
-				deletedCount++
-				if resource.Name != "" {
-					fmt.Printf("  ✅ Deleted %s (%s)\n", resource.ID, resource.Name)
-				} else {
-					fmt.Printf("  ✅ Deleted %s\n", resource.ID)
-				}
+		fmt.Printf("\nDeleting %s...\n", t.Kind)
+		for _, r := range t.Items {
+			if err := a.delete(t, r); err != nil {
+				log.Printf("  ❌ Failed to delete %s %s: %v", t.Kind, r.ID, err)
+				continue
 			}
+			deleted++
+			fmt.Printf("  ✅ Deleted %s (%s)\n", r.ID, r.Name)
 		}
 	}
-
-	fmt.Println("=" + strings.Repeat("=", 50))
-	fmt.Printf("✨ Successfully deleted %d/%d resources\n", deletedCount, totalCount)
+	fmt.Println(strings.Repeat("=", 51))
+	fmt.Printf("✨ Successfully deleted %d/%d objects\n", deleted, total)
 }
