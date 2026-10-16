@@ -115,7 +115,7 @@ The shared harness lives in [`internal/acc`](internal/acc/acc.go); each acceptan
 
 New acceptance tests call `acc.Test(t, resource.TestCase{...})` (organization key, `tf-ci-a`). Use `acc.TestAs` with `acc.ProjectKeyCreds(t)` or `acc.OrgNoProject(t)` when the test is about a project key or names its projects itself. These run in parallel with each other: the credentials reach the provider as Terraform variables, so the test must not set process environment variables. Tests that must (the mock API tests, the upgrade tests that use the released v2 provider) call `acc.UseAPIKey` and use `resource.Test`; they run first and sequentially.
 
-Under `TF_ACC=1` the client's rate limit is raised to 2000 requests per minute (`HOOKDECK_TEST_REQUESTS_PER_MINUTE` overrides it) so that parallel tests do not wait on it; the key must allow that rate.
+Under `TF_ACC=1` the client's rate limit is raised to 2000 requests per minute so that parallel tests do not wait on it. If possible, run the tests with an organization whose API rate limit allows that. With the default limit (240 requests per minute per key) the tests still pass, but they wait on `429` responses and take longer; `HOOKDECK_TEST_REQUESTS_PER_MINUTE` lowers the client's limit. It applies per test process, and `go test` runs one process per package.
 
 #### Mock API tests
 
