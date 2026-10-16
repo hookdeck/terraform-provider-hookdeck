@@ -182,7 +182,12 @@ func projectsNamed(ctx context.Context, client sdkclient.Client, name string) ([
 			matches = append(matches, p)
 		}
 	}
-	sort.Slice(matches, func(i, j int) bool { return matches[i].CreatedAt < matches[j].CreatedAt })
+	sort.Slice(matches, func(i, j int) bool {
+		if matches[i].CreatedAt != matches[j].CreatedAt {
+			return matches[i].CreatedAt < matches[j].CreatedAt
+		}
+		return matches[i].ID < matches[j].ID
+	})
 	return matches, nil
 }
 

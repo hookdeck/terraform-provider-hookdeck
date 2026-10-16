@@ -38,6 +38,7 @@ var baseURL = "https://api.hookdeck.com"
 type resource struct {
 	ID        string
 	Name      string
+	TeamID    string
 	CreatedAt time.Time
 }
 
@@ -92,6 +93,7 @@ func parseResources(models []any) []resource {
 		} else if label, ok := m["label"].(string); ok {
 			r.Name = label
 		}
+		r.TeamID, _ = m["team_id"].(string)
 		if created, ok := m["created_at"].(string); ok {
 			r.CreatedAt, _ = time.Parse(time.RFC3339, created)
 		}
@@ -144,7 +146,8 @@ func (a api) list(path, projectID string) ([]resource, error) {
 func stale(items []resource, cutoff time.Time) []resource {
 	var out []resource
 	for _, r := range items {
-		if strings.HasPrefix(r.Name, namePrefix) && r.CreatedAt.Before(cutoff) {
+		// A missing or unreadable created_at could be a running test's.
+		if strings.HasPrefix(r.Name, namePrefix) && !r.CreatedAt.IsZero() && r.CreatedAt.Before(cutoff) {
 			out = append(out, r)
 		}
 	}
@@ -233,7 +236,14 @@ func collect(a api, cutoff time.Time) ([]target, error) {
 	if err != nil {
 		log.Printf("Error getting API keys: %v", err)
 	} else {
-		targets = append(targets, target{Kind: "project API keys", Path: "/organizations/current/api-keys", Items: stale(keys, cutoff)})
+		var projectKeys []resource
+		for _, k := range keys {
+			// Only project keys carry a team_id.
+			if k.TeamID != "" {
+				projectKeys = append(projectKeys, k)
+			}
+		}
+		targets = append(targets, target{Kind: "project API keys", Path: "/organizations/current/api-keys", Items: stale(projectKeys, cutoff)})
 	}
 	targets = append(targets, target{Kind: "projects", Path: "/projects", Items: stale(projects, cutoff)})
 	return targets, nil
