@@ -1,1 +1,0 @@
-$ terraform import hookdeck_connection.example <connection_id>

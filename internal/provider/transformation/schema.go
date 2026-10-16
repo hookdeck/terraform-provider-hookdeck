@@ -1,6 +1,8 @@
 package transformation
 
 import (
+	"terraform-provider-hookdeck/internal/provider/shared"
+
 	"terraform-provider-hookdeck/internal/validators"
 
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
@@ -11,6 +13,7 @@ import (
 
 func schemaAttributes() map[string]schema.Attribute {
 	return map[string]schema.Attribute{
+		"project_id": shared.ProjectIDResourceAttribute(),
 		"code": schema.StringAttribute{
 			Required:    true,
 			Description: "JavaScript code to be executed",
@@ -40,13 +43,6 @@ func schemaAttributes() map[string]schema.Attribute {
 		"name": schema.StringAttribute{
 			Required:    true,
 			Description: "A unique, human-friendly name for the transformation",
-		},
-		"team_id": schema.StringAttribute{
-			Computed: true,
-			PlanModifiers: []planmodifier.String{
-				stringplanmodifier.UseStateForUnknown(),
-			},
-			Description: "ID of the workspace",
 		},
 		"updated_at": schema.StringAttribute{
 			Computed: true,

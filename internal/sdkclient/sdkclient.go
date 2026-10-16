@@ -7,20 +7,31 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+	"strconv"
 	"strings"
 	"sync"
 	"time"
 
 	"golang.org/x/time/rate"
+
+	"terraform-provider-hookdeck/internal/projectscope"
 )
 
 // Client is the main client struct exposed to the provider.
 type Client struct {
 	RawClient RawClientInterface
+
+	// Scope is the key kind and the provider's project.
+	Scope projectscope.Scope
+
+	projectChecks *projectChecks
 }
 
 const (
 	defaultAPIBase = "api.hookdeck.com"
+
+	// APIVersion is the Hookdeck API version every request targets.
+	APIVersion = "2026-09-01"
 )
 
 // RawClientInterface defines the contract for sending requests.
@@ -124,10 +135,17 @@ func (h *HookdeckRateLimiter) Wait(ctx context.Context) error {
 	return h.limiter.Wait(ctx)
 }
 
+// Acceptance tests run in parallel, so the test limiter allows more than the
+// production one (override with HOOKDECK_TEST_REQUESTS_PER_MINUTE).
+const (
+	testRequestsPerMinute = 2000
+	testRateBurst         = 20
+)
+
 // sharedTestRateLimiter, when running under TF_ACC=1, is shared across every
 // RawClient created in the process. Each acceptance test step spins up a
-// fresh provider (and would otherwise get its own 5-token burst); stacking
-// those bursts blows past the API's 240 req/min per-key sliding window.
+// fresh provider (and would otherwise get its own burst); stacking those
+// bursts blows past the API's per-key limit over its fixed one-minute window.
 // Sharing keeps the cumulative request rate within bounds.
 var (
 	sharedTestRateLimiterOnce sync.Once
@@ -136,7 +154,13 @@ var (
 
 func getSharedTestRateLimiter() RateLimiter {
 	sharedTestRateLimiterOnce.Do(func() {
-		sharedTestRateLimiterVal = NewHookdeckRateLimiter()
+		perMinute := testRequestsPerMinute
+		if v, err := strconv.Atoi(os.Getenv("HOOKDECK_TEST_REQUESTS_PER_MINUTE")); err == nil && v > 0 {
+			perMinute = v
+		}
+		sharedTestRateLimiterVal = &HookdeckRateLimiter{
+			limiter: rate.NewLimiter(rate.Every(time.Minute/time.Duration(perMinute)), testRateBurst),
+		}
 	})
 	return sharedTestRateLimiterVal
 }
@@ -179,7 +203,11 @@ func InitHookdeckSDKClient(apiBase string, apiKey string, providerVersion string
 		opt(rawClient)
 	}
 
-	return Client{RawClient: rawClient}
+	return Client{
+		RawClient:     rawClient,
+		Scope:         projectscope.Scope{KeyKind: projectscope.KindOfKey(apiKey)},
+		projectChecks: &projectChecks{results: map[string]*projectCheck{}},
+	}
 }
 
 // SendRequest sends an HTTP request with rate limiting.

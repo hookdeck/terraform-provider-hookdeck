@@ -5,8 +5,8 @@ Thanks for your interest in contributing to the Hookdeck Terraform Provider. Thi
 ## Prerequisites
 
 - [Go](https://go.dev/dl/) — see [`go.mod`](go.mod) for the required version
-- [Terraform CLI](https://developer.hashicorp.com/terraform/install) 1.9 or newer
-- A [Hookdeck account](https://dashboard.hookdeck.com/signup) and API key for running acceptance tests
+- [Terraform CLI](https://developer.hashicorp.com/terraform/install) 1.8 or newer (CI runs the latest)
+- A [Hookdeck account](https://dashboard.hookdeck.com/signup) and an organization API key for running acceptance tests
 
 ## Local development
 
@@ -62,18 +62,20 @@ golangci-lint run
 go test ./...
 ```
 
+Acceptance tests in the same packages skip unless `TF_ACC` is set, so this needs no credentials.
+
 ### Acceptance tests
 
-Acceptance tests provision real resources on a Hookdeck workspace, run assertions, then destroy them. They require `HOOKDECK_API_KEY` and `TF_ACC=1`.
+Acceptance tests provision real resources, run assertions, then destroy them. They need one credential, `HOOKDECK_ORG_API_KEY`, an organization API key with the `projects.write`, `api-keys.write` and `gateway.*` scopes, and `TF_ACC=1`.
 
 > [!WARNING]
-> Use a dedicated test workspace, not your production workspace. Resources are created and destroyed on every run. If tests are interrupted, orphaned resources can be cleaned up with [`cmd/teardown`](cmd/teardown/README.md).
+> Use an organization that exists for testing, not your production organization. The tests create and delete resources on every run. If tests are interrupted, orphaned resources can be cleaned up with [`cmd/teardown`](cmd/teardown/README.md).
 
 Set up your environment once:
 
 ```sh
 cp .env.test.example .env.test
-# edit .env.test and set HOOKDECK_API_KEY
+# edit .env.test and set HOOKDECK_ORG_API_KEY
 ```
 
 Run the full suite:
@@ -100,14 +102,37 @@ Point at a different environment (e.g. staging):
 HOOKDECK_API_BASE=https://api.staging.hookdeck.com make testacc
 ```
 
+`make testacc` passes `TESTARGS` to `go test`. Use `TESTARGS=-count=1` to rerun tests that Go would otherwise serve from its cache.
+
+#### How the tests are set up
+
+The shared harness lives in [`internal/acc`](internal/acc/acc.go); each acceptance test package calls it from `TestMain`.
+
+- The tests work in two fixed projects of the organization, `tf-ci-a` and `tf-ci-b`. The harness finds them by name and creates them on first use. Nothing needs to be configured, and they are never deleted.
+- Most tests run the provider with the organization key and `tf-ci-a` as its project. Tests named `ProjectKey` use a project API key instead: the harness mints one in `tf-ci-a` the first time a test process asks for it and deletes it when the process ends.
+- Tests that need a second project use `tf-ci-b`. Only the `hookdeck_gateway_project` lifecycle test creates a project, because that is what it tests.
+- Everything a test creates is named `tf-acc-*`. That prefix is what `cmd/teardown` looks for, so name new test resources the same way.
+
+New acceptance tests call `acc.Test(t, resource.TestCase{...})` (organization key, `tf-ci-a`). Use `acc.TestAs` with `acc.ProjectKeyCreds(t)` or `acc.OrgNoProject(t)` when the test is about a project key or names its projects itself. These run in parallel with each other: the credentials reach the provider as Terraform variables, so the test must not set process environment variables. Tests that must (the mock API tests, the upgrade tests that use the released v2 provider) call `acc.UseAPIKey` and use `resource.Test`; they run first and sequentially.
+
+Under `TF_ACC=1` the client's rate limit is raised to 2000 requests per minute so that parallel tests do not wait on it. If possible, run the tests with an organization whose API rate limit allows that. With the default limit (240 requests per minute per key) the tests still pass, but they wait on `429` responses and take longer; `HOOKDECK_TEST_REQUESTS_PER_MINUTE` lowers the client's limit. It applies per test process, and `go test` runs one process per package.
+
+#### Mock API tests
+
+Tests named `TestAccMock_` run the provider against an in-process copy of the API ([`internal/provider/mockapi_test.go`](internal/provider/mockapi_test.go)). They need `TF_ACC=1` and no API key, and cover cases that test credentials cannot reach, such as a key that loses access to a project.
+
+```sh
+TF_ACC=1 go test ./internal/provider/ -run TestAccMock_ -count=1
+```
+
 ## Continuous integration
 
 The [`Tests`](.github/workflows/test.yml) workflow runs on every pull request and push to `main`:
 
-- Build, lint, and `go generate` sync check on all PRs.
-- Acceptance tests across a Terraform CLI version matrix, on same-repository PRs and pushes to `main`.
-- Fork PRs and Dependabot PRs **skip the acceptance job** because they cannot access `HOOKDECK_API_KEY` (GitHub policy for forks; restricted token scope for Dependabot). They are validated by the acceptance run that follows merge to `main`.
-- Acceptance runs are serialized via a `concurrency` group to stay within Hookdeck's 240 req/min API limit.
+- Build, unit tests, lint, and `go generate` sync check on all PRs.
+- Acceptance tests on the latest Terraform CLI, on same-repository PRs and pushes to `main`.
+- Fork PRs and Dependabot PRs **skip the acceptance job** because they cannot access `HOOKDECK_ORG_API_KEY` (GitHub policy for forks; restricted token scope for Dependabot). They are validated by the acceptance run that follows merge to `main`.
+- Runs do not need to be serialized: each uses its own `tf-acc-*` names, and the teardown step only deletes leftovers older than an hour.
 
 ## Submitting changes
 

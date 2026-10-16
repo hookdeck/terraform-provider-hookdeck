@@ -43,7 +43,7 @@ func (r *connectionResource) UpgradeState(ctx context.Context) map[int64]resourc
 				}
 
 				// Set the upgraded state
-				resp.Diagnostics.Append(resp.State.Set(ctx, &newState)...)
+				resp.Diagnostics.Append(setModel(ctx, &resp.State, r.naming.Legacy, &newState)...)
 
 				// Add a warning to inform the user
 				if len(newState.Rules) > 0 {
@@ -96,7 +96,7 @@ func convertV0ToCurrent(v0 connectionResourceModelV0) connectionResourceModel {
 		PausedAt:      v0.PausedAt,
 		Rules:         convertRulesV0ToCurrent(v0.Rules),
 		SourceID:      v0.SourceID,
-		TeamID:        v0.TeamID,
+		ProjectID:     v0.TeamID,
 		UpdatedAt:     v0.UpdatedAt,
 	}
 }

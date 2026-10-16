@@ -16,7 +16,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-const apiVersion = "2025-07-01"
+const apiVersion = sdkclient.APIVersion
 
 func (m *sourceAuthResourceModel) Refresh(source map[string]interface{}) diag.Diagnostics {
 	var diags diag.Diagnostics
@@ -24,6 +24,13 @@ func (m *sourceAuthResourceModel) Refresh(source map[string]interface{}) diag.Di
 	config, ok := source["config"].(map[string]interface{})
 	if !ok {
 		diags.AddError("Error parsing config", "Expected map[string]interface{} value")
+		return diags
+	}
+
+	if teamID, ok := source["team_id"].(string); ok {
+		m.ProjectID = types.StringValue(teamID)
+	} else {
+		diags.AddError("Error parsing team_id", "Expected string value")
 		return diags
 	}
 
@@ -59,6 +66,10 @@ func (m *sourceAuthResourceModel) doRetrieve(ctx context.Context, client *sdkcli
 		return nil, diags
 	}
 
+	if sdkclient.IsGoneStatus(response.StatusCode) {
+		return nil, diags
+	}
+
 	if response.StatusCode > 299 {
 		if body, err := io.ReadAll(response.Body); err == nil {
 			diags.AddError("Error reading source auth", string(body))
@@ -84,23 +95,29 @@ func (m *sourceAuthResourceModel) doRetrieve(ctx context.Context, client *sdkcli
 	return source, diags
 }
 
-func (m *sourceAuthResourceModel) Retrieve(ctx context.Context, client *sdkclient.Client) diag.Diagnostics {
+func (m *sourceAuthResourceModel) Retrieve(ctx context.Context, client *sdkclient.Client) (bool, diag.Diagnostics) {
 	source, diags := m.doRetrieve(ctx, client)
-	if diags.HasError() {
-		return diags
+	if diags.HasError() || source == nil {
+		return false, diags
 	}
 
-	return m.Refresh(source)
+	return true, m.Refresh(source)
 }
 
-func (m *sourceAuthResourceModel) Create(ctx context.Context, client *sdkclient.Client) diag.Diagnostics {
-	return m.Update(ctx, client)
+// existingSource is doRetrieve for writes, where a missing source is an
+// error.
+func (m *sourceAuthResourceModel) existingSource(ctx context.Context, client *sdkclient.Client) (map[string]interface{}, diag.Diagnostics) {
+	source, diags := m.doRetrieve(ctx, client)
+	if !diags.HasError() && source == nil {
+		diags.AddError("Source not found", fmt.Sprintf("No source with ID %s in this project.", m.SourceID.ValueString()))
+	}
+	return source, diags
 }
 
 func (m *sourceAuthResourceModel) Update(ctx context.Context, client *sdkclient.Client) diag.Diagnostics {
 	var diags diag.Diagnostics
 
-	initSource, diags := m.doRetrieve(ctx, client)
+	initSource, diags := m.existingSource(ctx, client)
 	if diags.HasError() {
 		return diags
 	}
@@ -155,7 +172,7 @@ func (m *sourceAuthResourceModel) Update(ctx context.Context, client *sdkclient.
 func (m *sourceAuthResourceModel) Delete(ctx context.Context, client *sdkclient.Client) diag.Diagnostics {
 	var diags diag.Diagnostics
 
-	initSource, diags := m.doRetrieve(ctx, client)
+	initSource, diags := m.existingSource(ctx, client)
 	if diags.HasError() {
 		return diags
 	}

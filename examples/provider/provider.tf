@@ -1,26 +1,35 @@
 terraform {
   required_providers {
     hookdeck = {
-      source = "hookdeck/hookdeck"
+      source  = "hookdeck/hookdeck"
+      version = "~> 3.0"
     }
   }
+}
+
+variable "hookdeck_api_key" {
+  type      = string
+  sensitive = true
 }
 
 provider "hookdeck" {
   api_key = var.hookdeck_api_key
 }
 
-# Create a source
-resource "hookdeck_source" "source" {
-  # ...
+resource "hookdeck_gateway_source" "orders" {
+  name = "orders"
+  type = "HTTP"
 }
 
-# Create a destination
-resource "hookdeck_destination" "destination" {
-  # ...
+resource "hookdeck_gateway_destination" "api" {
+  name = "api"
+  type = "HTTP"
+  config = jsonencode({
+    url = "https://api.example.com/webhooks"
+  })
 }
 
-# Create a connection
-resource "hookdeck_connection" "connection" {
-  # ...
+resource "hookdeck_gateway_connection" "orders_to_api" {
+  source_id      = hookdeck_gateway_source.orders.id
+  destination_id = hookdeck_gateway_destination.api.id
 }

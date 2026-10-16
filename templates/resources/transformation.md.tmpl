@@ -1,0 +1,14 @@
+---
+page_title: "{{.Name}} {{.Type}} - {{.ProviderName}}"
+subcategory: "Deprecated"
+description: |-
+{{ .Description | plainmarkdown | trimspace | prefixlines "  " }}
+---
+
+# {{.Name}} ({{.Type}})
+
+~> **Deprecated.** `hookdeck_transformation` is the v2 name of [`hookdeck_gateway_transformation`](https://registry.terraform.io/providers/hookdeck/hookdeck/latest/docs/resources/gateway_transformation) and will be removed in v4. Rename it with a `moved` block; nothing is recreated. See the [v2 to v3 migration guide](https://registry.terraform.io/providers/hookdeck/hookdeck/latest/docs/guides/v2-to-v3-migration).
+
+Both names take the same arguments. Examples and import instructions are on the [`hookdeck_gateway_transformation`](https://registry.terraform.io/providers/hookdeck/hookdeck/latest/docs/resources/gateway_transformation) page.
+
+{{ .SchemaMarkdown | trimspace }}

@@ -1,1 +1,0 @@
-$ terraform import hookdeck_transformation.example <transformation_id>

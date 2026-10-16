@@ -6,7 +6,8 @@ import (
 )
 
 type sourceAuthResourceModel struct {
-	AuthType types.String         `tfsdk:"auth_type"`
-	Auth     jsontypes.Normalized `tfsdk:"auth"`
-	SourceID types.String         `tfsdk:"source_id"`
+	ProjectID types.String         `tfsdk:"project_id"`
+	AuthType  types.String         `tfsdk:"auth_type"`
+	Auth      jsontypes.Normalized `tfsdk:"auth"`
+	SourceID  types.String         `tfsdk:"source_id"`
 }
