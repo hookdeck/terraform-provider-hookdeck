@@ -17,7 +17,7 @@ This file is for AI coding agents (Claude Code, Cursor, Copilot, and similar) wo
 
 ## Commands and setup
 
-See [`CONTRIBUTING.md`](CONTRIBUTING.md) for build, test, lint, and codegen commands, as well as `.env.test` setup for acceptance tests. Acceptance tests hit the live Hookdeck API and create/destroy real resources — always use a dedicated test project.
+See [`CONTRIBUTING.md`](CONTRIBUTING.md) for build, test, lint, and codegen commands, as well as `.env.test` setup for acceptance tests. Acceptance tests hit the live Hookdeck API and create/destroy real resources — use an organization kept for testing. They need `HOOKDECK_ORG_API_KEY` only, and name everything they create `tf-acc-*`.
 
 ## Norms
 
