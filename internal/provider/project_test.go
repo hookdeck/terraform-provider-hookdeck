@@ -145,7 +145,7 @@ func TestAccGatewayProject_OrgKey_Lifecycle(t *testing.T) {
 func TestAccGatewayProject_OrgKey_DataSource(t *testing.T) {
 	skipUnlessOrg(t)
 	useAPIKey(t, os.Getenv(envOrgAPIKey))
-	projectID := os.Getenv(envOrgProjectID)
+	projectID := orgProjectA.get(t)
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,

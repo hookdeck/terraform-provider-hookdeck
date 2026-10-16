@@ -25,10 +25,9 @@ import (
 )
 
 const (
-	envAPIKey       = "HOOKDECK_API_KEY"
-	envOrgAPIKey    = "HOOKDECK_ORG_API_KEY"
-	envOrgProjectID = "HOOKDECK_ORG_PROJECT_ID"
-	envProjectID    = "HOOKDECK_PROJECT_ID"
+	envAPIKey    = "HOOKDECK_API_KEY"
+	envOrgAPIKey = "HOOKDECK_ORG_API_KEY"
+	envProjectID = "HOOKDECK_PROJECT_ID"
 
 	// A well-formed organization key that no test sends to the API.
 	fakeOrgAPIKey = projectscope.OrganizationKeyPrefix + "0000000000000000"
@@ -42,7 +41,8 @@ var testAccProtoV6ProviderFactories = map[string]func() (tfprotov6.ProviderServe
 
 func TestMain(m *testing.M) {
 	code := m.Run()
-	deleteSecondOrgProject()
+	orgProjectA.delete()
+	orgProjectB.delete()
 	os.Exit(code)
 }
 
@@ -66,14 +66,14 @@ func testAccPreCheck(t *testing.T) {
 	}
 }
 
-// skipUnlessOrg skips unless an organization API key and a project it can
-// access are configured. The key needs projects.read, projects.write and
-// the gateway scopes, in HOOKDECK_ORG_PROJECT_ID and in projects it creates.
+// skipUnlessOrg skips unless an organization API key is configured. The key
+// needs projects.read, projects.write and the gateway scopes in the projects
+// it creates.
 func skipUnlessOrg(t *testing.T) {
 	t.Helper()
 	skipUnlessAcc(t)
-	if os.Getenv(envOrgAPIKey) == "" || os.Getenv(envOrgProjectID) == "" {
-		t.Skipf("%s and %s must be set for organization key tests", envOrgAPIKey, envOrgProjectID)
+	if os.Getenv(envOrgAPIKey) == "" {
+		t.Skipf("%s must be set for organization key tests", envOrgAPIKey)
 	}
 	if !strings.HasPrefix(os.Getenv(envOrgAPIKey), projectscope.OrganizationKeyPrefix) {
 		t.Fatalf("%s must be an organization key (%s prefix)", envOrgAPIKey, projectscope.OrganizationKeyPrefix)
@@ -165,37 +165,39 @@ func currentProjectID(t *testing.T) string {
 	return keyProjectID
 }
 
-var (
-	secondOrgProjectOnce sync.Once
-	secondOrgProjectID   string
-)
+// orgProject is a project in the organization of HOOKDECK_ORG_API_KEY,
+// created on first use and deleted in TestMain. Project creation is rate
+// limited per organization, so tests share orgProjectA and orgProjectB.
+type orgProject struct {
+	once sync.Once
+	id   string
+}
 
-// secondOrgProject returns a second project in the organization of
-// HOOKDECK_ORG_API_KEY, created once per test run and deleted in TestMain.
-// Project creation is rate limited per organization, so tests share it.
-func secondOrgProject(t *testing.T) string {
+var orgProjectA, orgProjectB orgProject
+
+func (p *orgProject) get(t *testing.T) string {
 	t.Helper()
-	secondOrgProjectOnce.Do(func() {
+	p.once.Do(func() {
 		name := "tf-acc-" + acctest.RandStringFromCharSet(8, acctest.CharSetAlphaNum)
 		status, body := apiRequest(t, os.Getenv(envOrgAPIKey), "", "POST", "/projects", map[string]any{"name": name, "type": "event_gateway"})
 		if status > 299 {
 			t.Fatalf("creating project %s: %d %v", name, status, body)
 		}
-		secondOrgProjectID, _ = body["id"].(string)
+		p.id, _ = body["id"].(string)
 	})
-	if secondOrgProjectID == "" {
-		t.Fatal("could not create a second project")
+	if p.id == "" {
+		t.Fatal("could not create a test project")
 	}
-	return secondOrgProjectID
+	return p.id
 }
 
-func deleteSecondOrgProject() {
-	if secondOrgProjectID == "" {
+func (p *orgProject) delete() {
+	if p.id == "" {
 		return
 	}
 	client := sdkclient.InitHookdeckSDKClient(os.Getenv("HOOKDECK_API_BASE"), os.Getenv(envOrgAPIKey), "test")
-	if err := client.Do(context.Background(), "DELETE", "/projects/"+secondOrgProjectID, nil, nil, nil); err != nil {
-		fmt.Fprintf(os.Stderr, "deleting test project %s: %v\n", secondOrgProjectID, err)
+	if err := client.Do(context.Background(), "DELETE", "/projects/"+p.id, nil, nil, nil); err != nil {
+		fmt.Fprintf(os.Stderr, "deleting test project %s: %v\n", p.id, err)
 	}
 }
 

@@ -248,8 +248,8 @@ func TestAccProjectScope_OrgKey_ExplicitMode(t *testing.T) {
 	orgKey := os.Getenv(envOrgAPIKey)
 	useAPIKey(t, orgKey)
 	suffix := acctest.RandStringFromCharSet(8, acctest.CharSetAlphaNum)
-	projectA := os.Getenv(envOrgProjectID)
-	projectB := secondOrgProject(t)
+	projectA := orgProjectA.get(t)
+	projectB := orgProjectB.get(t)
 	var sourceID, movedID string
 
 	const otherAddr = "hookdeck_gateway_source.other"
@@ -318,8 +318,8 @@ func TestAccProjectScope_OrgKey_SingleProjectMode(t *testing.T) {
 	orgKey := os.Getenv(envOrgAPIKey)
 	useAPIKey(t, orgKey)
 	suffix := acctest.RandStringFromCharSet(8, acctest.CharSetAlphaNum)
-	projectA := os.Getenv(envOrgProjectID)
-	projectB := secondOrgProject(t)
+	projectA := orgProjectA.get(t)
+	projectB := orgProjectB.get(t)
 	var sourceID string
 
 	resource.Test(t, resource.TestCase{
@@ -377,8 +377,8 @@ func TestAccProjectScope_OrgKey_SourceAuthFollowsSource(t *testing.T) {
 	orgKey := os.Getenv(envOrgAPIKey)
 	useAPIKey(t, orgKey)
 	suffix := acctest.RandStringFromCharSet(8, acctest.CharSetAlphaNum)
-	projectA := os.Getenv(envOrgProjectID)
-	projectB := secondOrgProject(t)
+	projectA := orgProjectA.get(t)
+	projectB := orgProjectB.get(t)
 	var sourceID string
 
 	const authAddr = "hookdeck_gateway_source_auth.test"
@@ -430,11 +430,8 @@ func TestAccProjectScope_KeyCannotReachStoredProject(t *testing.T) {
 	projectKey := os.Getenv(envAPIKey)
 	orgKey := os.Getenv(envOrgAPIKey)
 	suffix := acctest.RandStringFromCharSet(8, acctest.CharSetAlphaNum)
-	orgProject := os.Getenv(envOrgProjectID)
+	orgProject := orgProjectA.get(t)
 	keyProject := currentProjectID(t)
-	if keyProject == orgProject {
-		t.Skipf("%s belongs to %s, the project in %s; this test needs a project key for another project", envAPIKey, orgProject, envOrgProjectID)
-	}
 	var sourceID string
 
 	useAPIKey(t, orgKey)
