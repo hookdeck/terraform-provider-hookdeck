@@ -71,7 +71,7 @@ jobs:
     strategy:
       matrix:
         terraform:
-          - "1.16.*"
+          - "latest"
     steps:
       - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
       - uses: actions/setup-go@4a3601121dd01d1626a1e23e37211e3254c1c06c # v6.4.0
@@ -91,6 +91,8 @@ jobs:
       # Failed or interrupted tests leave resources behind. Everything the
       # tests create is named tf-acc-*; this deletes what is over an hour old,
       # so a run in progress elsewhere is not disturbed.
+      # Deletes tf-acc- leftovers older than an hour, so whatever this run
+      # leaves after an interruption is removed by a later run.
       - name: Tear down leftover test resources
         if: always()
         env:
