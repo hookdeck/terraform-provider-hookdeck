@@ -69,7 +69,7 @@ func (p *hookdeckProvider) Schema(ctx context.Context, req provider.SchemaReques
 			},
 			"project_id": schema.StringAttribute{
 				Optional:            true,
-				MarkdownDescription: fmt.Sprintf("Project that every resource and data source of this provider configuration belongs to. Not needed with a project API key, which is bound to its project. With an organization API key, set it to manage a single project, or leave it unset and set `project_id` on each resource. Changing it replaces every resource. Alternatively, can be configured using the `%s` environment variable.", projectIDEnvVarKey),
+				MarkdownDescription: fmt.Sprintf("Project that every resource and data source of this provider configuration belongs to. Not needed with a project API key, which is bound to its project. With an organization API key, set it to manage a single project, or leave it unset and set `project_id` on each resource. With an organization API key, changing it replaces every resource; with a project API key, the plan fails. Alternatively, can be configured using the `%s` environment variable.", projectIDEnvVarKey),
 				Validators: []validator.String{
 					stringvalidator.LengthAtLeast(1),
 				},

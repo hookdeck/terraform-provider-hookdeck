@@ -55,7 +55,7 @@ jobs:
           git diff --compact-summary --exit-code || \
             (echo; echo "Unexpected difference in directories after code generation. Run 'go generate ./...' command and commit."; exit 1)
 
-  # Run acceptance tests in a matrix with Terraform CLI versions
+  # Run acceptance tests on the latest Terraform CLI
   test:
     name: Terraform Provider Acceptance Tests
     needs: build
@@ -91,8 +91,6 @@ jobs:
       # Failed or interrupted tests leave resources behind. Everything the
       # tests create is named tf-acc-*; this deletes what is over an hour old,
       # so a run in progress elsewhere is not disturbed.
-      # Deletes tf-acc- leftovers older than an hour, so whatever this run
-      # leaves after an interruption is removed by a later run.
       - name: Tear down leftover test resources
         if: always()
         env:

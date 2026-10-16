@@ -5,7 +5,7 @@ Thanks for your interest in contributing to the Hookdeck Terraform Provider. Thi
 ## Prerequisites
 
 - [Go](https://go.dev/dl/) — see [`go.mod`](go.mod) for the required version
-- [Terraform CLI](https://developer.hashicorp.com/terraform/install) 1.9 or newer (CI runs the latest)
+- [Terraform CLI](https://developer.hashicorp.com/terraform/install) 1.8 or newer (CI runs the latest)
 - A [Hookdeck account](https://dashboard.hookdeck.com/signup) and an organization API key for running acceptance tests
 
 ## Local development

@@ -148,7 +148,7 @@ func renamedState(ctx context.Context, source tftypes.Value, target resourcesche
 }
 
 // isThisProvider matches any registry host and namespace, since mirrors
-// report their own. OpenTofu 1.10.0 to 1.12.3 send the bare provider type.
+// report their own. Some OpenTofu releases from 1.10.0 to 1.12.3 send the bare provider type.
 func isThisProvider(address string) bool {
 	return address == providerName || strings.HasSuffix(address, "/"+providerName)
 }

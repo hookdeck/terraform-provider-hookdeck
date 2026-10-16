@@ -175,7 +175,7 @@ func Test(t *testing.T, tc resource.TestCase) {
 // TestAs is Test with other credentials. The credentials are passed to the
 // provider as variables of every step, unless a step sets its own
 // ConfigVariables. A step's configuration gets the variable declarations,
-// and a provider block unless it has one that reads var.hookdeck_api_key.
+// and a provider block unless it already has a provider "hookdeck" block.
 func TestAs(t *testing.T, c Creds, tc resource.TestCase) {
 	t.Helper()
 	tc.ProtoV6ProviderFactories = ProviderFactories

@@ -135,20 +135,18 @@ func (h *HookdeckRateLimiter) Wait(ctx context.Context) error {
 	return h.limiter.Wait(ctx)
 }
 
-// sharedTestRateLimiter, when running under TF_ACC=1, is shared across every
-// RawClient created in the process. Each acceptance test step spins up a
-// fresh provider (and would otherwise get its own 5-token burst); stacking
-// those bursts blows past the API's 240 req/min per-key sliding window.
-// Sharing keeps the cumulative request rate within bounds.
-//
-// Acceptance tests run in parallel against a key with a higher API limit
-// than the 240 req/min the production limiter protects, so the test limiter
-// allows testRequestsPerMinute (override with HOOKDECK_TEST_REQUESTS_PER_MINUTE).
+// Acceptance tests run in parallel, so the test limiter allows more than the
+// production one (override with HOOKDECK_TEST_REQUESTS_PER_MINUTE).
 const (
 	testRequestsPerMinute = 2000
 	testRateBurst         = 20
 )
 
+// sharedTestRateLimiter, when running under TF_ACC=1, is shared across every
+// RawClient created in the process. Each acceptance test step spins up a
+// fresh provider (and would otherwise get its own burst); stacking those
+// bursts blows past the API's per-key limit over its fixed one-minute window.
+// Sharing keeps the cumulative request rate within bounds.
 var (
 	sharedTestRateLimiterOnce sync.Once
 	sharedTestRateLimiterVal  RateLimiter
