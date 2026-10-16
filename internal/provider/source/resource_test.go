@@ -1,32 +1,16 @@
 package source_test
 
 import (
-	"context"
-	"encoding/json"
 	"fmt"
-	"io"
 	"os"
 	"path/filepath"
-	"terraform-provider-hookdeck/internal/provider"
-	"terraform-provider-hookdeck/internal/sdkclient"
+	"terraform-provider-hookdeck/internal/acc"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-framework/providerserver"
-	"github.com/hashicorp/terraform-plugin-go/tfprotov6"
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 )
-
-var testAccProtoV6ProviderFactories = map[string]func() (tfprotov6.ProviderServer, error){
-	"hookdeck": providerserver.NewProtocol6WithError(provider.New("test")()),
-}
-
-func testAccPreCheck(t *testing.T) {
-	if v := os.Getenv("HOOKDECK_API_KEY"); v == "" {
-		t.Fatal("HOOKDECK_API_KEY must be set for acceptance tests")
-	}
-}
 
 func loadTestConfigFormatted(t *testing.T, filename string, args ...interface{}) string {
 	t.Helper()
@@ -43,26 +27,12 @@ func loadTestConfigFormatted(t *testing.T, filename string, args ...interface{})
 // the `config` attribute is not Computed — Terraform state stores the user's
 // input, not what the API actually has.
 func fetchSourceConfig(id string) (map[string]interface{}, error) {
-	client := sdkclient.InitHookdeckSDKClient(
-		os.Getenv("HOOKDECK_API_BASE"),
-		os.Getenv("HOOKDECK_API_KEY"),
-		"test",
-	)
-	resp, err := client.RawClient.SendRequest(context.Background(), "GET",
-		fmt.Sprintf("/"+sdkclient.APIVersion+"/sources/%s", id), nil)
+	status, src, err := acc.RequestCurrent("GET", "/sources/"+id, nil, nil)
 	if err != nil {
 		return nil, err
 	}
-	body, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return nil, err
-	}
-	if resp.StatusCode > 299 {
-		return nil, fmt.Errorf("GET source returned %d: %s", resp.StatusCode, string(body))
-	}
-	var src map[string]interface{}
-	if err := json.Unmarshal(body, &src); err != nil {
-		return nil, err
+	if status > 299 {
+		return nil, fmt.Errorf("GET source returned %d: %v", status, src)
 	}
 	config, ok := src["config"].(map[string]interface{})
 	if !ok {
@@ -149,8 +119,8 @@ func TestAccSourceResource_RemoveCustomResponse(t *testing.T) {
 	resourceName := fmt.Sprintf("hookdeck_source.test_%s", rName)
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:                 func() { testAccPreCheck(t) },
-		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		PreCheck:                 func() { acc.PreCheck(t) },
+		ProtoV6ProviderFactories: acc.ProviderFactories,
 		Steps: []resource.TestStep{
 			{
 				Config: loadTestConfigFormatted(t, "with_custom_response.tf", rName),
@@ -180,8 +150,8 @@ func TestAccSourceResource_RemoveAllowedHTTPMethodsResetsToDefault(t *testing.T)
 	resourceName := fmt.Sprintf("hookdeck_source.test_%s", rName)
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:                 func() { testAccPreCheck(t) },
-		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		PreCheck:                 func() { acc.PreCheck(t) },
+		ProtoV6ProviderFactories: acc.ProviderFactories,
 		Steps: []resource.TestStep{
 			{
 				Config: loadTestConfigFormatted(t, "with_allowed_http_methods.tf", rName),

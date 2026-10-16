@@ -2,10 +2,11 @@ package provider_test
 
 import (
 	"fmt"
-	"os"
 	"regexp"
 	"strings"
 	"testing"
+
+	"terraform-provider-hookdeck/internal/acc"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -24,11 +25,11 @@ func TestAccGatewayProject_ProjectKeyIsPlanError(t *testing.T) {
 	suffix := acctest.RandStringFromCharSet(8, acctest.CharSetAlphaNum)
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:                 func() { testAccPreCheck(t) },
-		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		PreCheck:                 func() { acc.PreCheckProjectKey(t) },
+		ProtoV6ProviderFactories: acc.ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config:      projectConfig("tf-v3-" + suffix),
+				Config:      projectConfig("tf-acc-v3-" + suffix),
 				PlanOnly:    true,
 				ExpectError: regexp.MustCompile(`Organization API key required`),
 			},
@@ -39,8 +40,8 @@ func TestAccGatewayProject_ProjectKeyIsPlanError(t *testing.T) {
 // A name the API would trim fails validation. The key is never sent, so
 // this runs without organization credentials.
 func TestAccGatewayProject_Validation(t *testing.T) {
-	skipUnlessAcc(t)
-	useAPIKey(t, fakeOrgAPIKey)
+	acc.SkipUnlessAcc(t)
+	acc.UseAPIKey(t, acc.FakeOrgAPIKey)
 
 	var steps []resource.TestStep
 	for _, name := range []string{" padded", "padded ", strings.Repeat("x", 41)} {
@@ -52,19 +53,19 @@ func TestAccGatewayProject_Validation(t *testing.T) {
 	}
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		ProtoV6ProviderFactories: acc.ProviderFactories,
 		Steps:                    steps,
 	})
 }
 
 // A project key sees its own project through the data source.
 func TestAccGatewayProject_ProjectKey_DataSource(t *testing.T) {
-	skipUnlessAcc(t)
-	projectID := currentProjectID(t)
+	acc.SkipUnlessAcc(t)
+	projectID := acc.ProjectA(t)
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:                 func() { testAccPreCheck(t) },
-		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		PreCheck:                 func() { acc.PreCheckProjectKey(t) },
+		ProtoV6ProviderFactories: acc.ProviderFactories,
 		Steps: []resource.TestStep{
 			{
 				Config: loadFixture(t, "project_datasource.tf", projectID),
@@ -76,7 +77,7 @@ func TestAccGatewayProject_ProjectKey_DataSource(t *testing.T) {
 				),
 			},
 			{
-				Config:      loadFixture(t, "project_datasource.tf", missingProjectID),
+				Config:      loadFixture(t, "project_datasource.tf", acc.MissingProjectID),
 				ExpectError: regexp.MustCompile(`Project not found`),
 			},
 		},
@@ -86,9 +87,8 @@ func TestAccGatewayProject_ProjectKey_DataSource(t *testing.T) {
 // Create a project and a source in it, rename the project in place, import
 // it, then destroy both.
 func TestAccGatewayProject_OrgKey_Lifecycle(t *testing.T) {
-	skipUnlessOrg(t)
-	orgKey := os.Getenv(envOrgAPIKey)
-	useAPIKey(t, orgKey)
+	acc.PreCheckOrgKey(t)
+	orgKey := acc.OrgKey(t)
 	suffix := acctest.RandStringFromCharSet(8, acctest.CharSetAlphaNum)
 	var projectID, sourceID string
 
@@ -97,12 +97,12 @@ func TestAccGatewayProject_OrgKey_Lifecycle(t *testing.T) {
 	}
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		ProtoV6ProviderFactories: acc.ProviderFactories,
 		CheckDestroy: func(_ *terraform.State) error {
 			if projectID == "" {
 				return nil
 			}
-			status, _ := apiRequest(t, orgKey, "", "GET", "/projects/"+projectID, nil)
+			status, _ := acc.Request(t, orgKey, "", "GET", "/projects/"+projectID, nil)
 			if status != 404 {
 				return fmt.Errorf("project %s still exists (status %d)", projectID, status)
 			}
@@ -110,18 +110,18 @@ func TestAccGatewayProject_OrgKey_Lifecycle(t *testing.T) {
 		},
 		Steps: []resource.TestStep{
 			{
-				Config: config("tf-v3-" + suffix),
+				Config: config("tf-acc-v3-" + suffix),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					captureID(projectAddr, &projectID),
 					captureID(sourceAddr, &sourceID),
-					resource.TestCheckResourceAttr(projectAddr, "name", "tf-v3-"+suffix),
+					resource.TestCheckResourceAttr(projectAddr, "name", "tf-acc-v3-"+suffix),
 					resource.TestCheckResourceAttr(projectAddr, "type", "event_gateway"),
 					resource.TestCheckResourceAttrSet(projectAddr, "organization_id"),
 					resource.TestCheckResourceAttrPair(sourceAddr, "project_id", projectAddr, "id"),
 				),
 			},
 			{
-				Config: config("tf-v3-" + suffix + "-renamed"),
+				Config: config("tf-acc-v3-" + suffix + "-renamed"),
 				ConfigPlanChecks: resource.ConfigPlanChecks{PreApply: []plancheck.PlanCheck{
 					plancheck.ExpectResourceAction(projectAddr, plancheck.ResourceActionUpdate),
 					plancheck.ExpectResourceAction(sourceAddr, plancheck.ResourceActionNoop),
@@ -129,7 +129,7 @@ func TestAccGatewayProject_OrgKey_Lifecycle(t *testing.T) {
 				Check: resource.ComposeAggregateTestCheckFunc(
 					checkIDEquals(projectAddr, &projectID),
 					checkIDEquals(sourceAddr, &sourceID),
-					resource.TestCheckResourceAttr(projectAddr, "name", "tf-v3-"+suffix+"-renamed"),
+					resource.TestCheckResourceAttr(projectAddr, "name", "tf-acc-v3-"+suffix+"-renamed"),
 					resource.TestCheckResourceAttrPair(sourceAddr, "project_id", projectAddr, "id"),
 				),
 			},
@@ -143,12 +143,11 @@ func TestAccGatewayProject_OrgKey_Lifecycle(t *testing.T) {
 }
 
 func TestAccGatewayProject_OrgKey_DataSource(t *testing.T) {
-	skipUnlessOrg(t)
-	useAPIKey(t, os.Getenv(envOrgAPIKey))
-	projectID := orgProjectA.get(t)
+	acc.PreCheckOrgKey(t)
+	projectID := acc.ProjectA(t)
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		ProtoV6ProviderFactories: acc.ProviderFactories,
 		Steps: []resource.TestStep{
 			{
 				Config: loadFixture(t, "project_datasource.tf", projectID),

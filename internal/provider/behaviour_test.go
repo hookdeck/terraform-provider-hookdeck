@@ -1,9 +1,10 @@
 package provider_test
 
 import (
-	"os"
 	"regexp"
 	"testing"
+
+	"terraform-provider-hookdeck/internal/acc"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -16,8 +17,8 @@ func TestAccBehaviour_DisabledAtIsReadOnly(t *testing.T) {
 	suffix := acctest.RandStringFromCharSet(8, acctest.CharSetAlphaNum)
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:                 func() { testAccPreCheck(t) },
-		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		PreCheck:                 func() { acc.PreCheck(t) },
+		ProtoV6ProviderFactories: acc.ProviderFactories,
 		Steps: []resource.TestStep{
 			{
 				Config:      loadFixture(t, "destination_disabled_at.tf", suffix),
@@ -54,8 +55,8 @@ func TestAccBehaviour_DeletedOutsideTerraform(t *testing.T) {
 	}
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:                 func() { testAccPreCheck(t) },
-		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		PreCheck:                 func() { acc.PreCheck(t) },
+		ProtoV6ProviderFactories: acc.ProviderFactories,
 		Steps: []resource.TestStep{
 			{
 				Config: loadFixture(t, "gateway_basic.tf", suffix),
@@ -69,7 +70,7 @@ func TestAccBehaviour_DeletedOutsideTerraform(t *testing.T) {
 			{
 				PreConfig: func() {
 					for _, address := range order {
-						status, body := apiRequest(t, os.Getenv(envAPIKey), "", "DELETE", paths[address]+ids[address], nil)
+						status, body := acc.Request(t, acc.OrgKey(t), acc.ProjectA(t), "DELETE", paths[address]+ids[address], nil)
 						if status > 299 {
 							t.Fatalf("delete %s %s: %d %v", address, ids[address], status, body)
 						}

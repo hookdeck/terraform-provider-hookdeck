@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"testing"
 
+	"terraform-provider-hookdeck/internal/acc"
+
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/plancheck"
@@ -30,7 +32,7 @@ func requiredProviders(version string) string {
 // keep every id and record each resource's project.
 func upgradeSteps(t *testing.T, suffix, upgraded, prefix string) []resource.TestStep {
 	t.Helper()
-	projectID := currentProjectID(t)
+	projectID := acc.ProjectA(t)
 	var capture, compare []resource.TestCheckFunc
 	for _, name := range upgradeTypes {
 		compare = append(compare, resource.TestCheckResourceAttr(prefix+name+".test", "project_id", projectID))
@@ -50,7 +52,7 @@ func upgradeSteps(t *testing.T, suffix, upgraded, prefix string) []resource.Test
 			Check:  resource.ComposeAggregateTestCheckFunc(capture...),
 		},
 		{
-			ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+			ProtoV6ProviderFactories: acc.ProviderFactories,
 			Config:                   requiredProviders("") + loadFixture(t, upgraded, suffix),
 			ConfigPlanChecks:         emptyPlan(),
 			Check:                    resource.ComposeAggregateTestCheckFunc(compare...),
@@ -61,24 +63,24 @@ func upgradeSteps(t *testing.T, suffix, upgraded, prefix string) []resource.Test
 // A v2 configuration applied with the released v2 provider keeps working
 // unchanged: the plan is empty and each resource is pinned to its project.
 func TestAccUpgrade_ReleasedV2State_SameNames(t *testing.T) {
-	skipUnlessAcc(t)
+	acc.SkipUnlessAcc(t)
 	t.Setenv("TF_ACC_PROVIDER_NAMESPACE", "hookdeck")
 	suffix := acctest.RandStringFromCharSet(8, acctest.CharSetAlphaNum)
 
 	resource.Test(t, resource.TestCase{
-		PreCheck: func() { testAccPreCheck(t) },
+		PreCheck: func() { acc.PreCheckProjectKey(t) },
 		Steps:    upgradeSteps(t, suffix, "v2_names.tf", "hookdeck_"),
 	})
 }
 
 // The same state renamed with moved blocks: nothing is recreated.
 func TestAccUpgrade_ReleasedV2State_Moved(t *testing.T) {
-	skipUnlessAcc(t)
+	acc.SkipUnlessAcc(t)
 	t.Setenv("TF_ACC_PROVIDER_NAMESPACE", "hookdeck")
 	suffix := acctest.RandStringFromCharSet(8, acctest.CharSetAlphaNum)
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:               func() { testAccPreCheck(t) },
+		PreCheck:               func() { acc.PreCheckProjectKey(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{tfversion.SkipBelow(tfversion.Version1_8_0)},
 		Steps:                  upgradeSteps(t, suffix, "v3_names_moved.tf", "hookdeck_gateway_"),
 	})
@@ -90,10 +92,10 @@ func TestAccUpgrade_ReleasedV2State_Moved(t *testing.T) {
 // of a source auth records no project: it is adopted with one in-place
 // update.
 func TestAccMock_UpgradeReleasedV2StateToOrgKey(t *testing.T) {
-	skipUnlessAcc(t)
+	acc.SkipUnlessAcc(t)
 	t.Setenv("TF_ACC_PROVIDER_NAMESPACE", "hookdeck")
 	m := mockOrganization(t)
-	useAPIKey(t, mockProjectKeyA)
+	acc.UseAPIKey(t, mockProjectKeyA)
 	var sourceID string
 
 	const (
@@ -117,8 +119,8 @@ func TestAccMock_UpgradeReleasedV2StateToOrgKey(t *testing.T) {
 				),
 			},
 			{
-				PreConfig:                func() { useAPIKey(t, mockOrgKey) },
-				ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+				PreConfig:                func() { acc.UseAPIKey(t, mockOrgKey) },
+				ProtoV6ProviderFactories: acc.ProviderFactories,
 				Config:                   requiredProviders("") + config("  project_id = \"tm_a\"\n"),
 				ConfigPlanChecks: resource.ConfigPlanChecks{PreApply: []plancheck.PlanCheck{
 					plancheck.ExpectResourceAction(v2Source, plancheck.ResourceActionNoop),
@@ -131,12 +133,12 @@ func TestAccMock_UpgradeReleasedV2StateToOrgKey(t *testing.T) {
 				),
 			},
 			{
-				ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+				ProtoV6ProviderFactories: acc.ProviderFactories,
 				Config:                   requiredProviders("") + config("  project_id = \"tm_a\"\n"),
 				ConfigPlanChecks:         emptyPlan(),
 			},
 			{
-				ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+				ProtoV6ProviderFactories: acc.ProviderFactories,
 				Config:                   requiredProviders("") + config("  project_id = \"tm_b\"\n"),
 				ConfigPlanChecks: resource.ConfigPlanChecks{PreApply: []plancheck.PlanCheck{
 					plancheck.ExpectResourceAction(v2Source, plancheck.ResourceActionReplace),
@@ -160,10 +162,10 @@ func TestAccMock_UpgradeReleasedV2StateToOrgKey(t *testing.T) {
 // Released v2 state moved to the v3 names: the v3 names have no team_id,
 // and the project it recorded is kept in project_id.
 func TestAccMock_UpgradeReleasedV2State_MovedDropsTeamID(t *testing.T) {
-	skipUnlessAcc(t)
+	acc.SkipUnlessAcc(t)
 	t.Setenv("TF_ACC_PROVIDER_NAMESPACE", "hookdeck")
 	mockOrganization(t)
-	useAPIKey(t, mockProjectKeyA)
+	acc.UseAPIKey(t, mockProjectKeyA)
 	var sourceID string
 
 	const (
@@ -209,7 +211,7 @@ moved {
 				),
 			},
 			{
-				ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+				ProtoV6ProviderFactories: acc.ProviderFactories,
 				Config:                   requiredProviders("") + moved,
 				ConfigPlanChecks:         emptyPlan(),
 				Check: resource.ComposeAggregateTestCheckFunc(

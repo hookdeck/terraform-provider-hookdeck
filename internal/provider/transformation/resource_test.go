@@ -4,24 +4,12 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
-	"terraform-provider-hookdeck/internal/provider"
+	"terraform-provider-hookdeck/internal/acc"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-framework/providerserver"
-	"github.com/hashicorp/terraform-plugin-go/tfprotov6"
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
-
-var testAccProtoV6ProviderFactories = map[string]func() (tfprotov6.ProviderServer, error){
-	"hookdeck": providerserver.NewProtocol6WithError(provider.New("test")()),
-}
-
-func testAccPreCheck(t *testing.T) {
-	if v := os.Getenv("HOOKDECK_API_KEY"); v == "" {
-		t.Fatal("HOOKDECK_API_KEY must be set for acceptance tests")
-	}
-}
 
 func loadTestConfigFormatted(filename string, args ...interface{}) string {
 	path := filepath.Join("testdata", filename)
@@ -38,14 +26,14 @@ func TestAccTransformationResource(t *testing.T) {
 	resourceName := fmt.Sprintf("hookdeck_transformation.test_%s", rName)
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:                 func() { testAccPreCheck(t) },
-		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		PreCheck:                 func() { acc.PreCheck(t) },
+		ProtoV6ProviderFactories: acc.ProviderFactories,
 		Steps: []resource.TestStep{
 			// Create and Read testing
 			{
 				Config: loadTestConfigFormatted("basic.tf", rName),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr(resourceName, "name", fmt.Sprintf("test-transformation-%s", rName)),
+					resource.TestCheckResourceAttr(resourceName, "name", fmt.Sprintf("tf-acc-transformation-%s", rName)),
 					resource.TestCheckResourceAttr(resourceName, "code", "exports.handler = async (request, context) => { return request; };"),
 					resource.TestCheckResourceAttrSet(resourceName, "id"),
 					resource.TestCheckResourceAttrSet(resourceName, "created_at"),
@@ -63,7 +51,7 @@ func TestAccTransformationResource(t *testing.T) {
 			{
 				Config: loadTestConfigFormatted("with_env.tf", rName),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr(resourceName, "name", fmt.Sprintf("test-transformation-env-%s", rName)),
+					resource.TestCheckResourceAttr(resourceName, "name", fmt.Sprintf("tf-acc-transformation-env-%s", rName)),
 					resource.TestCheckResourceAttr(resourceName, "code", "exports.handler = async (request, context) => { return { ...request, apiKey: context.env.API_KEY }; };"),
 					resource.TestCheckResourceAttrSet(resourceName, "env"),
 				),
@@ -78,14 +66,14 @@ func TestAccTransformationResourceWithEnv(t *testing.T) {
 	resourceName := fmt.Sprintf("hookdeck_transformation.test_%s", rName)
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:                 func() { testAccPreCheck(t) },
-		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		PreCheck:                 func() { acc.PreCheck(t) },
+		ProtoV6ProviderFactories: acc.ProviderFactories,
 		Steps: []resource.TestStep{
 			// Create with environment variables
 			{
 				Config: loadTestConfigFormatted("with_env.tf", rName),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr(resourceName, "name", fmt.Sprintf("test-transformation-env-%s", rName)),
+					resource.TestCheckResourceAttr(resourceName, "name", fmt.Sprintf("tf-acc-transformation-env-%s", rName)),
 					resource.TestCheckResourceAttrSet(resourceName, "env"),
 					// Verify the env is properly set as JSON
 					resource.TestCheckResourceAttr(resourceName, "env", fmt.Sprintf(`{"API_KEY":"test-key-%s","DEBUG":"true"}`, rName)),
@@ -95,7 +83,7 @@ func TestAccTransformationResourceWithEnv(t *testing.T) {
 			{
 				Config: loadTestConfigFormatted("basic.tf", rName),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr(resourceName, "name", fmt.Sprintf("test-transformation-%s", rName)),
+					resource.TestCheckResourceAttr(resourceName, "name", fmt.Sprintf("tf-acc-transformation-%s", rName)),
 					resource.TestCheckNoResourceAttr(resourceName, "env"),
 				),
 			},

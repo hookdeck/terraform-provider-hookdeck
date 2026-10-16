@@ -1,34 +1,18 @@
 package destination_test
 
 import (
-	"context"
-	"encoding/json"
 	"fmt"
-	"io"
 	"net/url"
 	"os"
 	"path/filepath"
 	"strings"
-	"terraform-provider-hookdeck/internal/provider"
-	"terraform-provider-hookdeck/internal/sdkclient"
+	"terraform-provider-hookdeck/internal/acc"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-framework/providerserver"
-	"github.com/hashicorp/terraform-plugin-go/tfprotov6"
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 )
-
-var testAccProtoV6ProviderFactories = map[string]func() (tfprotov6.ProviderServer, error){
-	"hookdeck": providerserver.NewProtocol6WithError(provider.New("test")()),
-}
-
-func testAccPreCheck(t *testing.T) {
-	if v := os.Getenv("HOOKDECK_API_KEY"); v == "" {
-		t.Fatal("HOOKDECK_API_KEY must be set for acceptance tests")
-	}
-}
 
 func loadTestConfigFormatted(t *testing.T, filename string, args ...interface{}) string {
 	t.Helper()
@@ -45,29 +29,12 @@ func loadTestConfigFormatted(t *testing.T, filename string, args ...interface{})
 // because the `config` attribute is not Computed — Terraform state stores the
 // user's input, not what the API actually has.
 func fetchDestinationConfig(id string) (map[string]interface{}, error) {
-	client := sdkclient.InitHookdeckSDKClient(
-		os.Getenv("HOOKDECK_API_BASE"),
-		os.Getenv("HOOKDECK_API_KEY"),
-		"test",
-	)
-	resp, err := client.RawClient.SendRequest(context.Background(), "GET",
-		fmt.Sprintf("/2026-09-01/destinations/%s", id),
-		&sdkclient.RequestOptions{
-			QueryParams: url.Values{"include": []string{"config.auth"}},
-		})
+	status, dest, err := acc.RequestCurrent("GET", "/destinations/"+id, url.Values{"include": []string{"config.auth"}}, nil)
 	if err != nil {
 		return nil, err
 	}
-	body, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return nil, err
-	}
-	if resp.StatusCode > 299 {
-		return nil, fmt.Errorf("GET destination returned %d: %s", resp.StatusCode, string(body))
-	}
-	var dest map[string]interface{}
-	if err := json.Unmarshal(body, &dest); err != nil {
-		return nil, err
+	if status > 299 {
+		return nil, fmt.Errorf("GET destination returned %d: %v", status, dest)
 	}
 	config, ok := dest["config"].(map[string]interface{})
 	if !ok {
@@ -131,8 +98,8 @@ func TestAccDestinationResource_RemoveRateLimit(t *testing.T) {
 	resourceName := fmt.Sprintf("hookdeck_destination.test_%s", rName)
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:                 func() { testAccPreCheck(t) },
-		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		PreCheck:                 func() { acc.PreCheck(t) },
+		ProtoV6ProviderFactories: acc.ProviderFactories,
 		Steps: []resource.TestStep{
 			{
 				Config: loadTestConfigFormatted(t, "with_rate_limit.tf", rName),
@@ -163,8 +130,8 @@ func TestAccDestinationResource_AddRemoveReaddRateLimit(t *testing.T) {
 	resourceName := fmt.Sprintf("hookdeck_destination.test_%s", rName)
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:                 func() { testAccPreCheck(t) },
-		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		PreCheck:                 func() { acc.PreCheck(t) },
+		ProtoV6ProviderFactories: acc.ProviderFactories,
 		Steps: []resource.TestStep{
 			// Start minimal — no rate_limit.
 			{
@@ -208,8 +175,8 @@ func TestAccDestinationResource_NoDriftAfterRateLimitRemoval(t *testing.T) {
 	rName := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:                 func() { testAccPreCheck(t) },
-		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		PreCheck:                 func() { acc.PreCheck(t) },
+		ProtoV6ProviderFactories: acc.ProviderFactories,
 		Steps: []resource.TestStep{
 			// Apply with rate_limit set.
 			{
@@ -238,8 +205,8 @@ func TestAccDestinationResource_RemoveHTTPMethod(t *testing.T) {
 	resourceName := fmt.Sprintf("hookdeck_destination.test_%s", rName)
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:                 func() { testAccPreCheck(t) },
-		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		PreCheck:                 func() { acc.PreCheck(t) },
+		ProtoV6ProviderFactories: acc.ProviderFactories,
 		Steps: []resource.TestStep{
 			{
 				Config: loadTestConfigFormatted(t, "with_http_method.tf", rName),
@@ -269,8 +236,8 @@ func TestAccDestinationResource_RemovePathForwardingDisabledResetsToDefault(t *t
 	resourceName := fmt.Sprintf("hookdeck_destination.test_%s", rName)
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:                 func() { testAccPreCheck(t) },
-		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		PreCheck:                 func() { acc.PreCheck(t) },
+		ProtoV6ProviderFactories: acc.ProviderFactories,
 		Steps: []resource.TestStep{
 			{
 				Config: loadTestConfigFormatted(t, "with_path_forwarding_disabled.tf", rName),
@@ -308,8 +275,8 @@ func TestAccDestinationResource_RateLimitPeriodMergeBehavior(t *testing.T) {
 	resourceName := fmt.Sprintf("hookdeck_destination.test_%s", rName)
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:                 func() { testAccPreCheck(t) },
-		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		PreCheck:                 func() { acc.PreCheck(t) },
+		ProtoV6ProviderFactories: acc.ProviderFactories,
 		Steps: []resource.TestStep{
 			{
 				Config: loadTestConfigFormatted(t, "with_rate_limit.tf", rName),

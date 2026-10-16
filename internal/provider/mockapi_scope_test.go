@@ -5,6 +5,8 @@ import (
 	"regexp"
 	"testing"
 
+	"terraform-provider-hookdeck/internal/acc"
+
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 )
@@ -33,17 +35,17 @@ func mockOrganization(t *testing.T) *mockAPI {
 // refused by the API and reported as a project problem, not as a missing
 // resource.
 func TestAccMock_ProjectKeyWithoutProjectsRead(t *testing.T) {
-	skipUnlessAcc(t)
+	acc.SkipUnlessAcc(t)
 	m := mockOrganization(t)
 	m.update(func() {
 		m.keys[mockProjectKeyA].noProjectsRead = true
 		m.keys[mockProjectKeyB].noProjectsRead = true
 	})
-	useAPIKey(t, mockProjectKeyA)
+	acc.UseAPIKey(t, mockProjectKeyA)
 	var sourceID string
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		ProtoV6ProviderFactories: acc.ProviderFactories,
 		Steps: []resource.TestStep{
 			{
 				Config: sourceConfig(t, "mock", ""),
@@ -62,12 +64,12 @@ func TestAccMock_ProjectKeyWithoutProjectsRead(t *testing.T) {
 				ExpectError: regexp.MustCompile(`(?s)Project not reachable.*tm_a.*tm_b`),
 			},
 			{
-				PreConfig:   func() { useAPIKey(t, mockProjectKeyB) },
+				PreConfig:   func() { acc.UseAPIKey(t, mockProjectKeyB) },
 				Config:      sourceConfig(t, "mock", ""),
 				ExpectError: regexp.MustCompile(`(?s)cannot access project tm_a.*state rm`),
 			},
 			{
-				PreConfig:        func() { useAPIKey(t, mockProjectKeyA) },
+				PreConfig:        func() { acc.UseAPIKey(t, mockProjectKeyA) },
 				Config:           sourceConfig(t, "mock", ""),
 				ConfigPlanChecks: emptyPlan(),
 				Check:            checkIDEquals(sourceAddr, &sourceID),
@@ -79,25 +81,25 @@ func TestAccMock_ProjectKeyWithoutProjectsRead(t *testing.T) {
 // Swapping the project key for another project's key fails the plan before
 // any request for the resource is sent, and leaves the state alone.
 func TestAccMock_ProjectKeySwapped(t *testing.T) {
-	skipUnlessAcc(t)
+	acc.SkipUnlessAcc(t)
 	m := mockOrganization(t)
-	useAPIKey(t, mockProjectKeyA)
+	acc.UseAPIKey(t, mockProjectKeyA)
 	var sourceID string
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		ProtoV6ProviderFactories: acc.ProviderFactories,
 		Steps: []resource.TestStep{
 			{
 				Config: sourceConfig(t, "mock", ""),
 				Check:  captureID(sourceAddr, &sourceID),
 			},
 			{
-				PreConfig:   func() { useAPIKey(t, mockProjectKeyB) },
+				PreConfig:   func() { acc.UseAPIKey(t, mockProjectKeyB) },
 				Config:      sourceConfig(t, "mock", ""),
 				ExpectError: regexp.MustCompile(`(?s)Project not reachable.*tm_a.*tm_b.*state rm`),
 			},
 			{
-				PreConfig:        func() { useAPIKey(t, mockProjectKeyA) },
+				PreConfig:        func() { acc.UseAPIKey(t, mockProjectKeyA) },
 				Config:           sourceConfig(t, "mock", ""),
 				ConfigPlanChecks: emptyPlan(),
 				Check:            checkIDEquals(sourceAddr, &sourceID),
@@ -115,14 +117,14 @@ func TestAccMock_ProjectKeySwapped(t *testing.T) {
 // An organization key that loses its grant on a project gets an error
 // naming the project. The resource is not dropped from state.
 func TestAccMock_OrgKeyLosesGrant(t *testing.T) {
-	skipUnlessAcc(t)
+	acc.SkipUnlessAcc(t)
 	m := mockOrganization(t)
 	m.update(func() { m.keys[mockOrgKey].grants = map[string]bool{"tm_a": true} })
-	useAPIKey(t, mockOrgKey)
+	acc.UseAPIKey(t, mockOrgKey)
 	var sourceID string
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		ProtoV6ProviderFactories: acc.ProviderFactories,
 		Steps: []resource.TestStep{
 			{
 				Config: sourceConfig(t, "mock", "tm_a"),
@@ -146,14 +148,14 @@ func TestAccMock_OrgKeyLosesGrant(t *testing.T) {
 // A project deleted outside Terraform, or a project_id that never existed,
 // is an error on refresh. The resources in it are not dropped from state.
 func TestAccMock_OrgKeyProjectNotFoundKeepsState(t *testing.T) {
-	skipUnlessAcc(t)
+	acc.SkipUnlessAcc(t)
 	m := mockOrganization(t)
-	useAPIKey(t, mockOrgKey)
+	acc.UseAPIKey(t, mockOrgKey)
 	var sourceID string
 	var removed *mockProject
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		ProtoV6ProviderFactories: acc.ProviderFactories,
 		Steps: []resource.TestStep{
 			{
 				Config: sourceConfig(t, "mock", "tm_a"),
@@ -185,9 +187,9 @@ func TestAccMock_OrgKeyProjectNotFoundKeepsState(t *testing.T) {
 // A target project that does not exist fails the plan before anything is
 // deleted.
 func TestAccMock_OrgKeyModes(t *testing.T) {
-	skipUnlessAcc(t)
+	acc.SkipUnlessAcc(t)
 	m := mockOrganization(t)
-	useAPIKey(t, mockOrgKey)
+	acc.UseAPIKey(t, mockOrgKey)
 	var sourceID string
 	deletes := func() (n int) {
 		for _, r := range m.requestsTo("/sources") {
@@ -199,7 +201,7 @@ func TestAccMock_OrgKeyModes(t *testing.T) {
 	}
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		ProtoV6ProviderFactories: acc.ProviderFactories,
 		Steps: []resource.TestStep{
 			{
 				Config:      sourceConfig(t, "mock", ""),
@@ -263,7 +265,7 @@ func TestAccMock_OrgKeyModes(t *testing.T) {
 // does not exist, or that the key has no grant on, still fails the plan,
 // and nothing is deleted.
 func TestAccMock_ReplaceIntoUnreachableProjectFailsThePlan(t *testing.T) {
-	skipUnlessAcc(t)
+	acc.SkipUnlessAcc(t)
 
 	keys := map[string]func(m *mockAPI){
 		"key limited to specific projects": func(m *mockAPI) {
@@ -277,7 +279,7 @@ func TestAccMock_ReplaceIntoUnreachableProjectFailsThePlan(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			m := mockOrganization(t)
 			m.update(func() { limit(m) })
-			useAPIKey(t, mockOrgKey)
+			acc.UseAPIKey(t, mockOrgKey)
 			var sourceID string
 
 			steps := []resource.TestStep{
@@ -315,7 +317,7 @@ func TestAccMock_ReplaceIntoUnreachableProjectFailsThePlan(t *testing.T) {
 			})
 
 			resource.Test(t, resource.TestCase{
-				ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+				ProtoV6ProviderFactories: acc.ProviderFactories,
 				Steps:                    steps,
 			})
 
@@ -329,12 +331,12 @@ func TestAccMock_ReplaceIntoUnreachableProjectFailsThePlan(t *testing.T) {
 // With an organization key every request for a resource names the
 // resource's project, and the provider looks nothing up at configure time.
 func TestAccMock_OrgKeySendsTheProjectOnEveryRequest(t *testing.T) {
-	skipUnlessAcc(t)
+	acc.SkipUnlessAcc(t)
 	m := mockOrganization(t)
-	useAPIKey(t, mockOrgKey)
+	acc.UseAPIKey(t, mockOrgKey)
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		ProtoV6ProviderFactories: acc.ProviderFactories,
 		Steps: []resource.TestStep{
 			{Config: sourceConfig(t, "mock", "tm_a")},
 			{Config: sourceConfig(t, "mock-renamed", "tm_a")},
@@ -368,13 +370,13 @@ func TestAccMock_OrgKeySendsTheProjectOnEveryRequest(t *testing.T) {
 // A project key looks its project up at configure time, unless project_id
 // is given.
 func TestAccMock_ProjectKeyLookup(t *testing.T) {
-	skipUnlessAcc(t)
+	acc.SkipUnlessAcc(t)
 
 	t.Run("without project_id", func(t *testing.T) {
 		m := mockOrganization(t)
-		useAPIKey(t, mockProjectKeyA)
+		acc.UseAPIKey(t, mockProjectKeyA)
 		resource.Test(t, resource.TestCase{
-			ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+			ProtoV6ProviderFactories: acc.ProviderFactories,
 			Steps:                    []resource.TestStep{{Config: sourceConfig(t, "mock", "")}},
 		})
 		if len(m.requestsTo("/projects")) == 0 {
@@ -389,9 +391,9 @@ func TestAccMock_ProjectKeyLookup(t *testing.T) {
 
 	t.Run("with a provider project_id", func(t *testing.T) {
 		m := mockOrganization(t)
-		useAPIKey(t, mockProjectKeyA)
+		acc.UseAPIKey(t, mockProjectKeyA)
 		resource.Test(t, resource.TestCase{
-			ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+			ProtoV6ProviderFactories: acc.ProviderFactories,
 			Steps:                    []resource.TestStep{{Config: providerBlock("tm_a") + sourceConfig(t, "mock", "")}},
 		})
 		if lookups := m.requestsTo("/projects"); len(lookups) != 0 {
@@ -401,10 +403,10 @@ func TestAccMock_ProjectKeyLookup(t *testing.T) {
 
 	t.Run("with the environment variable", func(t *testing.T) {
 		m := mockOrganization(t)
-		useAPIKey(t, mockOrgKey)
-		t.Setenv(envProjectID, "tm_b")
+		acc.UseAPIKey(t, mockOrgKey)
+		t.Setenv(acc.EnvProjectID, "tm_b")
 		resource.Test(t, resource.TestCase{
-			ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+			ProtoV6ProviderFactories: acc.ProviderFactories,
 			Steps: []resource.TestStep{{
 				Config: sourceConfig(t, "mock", ""),
 				Check:  resource.TestCheckResourceAttr(sourceAddr, "project_id", "tm_b"),
@@ -417,9 +419,9 @@ func TestAccMock_ProjectKeyLookup(t *testing.T) {
 
 	t.Run("invalid key", func(t *testing.T) {
 		mockOrganization(t)
-		useAPIKey(t, "hd_mock_unknown")
+		acc.UseAPIKey(t, "hd_mock_unknown")
 		resource.Test(t, resource.TestCase{
-			ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+			ProtoV6ProviderFactories: acc.ProviderFactories,
 			Steps: []resource.TestStep{{
 				Config:      sourceConfig(t, "mock", ""),
 				ExpectError: regexp.MustCompile(`Unable to look up the API key's project`),
@@ -431,18 +433,18 @@ func TestAccMock_ProjectKeyLookup(t *testing.T) {
 // hookdeck_gateway_project only accepts Event Gateway projects, on import
 // and in the data source, by ID and by name.
 func TestAccMock_GatewayProject_OtherProjectTypes(t *testing.T) {
-	skipUnlessAcc(t)
+	acc.SkipUnlessAcc(t)
 	m := mockOrganization(t)
 	m.addProject("tm_out", "deliveries", "outpost")
 	m.addProject("tm_out2", "alpha", "outpost")
-	useAPIKey(t, mockOrgKey)
+	acc.UseAPIKey(t, mockOrgKey)
 
 	byName := func(name string) string {
 		return "data \"hookdeck_gateway_project\" \"test\" {\n  name = \"" + name + "\"\n}\n"
 	}
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		ProtoV6ProviderFactories: acc.ProviderFactories,
 		Steps: []resource.TestStep{
 			{
 				Config:        projectConfig("deliveries"),
@@ -469,14 +471,14 @@ func TestAccMock_GatewayProject_OtherProjectTypes(t *testing.T) {
 
 // Renaming a project leaves the settings made elsewhere as they are.
 func TestAccMock_GatewayProject_RenameKeepsSettings(t *testing.T) {
-	skipUnlessAcc(t)
+	acc.SkipUnlessAcc(t)
 	m := mockOrganization(t)
-	useAPIKey(t, mockOrgKey)
+	acc.UseAPIKey(t, mockOrgKey)
 	var projectID string
 	prefix := "x-set-elsewhere"
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		ProtoV6ProviderFactories: acc.ProviderFactories,
 		Steps: []resource.TestStep{
 			{
 				Config: projectConfig("gamma"),

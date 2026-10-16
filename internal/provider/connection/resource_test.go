@@ -6,29 +6,17 @@ import (
 	"path/filepath"
 	"regexp"
 	"strings"
-	"terraform-provider-hookdeck/internal/provider"
+	"terraform-provider-hookdeck/internal/acc"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-framework/providerserver"
-	"github.com/hashicorp/terraform-plugin-go/tfprotov6"
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
 
 var (
-	testAccProtoV6ProviderFactories = map[string]func() (tfprotov6.ProviderServer, error){
-		"hookdeck": providerserver.NewProtocol6WithError(provider.New("test")()),
-	}
-
 	// Common test JSON payload for filter rules.
 	testFilterStatusJSON = `{"data":{"attributes":{"payload":{"data":{"attributes":{"status":{"$or":["completed","failed","approved","declined","needs_review"]}}}}}}}`
 )
-
-func testAccPreCheck(t *testing.T) {
-	if v := os.Getenv("HOOKDECK_API_KEY"); v == "" {
-		t.Fatal("HOOKDECK_API_KEY must be set for acceptance tests")
-	}
-}
 
 func loadTestConfigFormatted(filename string, args ...interface{}) string {
 	path := filepath.Join("testdata", filename)
@@ -51,14 +39,14 @@ func TestAccConnectionResource(t *testing.T) {
 	resourceName := fmt.Sprintf("hookdeck_connection.test_%s", rName)
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:                 func() { testAccPreCheck(t) },
-		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		PreCheck:                 func() { acc.PreCheck(t) },
+		ProtoV6ProviderFactories: acc.ProviderFactories,
 		Steps: []resource.TestStep{
 			// Create and Read testing
 			{
 				Config: loadTestConfigFormatted("basic.tf", rName),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr(resourceName, "name", fmt.Sprintf("test-connection-%s", rName)),
+					resource.TestCheckResourceAttr(resourceName, "name", fmt.Sprintf("tf-acc-connection-%s", rName)),
 					resource.TestCheckResourceAttrSet(resourceName, "id"),
 					resource.TestCheckResourceAttrSet(resourceName, "source_id"),
 					resource.TestCheckResourceAttrSet(resourceName, "destination_id"),
@@ -75,9 +63,9 @@ func TestAccConnectionResource(t *testing.T) {
 			},
 			// Update and Read testing
 			{
-				Config: loadTestConfigFormattedWithUpdate("basic.tf", rName, fmt.Sprintf("test-connection-%s", rName), fmt.Sprintf("test-connection-updated-%s", rName)),
+				Config: loadTestConfigFormattedWithUpdate("basic.tf", rName, fmt.Sprintf("tf-acc-connection-%s", rName), fmt.Sprintf("tf-acc-connection-updated-%s", rName)),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr(resourceName, "name", fmt.Sprintf("test-connection-updated-%s", rName)),
+					resource.TestCheckResourceAttr(resourceName, "name", fmt.Sprintf("tf-acc-connection-updated-%s", rName)),
 				),
 			},
 			// Delete testing automatically occurs in TestCase
@@ -90,14 +78,14 @@ func TestAccConnectionResourceWithRules(t *testing.T) {
 	resourceName := fmt.Sprintf("hookdeck_connection.test_%s", rName)
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:                 func() { testAccPreCheck(t) },
-		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		PreCheck:                 func() { acc.PreCheck(t) },
+		ProtoV6ProviderFactories: acc.ProviderFactories,
 		Steps: []resource.TestStep{
 			// Create with filter rule
 			{
 				Config: loadTestConfigFormatted("with_filter_rule.tf", rName),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr(resourceName, "name", fmt.Sprintf("test-connection-filter-%s", rName)),
+					resource.TestCheckResourceAttr(resourceName, "name", fmt.Sprintf("tf-acc-connection-filter-%s", rName)),
 					resource.TestCheckResourceAttr(resourceName, "rules.#", "1"),
 					resource.TestCheckResourceAttr(resourceName, "rules.0.filter_rule.headers.json", `{"x-api-key":"secret"}`),
 				),
@@ -106,7 +94,7 @@ func TestAccConnectionResourceWithRules(t *testing.T) {
 			{
 				Config: loadTestConfigFormatted("with_retry_rule.tf", rName),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr(resourceName, "name", fmt.Sprintf("test-connection-retry-%s", rName)),
+					resource.TestCheckResourceAttr(resourceName, "name", fmt.Sprintf("tf-acc-connection-retry-%s", rName)),
 					resource.TestCheckResourceAttr(resourceName, "rules.#", "1"),
 					resource.TestCheckResourceAttr(resourceName, "rules.0.retry_rule.strategy", "exponential"),
 					resource.TestCheckResourceAttr(resourceName, "rules.0.retry_rule.count", "5"),
@@ -117,7 +105,7 @@ func TestAccConnectionResourceWithRules(t *testing.T) {
 			{
 				Config: loadTestConfigFormatted("with_retry_rule_with_codes.tf", rName),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr(resourceName, "name", fmt.Sprintf("test-connection-retry-%s", rName)),
+					resource.TestCheckResourceAttr(resourceName, "name", fmt.Sprintf("tf-acc-connection-retry-%s", rName)),
 					resource.TestCheckResourceAttr(resourceName, "rules.#", "1"),
 					resource.TestCheckResourceAttr(resourceName, "rules.0.retry_rule.strategy", "exponential"),
 					resource.TestCheckResourceAttr(resourceName, "rules.0.retry_rule.count", "5"),
@@ -130,7 +118,7 @@ func TestAccConnectionResourceWithRules(t *testing.T) {
 			{
 				Config: loadTestConfigFormatted("with_delay_rule.tf", rName),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr(resourceName, "name", fmt.Sprintf("test-connection-delay-%s", rName)),
+					resource.TestCheckResourceAttr(resourceName, "name", fmt.Sprintf("tf-acc-connection-delay-%s", rName)),
 					resource.TestCheckResourceAttr(resourceName, "rules.#", "1"),
 					resource.TestCheckResourceAttr(resourceName, "rules.0.delay_rule.delay", "5000"),
 				),
@@ -139,7 +127,7 @@ func TestAccConnectionResourceWithRules(t *testing.T) {
 			{
 				Config: loadTestConfigFormatted("with_transform_rule.tf", rName),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr(resourceName, "name", fmt.Sprintf("test-connection-transform-%s", rName)),
+					resource.TestCheckResourceAttr(resourceName, "name", fmt.Sprintf("tf-acc-connection-transform-%s", rName)),
 					resource.TestCheckResourceAttr(resourceName, "rules.#", "1"),
 					resource.TestCheckResourceAttrSet(resourceName, "rules.0.transform_rule.transformation_id"),
 				),
@@ -148,7 +136,7 @@ func TestAccConnectionResourceWithRules(t *testing.T) {
 			{
 				Config: loadTestConfigFormatted("with_deduplicate_rule.tf", rName),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr(resourceName, "name", fmt.Sprintf("test-connection-deduplicate-%s", rName)),
+					resource.TestCheckResourceAttr(resourceName, "name", fmt.Sprintf("tf-acc-connection-deduplicate-%s", rName)),
 					resource.TestCheckResourceAttr(resourceName, "rules.#", "1"),
 					resource.TestCheckResourceAttr(resourceName, "rules.0.deduplicate_rule.window", "60000"),
 				),
@@ -157,7 +145,7 @@ func TestAccConnectionResourceWithRules(t *testing.T) {
 			{
 				Config: loadTestConfigFormatted("with_multiple_rules.tf", rName),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr(resourceName, "name", fmt.Sprintf("test-connection-multi-%s", rName)),
+					resource.TestCheckResourceAttr(resourceName, "name", fmt.Sprintf("tf-acc-connection-multi-%s", rName)),
 					resource.TestCheckResourceAttr(resourceName, "rules.#", "3"),
 				),
 			},
@@ -170,14 +158,14 @@ func TestAccConnectionResourceDeduplicationRule(t *testing.T) {
 	resourceName := fmt.Sprintf("hookdeck_connection.test_%s", rName)
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:                 func() { testAccPreCheck(t) },
-		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		PreCheck:                 func() { acc.PreCheck(t) },
+		ProtoV6ProviderFactories: acc.ProviderFactories,
 		Steps: []resource.TestStep{
 			// Test exact deduplication (no fields)
 			{
 				Config: loadTestConfigFormatted("with_deduplicate_rule.tf", rName),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr(resourceName, "name", fmt.Sprintf("test-connection-deduplicate-%s", rName)),
+					resource.TestCheckResourceAttr(resourceName, "name", fmt.Sprintf("tf-acc-connection-deduplicate-%s", rName)),
 					resource.TestCheckResourceAttr(resourceName, "rules.#", "1"),
 					resource.TestCheckResourceAttr(resourceName, "rules.0.deduplicate_rule.window", "60000"),
 					resource.TestCheckNoResourceAttr(resourceName, "rules.0.deduplicate_rule.include_fields"),
@@ -188,7 +176,7 @@ func TestAccConnectionResourceDeduplicationRule(t *testing.T) {
 			{
 				Config: loadTestConfigFormatted("with_deduplicate_include_fields.tf", rName),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr(resourceName, "name", fmt.Sprintf("test-connection-deduplicate-include-%s", rName)),
+					resource.TestCheckResourceAttr(resourceName, "name", fmt.Sprintf("tf-acc-connection-deduplicate-include-%s", rName)),
 					resource.TestCheckResourceAttr(resourceName, "rules.#", "1"),
 					resource.TestCheckResourceAttr(resourceName, "rules.0.deduplicate_rule.window", "30000"),
 					resource.TestCheckResourceAttr(resourceName, "rules.0.deduplicate_rule.include_fields.#", "2"),
@@ -201,7 +189,7 @@ func TestAccConnectionResourceDeduplicationRule(t *testing.T) {
 			{
 				Config: loadTestConfigFormatted("with_deduplicate_exclude_fields.tf", rName),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr(resourceName, "name", fmt.Sprintf("test-connection-deduplicate-exclude-%s", rName)),
+					resource.TestCheckResourceAttr(resourceName, "name", fmt.Sprintf("tf-acc-connection-deduplicate-exclude-%s", rName)),
 					resource.TestCheckResourceAttr(resourceName, "rules.#", "1"),
 					resource.TestCheckResourceAttr(resourceName, "rules.0.deduplicate_rule.window", "45000"),
 					resource.TestCheckResourceAttr(resourceName, "rules.0.deduplicate_rule.exclude_fields.#", "2"),
@@ -214,7 +202,7 @@ func TestAccConnectionResourceDeduplicationRule(t *testing.T) {
 			{
 				Config: loadTestConfigFormatted("with_deduplicate_rule.tf", rName),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr(resourceName, "name", fmt.Sprintf("test-connection-deduplicate-%s", rName)),
+					resource.TestCheckResourceAttr(resourceName, "name", fmt.Sprintf("tf-acc-connection-deduplicate-%s", rName)),
 					resource.TestCheckResourceAttr(resourceName, "rules.#", "1"),
 					resource.TestCheckResourceAttr(resourceName, "rules.0.deduplicate_rule.window", "60000"),
 					resource.TestCheckNoResourceAttr(resourceName, "rules.0.deduplicate_rule.include_fields"),
@@ -229,8 +217,8 @@ func TestAccConnectionResourceDeduplicationValidation(t *testing.T) {
 	rName := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:                 func() { testAccPreCheck(t) },
-		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		PreCheck:                 func() { acc.PreCheck(t) },
+		ProtoV6ProviderFactories: acc.ProviderFactories,
 		Steps: []resource.TestStep{
 			// Test window validation - too small (< 1000ms)
 			{
@@ -256,14 +244,14 @@ func TestAccConnectionResourceRuleOrdering(t *testing.T) {
 	resourceName := fmt.Sprintf("hookdeck_connection.test_%s", rName)
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:                 func() { testAccPreCheck(t) },
-		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		PreCheck:                 func() { acc.PreCheck(t) },
+		ProtoV6ProviderFactories: acc.ProviderFactories,
 		Steps: []resource.TestStep{
 			// Test all rule types maintain order: filter -> deduplicate -> delay -> transform -> retry
 			{
 				Config: loadTestConfigFormatted("with_all_rules_ordered.tf", rName),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr(resourceName, "name", fmt.Sprintf("test-connection-ordered-%s", rName)),
+					resource.TestCheckResourceAttr(resourceName, "name", fmt.Sprintf("tf-acc-connection-ordered-%s", rName)),
 					resource.TestCheckResourceAttr(resourceName, "rules.#", "5"),
 					// Verify exact order is preserved
 					// Position 0: Filter rule
@@ -307,7 +295,7 @@ func TestAccConnectionResourceRuleOrdering(t *testing.T) {
 			{
 				Config: loadTestConfigFormatted("with_rules_reordered.tf", rName),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr(resourceName, "name", fmt.Sprintf("test-connection-reordered-%s", rName)),
+					resource.TestCheckResourceAttr(resourceName, "name", fmt.Sprintf("tf-acc-connection-reordered-%s", rName)),
 					resource.TestCheckResourceAttr(resourceName, "rules.#", "4"),
 					// Verify new order is applied
 					// Position 0: Now Retry rule
@@ -335,13 +323,13 @@ func TestAccConnectionResourceFilterJSONFormattingRawWorkaround(t *testing.T) {
 	resourceName := fmt.Sprintf("hookdeck_connection.test_%s", rName)
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:                 func() { testAccPreCheck(t) },
-		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		PreCheck:                 func() { acc.PreCheck(t) },
+		ProtoV6ProviderFactories: acc.ProviderFactories,
 		Steps: []resource.TestStep{
 			{
 				Config: loadTestConfigFormatted("with_json_formatting_decode.tf", rName),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr(resourceName, "name", fmt.Sprintf("test-connection-json-%s", rName)),
+					resource.TestCheckResourceAttr(resourceName, "name", fmt.Sprintf("tf-acc-connection-json-%s", rName)),
 					resource.TestCheckResourceAttr(resourceName, "rules.#", "1"),
 					resource.TestCheckResourceAttr(resourceName, "rules.0.filter_rule.body.json", testFilterStatusJSON),
 				),
@@ -389,13 +377,13 @@ func TestAccConnectionResourceFilterJSONFormattingRaw(t *testing.T) {
 `
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:                 func() { testAccPreCheck(t) },
-		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		PreCheck:                 func() { acc.PreCheck(t) },
+		ProtoV6ProviderFactories: acc.ProviderFactories,
 		Steps: []resource.TestStep{
 			{
 				Config: loadTestConfigFormatted("with_json_formatting_raw.tf", rName),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr(resourceName, "name", fmt.Sprintf("test-connection-json-%s", rName)),
+					resource.TestCheckResourceAttr(resourceName, "name", fmt.Sprintf("tf-acc-connection-json-%s", rName)),
 					resource.TestCheckResourceAttr(resourceName, "rules.#", "1"),
 					// JSON preserves formatting
 					resource.TestCheckResourceAttr(resourceName, "rules.0.filter_rule.body.json", expectedJSON),
@@ -421,13 +409,13 @@ func TestAccConnectionResourceFilterJSONFormatting(t *testing.T) {
 	resourceName := fmt.Sprintf("hookdeck_connection.test_%s", rName)
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:                 func() { testAccPreCheck(t) },
-		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		PreCheck:                 func() { acc.PreCheck(t) },
+		ProtoV6ProviderFactories: acc.ProviderFactories,
 		Steps: []resource.TestStep{
 			{
 				Config: loadTestConfigFormatted("with_json_formatting.tf", rName),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr(resourceName, "name", fmt.Sprintf("test-connection-json-%s", rName)),
+					resource.TestCheckResourceAttr(resourceName, "name", fmt.Sprintf("tf-acc-connection-json-%s", rName)),
 					resource.TestCheckResourceAttr(resourceName, "rules.#", "1"),
 					resource.TestCheckResourceAttr(resourceName, "rules.0.filter_rule.body.json", testFilterStatusJSON),
 					resource.TestCheckResourceAttr(resourceName, "rules.0.filter_rule.headers.json",
@@ -455,14 +443,14 @@ func TestAccConnectionResource_Issue191(t *testing.T) {
 	resourceName := fmt.Sprintf("hookdeck_connection.test_%s", rName)
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:                 func() { testAccPreCheck(t) },
-		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		PreCheck:                 func() { acc.PreCheck(t) },
+		ProtoV6ProviderFactories: acc.ProviderFactories,
 		Steps: []resource.TestStep{
 			// Step 1: Create connection with retry rule (exact config from issue #191)
 			{
 				Config: loadTestConfigFormatted("issue_191_retry_only.tf", rName),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr(resourceName, "name", fmt.Sprintf("test-connection-issue191-%s", rName)),
+					resource.TestCheckResourceAttr(resourceName, "name", fmt.Sprintf("tf-acc-connection-issue191-%s", rName)),
 					resource.TestCheckResourceAttr(resourceName, "rules.#", "1"),
 					resource.TestCheckResourceAttr(resourceName, "rules.0.retry_rule.strategy", "exponential"),
 					resource.TestCheckResourceAttr(resourceName, "rules.0.retry_rule.count", "6"),

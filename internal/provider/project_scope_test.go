@@ -2,9 +2,10 @@ package provider_test
 
 import (
 	"fmt"
-	"os"
 	"regexp"
 	"testing"
+
+	"terraform-provider-hookdeck/internal/acc"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -27,7 +28,7 @@ func replaceSourcePlan() resource.ConfigPlanChecks {
 // checkSourceGone fails unless the source is gone from projectID.
 func checkSourceGone(t *testing.T, apiKey, projectID string, sourceID *string) resource.TestCheckFunc {
 	return func(_ *terraform.State) error {
-		status, _ := apiRequest(t, apiKey, projectID, "GET", "/sources/"+*sourceID, nil)
+		status, _ := acc.Request(t, apiKey, projectID, "GET", "/sources/"+*sourceID, nil)
 		if status != 404 && status != 410 {
 			return fmt.Errorf("source %s still exists in project %s (status %d)", *sourceID, projectID, status)
 		}
@@ -40,14 +41,14 @@ func checkSourceGone(t *testing.T, apiKey, projectID string, sourceID *string) r
 // Every resource records its project. Setting project_id to the key's own
 // project, or removing it again, changes nothing.
 func TestAccProjectScope_ProjectKey_StoresProject(t *testing.T) {
-	skipUnlessAcc(t)
+	acc.SkipUnlessAcc(t)
 	suffix := acctest.RandStringFromCharSet(8, acctest.CharSetAlphaNum)
-	projectID := currentProjectID(t)
+	projectID := acc.ProjectA(t)
 	var sourceID string
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:                 func() { testAccPreCheck(t) },
-		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		PreCheck:                 func() { acc.PreCheckProjectKey(t) },
+		ProtoV6ProviderFactories: acc.ProviderFactories,
 		Steps: []resource.TestStep{
 			{
 				Config: sourceConfig(t, suffix, ""),
@@ -83,8 +84,37 @@ func TestAccProjectScope_ProjectKey_StoresProject(t *testing.T) {
 			{
 				ResourceName:      sourceAddr,
 				ImportState:       true,
-				ImportStateIdFunc: importSourceWithProject(missingProjectID),
+				ImportStateIdFunc: importSourceWithProject(acc.MissingProjectID),
 				ExpectError:       regexp.MustCompile(`Project mismatch`),
+			},
+		},
+	})
+}
+
+// Every resource type is created and read back without drift with
+// a project key.
+func TestAccProjectScope_ProjectKey_ResourceTypes(t *testing.T) {
+	acc.SkipUnlessAcc(t)
+	suffix := acctest.RandStringFromCharSet(8, acctest.CharSetAlphaNum)
+	projectID := acc.ProjectA(t)
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { acc.PreCheckProjectKey(t) },
+		ProtoV6ProviderFactories: acc.ProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				Config: loadFixture(t, "gateway_basic.tf", suffix),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("hookdeck_gateway_source.test", "project_id", projectID),
+					resource.TestCheckResourceAttr("hookdeck_gateway_source_auth.test", "project_id", projectID),
+					resource.TestCheckResourceAttr("hookdeck_gateway_destination.test", "project_id", projectID),
+					resource.TestCheckResourceAttr("hookdeck_gateway_transformation.test", "project_id", projectID),
+					resource.TestCheckResourceAttr("hookdeck_gateway_connection.test", "project_id", projectID),
+				),
+			},
+			{
+				Config:           loadFixture(t, "gateway_basic.tf", suffix),
+				ConfigPlanChecks: emptyPlan(),
 			},
 		},
 	})
@@ -93,22 +123,22 @@ func TestAccProjectScope_ProjectKey_StoresProject(t *testing.T) {
 // Importing <project_id>/<id> into a configuration without project_id
 // adopts the resource; it is not replaced.
 func TestAccProjectScope_ProjectKey_ImportWithProjectKeepsResource(t *testing.T) {
-	skipUnlessAcc(t)
-	testAccPreCheck(t)
+	acc.PreCheckProjectKey(t)
+	projectKey := acc.ProjectKey(t)
 	suffix := acctest.RandStringFromCharSet(8, acctest.CharSetAlphaNum)
-	projectID := currentProjectID(t)
+	projectID := acc.ProjectA(t)
 
-	status, body := apiRequest(t, os.Getenv(envAPIKey), "", "POST", "/sources", map[string]any{"name": "v3-src-" + suffix, "type": "HTTP"})
+	status, body := acc.Request(t, projectKey, "", "POST", "/sources", map[string]any{"name": "tf-acc-v3-src-" + suffix, "type": "HTTP"})
 	if status > 299 {
 		t.Fatalf("creating source: %d %v", status, body)
 	}
 	sourceID, _ := body["id"].(string)
-	t.Cleanup(func() { apiRequest(t, os.Getenv(envAPIKey), "", "DELETE", "/sources/"+sourceID, nil) })
+	t.Cleanup(func() { acc.Request(t, projectKey, "", "DELETE", "/sources/"+sourceID, nil) })
 
 	importBlock := fmt.Sprintf("import {\n  to = %s\n  id = \"%s/%s\"\n}\n", sourceAddr, projectID, sourceID)
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		ProtoV6ProviderFactories: acc.ProviderFactories,
 		Steps: []resource.TestStep{
 			{
 				Config: importBlock + sourceConfig(t, suffix, ""),
@@ -127,16 +157,16 @@ func TestAccProjectScope_ProjectKey_ImportWithProjectKeepsResource(t *testing.T)
 // A project_id other than the key's project is refused at plan time, for a
 // new resource and for an existing one, which is left alone.
 func TestAccProjectScope_ProjectKey_OtherProjectIsPlanError(t *testing.T) {
-	skipUnlessAcc(t)
+	acc.SkipUnlessAcc(t)
 	suffix := acctest.RandStringFromCharSet(8, acctest.CharSetAlphaNum)
 	var sourceID string
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:                 func() { testAccPreCheck(t) },
-		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		PreCheck:                 func() { acc.PreCheckProjectKey(t) },
+		ProtoV6ProviderFactories: acc.ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config:      sourceConfig(t, suffix, missingProjectID),
+				Config:      sourceConfig(t, suffix, acc.MissingProjectID),
 				PlanOnly:    true,
 				ExpectError: regexp.MustCompile(`Project mismatch`),
 			},
@@ -145,9 +175,9 @@ func TestAccProjectScope_ProjectKey_OtherProjectIsPlanError(t *testing.T) {
 				Check:  captureID(sourceAddr, &sourceID),
 			},
 			{
-				Config:      sourceConfig(t, suffix, missingProjectID),
+				Config:      sourceConfig(t, suffix, acc.MissingProjectID),
 				PlanOnly:    true,
-				ExpectError: regexp.MustCompile(`Project mismatch(.|\n)*` + missingProjectID + `(.|\n)*` + currentProjectID(t)),
+				ExpectError: regexp.MustCompile(`Project mismatch(.|\n)*` + acc.MissingProjectID + `(.|\n)*` + acc.ProjectA(t)),
 			},
 			{
 				Config:           sourceConfig(t, suffix, ""),
@@ -159,12 +189,12 @@ func TestAccProjectScope_ProjectKey_OtherProjectIsPlanError(t *testing.T) {
 }
 
 func TestAccProjectScope_ProjectKey_EmptyProjectIDIsInvalid(t *testing.T) {
-	skipUnlessAcc(t)
+	acc.SkipUnlessAcc(t)
 	suffix := acctest.RandStringFromCharSet(8, acctest.CharSetAlphaNum)
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:                 func() { testAccPreCheck(t) },
-		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		PreCheck:                 func() { acc.PreCheckProjectKey(t) },
+		ProtoV6ProviderFactories: acc.ProviderFactories,
 		Steps: []resource.TestStep{
 			{
 				Config:      loadFixture(t, "source_with_project_id.tf", suffix, ""),
@@ -180,18 +210,18 @@ func TestAccProjectScope_ProjectKey_EmptyProjectIDIsInvalid(t *testing.T) {
 // for an existing resource the plan fails naming both projects; the
 // resource stays in state.
 func TestAccProjectScope_ProjectKey_ProviderProjectID(t *testing.T) {
-	skipUnlessAcc(t)
+	acc.SkipUnlessAcc(t)
 	suffix := acctest.RandStringFromCharSet(8, acctest.CharSetAlphaNum)
-	projectID := currentProjectID(t)
+	projectID := acc.ProjectA(t)
 	var sourceID string
 
 	resource.Test(t, resource.TestCase{
-		PreCheck:                 func() { testAccPreCheck(t) },
-		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		PreCheck:                 func() { acc.PreCheckProjectKey(t) },
+		ProtoV6ProviderFactories: acc.ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config:      providerBlock(missingProjectID) + sourceConfig(t, suffix, ""),
-				ExpectError: regexp.MustCompile(`cannot access project ` + missingProjectID),
+				Config:      providerBlock(acc.MissingProjectID) + sourceConfig(t, suffix, ""),
+				ExpectError: regexp.MustCompile(`cannot access project ` + acc.MissingProjectID),
 			},
 			{
 				Config: providerBlock(projectID) + sourceConfig(t, suffix, ""),
@@ -201,9 +231,9 @@ func TestAccProjectScope_ProjectKey_ProviderProjectID(t *testing.T) {
 				),
 			},
 			{
-				Config:      providerBlock(missingProjectID) + sourceConfig(t, suffix, ""),
+				Config:      providerBlock(acc.MissingProjectID) + sourceConfig(t, suffix, ""),
 				PlanOnly:    true,
-				ExpectError: regexp.MustCompile(`(?s)Project not reachable.*` + projectID + `.*` + missingProjectID + `.*state rm`),
+				ExpectError: regexp.MustCompile(`(?s)Project not reachable.*` + projectID + `.*` + acc.MissingProjectID + `.*state rm`),
 			},
 			{
 				Config:           sourceConfig(t, suffix, ""),
@@ -219,12 +249,12 @@ func TestAccProjectScope_ProjectKey_ProviderProjectID(t *testing.T) {
 // Explicit mode without project_id fails at plan time. The key is never
 // sent, so this runs without organization credentials.
 func TestAccProjectScope_OrgKey_ProjectRequired(t *testing.T) {
-	skipUnlessAcc(t)
-	useAPIKey(t, fakeOrgAPIKey)
+	acc.SkipUnlessAcc(t)
+	acc.UseAPIKey(t, acc.FakeOrgAPIKey)
 	suffix := acctest.RandStringFromCharSet(8, acctest.CharSetAlphaNum)
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		ProtoV6ProviderFactories: acc.ProviderFactories,
 		Steps: []resource.TestStep{
 			{
 				Config:      sourceConfig(t, suffix, ""),
@@ -244,12 +274,11 @@ func TestAccProjectScope_OrgKey_ProjectRequired(t *testing.T) {
 // resource's project_id replaces it. Removing project_id or pointing it at
 // a project the key cannot see fails the plan and leaves state alone.
 func TestAccProjectScope_OrgKey_ExplicitMode(t *testing.T) {
-	skipUnlessOrg(t)
-	orgKey := os.Getenv(envOrgAPIKey)
-	useAPIKey(t, orgKey)
+	acc.PreCheckOrgKey(t)
+	orgKey := acc.OrgKey(t)
 	suffix := acctest.RandStringFromCharSet(8, acctest.CharSetAlphaNum)
-	projectA := orgProjectA.get(t)
-	projectB := orgProjectB.get(t)
+	projectA := acc.ProjectA(t)
+	projectB := acc.ProjectB(t)
 	var sourceID, movedID string
 
 	const otherAddr = "hookdeck_gateway_source.other"
@@ -258,7 +287,7 @@ func TestAccProjectScope_OrgKey_ExplicitMode(t *testing.T) {
 	}
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		ProtoV6ProviderFactories: acc.ProviderFactories,
 		Steps: []resource.TestStep{
 			{
 				Config: config(projectA),
@@ -286,9 +315,9 @@ func TestAccProjectScope_OrgKey_ExplicitMode(t *testing.T) {
 				ExpectError: regexp.MustCompile(`Missing project_id`),
 			},
 			{
-				Config:      config(missingProjectID),
+				Config:      config(acc.MissingProjectID),
 				PlanOnly:    true,
-				ExpectError: regexp.MustCompile(`cannot access project ` + missingProjectID),
+				ExpectError: regexp.MustCompile(`cannot access project ` + acc.MissingProjectID),
 			},
 			{
 				Config:           config(projectA),
@@ -314,16 +343,15 @@ func TestAccProjectScope_OrgKey_ExplicitMode(t *testing.T) {
 // changing the provider project_id replaces the resource. A provider
 // project_id the key cannot see fails the plan and leaves state alone.
 func TestAccProjectScope_OrgKey_SingleProjectMode(t *testing.T) {
-	skipUnlessOrg(t)
-	orgKey := os.Getenv(envOrgAPIKey)
-	useAPIKey(t, orgKey)
+	acc.PreCheckOrgKey(t)
+	orgKey := acc.OrgKey(t)
 	suffix := acctest.RandStringFromCharSet(8, acctest.CharSetAlphaNum)
-	projectA := orgProjectA.get(t)
-	projectB := orgProjectB.get(t)
+	projectA := acc.ProjectA(t)
+	projectB := acc.ProjectB(t)
 	var sourceID string
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		ProtoV6ProviderFactories: acc.ProviderFactories,
 		Steps: []resource.TestStep{
 			{
 				Config: providerBlock(projectA) + sourceConfig(t, suffix, ""),
@@ -348,9 +376,9 @@ func TestAccProjectScope_OrgKey_SingleProjectMode(t *testing.T) {
 				ExpectError: regexp.MustCompile(`Project mismatch`),
 			},
 			{
-				Config:      providerBlock(missingProjectID) + sourceConfig(t, suffix, ""),
+				Config:      providerBlock(acc.MissingProjectID) + sourceConfig(t, suffix, ""),
 				PlanOnly:    true,
-				ExpectError: regexp.MustCompile(`cannot access project ` + missingProjectID),
+				ExpectError: regexp.MustCompile(`cannot access project ` + acc.MissingProjectID),
 			},
 			{
 				Config:           providerBlock(projectA) + sourceConfig(t, suffix, ""),
@@ -373,19 +401,18 @@ func TestAccProjectScope_OrgKey_SingleProjectMode(t *testing.T) {
 // A source and its auth move together when the project changes, and the
 // new source ends up with the auth set.
 func TestAccProjectScope_OrgKey_SourceAuthFollowsSource(t *testing.T) {
-	skipUnlessOrg(t)
-	orgKey := os.Getenv(envOrgAPIKey)
-	useAPIKey(t, orgKey)
+	acc.PreCheckOrgKey(t)
+	orgKey := acc.OrgKey(t)
 	suffix := acctest.RandStringFromCharSet(8, acctest.CharSetAlphaNum)
-	projectA := orgProjectA.get(t)
-	projectB := orgProjectB.get(t)
+	projectA := acc.ProjectA(t)
+	projectB := acc.ProjectB(t)
 	var sourceID string
 
 	const authAddr = "hookdeck_gateway_source_auth.test"
 	checkAuth := func(projectID string) resource.TestCheckFunc {
 		return func(s *terraform.State) error {
 			id := s.RootModule().Resources[sourceAddr].Primary.ID
-			status, body := apiRequest(t, orgKey, projectID, "GET", "/sources/"+id, nil)
+			status, body := acc.Request(t, orgKey, projectID, "GET", "/sources/"+id, nil)
 			config, _ := body["config"].(map[string]interface{})
 			if status != 200 || config["auth_type"] != "API_KEY" {
 				return fmt.Errorf("source %s in %s: status %d, auth_type %v", id, projectID, status, config["auth_type"])
@@ -395,7 +422,7 @@ func TestAccProjectScope_OrgKey_SourceAuthFollowsSource(t *testing.T) {
 	}
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		ProtoV6ProviderFactories: acc.ProviderFactories,
 		Steps: []resource.TestStep{
 			{
 				Config: providerBlock(projectA) + loadFixture(t, "source_with_auth.tf", suffix),
@@ -425,31 +452,29 @@ func TestAccProjectScope_OrgKey_SourceAuthFollowsSource(t *testing.T) {
 // key cannot reach. With the project key the plan fails naming both
 // projects, and the resource is still in state afterwards.
 func TestAccProjectScope_KeyCannotReachStoredProject(t *testing.T) {
-	skipUnlessOrg(t)
-	testAccPreCheck(t)
-	projectKey := os.Getenv(envAPIKey)
-	orgKey := os.Getenv(envOrgAPIKey)
+	acc.PreCheckOrgKey(t)
+	orgKey := acc.OrgKey(t)
+	projectKey := acc.ProjectKey(t)
 	suffix := acctest.RandStringFromCharSet(8, acctest.CharSetAlphaNum)
-	orgProject := orgProjectA.get(t)
-	keyProject := currentProjectID(t)
+	storedProject := acc.ProjectB(t)
+	keyProject := acc.ProjectA(t)
 	var sourceID string
 
-	useAPIKey(t, orgKey)
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		ProtoV6ProviderFactories: acc.ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: sourceConfig(t, suffix, orgProject),
+				Config: sourceConfig(t, suffix, storedProject),
 				Check:  captureID(sourceAddr, &sourceID),
 			},
 			{
-				PreConfig:   func() { useAPIKey(t, projectKey) },
+				PreConfig:   func() { acc.UseAPIKey(t, projectKey) },
 				Config:      sourceConfig(t, suffix, ""),
-				ExpectError: regexp.MustCompile(`(?s)Project not reachable.*` + orgProject + `.*` + keyProject + `.*state rm`),
+				ExpectError: regexp.MustCompile(`(?s)Project not reachable.*` + storedProject + `.*` + keyProject + `.*state rm`),
 			},
 			{
-				PreConfig:        func() { useAPIKey(t, orgKey) },
-				Config:           sourceConfig(t, suffix, orgProject),
+				PreConfig:        func() { acc.UseAPIKey(t, orgKey) },
+				Config:           sourceConfig(t, suffix, storedProject),
 				ConfigPlanChecks: emptyPlan(),
 				Check:            checkIDEquals(sourceAddr, &sourceID),
 			},
