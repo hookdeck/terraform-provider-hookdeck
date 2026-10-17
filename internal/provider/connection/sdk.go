@@ -101,10 +101,9 @@ func (m *connectionResourceModel) Refresh(connection map[string]interface{}) dia
 	}
 
 	// Handle rules
-	if rules, ok := connection["rules"].([]interface{}); ok && len(rules) > 0 {
+	if rules, ok := connection["rules"].([]interface{}); ok {
 		m.Rules = rulesFromAPI(rules)
 	}
-	// Keep rules as nil if not present or empty to maintain consistency with Terraform state
 
 	return diags
 }
