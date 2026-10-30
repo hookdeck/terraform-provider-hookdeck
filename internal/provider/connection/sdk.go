@@ -101,8 +101,14 @@ func (m *connectionResourceModel) Refresh(connection map[string]interface{}) dia
 	}
 
 	// Handle rules
-	if rules, ok := connection["rules"].([]interface{}); ok && len(rules) > 0 {
-		m.Rules = rulesFromAPI(rules)
+	if rules, ok := connection["rules"].([]interface{}); ok {
+		if len(rules) > 0 {
+			m.Rules = rulesFromAPI(rules)
+		} else if m.Rules != nil {
+			// Clear rules removed outside Terraform. Keep an empty list rather
+			// than null so that a configuration with `rules = []` stays consistent.
+			m.Rules = []rule{}
+		}
 	}
 	// Keep rules as nil if not present or empty to maintain consistency with Terraform state
 
