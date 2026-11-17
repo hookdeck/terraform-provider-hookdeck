@@ -1,5 +1,29 @@
 ## 3.1.0 (Unreleased)
 
+FEATURES:
+
+* `config` on sources and destinations is read from Hookdeck, so a change made outside Terraform to a key you set shows in the plan (see NOTES). Keys you do not set in `config`, including defaults Hookdeck adds, are kept in state and are not compared.
+* The `hookdeck_gateway_source` and `hookdeck_gateway_destination` data sources (and the deprecated `hookdeck_source` and `hookdeck_destination`) return `config`.
+* Importing a source or destination plans no change when `config` matches what Hookdeck has.
+
+NOTES:
+
+* Behaviour change: a change made in the dashboard or API to a key you set in `config` now shows in the plan as `config = (sensitive value)`, and the next apply restores the configured value. To keep a value managed outside Terraform, remove its key from `config`, or add `lifecycle { ignore_changes = [config] }`. To see which key differs, run `terraform plan -out=tfplan` and read `terraform show -json tfplan`, which prints the values.
+* The first refresh after upgrading stores Hookdeck's full configuration in state. The plan stays empty unless a key you set in `config` differs in Hookdeck. Upgrading needs no configuration change.
+* Going back to 3.0.x: once `terraform apply` (also with `-refresh-only`) or `terraform refresh` has run on 3.1.0, 3.0.x and earlier stop on its sources and destinations with "Resource instance managed by newer provider version". This is deliberate. Those versions would treat every key stored in state, including the ones Hookdeck returned, as one you had set, and their next apply would remove authentication, rate limits and other settings that are not in your `config`. To go back, remove the sources and destinations from state with `terraform state rm` and import them again on 3.0.x. Running only `terraform plan` on 3.1.0 leaves the state readable by 3.0.x.
+* `config` in state and in the data sources now holds the secrets Hookdeck returns, such as authentication tokens. It stays sensitive.
+* After an apply that changes `config`, state holds exactly your `config`, and the next refresh replaces it with Hookdeck's full configuration. Terraform 1.0 and 1.1 list this under "Objects have changed outside of Terraform" on the next plan, and `-refresh-only` plans show it. The plan still reports no changes.
+* A key in `config` that Hookdeck does not return for the type (a typo, a key of another type, or `url` on a `MOCK_API` destination) has no effect in Hookdeck. After the apply that sends it, plans ignore it and warn on each run.
+* Numbers and booleans written as strings (`"10"`, `"true"`) match the number or boolean Hookdeck returns.
+* After an import, removing a key from `config` does not clear it in Hookdeck until an apply has changed `config`; set the key to `null` to clear it before then (see the limitation on `null` below). Adding a key whose value Hookdeck already holds plans no change until then either.
+* Known limitations: a value in `config` that Hookdeck stores differently from how you wrote it shows as `config = (sensitive value)` on every plan, and applying does not make the plan empty. These configurations planned no change on 3.0. The known cases:
+  * `allowed_http_methods` on a source type whose methods Hookdeck fixes, such as `STRIPE` or `ZOOM`, or that has no method setting, such as `ZENDESK`: Hookdeck stores its own list or `null`. Remove the key, or for a fixed list write exactly that list.
+  * `custom_response` on a source type that does not support it (any type other than `WEBHOOK`, `HTTP` and `SENDGRID_INBOUND`): Hookdeck stores `null`. Remove the key.
+  * `path` on a `CLI` destination with surrounding spaces or without a leading `/`: Hookdeck trims it and adds the `/`. Write `"/path"`.
+  * `delivery_policy.period` with capitals or surrounding spaces: Hookdeck stores it trimmed and in lower case. Write it that way.
+  * `url` on a destination with surrounding spaces: Hookdeck trims them. Remove the spaces.
+  * A key set to `null` whose cleared value in Hookdeck is a default (`delivery_timeout`, `auth`, `auth_type`, `delivery_policy` and `delivery_policy.period` on a destination): Hookdeck returns the default. Remove the key once the apply has cleared it.
+
 BUG FIXES:
 
 * Destroying a source, source auth, destination, connection or transformation that no longer exists in Hookdeck succeeds instead of failing, for example with `terraform destroy -refresh=false`.

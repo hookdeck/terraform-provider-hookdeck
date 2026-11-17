@@ -20,7 +20,7 @@ Both names take the same arguments. Examples and import instructions are on the 
 
 ### Optional
 
-- `config` (String, Sensitive) Destination configuration as JSON using API version 2026-09-01.
+- `config` (String, Sensitive) Destination configuration as JSON using API version 2026-09-01. Only the keys you set are compared with Hookdeck: a different value in Hookdeck shows as a change, and the next apply restores yours. The plan shows it as `(sensitive value)`; to see which key differs, save the plan with `-out` and read `terraform show -json`. Keys you don't set, including defaults Hookdeck adds, are kept in state and not compared. To clear a key in Hookdeck, remove it from `config`; after an import, set it to `null` until an apply has changed `config`. An explicit `null` also clears, but can show a change on every plan when Hookdeck replaces the cleared value with a default. Read back from Hookdeck on refresh and import, so it also holds secrets Hookdeck returns, such as authentication tokens.
 - `description` (String) Description for the destination
 - `project_id` (String) ID of the project the resource belongs to. With a project API key or a provider `project_id`, every resource is in that project and this can be omitted. With an organization API key and no provider `project_id`, it is required. Changing it replaces the resource.
 - `type` (String) Type of the destination

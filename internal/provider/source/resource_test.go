@@ -23,9 +23,8 @@ func loadTestConfigFormatted(t *testing.T, filename string, args ...interface{})
 }
 
 // fetchSourceConfig retrieves the source's config object from the Hookdeck
-// API. Used to verify the API state independently of Terraform state, because
-// the `config` attribute is not Computed — Terraform state stores the user's
-// input, not what the API actually has.
+// API. Used to verify the API state independently of Terraform state, which
+// holds the configuration as applied until the next refresh.
 func fetchSourceConfig(id string) (map[string]interface{}, error) {
 	status, src, err := acc.RequestCurrent("GET", "/sources/"+id, nil, nil)
 	if err != nil {
@@ -75,12 +74,13 @@ func checkAPIConfigKeyIsObject(resourceName, key string) resource.TestCheckFunc 
 	}
 }
 
-func checkAPIConfigStringSlice(resourceName, key string, expected []string) resource.TestCheckFunc {
+func checkAPIAllowedHTTPMethods(resourceName string, expected []string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[resourceName]
 		if !ok {
 			return fmt.Errorf("resource not found: %s", resourceName)
 		}
+		const key = "allowed_http_methods"
 		config, err := fetchSourceConfig(rs.Primary.ID)
 		if err != nil {
 			return err
@@ -152,13 +152,13 @@ func TestAccSourceResource_RemoveAllowedHTTPMethodsResetsToDefault(t *testing.T)
 			{
 				Config: loadTestConfigFormatted(t, "with_allowed_http_methods.tf", rName),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					checkAPIConfigStringSlice(resourceName, "allowed_http_methods", []string{"GET", "POST"}),
+					checkAPIAllowedHTTPMethods(resourceName, []string{"GET", "POST"}),
 				),
 			},
 			{
 				Config: loadTestConfigFormatted(t, "without_allowed_http_methods.tf", rName),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					checkAPIConfigStringSlice(resourceName, "allowed_http_methods",
+					checkAPIAllowedHTTPMethods(resourceName,
 						[]string{"PUT", "POST", "PATCH", "DELETE"}),
 				),
 			},

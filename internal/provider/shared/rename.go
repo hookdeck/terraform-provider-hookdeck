@@ -94,10 +94,13 @@ func RenamedStateMover(legacyTypeName string, source, target resourceschema.Sche
 			if req.SourceTypeName != legacyTypeName || !isThisProvider(req.SourceProviderAddress) {
 				return
 			}
-			if req.SourceSchemaVersion != target.Version {
+			// Earlier schema versions of the renamed types have the same
+			// attributes, so their state moves as it is. Only state written by
+			// a newer provider is refused.
+			if req.SourceSchemaVersion > target.Version {
 				resp.Diagnostics.AddError(
 					"Unsupported state version for move",
-					fmt.Sprintf("%s state is at schema version %d, this provider expects %d. Run terraform apply under the old name first so the state is upgraded, then move it.", legacyTypeName, req.SourceSchemaVersion, target.Version),
+					fmt.Sprintf("%s state is at schema version %d, this provider supports up to %d. It was written by a newer version of the provider: upgrade the provider, then move it.", legacyTypeName, req.SourceSchemaVersion, target.Version),
 				)
 				return
 			}

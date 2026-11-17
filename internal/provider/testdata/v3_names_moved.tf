@@ -1,6 +1,9 @@
 resource "hookdeck_gateway_source" "test" {
   name = "tf-acc-v2-src-%[1]s"
   type = "HTTP"
+  config = jsonencode({
+    allowed_http_methods = ["POST"]
+  })
 }
 
 resource "hookdeck_gateway_source_auth" "test" {

@@ -5,7 +5,6 @@ import (
 
 	"terraform-provider-hookdeck/internal/validators"
 
-	"github.com/hashicorp/terraform-plugin-framework-jsontypes/jsontypes"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
@@ -15,18 +14,7 @@ import (
 func schemaAttributes() map[string]schema.Attribute {
 	return map[string]schema.Attribute{
 		"project_id": shared.ProjectIDResourceAttribute(),
-		"config": schema.StringAttribute{
-			Optional: true,
-			// Cannot be computed because some sources may have default config value,
-			// leading a conflict between the initial state & computed state after creation.
-			Computed:    false,
-			Sensitive:   true,
-			Description: "Source configuration",
-			PlanModifiers: []planmodifier.String{
-				stringplanmodifier.UseStateForUnknown(),
-			},
-			CustomType: jsontypes.NormalizedType{},
-		},
+		"config":     shared.ConfigAttribute("Source configuration as JSON. Leave `auth` out when `hookdeck_gateway_source_auth` manages the source's authentication.", "source"),
 		"created_at": schema.StringAttribute{
 			Computed: true,
 			Validators: []validator.String{
