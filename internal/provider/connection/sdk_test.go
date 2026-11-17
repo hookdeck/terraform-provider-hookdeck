@@ -1,6 +1,9 @@
 package connection
 
-import "testing"
+import (
+	"context"
+	"testing"
+)
 
 func refreshResponse(rules []interface{}) map[string]interface{} {
 	return map[string]interface{}{
@@ -39,5 +42,41 @@ func TestRefreshKeepsUnconfiguredRulesNil(t *testing.T) {
 	}
 	if m.Rules != nil {
 		t.Fatalf("expected rules to stay nil, got %#v", m.Rules)
+	}
+}
+
+func TestUpdatePayloadRules(t *testing.T) {
+	one := []rule{{DelayRule: &delayRule{}}}
+	tests := []struct {
+		name       string
+		rules      []rule
+		prior      []rule
+		wantSent   bool
+		wantLength int
+	}{
+		{"never had rules", nil, nil, false, 0},
+		{"prior empty list", nil, []rule{}, false, 0},
+		{"removed after set", nil, one, true, 0},
+		{"empty list", []rule{}, one, true, 0},
+		{"empty list, none before", []rule{}, nil, true, 0},
+		{"set", one, nil, true, 1},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			m := connectionResourceModel{Rules: tt.rules}
+			payload, err := m.toUpdatePayload(context.Background(), tt.prior)
+			if err != nil {
+				t.Fatal(err)
+			}
+			sent, present := payload["rules"]
+			if present != tt.wantSent {
+				t.Fatalf("rules sent = %v, want %v (%v)", present, tt.wantSent, sent)
+			}
+			if present {
+				if list, ok := sent.([]interface{}); !ok || len(list) != tt.wantLength {
+					t.Fatalf("rules = %#v, want a list of %d", sent, tt.wantLength)
+				}
+			}
+		})
 	}
 }
