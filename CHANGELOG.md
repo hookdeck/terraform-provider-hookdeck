@@ -1,3 +1,9 @@
+## 3.1.0 (Unreleased)
+
+BUG FIXES:
+
+* Destroying a source, source auth, destination, connection or transformation that no longer exists in Hookdeck succeeds instead of failing, for example with `terraform destroy -refresh=false`.
+
 ## 3.0.0 (2026-11-17)
 
 See the [v2 to v3 migration guide](https://registry.terraform.io/providers/hookdeck/hookdeck/latest/docs/guides/v2-to-v3-migration).
