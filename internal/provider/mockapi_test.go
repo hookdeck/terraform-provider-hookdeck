@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"regexp"
+	"strconv"
 	"strings"
 	"sync"
 	"testing"
@@ -336,6 +337,10 @@ var sourceKind = mockKind{
 	configRequired: map[string]bool{"ZOOM": true},
 }
 
+// The mock is simpler than the API in ways no test depends on: a type change
+// keeps the config keys the request leaves out, where the API resets them,
+// and a destination sent "auth": null gets the default signature back, where
+// the API returns null.
 var destinationKind = mockKind{
 	label:    "Destination",
 	idPrefix: "des_",
@@ -343,6 +348,7 @@ var destinationKind = mockKind{
 	defaults: func(objectType any, config map[string]any) {
 		setDefault(config, "auth_type", "HOOKDECK_SIGNATURE")
 		setDefault(config, "auth", map[string]any{})
+		setDefault(config, "delivery_timeout", 60)
 		setDefault(config, "http_method", nil)
 		setDefault(config, "path_forwarding_disabled", false)
 		setDefault(config, "delivery_policy", map[string]any{"rate": nil, "period": nil, "groups": nil})
@@ -355,11 +361,21 @@ var destinationKind = mockKind{
 			return false
 		}
 		members, ok := value.(map[string]any)
-		policy, _ := stored[key].(map[string]any)
-		if !ok || policy == nil {
+		if !ok {
 			return false
 		}
+		policy, _ := stored[key].(map[string]any)
+		if policy == nil {
+			policy = map[string]any{}
+			stored[key] = policy
+		}
 		for member, v := range members {
+			// The API stores a rate sent as a string as a number.
+			if text, ok := v.(string); ok && member == "rate" {
+				if rate, err := strconv.Atoi(text); err == nil {
+					v = rate
+				}
+			}
 			policy[member] = v
 		}
 		return true

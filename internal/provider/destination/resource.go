@@ -17,6 +17,7 @@ var (
 	_ resource.ResourceWithImportState    = &destinationResource{}
 	_ resource.ResourceWithModifyPlan     = &destinationResource{}
 	_ resource.ResourceWithMoveState      = &destinationResource{}
+	_ resource.ResourceWithUpgradeState   = &destinationResource{}
 	_ resource.ResourceWithValidateConfig = &destinationResource{}
 )
 
@@ -59,10 +60,17 @@ func (r *destinationResource) schema() schema.Schema {
 
 func resourceSchema(naming shared.Naming) schema.Schema {
 	return schema.Schema{
+		Version:             shared.ConfigSchemaVersion,
 		DeprecationMessage:  naming.ResourceDeprecation(),
 		MarkdownDescription: naming.Description("Destination Resource"),
 		Attributes:          naming.WithTeamID(schemaAttributes()),
 	}
+}
+
+// UpgradeState accepts state written before config was read back from
+// Hookdeck. Nothing in it changes.
+func (r *destinationResource) UpgradeState(_ context.Context) map[int64]resource.StateUpgrader {
+	return shared.UnchangedStateUpgraders(r.schema())
 }
 
 // MoveState accepts state from the v2 name via a moved block.

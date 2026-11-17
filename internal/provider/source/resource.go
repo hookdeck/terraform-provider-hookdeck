@@ -12,11 +12,12 @@ import (
 
 // Ensure the implementation satisfies the expected interfaces.
 var (
-	_ resource.Resource                = &sourceResource{}
-	_ resource.ResourceWithConfigure   = &sourceResource{}
-	_ resource.ResourceWithImportState = &sourceResource{}
-	_ resource.ResourceWithModifyPlan  = &sourceResource{}
-	_ resource.ResourceWithMoveState   = &sourceResource{}
+	_ resource.Resource                 = &sourceResource{}
+	_ resource.ResourceWithConfigure    = &sourceResource{}
+	_ resource.ResourceWithImportState  = &sourceResource{}
+	_ resource.ResourceWithModifyPlan   = &sourceResource{}
+	_ resource.ResourceWithMoveState    = &sourceResource{}
+	_ resource.ResourceWithUpgradeState = &sourceResource{}
 )
 
 // NewSourceResource returns the hookdeck_gateway_source resource.
@@ -58,10 +59,17 @@ func (r *sourceResource) schema() schema.Schema {
 
 func resourceSchema(naming shared.Naming) schema.Schema {
 	return schema.Schema{
+		Version:            shared.ConfigSchemaVersion,
 		DeprecationMessage: naming.ResourceDeprecation(),
 		Description:        naming.Description("Source Resource"),
 		Attributes:         naming.WithTeamID(schemaAttributes()),
 	}
+}
+
+// UpgradeState accepts state written before config was read back from
+// Hookdeck. Nothing in it changes.
+func (r *sourceResource) UpgradeState(_ context.Context) map[int64]resource.StateUpgrader {
+	return shared.UnchangedStateUpgraders(r.schema())
 }
 
 // MoveState accepts state from the v2 name via a moved block.

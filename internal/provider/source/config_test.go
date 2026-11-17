@@ -16,9 +16,10 @@ func emptyPlan() resource.ConfigPlanChecks {
 	return resource.ConfigPlanChecks{PreApply: []plancheck.PlanCheck{plancheck.ExpectEmptyPlan()}}
 }
 
-func updatePlan(address string) resource.ConfigPlanChecks {
+// updatePlan expects an update of the source named test.
+func updatePlan() resource.ConfigPlanChecks {
 	return resource.ConfigPlanChecks{PreApply: []plancheck.PlanCheck{
-		plancheck.ExpectResourceAction(address, plancheck.ResourceActionUpdate),
+		plancheck.ExpectResourceAction("hookdeck_gateway_source.test", plancheck.ResourceActionUpdate),
 	}}
 }
 
@@ -81,7 +82,7 @@ func TestAccSourceResource_ConfigDrift(t *testing.T) {
 					}
 				},
 				Config:           config,
-				ConfigPlanChecks: updatePlan(address),
+				ConfigPlanChecks: updatePlan(),
 				Check:            checkAPIAllowedHTTPMethods(address, []string{"GET", "POST"}),
 			},
 		},
@@ -92,14 +93,13 @@ func TestAccSourceResource_ConfigDrift(t *testing.T) {
 // new type's config afterwards.
 func TestAccSourceResource_ConfigTypeChange(t *testing.T) {
 	rName := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
-	address := "hookdeck_gateway_source.test"
 	webhook := source(rName, "WEBHOOK", `{ allowed_http_methods = ["POST"] }`)
 	httpSource := source(rName, "HTTP", `{ allowed_http_methods = ["POST"] }`)
 
 	acc.Test(t, resource.TestCase{
 		Steps: []resource.TestStep{
 			{Config: webhook},
-			{Config: httpSource, ConfigPlanChecks: updatePlan(address)},
+			{Config: httpSource, ConfigPlanChecks: updatePlan()},
 			{Config: httpSource, ConfigPlanChecks: emptyPlan()},
 		},
 	})
@@ -126,7 +126,7 @@ func TestAccSourceResource_ConfigRequiredTypeRename(t *testing.T) {
 			{Config: render(""), ConfigPlanChecks: emptyPlan()},
 			{
 				Config:           render("-renamed"),
-				ConfigPlanChecks: updatePlan(address),
+				ConfigPlanChecks: updatePlan(),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr(address, "name", "tf-acc-source-"+rName+"-renamed"),
 					resource.TestCheckResourceAttr(address, "type", "ZOOM"),
@@ -217,7 +217,7 @@ func TestAccSourceResource_ConfigIgnoreChangesKeepsStoredConfig(t *testing.T) {
 			},
 			{
 				Config:           render("two"),
-				ConfigPlanChecks: updatePlan(address),
+				ConfigPlanChecks: updatePlan(),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr(address, "description", "two"),
 					checkAPIAllowedHTTPMethods(address, []string{"PUT"}),
