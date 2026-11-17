@@ -311,8 +311,10 @@ type mockKind struct {
 	merge func(stored map[string]any, key string, value any) bool
 	// extra adds the fields only this kind has.
 	extra func(object map[string]any, seq int)
-	// typeNeedsConfig rejects an update that sends type without config.
-	typeNeedsConfig bool
+	// configRequired lists the types whose config the API requires: an update
+	// that sends such a type without config is rejected. The API reads the
+	// type from the request only, so an update that sends neither is accepted.
+	configRequired map[string]bool
 }
 
 var sourceKind = mockKind{
@@ -330,6 +332,8 @@ var sourceKind = mockKind{
 	extra: func(object map[string]any, seq int) {
 		object["url"] = fmt.Sprintf("https://hkdk.events/%d", seq)
 	},
+	// Types that must have authentication. HTTP and WEBHOOK have no required key.
+	configRequired: map[string]bool{"ZOOM": true},
 }
 
 var destinationKind = mockKind{
@@ -343,7 +347,8 @@ var destinationKind = mockKind{
 		setDefault(config, "path_forwarding_disabled", false)
 		setDefault(config, "delivery_policy", map[string]any{"rate": nil, "period": nil, "groups": nil})
 	},
-	typeNeedsConfig: true,
+	// HTTP requires url.
+	configRequired: map[string]bool{"HTTP": true},
 	// Delivery policy members are merged one by one.
 	merge: func(stored map[string]any, key string, value any) bool {
 		if key != "delivery_policy" {
@@ -440,9 +445,9 @@ func (m *mockAPI) handleObjects(w http.ResponseWriter, method string, key *mockK
 	}
 	switch method {
 	case http.MethodPut:
-		_, hasType := body["type"]
+		sentType, _ := body["type"].(string)
 		_, hasConfig := body["config"]
-		if kind.typeNeedsConfig && hasType && !hasConfig {
+		if kind.configRequired[sentType] && !hasConfig {
 			apiError(w, 422, "UNPROCESSABLE_ENTITY", "config is required", nil)
 			return
 		}

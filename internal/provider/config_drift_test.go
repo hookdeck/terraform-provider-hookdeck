@@ -497,6 +497,95 @@ func TestAccMock_ConfigIgnoreChangesSendsNoConfig(t *testing.T) {
 	}
 }
 
+// A source type whose config is required: an update that leaves config as it
+// is sends neither config nor type, because the API rejects the type alone.
+func TestAccMock_ConfigRequiredTypeUpdateWithoutConfigChange(t *testing.T) {
+	m := driftMock(t)
+	render := func(name, lifecycle string) string {
+		return fmt.Sprintf("resource \"hookdeck_gateway_source\" \"test\" {\n  name = %q\n  type = \"ZOOM\"\n  config = %q\n%s}\n",
+			name, `{"auth":{"webhook_secret_key":"secret"}}`, lifecycle)
+	}
+	lastPut := func() (mockRequest, error) {
+		var last *mockRequest
+		for _, r := range m.requestsTo("/sources/") {
+			if r.method == http.MethodPut {
+				last = &r
+			}
+		}
+		if last == nil {
+			return mockRequest{}, fmt.Errorf("no PUT sent")
+		}
+		return *last, nil
+	}
+	renamed := func(name string) resource.TestCheckFunc {
+		return func(s *terraform.State) error {
+			put, err := lastPut()
+			if err != nil {
+				return err
+			}
+			if _, ok := put.body["type"]; ok {
+				return fmt.Errorf("the update sent type without a config change: %v", put.body)
+			}
+			if _, ok := put.body["config"]; ok {
+				return fmt.Errorf("the update sent config: %v", put.body)
+			}
+			id := s.RootModule().Resources[sourceAddr].Primary.ID
+			m.mu.Lock()
+			defer m.mu.Unlock()
+			if got := m.sources[id]["name"]; got != name {
+				return fmt.Errorf("name = %v, want %s", got, name)
+			}
+			return nil
+		}
+	}
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: acc.ProviderFactories,
+		Steps: []resource.TestStep{
+			{Config: render("mock-zoom", "")},
+			// State holds the configuration as applied.
+			{Config: render("mock-zoom-2", ""), ConfigPlanChecks: updatePlan(sourceAddr), Check: renamed("mock-zoom-2")},
+			// State holds Hookdeck's full config.
+			{RefreshState: true},
+			{Config: render("mock-zoom-3", ""), ConfigPlanChecks: updatePlan(sourceAddr), Check: renamed("mock-zoom-3")},
+			{
+				Config:           render("mock-zoom-4", "  lifecycle {\n    ignore_changes = [config]\n  }\n"),
+				ConfigPlanChecks: updatePlan(sourceAddr),
+				Check:            renamed("mock-zoom-4"),
+			},
+			{Config: render("mock-zoom-4", ""), ConfigPlanChecks: emptyPlan()},
+		},
+	})
+}
+
+// A type change sends the new type with the configuration.
+func TestAccMock_ConfigTypeChangeSendsTypeAndConfig(t *testing.T) {
+	m := driftMock(t)
+	webhook := driftObject("hookdeck_gateway_source", "mock-type", "WEBHOOK", `{"allowed_http_methods":["POST"]}`)
+	zoom := driftObject("hookdeck_gateway_source", "mock-type", "ZOOM", `{"auth":{"webhook_secret_key":"secret"}}`)
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: acc.ProviderFactories,
+		Steps: []resource.TestStep{
+			{Config: webhook},
+			{
+				Config:           zoom,
+				ConfigPlanChecks: updatePlan(sourceAddr),
+				Check: func(s *terraform.State) error {
+					id := s.RootModule().Resources[sourceAddr].Primary.ID
+					m.mu.Lock()
+					defer m.mu.Unlock()
+					if got := m.sources[id]["type"]; got != "ZOOM" {
+						return fmt.Errorf("type = %v, want ZOOM", got)
+					}
+					return nil
+				},
+			},
+			{Config: zoom, ConfigPlanChecks: emptyPlan()},
+		},
+	})
+}
+
 // The data source returns the config Hookdeck holds, defaults included.
 func TestAccMock_ConfigDataSources(t *testing.T) {
 	m := driftMock(t)

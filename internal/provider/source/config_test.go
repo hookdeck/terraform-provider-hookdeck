@@ -105,6 +105,42 @@ func TestAccSourceResource_ConfigTypeChange(t *testing.T) {
 	})
 }
 
+// A type whose config is required (ZOOM must have auth): an update that
+// leaves config as it is succeeds. The API rejects the type sent without
+// config, so the update sends neither.
+func TestAccSourceResource_ConfigRequiredTypeRename(t *testing.T) {
+	rName := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
+	address := "hookdeck_gateway_source.test"
+	render := func(suffix string) string {
+		return fmt.Sprintf(`resource "hookdeck_gateway_source" "test" {
+  name   = "tf-acc-source-%s%s"
+  type   = "ZOOM"
+  config = jsonencode({ auth = { webhook_secret_key = "tf-acc-secret" } })
+}
+`, rName, suffix)
+	}
+
+	acc.Test(t, resource.TestCase{
+		Steps: []resource.TestStep{
+			{Config: render("")},
+			{Config: render(""), ConfigPlanChecks: emptyPlan()},
+			{
+				Config:           render("-renamed"),
+				ConfigPlanChecks: updatePlan(address),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr(address, "name", "tf-acc-source-"+rName+"-renamed"),
+					resource.TestCheckResourceAttr(address, "type", "ZOOM"),
+				),
+			},
+			{
+				RefreshState: true,
+				Check:        checkConfigContains(address, `"webhook_secret_key":"tf-acc-secret"`),
+			},
+			{Config: render("-renamed"), ConfigPlanChecks: emptyPlan()},
+		},
+	})
+}
+
 // A source created outside Terraform and imported plans nothing when the
 // configuration holds a subset of what it has.
 func TestAccSourceResource_ConfigImport(t *testing.T) {
