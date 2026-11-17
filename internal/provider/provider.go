@@ -247,6 +247,8 @@ func (p *hookdeckProvider) DataSources(_ context.Context) []func() datasource.Da
 		connection.NewConnectionDataSource,
 		destination.NewDestinationDataSource,
 		source.NewSourceDataSource,
+		// Outpost
+		project.NewOutpostProjectDataSource,
 		// v2 names, deprecated, removed in v4
 		connection.NewLegacyConnectionDataSource,
 		destination.NewLegacyDestinationDataSource,
