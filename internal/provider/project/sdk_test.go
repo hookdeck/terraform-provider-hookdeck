@@ -11,6 +11,7 @@ import (
 	"terraform-provider-hookdeck/internal/projectscope"
 	"terraform-provider-hookdeck/internal/sdkclient"
 
+	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -265,4 +266,106 @@ type headerAPI struct {
 func (h headerAPI) SendRequest(_ context.Context, _, _ string, opts *sdkclient.RequestOptions) (*http.Response, error) {
 	*h.seen = opts.Headers
 	return &http.Response{StatusCode: h.status, Body: io.NopCloser(strings.NewReader(h.body))}, nil
+}
+
+// A write names the project in the header for an organization key only, as
+// a read does.
+func TestWrites_onlyOrganizationKeySendsHeader(t *testing.T) {
+	body := projectJSON("tm_2", "prod", "event_gateway")
+	writes := map[string]func(m *projectResourceModel, client sdkclient.Client) diag.Diagnostics{
+		"update": func(m *projectResourceModel, client sdkclient.Client) diag.Diagnostics {
+			return m.update(t.Context(), gateway, client)
+		},
+		"delete": func(m *projectResourceModel, client sdkclient.Client) diag.Diagnostics {
+			return m.delete(t.Context(), client)
+		},
+	}
+	for name, write := range writes {
+		t.Run(name, func(t *testing.T) {
+			var headers http.Header
+			m := projectResourceModel{ID: types.StringValue("tm_2"), Name: types.StringValue("prod")}
+			for kind, want := range map[projectscope.KeyKind]string{
+				projectscope.KeyKindProject:      "",
+				projectscope.KeyKindOrganization: "tm_2",
+			} {
+				headers = nil
+				client := sdkclient.Client{
+					RawClient: headerAPI{seen: &headers, status: 200, body: body},
+					Scope:     projectscope.Scope{KeyKind: kind},
+				}
+				if diags := write(&m, client); diags.HasError() {
+					t.Fatal(diags)
+				}
+				if got := headers.Get(sdkclient.ProjectHeader); got != want {
+					t.Errorf("key kind %v: header = %q, want %q", kind, got, want)
+				}
+			}
+		})
+	}
+}
+
+// With an organization key the API says which refusal it is: the project is
+// gone (404), or the key cannot reach it (401, 403). A destroy that skips the
+// refresh must not take the second for the first.
+func TestDelete_refusals(t *testing.T) {
+	cases := []struct {
+		name     string
+		response response
+		wantErr  bool
+	}{
+		{"unknown project", response{404, `{"code":"NOT_FOUND","message":"Team Not Found","data":{"id":"tm_1"}}`}, false},
+		{"just deleted", response{404, `{"code":"NOT_FOUND","message":"Not Found","data":{"id":"tm_1"}}`}, false},
+		{"plain not found", response{404, `{"message":"Not Found"}`}, false},
+		{"gone", response{410, `{"message":"Gone"}`}, false},
+		{"another organization", response{401, "Unauthorized"}, true},
+		{"no grant", response{403, `{"code":"INSUFFICIENT_SCOPE"}`}, true},
+		{"server error", response{500, "{}"}, true},
+	}
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			client, _ := clientFor(projectscope.KeyKindOrganization, map[string]response{"DELETE /projects/tm_1": tc.response})
+			m := projectResourceModel{ID: types.StringValue("tm_1")}
+
+			diags := m.delete(t.Context(), client)
+
+			if diags.HasError() != tc.wantErr {
+				t.Fatalf("diagnostics = %v, want error %v", diags, tc.wantErr)
+			}
+			if tc.wantErr {
+				if diags[0].Summary() != "Error deleting project" {
+					t.Errorf("summary = %q", diags[0].Summary())
+				}
+				if tc.response.status != 500 && !strings.Contains(diags[0].Detail(), "cannot access project tm_1") {
+					t.Errorf("detail = %q", diags[0].Detail())
+				}
+			}
+		})
+	}
+}
+
+func TestUpdate_refusals(t *testing.T) {
+	cases := []struct {
+		name       string
+		response   response
+		wantDetail string
+	}{
+		{"unknown project", response{404, `{"code":"NOT_FOUND","message":"Team Not Found","data":{"id":"tm_1"}}`}, "Project tm_1 no longer exists."},
+		{"another organization", response{401, "Unauthorized"}, "cannot access project tm_1"},
+		{"no grant", response{403, `{"code":"INSUFFICIENT_SCOPE"}`}, "cannot access project tm_1"},
+	}
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			client, _ := clientFor(projectscope.KeyKindOrganization, map[string]response{"PUT /projects/tm_1": tc.response})
+			m := projectResourceModel{ID: types.StringValue("tm_1"), Name: types.StringValue("prod")}
+
+			diags := m.update(t.Context(), gateway, client)
+
+			if !diags.HasError() || diags[0].Summary() != "Error updating project" {
+				t.Fatalf("diagnostics = %v", diags)
+			}
+			if !strings.Contains(diags[0].Detail(), tc.wantDetail) {
+				t.Errorf("detail = %q, want it to contain %q", diags[0].Detail(), tc.wantDetail)
+			}
+		})
+	}
 }
