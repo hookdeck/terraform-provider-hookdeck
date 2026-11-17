@@ -520,6 +520,57 @@ func TestAccMock_ConfigUpgradeFromReleasedV2(t *testing.T) {
 	})
 }
 
+// State written by v2.4.0 for a source created without config has no record
+// of keys and no config. It is not an import: a key added later with the
+// value Hookdeck already holds is recorded by the apply, so removing it
+// clears it.
+func TestAccMock_ConfigUpgradeFromReleasedV2WithoutConfig(t *testing.T) {
+	m := driftMock(t)
+	t.Setenv("TF_ACC_PROVIDER_NAMESPACE", "hookdeck")
+	custom := `{"custom_response":{"content_type":"json","body":"x"}}`
+	bare := driftSource("hookdeck_source", "")
+	with := driftSource("hookdeck_source", custom)
+	var id string
+
+	resource.Test(t, resource.TestCase{
+		Steps: []resource.TestStep{
+			{
+				ExternalProviders: map[string]resource.ExternalProvider{
+					"hookdeck": {Source: "hookdeck/hookdeck", VersionConstraint: releasedV2},
+				},
+				Config: requiredProviders(releasedV2) + bare,
+				Check:  captureID("hookdeck_source.test", &id),
+			},
+			{
+				// Someone sets the key in Hookdeck.
+				PreConfig: func() {
+					m.setSourceConfig(id, "custom_response", map[string]any{"content_type": "json", "body": "x"})
+				},
+				ProtoV6ProviderFactories: acc.ProviderFactories,
+				Config:                   requiredProviders("") + with,
+				ConfigPlanChecks:         updatePlan("hookdeck_source.test"),
+			},
+			{
+				ProtoV6ProviderFactories: acc.ProviderFactories,
+				Config:                   requiredProviders("") + with,
+				ConfigPlanChecks:         emptyPlan(),
+			},
+			{
+				ProtoV6ProviderFactories: acc.ProviderFactories,
+				Config:                   requiredProviders("") + bare,
+				ConfigPlanChecks:         updatePlan("hookdeck_source.test"),
+				Check: func(*terraform.State) error {
+					sent := lastWrittenConfig(m, "/sources/")
+					if v, present := sent["custom_response"]; !present || v != nil {
+						return fmt.Errorf("custom_response in the update = %v (present %v), want null", v, present)
+					}
+					return nil
+				},
+			},
+		},
+	})
+}
+
 // The record of which keys were set survives a moved block.
 func TestAccMock_ConfigKeysSurviveMove(t *testing.T) {
 	m := driftMock(t)

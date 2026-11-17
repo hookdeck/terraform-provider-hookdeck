@@ -10,6 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework-jsontypes/jsontypes"
 	datasourceschema "github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
+	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
@@ -100,9 +101,13 @@ func (m configPlanModifier) PlanModifyString(ctx context.Context, req planmodifi
 // planConfig decides the planned value of config. plan is the value the
 // framework proposed: the configuration when set, otherwise state, or unknown
 // on create. managed holds the key paths the provider sent earlier; recorded
-// is false when none were recorded (imported and not yet applied), in which
-// case nothing counts as removed or added. missing lists configured keys Hookdeck does
-// not return.
+// is false when they are not known (imported and not yet applied, or private
+// data that cannot be read), in which case nothing counts as removed or
+// added. missing lists configured keys Hookdeck does not return.
+//
+// A configuration that serialises exactly like Hookdeck's full config plans
+// no change, so the apply that would record its keys does not run; they are
+// recorded by the next apply that changes config.
 func planConfig(config, state, plan types.String, managed configjson.Paths, recorded bool) (planned types.String, missing []string, err error) {
 	if state.IsNull() || state.IsUnknown() || config.IsUnknown() {
 		return plan, nil, nil
@@ -153,7 +158,10 @@ type configKeys int
 
 const (
 	// configKeysAbsent: nothing stored. State written before the keys were
-	// tracked, which holds exactly the configuration the user applied.
+	// tracked, which holds exactly the configuration the user applied (none
+	// when config was not set). A state that lost its private data also lands
+	// here: its config is Hookdeck's full config, so every key Hookdeck
+	// returned would count as set and be cleared by the next update.
 	configKeysAbsent configKeys = iota
 	// configKeysUnrecorded: the provider never sent keys for this resource
 	// (imported), or the stored value cannot be read. Which keys the user
@@ -186,15 +194,18 @@ func readConfigKeys(ctx context.Context, p privateGetter) (configjson.Paths, con
 //
 // When nothing is stored the resource comes from a version that did not track
 // them, and state still holds exactly the configuration the user applied, so
-// the paths are taken from it.
+// the paths are taken from it; without a config in state none were set.
 func ManagedConfigPaths(ctx context.Context, p privateGetter, state types.String) (paths configjson.Paths, recorded bool, diags diag.Diagnostics) {
 	paths, kind, diags := readConfigKeys(ctx, p)
 	switch kind {
 	case configKeysRecorded:
 		return paths, true, diags
 	case configKeysAbsent:
-		if state.IsNull() || state.IsUnknown() {
+		if state.IsUnknown() {
 			return nil, false, diags
+		}
+		if state.IsNull() {
+			return configjson.Paths{}, true, diags
 		}
 		user, err := configjson.Parse(state.ValueString())
 		if err != nil {
@@ -229,10 +240,10 @@ func SetManagedConfigPaths(ctx context.Context, p privateSetter, config jsontype
 // SeedManagedConfigPaths stores what Read can tell about the keys the
 // provider manages, when nothing is stored yet. State from a version that did
 // not track them holds exactly the user's configuration: its keys are the
-// managed ones. Without a config in state (an import) the keys are marked as
-// not recorded, and later reads leave that alone: state then holds Hookdeck's
-// full config, which says nothing about what the user manages. The first apply
-// records them.
+// managed ones, and none when it has no config. An imported resource is marked
+// as not recorded by MarkConfigUnrecorded, and later reads leave that alone:
+// state then holds Hookdeck's full config, which says nothing about what the
+// user manages. The first apply that changes config records them.
 //
 // Private data that exists but cannot be read is never replaced from state.
 func SeedManagedConfigPaths(ctx context.Context, p interface {
@@ -243,17 +254,23 @@ func SeedManagedConfigPaths(ctx context.Context, p interface {
 	if diags.HasError() || kind != configKeysAbsent {
 		return diags
 	}
-	if state.IsNull() || state.IsUnknown() {
-		raw, err := configjson.MarshalUnrecorded()
-		if err != nil {
-			diags.AddError("Error recording config keys", err.Error())
-			return diags
-		}
-		diags.Append(p.SetKey(ctx, configKeysPrivateKey, raw)...)
-		return diags
-	}
 	diags.Append(SetManagedConfigPaths(ctx, p, state)...)
 	return diags
+}
+
+// MarkConfigUnrecorded marks a resource being imported as having no recorded
+// config keys. Call it from ImportState after the id is set; the marker
+// reaches the Read that follows.
+func MarkConfigUnrecorded(ctx context.Context, resp *resource.ImportStateResponse) {
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	raw, err := configjson.MarshalUnrecorded()
+	if err != nil {
+		resp.Diagnostics.AddError("Error recording config keys", err.Error())
+		return
+	}
+	resp.Diagnostics.Append(resp.Private.SetKey(ctx, configKeysPrivateKey, raw)...)
 }
 
 // ConfigFromAPI returns the config of an API response as canonical JSON, with

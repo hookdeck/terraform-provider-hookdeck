@@ -11,7 +11,7 @@ NOTES:
 * The first refresh after upgrading stores Hookdeck's full configuration in state. The plan stays empty unless a key you set in `config` differs in Hookdeck. `config` is sensitive and now also holds secrets Hookdeck returns, such as authentication tokens.
 * A key in `config` that Hookdeck does not return for the type is ignored by the comparison, with a warning on each plan. It has no effect in Hookdeck.
 * Numbers and booleans written as strings (`"10"`, `"true"`) match the number or boolean Hookdeck returns. Other values must be written as Hookdeck stores them: a value Hookdeck rewrites shows as a change on every plan.
-* After an import, removing a key from `config` clears it in Hookdeck only once `config` has been applied with a change, such as a key added to it. Until then set the key to `null` to clear it.
+* After an import, removing a key from `config` clears it in Hookdeck only once an apply has changed `config`. Until then set the key to `null` to clear it. Adding a key whose value Hookdeck already holds plans nothing there.
 
 ## 3.0.0 (2026-10-17)
 

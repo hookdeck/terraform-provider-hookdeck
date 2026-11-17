@@ -89,7 +89,7 @@ func TestManagedConfigPaths(t *testing.T) {
 	p := fakePrivate{}
 	none := types.StringNull()
 
-	if _, recorded, _ := ManagedConfigPaths(ctx, p, none); recorded {
+	if _, recorded, _ := ManagedConfigPaths(ctx, p, types.StringUnknown()); recorded {
 		t.Fatal("nothing recorded yet")
 	}
 	if d := SetManagedConfigPaths(ctx, p, jsontypes.NewNormalizedValue(`{"url":"x","delivery_policy":{"rate":1}}`)); d.HasError() {
@@ -123,8 +123,8 @@ func TestManagedConfigPathsFromState(t *testing.T) {
 	if d.HasError() || !recorded || len(paths) != 2 || len(paths["auth"]) != 1 {
 		t.Fatalf("absent private data: %v %v %v", paths, recorded, d)
 	}
-	if _, recorded, _ := ManagedConfigPaths(ctx, fakePrivate{}, types.StringNull()); recorded {
-		t.Fatal("absent private data and no config in state is not recorded")
+	if paths, recorded, _ := ManagedConfigPaths(ctx, fakePrivate{}, types.StringNull()); !recorded || len(paths) != 0 {
+		t.Fatal("absent private data and no config in state records an empty set")
 	}
 	if _, recorded, _ := ManagedConfigPaths(ctx, fakePrivate{}, types.StringValue(`oops`)); recorded {
 		t.Fatal("absent private data and unreadable state is not recorded")
@@ -163,12 +163,23 @@ func TestSeedManagedConfigPaths(t *testing.T) {
 		t.Fatalf("recorded set was replaced: %v", paths)
 	}
 
-	// Import: no config in state yet. Marked not recorded, and a later read,
-	// when state holds the full config, does not seed from it.
-	imported := fakePrivate{}
-	if d := SeedManagedConfigPaths(ctx, imported, jsontypes.NewNormalizedNull()); d.HasError() {
+	// No private data and no config in state (created without config): an
+	// empty set is recorded, so a key added later counts as new.
+	bare := fakePrivate{}
+	if d := SeedManagedConfigPaths(ctx, bare, jsontypes.NewNormalizedNull()); d.HasError() {
 		t.Fatal(d)
 	}
+	if paths, recorded, _ := ManagedConfigPaths(ctx, bare, full.StringValue); !recorded || len(paths) != 0 {
+		t.Fatalf("created without config: %v %v", paths, recorded)
+	}
+
+	// Import: ImportState stores the marker; a later read, when state holds
+	// the full config, does not seed from it.
+	marker, err := configjson.MarshalUnrecorded()
+	if err != nil {
+		t.Fatal(err)
+	}
+	imported := fakePrivate{configKeysPrivateKey: marker}
 	if paths, recorded, _ := ManagedConfigPaths(ctx, imported, full.StringValue); recorded || len(paths) != 0 {
 		t.Fatalf("import is not recorded: %v %v", paths, recorded)
 	}

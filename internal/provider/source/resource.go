@@ -194,4 +194,5 @@ func (r *sourceResource) Delete(ctx context.Context, req resource.DeleteRequest,
 
 func (r *sourceResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	r.ImportProjectState(ctx, "id", req, resp)
+	shared.MarkConfigUnrecorded(ctx, resp)
 }

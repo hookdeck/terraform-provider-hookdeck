@@ -195,6 +195,7 @@ func (r *destinationResource) Delete(ctx context.Context, req resource.DeleteReq
 
 func (r *destinationResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	r.ImportProjectState(ctx, "id", req, resp)
+	shared.MarkConfigUnrecorded(ctx, resp)
 }
 
 // ValidateConfig runs plan-time checks on the resource configuration.
