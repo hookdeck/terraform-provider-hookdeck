@@ -4,6 +4,8 @@ import (
 	"context"
 	"terraform-provider-hookdeck/internal/provider/shared"
 
+	"github.com/hashicorp/terraform-plugin-framework-jsontypes/jsontypes"
+	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 )
@@ -70,6 +72,16 @@ func (r *sourceResource) MoveState(_ context.Context) []resource.StateMover {
 	return []resource.StateMover{shared.RenamedStateMover(r.naming.LegacyTypeName(), resourceSchema(r.naming.AsLegacy()), r.schema())}
 }
 
+// ModifyPlan checks the project, then drops a plan that changes only computed
+// values: a config that already matches Hookdeck is no change.
+func (r *sourceResource) ModifyPlan(ctx context.Context, req resource.ModifyPlanRequest, resp *resource.ModifyPlanResponse) {
+	r.ProjectScopedResource.ModifyPlan(ctx, req, resp)
+	if resp.Diagnostics.HasError() || len(resp.RequiresReplace) > 0 {
+		return
+	}
+	resp.Diagnostics.Append(shared.KeepUnchangedPlan(ctx, req.State, &resp.Plan)...)
+}
+
 // Create creates the resource and sets the initial Terraform state.
 func (r *sourceResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
 	data, _, diags := getModel(ctx, req.Plan, r.naming.Legacy)
@@ -82,7 +94,16 @@ func (r *sourceResource) Create(ctx context.Context, req resource.CreateRequest,
 	if !ok {
 		return
 	}
-	resp.Diagnostics.Append(data.Create(ctx, client)...)
+	var userConfig jsontypes.Normalized
+	resp.Diagnostics.Append(req.Config.GetAttribute(ctx, path.Root("config"), &userConfig)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	resp.Diagnostics.Append(data.Create(ctx, client, userConfig)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	resp.Diagnostics.Append(shared.SetManagedConfigPaths(ctx, resp.Private, userConfig)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -100,6 +121,10 @@ func (r *sourceResource) Read(ctx context.Context, req resource.ReadRequest, res
 
 	client, ok := r.ClientForState(shared.StoredProject(data.ProjectID, teamID), &resp.Diagnostics)
 	if !ok {
+		return
+	}
+	resp.Diagnostics.Append(shared.SeedManagedConfigPaths(ctx, resp.Private, data.Config)...)
+	if resp.Diagnostics.HasError() {
 		return
 	}
 	found, diags := data.Retrieve(ctx, client)
@@ -133,7 +158,18 @@ func (r *sourceResource) Update(ctx context.Context, req resource.UpdateRequest,
 	if !ok {
 		return
 	}
-	resp.Diagnostics.Append(data.Update(ctx, client, state)...)
+	var userConfig jsontypes.Normalized
+	resp.Diagnostics.Append(req.Config.GetAttribute(ctx, path.Root("config"), &userConfig)...)
+	managed, _, diags := shared.ManagedConfigPaths(ctx, req.Private)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	resp.Diagnostics.Append(data.Update(ctx, client, userConfig, managed, state)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	resp.Diagnostics.Append(shared.SetManagedConfigPaths(ctx, resp.Private, userConfig)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}

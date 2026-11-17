@@ -1,0 +1,271 @@
+package shared
+
+import (
+	"context"
+	"fmt"
+	"strings"
+
+	"terraform-provider-hookdeck/internal/configjson"
+
+	"github.com/hashicorp/terraform-plugin-framework-jsontypes/jsontypes"
+	datasourceschema "github.com/hashicorp/terraform-plugin-framework/datasource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/diag"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
+	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/hashicorp/terraform-plugin-go/tftypes"
+)
+
+// configKeysPrivateKey is the private state key that records which config keys
+// the provider has sent to Hookdeck. State holds Hookdeck's full config, so
+// without it a key removed from the configuration could not be told apart
+// from a key Hookdeck added.
+const configKeysPrivateKey = "config_keys"
+
+const configDescription = "Only the keys you set are compared with Hookdeck. A different value in Hookdeck " +
+	"shows as a change, and the next apply restores yours. Keys Hookdeck adds or defaults are kept in state " +
+	"and are not compared. To clear a key in Hookdeck, remove it from `config` or set it to `null`. " +
+	"Read back from Hookdeck on refresh and import, so it also holds secrets Hookdeck returns, such as " +
+	"authentication tokens."
+
+// ConfigAttribute returns the config attribute of a source or destination.
+// lead is the first sentence of its description and kind ("source" or
+// "destination") is used in plan warnings.
+func ConfigAttribute(lead, kind string) schema.StringAttribute {
+	return schema.StringAttribute{
+		Optional:            true,
+		Computed:            true,
+		Sensitive:           true,
+		MarkdownDescription: lead + " " + configDescription,
+		PlanModifiers:       []planmodifier.String{ConfigPlanModifier(kind)},
+		CustomType:          jsontypes.NormalizedType{},
+	}
+}
+
+// ConfigDataSourceAttribute returns the config attribute of a source or
+// destination data source.
+func ConfigDataSourceAttribute(lead string) datasourceschema.StringAttribute {
+	return datasourceschema.StringAttribute{
+		Computed:            true,
+		Sensitive:           true,
+		MarkdownDescription: lead + " Hookdeck's full configuration, including defaults Hookdeck adds and authentication secrets.",
+		CustomType:          jsontypes.NormalizedType{},
+	}
+}
+
+// ConfigPlanModifier plans the config attribute. config is Computed, so state
+// holds everything Hookdeck returns while the configuration holds only what
+// the user set. The modifier keeps the planned value equal to state when
+// every key in the configuration already holds the configured value, so the
+// plan stays empty, and plans the configuration otherwise.
+//
+// This cannot be done with semantic equality: the framework does not run it
+// at plan time, so it cannot hide a difference in a subset of the keys.
+func ConfigPlanModifier(kind string) planmodifier.String {
+	return configPlanModifier{kind: kind}
+}
+
+type configPlanModifier struct{ kind string }
+
+func (m configPlanModifier) Description(context.Context) string {
+	return "Compares the configured keys with the configuration Hookdeck returns."
+}
+
+func (m configPlanModifier) MarkdownDescription(ctx context.Context) string {
+	return m.Description(ctx)
+}
+
+func (m configPlanModifier) PlanModifyString(ctx context.Context, req planmodifier.StringRequest, resp *planmodifier.StringResponse) {
+	if req.State.Raw.IsNull() {
+		return
+	}
+	managed, recorded, diags := ManagedConfigPaths(ctx, req.Private)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	planned, missing, err := planConfig(req.ConfigValue, req.StateValue, req.PlanValue, managed, recorded)
+	if err != nil {
+		resp.Diagnostics.AddAttributeError(req.Path, "Invalid config", err.Error())
+		return
+	}
+	for _, key := range missing {
+		resp.Diagnostics.AddAttributeWarning(req.Path, "Config key not returned by Hookdeck",
+			fmt.Sprintf("Hookdeck does not return config key `%s` for this %s; it has no effect.", key, m.kind))
+	}
+	resp.PlanValue = planned
+}
+
+// planConfig decides the planned value of config. plan is the value the
+// framework proposed: the configuration when set, otherwise state, or unknown
+// on create. managed holds the key paths the provider sent earlier; recorded
+// is false when none were recorded (imported and not yet applied), in which
+// case nothing counts as removed. missing lists configured keys Hookdeck does
+// not return.
+func planConfig(config, state, plan types.String, managed configjson.Paths, recorded bool) (planned types.String, missing []string, err error) {
+	if state.IsNull() || state.IsUnknown() || config.IsUnknown() {
+		return plan, nil, nil
+	}
+	if !recorded {
+		managed = nil
+	}
+	if config.IsNull() {
+		// The configuration has no config at all: everything the provider
+		// sent is cleared, and the new value is not known until Hookdeck answers.
+		if len(managed) > 0 {
+			return types.StringUnknown(), nil, nil
+		}
+		return state, nil, nil
+	}
+
+	user, err := configjson.Parse(config.ValueString())
+	if err != nil {
+		return plan, nil, err
+	}
+	current, err := configjson.Parse(state.ValueString())
+	if err != nil {
+		// State is not valid JSON: plan the configuration to repair it.
+		return config, nil, nil //nolint:nilerr // not an error for the caller, the plan repairs it
+	}
+	covers, missing := configjson.Covers(user, current, managed)
+	if !covers || len(configjson.Removed(managed, user)) > 0 {
+		return config, missing, nil
+	}
+	return state, missing, nil
+}
+
+type privateGetter interface {
+	GetKey(ctx context.Context, key string) ([]byte, diag.Diagnostics)
+}
+
+type privateSetter interface {
+	SetKey(ctx context.Context, key string, value []byte) diag.Diagnostics
+}
+
+// ManagedConfigPaths returns the config key paths recorded by the last create
+// or update. recorded is false when there are none, or they cannot be read.
+func ManagedConfigPaths(ctx context.Context, p privateGetter) (paths configjson.Paths, recorded bool, diags diag.Diagnostics) {
+	if p == nil {
+		return nil, false, nil
+	}
+	raw, diags := p.GetKey(ctx, configKeysPrivateKey)
+	if diags.HasError() || len(raw) == 0 {
+		return nil, false, diags
+	}
+	paths, err := configjson.UnmarshalPaths(raw)
+	if err != nil {
+		return nil, false, diags
+	}
+	return paths, true, diags
+}
+
+// SetManagedConfigPaths records the key paths of the configured config. Only
+// key names are stored, never values.
+func SetManagedConfigPaths(ctx context.Context, p privateSetter, config jsontypes.Normalized) diag.Diagnostics {
+	var diags diag.Diagnostics
+	paths := configjson.Paths{}
+	if !config.IsNull() && !config.IsUnknown() {
+		user, err := configjson.Parse(config.ValueString())
+		if err != nil {
+			diags.AddError("Invalid config", err.Error())
+			return diags
+		}
+		paths = configjson.PathsOf(user)
+	}
+	raw, err := paths.Marshal()
+	if err != nil {
+		diags.AddError("Error recording config keys", err.Error())
+		return diags
+	}
+	return p.SetKey(ctx, configKeysPrivateKey, raw)
+}
+
+// SeedManagedConfigPaths records config key paths from state written before
+// they were tracked. That state holds exactly the configuration the user
+// applied, so its keys are the managed ones. Imported resources have no config
+// in state yet and get an empty set.
+//
+// State that lost its private data after the provider started storing the full
+// configuration would seed every key Hookdeck returned, and a later apply with
+// fewer keys would then clear defaults. Only a hand-edited state push gets there.
+func SeedManagedConfigPaths(ctx context.Context, p interface {
+	privateGetter
+	privateSetter
+}, state jsontypes.Normalized) diag.Diagnostics {
+	_, recorded, diags := ManagedConfigPaths(ctx, p)
+	if diags.HasError() || recorded {
+		return diags
+	}
+	diags.Append(SetManagedConfigPaths(ctx, p, state)...)
+	return diags
+}
+
+// ConfigFromAPI returns the config of an API response as canonical JSON, with
+// {} when the response has none.
+func ConfigFromAPI(obj map[string]any) (jsontypes.Normalized, diag.Diagnostics) {
+	var diags diag.Diagnostics
+	config, _ := obj["config"].(map[string]any)
+	s, err := configjson.Canonical(config)
+	if err != nil {
+		diags.AddError("Error parsing config", err.Error())
+		return jsontypes.NewNormalizedNull(), diags
+	}
+	return jsontypes.NewNormalizedValue(s), diags
+}
+
+// DecodeObject decodes an API response body, keeping numbers exact.
+func DecodeObject(body []byte) (map[string]any, error) {
+	obj, err := configjson.Parse(strings.TrimSpace(string(body)))
+	if err != nil {
+		return nil, err
+	}
+	return obj, nil
+}
+
+// KeepUnchangedPlan turns a plan that only differs from state in computed
+// values into the state itself. config is Optional and Computed: when the
+// configuration sets it, the framework proposes a change to it and marks every
+// computed attribute that has no configuration (updated_at, disabled_at) as
+// unknown, before the config plan modifier decides there is no change. The
+// plan would then show an update for nothing. Call it from ModifyPlan, which
+// runs after attribute plan modifiers.
+//
+// An attribute that is unknown but not only computed (a value from another
+// resource, or the config attribute itself) is a real change: the plan is left alone.
+func KeepUnchangedPlan(ctx context.Context, state tfsdk.State, plan *tfsdk.Plan) diag.Diagnostics {
+	var diags diag.Diagnostics
+	if state.Raw.IsNull() || plan.Raw.IsNull() || !plan.Raw.IsKnown() {
+		return diags
+	}
+	var planned, prior map[string]tftypes.Value
+	if err := plan.Raw.As(&planned); err != nil {
+		diags.AddError("Error reading the plan", err.Error())
+		return diags
+	}
+	if err := state.Raw.As(&prior); err != nil {
+		diags.AddError("Error reading the state", err.Error())
+		return diags
+	}
+	restored := make(map[string]tftypes.Value, len(planned))
+	for name, value := range planned {
+		before, ok := prior[name]
+		if !ok {
+			return diags
+		}
+		if value.IsFullyKnown() {
+			if !value.Equal(before) {
+				return diags
+			}
+			restored[name] = value
+			continue
+		}
+		attribute, ok := plan.Schema.GetAttributes()[name]
+		if !ok || !attribute.IsComputed() || attribute.IsOptional() {
+			return diags
+		}
+		restored[name] = before
+	}
+	plan.Raw = tftypes.NewValue(plan.Raw.Type(), restored)
+	return diags
+}

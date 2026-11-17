@@ -9,8 +9,11 @@ import (
 	"net/http"
 	"net/url"
 	"strconv"
+	"terraform-provider-hookdeck/internal/configjson"
+	"terraform-provider-hookdeck/internal/provider/shared"
 	"terraform-provider-hookdeck/internal/sdkclient"
 
+	"github.com/hashicorp/terraform-plugin-framework-jsontypes/jsontypes"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
@@ -114,20 +117,29 @@ func (m *sourceResourceModel) Retrieve(ctx context.Context, client *sdkclient.Cl
 		return false, diags
 	}
 
-	var source map[string]interface{}
-	err = json.Unmarshal(body, &source)
+	source, err := shared.DecodeObject(body)
 	if err != nil {
 		diags.AddError("Error reading source", err.Error())
 		return false, diags
 	}
 
-	return true, m.Refresh(source)
+	diags.Append(m.Refresh(source)...)
+	if diags.HasError() {
+		return false, diags
+	}
+	config, configDiags := shared.ConfigFromAPI(source)
+	diags.Append(configDiags...)
+	m.Config = config
+	return true, diags
 }
 
-func (m *sourceResourceModel) Create(ctx context.Context, client *sdkclient.Client) diag.Diagnostics {
+// Create creates the source from the configuration the user wrote. m.Config
+// holds the planned value, which is unknown when the configuration has none,
+// and is then taken from the response.
+func (m *sourceResourceModel) Create(ctx context.Context, client *sdkclient.Client, userConfig jsontypes.Normalized) diag.Diagnostics {
 	var diags diag.Diagnostics
 
-	payload, diags := m.toPayload()
+	payload, diags := m.toPayload(userConfig)
 	if diags.HasError() {
 		return diags
 	}
@@ -164,20 +176,36 @@ func (m *sourceResourceModel) Create(ctx context.Context, client *sdkclient.Clie
 		return diags
 	}
 
-	var source map[string]interface{}
-	err = json.Unmarshal(body, &source)
+	source, err := shared.DecodeObject(body)
 	if err != nil {
 		diags.AddError("Error creating source", err.Error())
 		return diags
 	}
 
-	return m.Refresh(source)
+	return m.refreshAfterWrite(source)
 }
 
-func (m *sourceResourceModel) Update(ctx context.Context, client *sdkclient.Client, priorState *sourceResourceModel) diag.Diagnostics {
+// refreshAfterWrite reads the response of a create or update. The planned
+// config is kept, because Terraform requires the applied value to equal the
+// planned one, unless it is unknown.
+func (m *sourceResourceModel) refreshAfterWrite(source map[string]interface{}) diag.Diagnostics {
+	diags := m.Refresh(source)
+	if diags.HasError() || !m.Config.IsUnknown() {
+		return diags
+	}
+	config, configDiags := shared.ConfigFromAPI(source)
+	diags.Append(configDiags...)
+	m.Config = config
+	return diags
+}
+
+// Update updates the source from the configuration the user wrote. managed
+// holds the config key paths sent by earlier writes, so keys removed from the
+// configuration are cleared.
+func (m *sourceResourceModel) Update(ctx context.Context, client *sdkclient.Client, userConfig jsontypes.Normalized, managed configjson.Paths, priorState *sourceResourceModel) diag.Diagnostics {
 	var diags diag.Diagnostics
 
-	payload, diags := m.toUpdatePayload(priorState)
+	payload, diags := m.toUpdatePayload(userConfig, managed, priorState)
 	if diags.HasError() {
 		return diags
 	}
@@ -214,14 +242,13 @@ func (m *sourceResourceModel) Update(ctx context.Context, client *sdkclient.Clie
 		return diags
 	}
 
-	var source map[string]interface{}
-	err = json.Unmarshal(body, &source)
+	source, err := shared.DecodeObject(body)
 	if err != nil {
 		diags.AddError("Error updating source", err.Error())
 		return diags
 	}
 
-	return m.Refresh(source)
+	return m.refreshAfterWrite(source)
 }
 
 func (m *sourceResourceModel) Delete(ctx context.Context, client *sdkclient.Client) diag.Diagnostics {
@@ -245,16 +272,17 @@ func (m *sourceResourceModel) Delete(ctx context.Context, client *sdkclient.Clie
 	return nil
 }
 
-func (m *sourceResourceModel) toPayload() (map[string]interface{}, diag.Diagnostics) {
+// toPayload builds the create payload. The config sent is the one the user
+// wrote, never m.Config: that can hold everything Hookdeck returned, including
+// auth, and sending auth back to a source creates a new integration.
+func (m *sourceResourceModel) toPayload(userConfig jsontypes.Normalized) (map[string]interface{}, diag.Diagnostics) {
 	var diags diag.Diagnostics
 
 	payload := map[string]interface{}{}
 	payload["name"] = m.Name.ValueString()
-	if m.Config.ValueString() != "" {
-		var payloadConfig map[string]interface{}
-		err := json.Unmarshal([]byte(m.Config.ValueString()), &payloadConfig)
+	if userConfig.ValueString() != "" {
+		payloadConfig, err := configjson.Parse(userConfig.ValueString())
 		if err != nil {
-			var diags diag.Diagnostics
 			diags.AddError("Error creating source", err.Error())
 			return nil, diags
 		}
@@ -288,23 +316,28 @@ var nonNullableConfigDefaults = map[string]map[string]interface{}{
 }
 
 // toUpdatePayload builds the update payload, explicitly clearing top-level
-// config keys that existed in the prior state but were removed in the plan.
-// The Hookdeck API merges config updates, so omitted keys would otherwise be
-// retained on the source.
-func (m *sourceResourceModel) toUpdatePayload(priorState *sourceResourceModel) (map[string]interface{}, diag.Diagnostics) {
-	payload, diags := m.toPayload()
+// config keys the provider sent earlier (managed) that the configuration no
+// longer has. The Hookdeck API merges config updates, so omitted keys would
+// otherwise be retained on the source. priorState supplies the type of the
+// value being cleared.
+func (m *sourceResourceModel) toUpdatePayload(userConfig jsontypes.Normalized, managed configjson.Paths, priorState *sourceResourceModel) (map[string]interface{}, diag.Diagnostics) {
+	payload, diags := m.toPayload(userConfig)
 	if diags.HasError() {
 		return nil, diags
 	}
 
-	if priorState == nil || priorState.Config.ValueString() == "" {
+	if len(managed) == 0 {
 		return payload, diags
 	}
 
 	var priorPayloadConfig map[string]interface{}
-	if err := json.Unmarshal([]byte(priorState.Config.ValueString()), &priorPayloadConfig); err != nil {
-		diags.AddError("Error parsing prior source config", err.Error())
-		return nil, diags
+	if priorState != nil && !priorState.Config.IsNull() && !priorState.Config.IsUnknown() && priorState.Config.ValueString() != "" {
+		var err error
+		priorPayloadConfig, err = configjson.Parse(priorState.Config.ValueString())
+		if err != nil {
+			diags.AddError("Error parsing prior source config", err.Error())
+			return nil, diags
+		}
 	}
 
 	newPayloadConfig, ok := payload["config"].(map[string]interface{})
@@ -314,7 +347,7 @@ func (m *sourceResourceModel) toUpdatePayload(priorState *sourceResourceModel) (
 	}
 
 	typeDefaults := nonNullableConfigDefaults[m.Type.ValueString()]
-	for key, priorValue := range priorPayloadConfig {
+	for key := range managed {
 		if _, exists := newPayloadConfig[key]; exists {
 			continue
 		}
@@ -322,7 +355,7 @@ func (m *sourceResourceModel) toUpdatePayload(priorState *sourceResourceModel) (
 		// null returns 422. If we have a documented default for the field,
 		// send that to reset; otherwise leave it omitted (which falls back to
 		// the merge behavior — the only safe choice without a known default).
-		switch priorValue.(type) {
+		switch priorPayloadConfig[key].(type) {
 		case []interface{}, bool:
 			if def, ok := typeDefaults[key]; ok {
 				newPayloadConfig[key] = def
