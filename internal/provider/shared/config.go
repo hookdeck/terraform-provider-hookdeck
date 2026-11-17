@@ -25,8 +25,9 @@ const configKeysPrivateKey = "config_keys"
 const configDescription = "Only the keys you set are compared with Hookdeck: a different value in Hookdeck " +
 	"shows as a change, and the next apply restores yours. The plan shows it as `(sensitive value)`; to see " +
 	"which key differs, save the plan with `-out` and read `terraform show -json`. Keys you don't set, including defaults Hookdeck " +
-	"adds, are kept in state and not compared. To clear a key in Hookdeck, remove it from `config` or set it " +
-	"to `null`; after an import, use `null` until an apply has changed `config`. Read back from Hookdeck on " +
+	"adds, are kept in state and not compared. To clear a key in Hookdeck, remove it from `config`; after an import, " +
+	"set it to `null` until an apply has changed `config`. An explicit `null` also clears, but can show a change " +
+	"on every plan when Hookdeck replaces the cleared value with a default. Read back from Hookdeck on " +
 	"refresh and import, so it also holds secrets Hookdeck returns, such as authentication tokens."
 
 // ConfigAttribute returns the config attribute of a source or destination.

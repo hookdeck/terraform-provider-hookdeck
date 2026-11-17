@@ -44,8 +44,9 @@ func countPuts(m *mockAPI) int {
 // written. This version plans nothing for it, although Hookdeck stores a
 // value in another form and drops a key, and still clears a key removed
 // later. Once this version has written the state, the released provider
-// refuses it: it would take every key Hookdeck returned for a configured one
-// and clear those the configuration does not have.
+// refuses it: it would treat every key stored in state, including the ones
+// Hookdeck returned, as one the user had set, and clear those the
+// configuration does not have.
 func TestAccMock_ConfigUpgradeFromReleasedV3(t *testing.T) {
 	for _, tc := range []struct{ name, sourceType, destinationType string }{
 		{"gateway names", "hookdeck_gateway_source", "hookdeck_gateway_destination"},
