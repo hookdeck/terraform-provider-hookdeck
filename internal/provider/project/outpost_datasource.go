@@ -3,6 +3,7 @@ package project
 import (
 	"context"
 	"fmt"
+	"maps"
 	"net/http"
 
 	"terraform-provider-hookdeck/internal/provider/shared"
@@ -48,6 +49,7 @@ func (d *outpostProjectDataSource) Schema(_ context.Context, _ datasource.Schema
 		ElementType: types.StringType,
 		Description: "The rest of the project's configuration: credential keys, and any key this provider version does not know to be non-sensitive, including keys added to Outpost after this provider release.",
 	}
+	maps.Copy(attributes, outpostDomainDataAttributes())
 	resp.Schema = schema.Schema{
 		Description: fmt.Sprintf("%s project, looked up by ID or name.", outpost.label),
 		Attributes:  attributes,
@@ -96,8 +98,43 @@ func (d *outpostProjectDataSource) Read(ctx context.Context, req datasource.Read
 	resp.Diagnostics.Append(diags...)
 	data.SensitiveConfig, diags = types.MapValueFrom(ctx, types.StringType, sensitive)
 	resp.Diagnostics.Append(diags...)
+	domain, err := getDomain(ctx, outpostAPI(d.client, id))
+	if err != nil {
+		resp.Diagnostics.AddError("Error reading portal custom domain", err.Error())
+		return
+	}
+	var domainDiags diag.Diagnostics
+	data.PortalCustomDomain, data.PortalCustomDomainStatus, domainDiags = domainValues(ctx, domain)
+	resp.Diagnostics.Append(domainDiags...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
+}
+
+func outpostDomainDataAttributes() map[string]schema.Attribute {
+	return map[string]schema.Attribute{
+		"portal_custom_domain": schema.StringAttribute{
+			Computed:    true,
+			Description: "Hostname that serves the project's portal. Null when no custom domain is set.",
+		},
+		"portal_custom_domain_status": schema.SingleNestedAttribute{
+			Computed:    true,
+			Description: domainStatusDescription,
+			Attributes: map[string]schema.Attribute{
+				"status":     schema.StringAttribute{Computed: true, Description: domainStatusFieldDescription},
+				"ssl_status": schema.StringAttribute{Computed: true, Description: domainSSLStatusDescription},
+				"verification_records": schema.ListNestedAttribute{
+					Computed:    true,
+					Description: domainRecordsDescription,
+					NestedObject: schema.NestedAttributeObject{Attributes: map[string]schema.Attribute{
+						"type":  schema.StringAttribute{Computed: true, Description: "Record type, for example `txt`"},
+						"name":  schema.StringAttribute{Computed: true, Description: "Record name"},
+						"value": schema.StringAttribute{Computed: true, Description: "Record value"},
+					}},
+				},
+				"verification_errors": schema.ListAttribute{Computed: true, ElementType: types.StringType, Description: domainErrorsDescription},
+			},
+		},
+	}
 }

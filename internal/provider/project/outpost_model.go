@@ -19,8 +19,10 @@ type outpostProjectModel struct {
 
 type outpostProjectDataModel struct {
 	projectResourceModel
-	Config          types.Map `tfsdk:"config"`
-	SensitiveConfig types.Map `tfsdk:"sensitive_config"`
+	Config                   types.Map    `tfsdk:"config"`
+	SensitiveConfig          types.Map    `tfsdk:"sensitive_config"`
+	PortalCustomDomain       types.String `tfsdk:"portal_custom_domain"`
+	PortalCustomDomainStatus types.Object `tfsdk:"portal_custom_domain_status"`
 }
 
 func stringMap(ctx context.Context, m types.Map) (map[string]string, diag.Diagnostics) {
