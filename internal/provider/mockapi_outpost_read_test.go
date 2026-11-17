@@ -1,13 +1,17 @@
 package provider_test
 
 import (
+	"fmt"
 	"net/http"
 	"regexp"
+	"strings"
 	"testing"
 
 	"terraform-provider-hookdeck/internal/acc"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/plancheck"
+	"github.com/hashicorp/terraform-plugin-testing/terraform"
 )
 
 func deleteOutpostBehindTerraform(m *mockAPI, id *string) func() {
@@ -142,6 +146,58 @@ func TestAccMock_OutpostProject_DataSourceUnreachable(t *testing.T) {
 			{
 				Config:      "data \"hookdeck_outpost_project\" \"test\" {\n  id = \"tm_doesnotexist123\"\n}\n",
 				ExpectError: regexp.MustCompile(`Project not found`),
+			},
+		},
+	})
+}
+
+// A config key changed elsewhere to a URL with credentials shows in the plan
+// without its value, the value never reaches state, and apply sets the key
+// back.
+func TestAccMock_OutpostProject_DriftToCredentialURLIsRedacted(t *testing.T) {
+	acc.SkipUnlessAcc(t)
+	m := mockOutpostOrganization(t)
+	var projectID string
+	const key = "OTEL_EXPORTER_OTLP_ENDPOINT"
+	config := outpostConfig("deliveries", "  config = {\n    "+key+" = \"https://otel.example.com\"\n  }\n")
+	drift := func() {
+		m.update(func() { m.outposts[projectID].overrides[key] = "https://user:hunter2@otel.example.com" })
+	}
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: acc.ProviderFactories,
+		Steps: []resource.TestStep{
+			{Config: config, Check: captureID(outpostAddr, &projectID)},
+			{
+				PreConfig:    drift,
+				RefreshState: true,
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr(outpostAddr, "config."+key, "(redacted: URL with credentials)"),
+					func(s *terraform.State) error {
+						if state := fmt.Sprint(s.RootModule().Resources[outpostAddr].Primary.Attributes); strings.Contains(state, "hunter2") {
+							return fmt.Errorf("state holds the credential: %s", state)
+						}
+						return nil
+					},
+				),
+				ExpectNonEmptyPlan: true,
+			},
+			{
+				Config: config,
+				ConfigPlanChecks: resource.ConfigPlanChecks{PreApply: []plancheck.PlanCheck{
+					plancheck.ExpectResourceAction(outpostAddr, plancheck.ResourceActionUpdate),
+				}},
+				Check: resource.ComposeAggregateTestCheckFunc(
+					checkIDEquals(outpostAddr, &projectID),
+					resource.TestCheckResourceAttr(outpostAddr, "config."+key, "https://otel.example.com"),
+					func(_ *terraform.State) error {
+						patches := m.sentPatches()
+						if last := patches[len(patches)-1]; len(last) != 1 || last[key] == nil || *last[key] != "https://otel.example.com" {
+							return fmt.Errorf("last PATCH = %s", formatPatches(patches[len(patches)-1:]))
+						}
+						return nil
+					},
+				),
 			},
 		},
 	})

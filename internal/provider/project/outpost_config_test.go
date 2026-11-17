@@ -60,6 +60,15 @@ func TestValidateConfig(t *testing.T) {
 		{name: "unparseable url with credentials in config", config: strs("PUBLISH_AWS_SQS_ENDPOINT", "https://user:p%ss@sqs.example.com"), wantError: []string{"PUBLISH_AWS_SQS_ENDPOINT", "sensitive_config"}},
 		{name: "url with credentials in sensitive_config", sensitive: strs("OTEL_EXPORTER_OTLP_ENDPOINT", "https://user:token@otel.example.com")},
 		{name: "email address is not a url", config: strs("PORTAL_ORGANIZATION_NAME", "support@example.com")},
+		{name: "url with credentials after another url", config: strs("OTEL_EXPORTER_OTLP_ENDPOINT", "https://a.example.com,https://user:token@b.example.com"), wantError: []string{"OTEL_EXPORTER_OTLP_ENDPOINT", "sensitive_config"}},
+		{name: "url with credentials after other text", config: strs("HTTP_USER_AGENT", "agent\nhttps://user:token@example.com"), wantError: []string{"HTTP_USER_AGENT", "sensitive_config"}},
+		{name: "credentials without a scheme under a url key", config: strs("OTEL_EXPORTER_OTLP_ENDPOINT", "user:token@otel.example.com:4318"), wantError: []string{"OTEL_EXPORTER_OTLP_ENDPOINT", "sensitive_config"}},
+		{name: "credentials after a single slash", config: strs("PORTAL_LOGO", "https:/user:token@cdn.example.com"), wantError: []string{"PORTAL_LOGO", "sensitive_config"}},
+		{name: "url key without a scheme or credentials", config: strs("OTEL_EXPORTER_OTLP_ENDPOINT", "otel.example.com:4318")},
+		{name: "at sign in a url path", config: strs("PORTAL_LOGO", "https://cdn.example.com/logo@2x.png")},
+		{name: "at sign in a path without a scheme", config: strs("PORTAL_LOGO", "cdn.example.com/logo@2x.png")},
+		{name: "mailto address", config: strs("PORTAL_ORGANIZATION_NAME", "mailto:support@example.com")},
+		{name: "text with a url and an address", config: strs("HTTP_USER_AGENT", "agent (https://example.com/bot; bot@example.com)")},
 	}
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
@@ -202,6 +211,11 @@ func TestSplitConfig_urlValues(t *testing.T) {
 		{name: "url key without a host", key: "OTEL_EXPORTER_OTLP_ENDPOINT", value: "user:token@otel.example.com:4318", wantSensitive: true},
 		{name: "url key with backslashes", key: "PORTAL_LOGO_DARK", value: `https:\\user:token@cdn.example.com`, wantSensitive: true},
 		{name: "plain text under a key that is not a url key", key: "PORTAL_ORGANIZATION_NAME", value: "support@example.com"},
+		{name: "second url with userinfo", key: "OTEL_EXPORTER_OTLP_ENDPOINT", value: "https://a.example.com,https://user:token@b.example.com", wantSensitive: true},
+		{name: "userinfo after other text", key: "HTTP_USER_AGENT", value: "agent https://user:token@example.com", wantSensitive: true},
+		{name: "userinfo after a newline", key: "HTTP_USER_AGENT", value: "agent\nhttps://user:token@example.com", wantSensitive: true},
+		{name: "userinfo after a single slash", key: "HTTP_USER_AGENT", value: "https:/user:token@example.com", wantSensitive: true},
+		{name: "text with a url and an address", key: "HTTP_USER_AGENT", value: "agent (https://example.com/bot; bot@example.com)"},
 	}
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
