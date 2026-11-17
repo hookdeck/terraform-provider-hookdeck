@@ -98,9 +98,13 @@ func newMockAPI(t *testing.T) *mockAPI {
 }
 
 func (m *mockAPI) addProject(id, name, projectType string) {
+	m.addProjectIn(mockOrg, id, name, projectType)
+}
+
+func (m *mockAPI) addProjectIn(org, id, name, projectType string) {
 	m.mu.Lock()
 	defer m.mu.Unlock()
-	m.projects[id] = &mockProject{ID: id, Name: name, Type: projectType, OrganizationID: mockOrg, NotificationMethods: []string{}, CreatedAt: mockTime, UpdatedAt: mockTime}
+	m.projects[id] = &mockProject{ID: id, Name: name, Type: projectType, OrganizationID: org, NotificationMethods: []string{}, CreatedAt: mockTime, UpdatedAt: mockTime}
 	if projectType == "outpost" {
 		m.outposts[id] = &mockOutpost{overrides: map[string]string{}}
 	}
@@ -163,7 +167,7 @@ func (m *mockAPI) handle(w http.ResponseWriter, r *http.Request) {
 	case "destinations", "connections", "transformations":
 		m.handleItems(w, r.Method, key, header, parts[0], id, body)
 	case "projects":
-		m.handleProjects(w, r.Method, key, id, body)
+		m.handleProjects(w, r.Method, key, header, id, body)
 	case "sources":
 		m.handleSources(w, r.Method, key, header, id, body)
 	default:
@@ -171,7 +175,7 @@ func (m *mockAPI) handle(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (m *mockAPI) handleProjects(w http.ResponseWriter, method string, key *mockKey, id string, body map[string]any) {
+func (m *mockAPI) handleProjects(w http.ResponseWriter, method string, key *mockKey, header, id string, body map[string]any) {
 	organizationKey := key.project == ""
 	visible := func(p *mockProject) bool {
 		if !organizationKey {
@@ -220,9 +224,29 @@ func (m *mockAPI) handleProjects(w http.ResponseWriter, method string, key *mock
 		unauthorized(w)
 		return
 	}
-	// The API checks the scope for the project named in the path before it
-	// looks the project up: a key limited to other projects gets 403 for a
-	// project that does not exist too.
+	// A request with a project header is resolved first: an unknown project
+	// is 404 "Team Not Found", one of another organization or another
+	// project is 401.
+	if header != "" {
+		if !organizationKey && header != key.project {
+			unauthorized(w)
+			return
+		}
+		if organizationKey {
+			h, found := m.projects[header]
+			if !found {
+				apiError(w, 404, "NOT_FOUND", "Team Not Found", map[string]any{"id": header})
+				return
+			}
+			if h.OrganizationID != key.org {
+				unauthorized(w)
+				return
+			}
+		}
+	}
+	// The scope is checked for the project named in the path before it is
+	// looked up: a key limited to other projects gets 403 for a project
+	// that does not exist too, when no header resolved it first.
 	if key.noProjectsRead || (organizationKey && key.grants != nil && !key.grants[id]) {
 		insufficientScope(w, "projects.read")
 		return

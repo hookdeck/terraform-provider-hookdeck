@@ -2,9 +2,11 @@ package project
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
+	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
@@ -43,16 +45,28 @@ func (m *outpostProjectModel) managed(ctx context.Context) (map[string]string, d
 	return merged, diags
 }
 
+const redactedValue = "(redacted: URL with credentials)"
+
+// setManaged writes the merged values back to the map that owns each key.
+// A value that carries credentials is never written to config: state holds
+// redactedValue for it, so the plan shows the change without the value.
 func (m *outpostProjectModel) setManaged(ctx context.Context, merged map[string]string) diag.Diagnostics {
 	var diags diag.Diagnostics
-	narrow := func(prior types.Map) types.Map {
+	narrow := func(prior types.Map, at path.Path, plain bool) types.Map {
 		own, d := stringMap(ctx, prior)
 		diags.Append(d...)
 		kept := map[string]string{}
-		for k := range own {
-			if v, ok := merged[k]; ok {
-				kept[k] = v
+		for _, k := range sortedKeys(own) {
+			v, ok := merged[k]
+			if !ok {
+				continue
 			}
+			if plain && carriesCredentials(k, v) {
+				diags.AddAttributeWarning(at.AtMapKey(k), "Credentials in config",
+					fmt.Sprintf("The value of %s in Hookdeck is a URL that carries credentials, so it is not stored in config. Applying sets %s to the configured value. To keep the value Hookdeck has, set the key in sensitive_config instead.", k, k))
+				v = redactedValue
+			}
+			kept[k] = v
 		}
 		if len(kept) == 0 && prior.IsNull() {
 			return prior
@@ -61,8 +75,8 @@ func (m *outpostProjectModel) setManaged(ctx context.Context, merged map[string]
 		diags.Append(d...)
 		return value
 	}
-	m.Config = narrow(m.Config)
-	m.SensitiveConfig = narrow(m.SensitiveConfig)
+	m.Config = narrow(m.Config, path.Root("config"), true)
+	m.SensitiveConfig = narrow(m.SensitiveConfig, path.Root("sensitive_config"), false)
 	return diags
 }
 

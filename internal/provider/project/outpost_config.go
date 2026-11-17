@@ -36,7 +36,7 @@ func validateConfig(config, sensitive map[string]types.String) diag.Diagnostics 
 				fmt.Sprintf("%s can carry credentials. Set it in sensitive_config instead.", k))
 			continue
 		}
-		if v := config[k]; !v.IsUnknown() && hasUserinfo(v.ValueString()) {
+		if v := config[k]; !v.IsUnknown() && carriesCredentials(k, v.ValueString()) {
 			diags.AddAttributeError(at, "Credentials in config",
 				fmt.Sprintf("The value of %s is a URL that carries credentials. Set the key in sensitive_config instead.", k))
 			continue
@@ -75,24 +75,38 @@ func checkKey(at path.Path, key string) diag.Diagnostics {
 	return diags
 }
 
-var userinfoPattern = regexp.MustCompile(`^[A-Za-z][A-Za-z0-9+.-]*://[^/?#]*@`)
+var userinfoPattern = regexp.MustCompile(`[A-Za-z][A-Za-z0-9+.-]*:[/\\]+[^/\\?#\s,]*@`)
 
-// hasUserinfo reports whether value is a URL with a user or password
-// (scheme://user:pass@host). A value that does not parse is matched by shape.
+// hasUserinfo reports whether value holds a URL with a user or password
+// (scheme://user:pass@host), anywhere in it.
 func hasUserinfo(value string) bool {
-	value = strings.TrimSpace(value)
-	u, err := url.Parse(value)
-	if err != nil {
-		return userinfoPattern.MatchString(value)
+	if u, err := url.Parse(strings.TrimSpace(value)); err == nil && u.User != nil {
+		return true
 	}
-	return u.User != nil
+	return userinfoPattern.MatchString(value)
+}
+
+// carriesCredentials reports whether a value must stay out of config: it
+// holds a URL with userinfo, or it is the value of a URL key with userinfo
+// and no scheme (user:pass@host).
+func carriesCredentials(key, value string) bool {
+	if hasUserinfo(value) {
+		return true
+	}
+	if !urlKeys[key] {
+		return false
+	}
+	authority, _, _ := strings.Cut(strings.TrimSpace(value), "/")
+	authority, _, _ = strings.Cut(authority, "?")
+	authority, _, _ = strings.Cut(authority, "#")
+	return strings.Contains(authority, "@")
 }
 
 // sensitiveValue reports whether the data source must return the value in
-// sensitive_config although its key is non-sensitive: a URL with userinfo,
-// or a value of a URL key that is not a URL with a host.
+// sensitive_config although its key is non-sensitive: a value that carries
+// credentials, or a value of a URL key that is not a URL with a host.
 func sensitiveValue(key, value string) bool {
-	if hasUserinfo(value) {
+	if carriesCredentials(key, value) {
 		return true
 	}
 	if !urlKeys[key] || value == "" {
