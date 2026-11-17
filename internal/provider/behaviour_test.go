@@ -124,3 +124,50 @@ func TestAccBehaviour_ConnectionRulesRemovedOutsideTerraform(t *testing.T) {
 		},
 	})
 }
+
+// Removing rules from a connection's configuration clears them in Hookdeck.
+func TestAccBehaviour_ConnectionRulesRemovedFromConfig(t *testing.T) {
+	suffix := acctest.RandStringFromCharSet(8, acctest.CharSetAlphaNum)
+	address := "hookdeck_gateway_connection.test"
+	withRules := loadFixture(t, "gateway_basic.tf", suffix)
+	withoutRules := regexp.MustCompile(`(?s)\n  rules = \[\{.*?\}\]\n`).ReplaceAllString(withRules, "\n")
+	if withoutRules == withRules {
+		t.Fatal("gateway_basic.tf: rules block not matched, nothing removed")
+	}
+	var id string
+
+	acc.Test(t, resource.TestCase{
+		Steps: []resource.TestStep{
+			{
+				Config: withRules,
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr(address, "rules.#", "1"),
+					func(s *terraform.State) error {
+						id = s.RootModule().Resources[address].Primary.ID
+						return nil
+					},
+				),
+			},
+			{
+				Config: withoutRules,
+				ConfigPlanChecks: resource.ConfigPlanChecks{PreApply: []plancheck.PlanCheck{
+					plancheck.ExpectResourceAction(address, plancheck.ResourceActionUpdate),
+				}},
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckNoResourceAttr(address, "rules.#"),
+					func(*terraform.State) error {
+						status, body, err := acc.RequestCurrent("GET", "/connections/"+id, nil, nil)
+						if err != nil {
+							return err
+						}
+						if rules, _ := body["rules"].([]any); status > 299 || len(rules) != 0 {
+							return fmt.Errorf("connection %s after apply: status %d, rules %v", id, status, body["rules"])
+						}
+						return nil
+					},
+				),
+			},
+			{Config: withoutRules, ConfigPlanChecks: emptyPlan()},
+		},
+	})
+}
