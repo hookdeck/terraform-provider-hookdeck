@@ -11,6 +11,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework-validators/datasourcevalidator"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 )
 
@@ -35,7 +36,15 @@ func (d *projectDataSource) Metadata(_ context.Context, req datasource.MetadataR
 }
 
 func (d *projectDataSource) Schema(_ context.Context, _ datasource.SchemaRequest, resp *datasource.SchemaResponse) {
-	attributes := schemahelpers.DataSourceSchemaFromResourceSchema(schemaAttributes(d.kind), "id")
+	resp.Schema = schema.Schema{
+		Description: fmt.Sprintf("%s project, looked up by ID or name.", d.kind.label),
+		Attributes:  dataSourceAttributes(d.kind),
+	}
+}
+
+// dataSourceAttributes are the attributes every project data source has.
+func dataSourceAttributes(k kind) map[string]schema.Attribute {
+	attributes := schemahelpers.DataSourceSchemaFromResourceSchema(schemaAttributes(k), "id")
 	attributes["id"] = schema.StringAttribute{
 		Optional:    true,
 		Computed:    true,
@@ -44,12 +53,9 @@ func (d *projectDataSource) Schema(_ context.Context, _ datasource.SchemaRequest
 	attributes["name"] = schema.StringAttribute{
 		Optional:    true,
 		Computed:    true,
-		Description: fmt.Sprintf("Name of the project. One of `id` or `name` is required; the name must be unique among the %s projects the API key can see.", d.kind.label),
+		Description: fmt.Sprintf("Name of the project. One of `id` or `name` is required; the name must be unique among the %s projects the API key can see.", k.label),
 	}
-	resp.Schema = schema.Schema{
-		Description: fmt.Sprintf("%s project, looked up by ID or name.", d.kind.label),
-		Attributes:  attributes,
-	}
+	return attributes
 }
 
 func (d *projectDataSource) ConfigValidators(_ context.Context) []datasource.ConfigValidator {
@@ -73,22 +79,28 @@ func (d *projectDataSource) Read(ctx context.Context, req datasource.ReadRequest
 	if resp.Diagnostics.HasError() {
 		return
 	}
-
-	if !data.ID.IsNull() {
-		found, diags := data.retrieve(ctx, d.kind, d.client)
-		resp.Diagnostics.Append(diags...)
-		if !found && !resp.Diagnostics.HasError() {
-			resp.Diagnostics.AddError("Project not found", "No project with ID "+data.ID.ValueString()+" is visible to this API key.")
-		}
-	} else {
-		project, diags := findByName(ctx, d.kind, d.client, data.Name.ValueString())
-		resp.Diagnostics.Append(diags...)
-		if !resp.Diagnostics.HasError() {
-			resp.Diagnostics.Append(data.refresh(d.kind, project)...)
-		}
-	}
+	resp.Diagnostics.Append(lookup(ctx, d.kind, d.client, &data)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
+}
+
+// lookup fills data from the project its id or name identifies.
+func lookup(ctx context.Context, k kind, client sdkclient.Client, data *projectResourceModel) diag.Diagnostics {
+	var diags diag.Diagnostics
+	if !data.ID.IsNull() {
+		found, d := data.retrieve(ctx, k, client)
+		diags.Append(d...)
+		if !found && !diags.HasError() {
+			diags.AddError("Project not found", "No project with ID "+data.ID.ValueString()+" is visible to this API key.")
+		}
+		return diags
+	}
+	project, d := findByName(ctx, k, client, data.Name.ValueString())
+	diags.Append(d...)
+	if !diags.HasError() {
+		diags.Append(data.refresh(k, project)...)
+	}
+	return diags
 }

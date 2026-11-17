@@ -54,18 +54,18 @@ func (r *projectResource) Configure(_ context.Context, req resource.ConfigureReq
 // organizationKey reports whether the provider has the organization API key
 // projects are managed with. A project API key reads its own project only
 // and answers 404 for any other, which must not be taken as "deleted".
-func (r *projectResource) organizationKey(diags *diag.Diagnostics) bool {
-	if r.client.Scope.KeyKind == projectscope.KeyKindOrganization {
+func organizationKey(k kind, client sdkclient.Client, diags *diag.Diagnostics) bool {
+	if client.Scope.KeyKind == projectscope.KeyKindOrganization {
 		return true
 	}
 	diags.AddError("Organization API key required",
 		fmt.Sprintf("%[1]s is managed with an organization API key (prefix %[2]s). The provider is configured with a project API key, which cannot create, update or delete projects. Use the %[1]s data source to read the key's own project.",
-			r.kind.typeName("hookdeck"), projectscope.OrganizationKeyPrefix))
+			k.typeName("hookdeck"), projectscope.OrganizationKeyPrefix))
 	return false
 }
 
 func (r *projectResource) ModifyPlan(_ context.Context, _ resource.ModifyPlanRequest, resp *resource.ModifyPlanResponse) {
-	r.organizationKey(&resp.Diagnostics)
+	organizationKey(r.kind, r.client, &resp.Diagnostics)
 }
 
 func (r *projectResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
@@ -82,7 +82,7 @@ func (r *projectResource) Create(ctx context.Context, req resource.CreateRequest
 }
 
 func (r *projectResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
-	if !r.organizationKey(&resp.Diagnostics) {
+	if !organizationKey(r.kind, r.client, &resp.Diagnostics) {
 		return
 	}
 	var data projectResourceModel

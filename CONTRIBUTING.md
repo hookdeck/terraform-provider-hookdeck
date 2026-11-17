@@ -132,7 +132,7 @@ The [`Tests`](.github/workflows/test.yml) workflow runs on every pull request an
 - Build, unit tests, lint, and `go generate` sync check on all PRs.
 - Acceptance tests on the latest Terraform CLI, on same-repository PRs and pushes to `main`.
 - Fork PRs and Dependabot PRs **skip the acceptance job** because they cannot access `HOOKDECK_ORG_API_KEY` (GitHub policy for forks; restricted token scope for Dependabot). They are validated by the acceptance run that follows merge to `main`.
-- Runs do not need to be serialized: each uses its own `tf-acc-*` names, and the teardown step only deletes leftovers older than an hour.
+- Acceptance runs are serialized by a workflow `concurrency` group, so one run at a time creates an Outpost project in the test organization. A run waiting for the group is cancelled when a newer one queues; re-run it. Each run uses its own `tf-acc-*` names, and the teardown step only deletes leftovers older than an hour.
 
 ## Submitting changes
 

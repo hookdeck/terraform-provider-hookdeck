@@ -2,6 +2,8 @@
 
 FEATURES:
 
+* New resource `hookdeck_outpost_project` creates an Outpost project and manages its configuration (`config` and `sensitive_config`), and new data source `hookdeck_outpost_project` reads a project and its whole configuration. See [Managing Outpost with Terraform](https://registry.terraform.io/providers/hookdeck/hookdeck/latest/docs/guides/outpost). The resource needs an organization API key.
+* New provider attribute `outpost_api_base` (environment variable `HOOKDECK_OUTPOST_API_BASE`) sets the Outpost API host. The default is `api.outpost.hookdeck.com`.
 * `config` on sources and destinations is read from Hookdeck, so a change made outside Terraform to a key you set shows in the plan (see NOTES). Keys you do not set in `config`, including defaults Hookdeck adds, are kept in state and are not compared.
 * The `hookdeck_gateway_source` and `hookdeck_gateway_destination` data sources (and the deprecated `hookdeck_source` and `hookdeck_destination`) return `config`.
 * Importing a source or destination plans no change when `config` matches what Hookdeck has.

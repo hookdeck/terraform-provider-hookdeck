@@ -42,9 +42,10 @@ type hookdeckProvider struct {
 
 // hookdeckProviderModel describes the provider data model.
 type hookdeckProviderModel struct {
-	APIBase   types.String `tfsdk:"api_base"`
-	APIKey    types.String `tfsdk:"api_key"`
-	ProjectID types.String `tfsdk:"project_id"`
+	APIBase        types.String `tfsdk:"api_base"`
+	OutpostAPIBase types.String `tfsdk:"outpost_api_base"`
+	APIKey         types.String `tfsdk:"api_key"`
+	ProjectID      types.String `tfsdk:"project_id"`
 }
 
 func (p *hookdeckProvider) Metadata(ctx context.Context, req provider.MetadataRequest, resp *provider.MetadataResponse) {
@@ -58,6 +59,13 @@ func (p *hookdeckProvider) Schema(ctx context.Context, req provider.SchemaReques
 			"api_base": schema.StringAttribute{
 				Optional:            true,
 				MarkdownDescription: fmt.Sprintf("Hookdeck API Base URL. Alternatively, can be configured using the `%s` environment variable.", apiBaseEnvVarKey),
+				Validators: []validator.String{
+					validators.NewHookdeckAPIBaseURLValidator(),
+				},
+			},
+			"outpost_api_base": schema.StringAttribute{
+				Optional:            true,
+				MarkdownDescription: fmt.Sprintf("Hookdeck Outpost API Base URL, used by `hookdeck_outpost_project`. Defaults to `https://api.outpost.hookdeck.com`. Alternatively, can be configured using the `%s` environment variable.", outpostAPIBaseEnvVarKey),
 				Validators: []validator.String{
 					validators.NewHookdeckAPIBaseURLValidator(),
 				},
@@ -101,6 +109,15 @@ func (p *hookdeckProvider) Configure(ctx context.Context, req provider.Configure
 		)
 	}
 
+	if config.OutpostAPIBase.IsUnknown() {
+		resp.Diagnostics.AddAttributeError(
+			path.Root("outpost_api_base"),
+			"Unknown Hookdeck Outpost API Base URL",
+			"The provider cannot create the Hookdeck API client as there is an unknown configuration value for the Hookdeck Outpost API base URL. "+
+				fmt.Sprintf("Either target apply the source of the value first, set the value statically in the configuration, or use the %s environment variable.", outpostAPIBaseEnvVarKey),
+		)
+	}
+
 	if config.APIKey.IsUnknown() {
 		resp.Diagnostics.AddAttributeError(
 			path.Root("api_key"),
@@ -127,11 +144,16 @@ func (p *hookdeckProvider) Configure(ctx context.Context, req provider.Configure
 	// with Terraform configuration value if set.
 
 	apiBase := os.Getenv(apiBaseEnvVarKey)
+	outpostAPIBase := os.Getenv(outpostAPIBaseEnvVarKey)
 	apiKey := os.Getenv(apiKeyEnvVarKey)
 	projectID := os.Getenv(projectIDEnvVarKey)
 
 	if !config.APIBase.IsNull() {
 		apiBase = config.APIBase.ValueString()
+	}
+
+	if !config.OutpostAPIBase.IsNull() {
+		outpostAPIBase = config.OutpostAPIBase.ValueString()
 	}
 
 	if !config.APIKey.IsNull() {
@@ -165,7 +187,7 @@ func (p *hookdeckProvider) Configure(ctx context.Context, req provider.Configure
 	tflog.Debug(ctx, "Creating Hookdeck client")
 
 	// Create a new Hookdeck client using the configuration values
-	client := sdkclient.InitHookdeckSDKClient(apiBase, apiKey, p.version)
+	client := sdkclient.InitHookdeckSDKClient(apiBase, outpostAPIBase, apiKey, p.version)
 	client.Scope.ProjectID = projectID
 
 	if projectID == "" && client.Scope.KeyKind == projectscope.KeyKindProject {
@@ -205,6 +227,8 @@ func (p *hookdeckProvider) Resources(ctx context.Context) []func() resource.Reso
 		source.NewSourceResource,
 		sourceauth.NewSourceAuthResource,
 		transformation.NewTransformationResource,
+		// Outpost
+		project.NewOutpostProjectResource,
 		// Third-party services
 		webhookregistration.NewWebhookRegistrationResource,
 		// v2 names, deprecated, removed in v4
@@ -223,6 +247,8 @@ func (p *hookdeckProvider) DataSources(_ context.Context) []func() datasource.Da
 		connection.NewConnectionDataSource,
 		destination.NewDestinationDataSource,
 		source.NewSourceDataSource,
+		// Outpost
+		project.NewOutpostProjectDataSource,
 		// v2 names, deprecated, removed in v4
 		connection.NewLegacyConnectionDataSource,
 		destination.NewLegacyDestinationDataSource,
@@ -239,7 +265,8 @@ func New(version string) func() provider.Provider {
 }
 
 const (
-	apiBaseEnvVarKey   = "HOOKDECK_API_BASE"
-	apiKeyEnvVarKey    = "HOOKDECK_API_KEY"
-	projectIDEnvVarKey = "HOOKDECK_PROJECT_ID"
+	apiBaseEnvVarKey        = "HOOKDECK_API_BASE"
+	outpostAPIBaseEnvVarKey = "HOOKDECK_OUTPOST_API_BASE"
+	apiKeyEnvVarKey         = "HOOKDECK_API_KEY"
+	projectIDEnvVarKey      = "HOOKDECK_PROJECT_ID"
 )

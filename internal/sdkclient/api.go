@@ -21,6 +21,32 @@ func (e *APIError) Error() string {
 	return fmt.Sprintf("status %d: %s", e.Status, e.Body)
 }
 
+// Code returns the error code the API sent in the response body, or "".
+func (e *APIError) Code() string {
+	var body struct {
+		Code string `json:"code"`
+	}
+	_ = json.Unmarshal([]byte(e.Body), &body)
+	return body.Code
+}
+
+// IsCode reports whether err is a response with the given status and error
+// code.
+func IsCode(err error, status int, code string) bool {
+	var apiErr *APIError
+	return errors.As(err, &apiErr) && apiErr.Status == status && apiErr.Code() == code
+}
+
+// Outpost returns a client that sends its requests to the Outpost API host.
+// Call it before WithProject: it replaces the wrapped raw client, which drops
+// the project header.
+func (c Client) Outpost() Client {
+	if c.OutpostRawClient != nil {
+		c.RawClient = c.OutpostRawClient
+	}
+	return c
+}
+
 // IsGoneStatus reports whether status means the resource no longer exists.
 // Hookdeck answers 404 for unknown ids and 410 for deleted resources.
 func IsGoneStatus(status int) bool {

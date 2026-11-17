@@ -3,7 +3,7 @@ page_title: "Migrating from v2.x to v3.x"
 description: "How to migrate from v2.x to v3.x of the Hookdeck Terraform Provider"
 ---
 
-v3 of the Hookdeck Terraform Provider adds organization API keys, a `hookdeck_gateway_project` resource, and a `gateway_` prefix on Event Gateway resources. Outpost resources will use `outpost_`.
+v3 of the Hookdeck Terraform Provider adds organization API keys, a `hookdeck_gateway_project` resource, and a `gateway_` prefix on Event Gateway resources. Outpost resources use `outpost_`: see [Managing Outpost with Terraform](https://registry.terraform.io/providers/hookdeck/hookdeck/latest/docs/guides/outpost).
 
 A v2 configuration keeps working with v3 as it is, unless it sets `disabled_at`. The v2 resource names are deprecated, and renaming them does not recreate anything in Hookdeck.
 

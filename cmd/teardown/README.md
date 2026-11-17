@@ -5,7 +5,7 @@ Deletes what acceptance tests leave behind when they fail or are interrupted. No
 It deletes only objects whose name starts with `tf-acc-` (the prefix every test resource uses) and that were created more than an hour ago:
 
 - connections, sources, destinations and transformations in the projects `tf-ci-a` and `tf-ci-b`
-- projects
+- projects, Event Gateway and Outpost
 - project API keys, matched by label
 
 Anything else, including the two fixed projects themselves, is left alone.
