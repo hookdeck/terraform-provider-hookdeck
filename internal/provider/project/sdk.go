@@ -43,22 +43,37 @@ func (m *projectResourceModel) refresh(k kind, project map[string]any) diag.Diag
 	return diags
 }
 
-const unreachableHint = "Use an API key that can read this project."
+const (
+	readHint  = "Use an API key that can read this project."
+	writeHint = "Use an API key that can change this project."
+)
 
-// retrieve reads the project. An organization key names it in the project
-// header, so the API tells a missing project (404) from one of another
-// organization (401); without the header both are 404. A project key sends
-// none: it reaches only its own project, and the API answers 404 for any other.
+// forProject returns the client to act on project id with. An organization
+// key names the project in the project header, so the API answers 404 for a
+// missing project and 401 or 403 for one the key cannot reach; without the
+// header both are a plain 404. A project key sends none: it reaches only its
+// own project, and the API answers 404 for any other.
+func forProject(client sdkclient.Client, id, hint string) sdkclient.Client {
+	if client.Scope.KeyKind == projectscope.KeyKindOrganization {
+		return client.WithProject(id, hint)
+	}
+	return client
+}
+
+// isGone reports whether the API says the project does not exist: 404 or
+// 410, with or without the project header.
+func isGone(err error) bool {
+	var refused *sdkclient.ProjectAccessError
+	return sdkclient.IsNotFound(err) || (errors.As(err, &refused) && sdkclient.IsGoneStatus(refused.Status))
+}
+
+// retrieve reads the project; false means it no longer exists.
 func (m *projectResourceModel) retrieve(ctx context.Context, k kind, client sdkclient.Client) (bool, diag.Diagnostics) {
 	var diags diag.Diagnostics
 	var project map[string]any
 	id := m.ID.ValueString()
-	if client.Scope.KeyKind == projectscope.KeyKindOrganization {
-		client = client.WithProject(id, unreachableHint)
-	}
-	err := client.Do(ctx, http.MethodGet, "/projects/"+id, nil, nil, &project)
-	var refused *sdkclient.ProjectAccessError
-	if sdkclient.IsNotFound(err) || (errors.As(err, &refused) && sdkclient.IsGoneStatus(refused.Status)) {
+	err := forProject(client, id, readHint).Do(ctx, http.MethodGet, "/projects/"+id, nil, nil, &project)
+	if isGone(err) {
 		return false, diags
 	}
 	if err != nil {
@@ -87,9 +102,14 @@ func (m *projectResourceModel) create(ctx context.Context, k kind, client sdkcli
 func (m *projectResourceModel) update(ctx context.Context, k kind, client sdkclient.Client) diag.Diagnostics {
 	var diags diag.Diagnostics
 	var project map[string]any
-	err := client.Do(ctx, http.MethodPut, "/projects/"+m.ID.ValueString(), map[string]any{
+	id := m.ID.ValueString()
+	err := forProject(client, id, writeHint).Do(ctx, http.MethodPut, "/projects/"+id, map[string]any{
 		"name": m.Name.ValueString(),
 	}, nil, &project)
+	if isGone(err) {
+		diags.AddError("Error updating project", fmt.Sprintf("Project %s no longer exists.", id))
+		return diags
+	}
 	if err != nil {
 		diags.AddError("Error updating project", err.Error())
 		return diags
@@ -99,8 +119,9 @@ func (m *projectResourceModel) update(ctx context.Context, k kind, client sdkcli
 
 func (m *projectResourceModel) delete(ctx context.Context, client sdkclient.Client) diag.Diagnostics {
 	var diags diag.Diagnostics
-	err := client.Do(ctx, http.MethodDelete, "/projects/"+m.ID.ValueString(), nil, nil, nil)
-	if err != nil && !sdkclient.IsNotFound(err) {
+	id := m.ID.ValueString()
+	err := forProject(client, id, writeHint).Do(ctx, http.MethodDelete, "/projects/"+id, nil, nil, nil)
+	if err != nil && !isGone(err) {
 		diags.AddError("Error deleting project", err.Error())
 	}
 	return diags
