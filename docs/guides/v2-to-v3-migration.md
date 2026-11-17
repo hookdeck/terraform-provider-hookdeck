@@ -147,7 +147,7 @@ terraform import hookdeck_gateway_source.stripe src_xxx
 
 Take the IDs from `terraform state show` before removing anything. A source auth is imported by the ID of its source.
 
-The plan after the import shows an in-place update for each source and destination that sets `config`, because `config` is not read back on import. Applying it sends the same configuration again.
+From 3.1.0, `config` is read back from Hookdeck on import, so the plan after the import is empty when `config` matches what Hookdeck has. On 3.0.x the plan shows an in-place update for each source and destination that sets `config`; applying it sends the same configuration again.
 
 ## `project_id` in State
 

@@ -26,8 +26,7 @@ func loadTestConfigFormatted(t *testing.T, filename string, args ...interface{})
 
 // fetchDestinationConfig retrieves the destination's config object from the
 // Hookdeck API. Used to verify the API state independently of Terraform state,
-// because the `config` attribute is not Computed — Terraform state stores the
-// user's input, not what the API actually has.
+// which holds the configuration as applied until the next refresh.
 func fetchDestinationConfig(id string) (map[string]interface{}, error) {
 	status, dest, err := acc.RequestCurrent("GET", "/destinations/"+id, url.Values{"include": []string{"config.auth"}}, nil)
 	if err != nil {

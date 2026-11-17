@@ -73,5 +73,6 @@ func (r *destinationDataSource) Read(ctx context.Context, req datasource.ReadReq
 func dataSourceAttributes(naming shared.Naming) map[string]schema.Attribute {
 	attributes := schemahelpers.DataSourceSchemaFromResourceSchema(naming.WithTeamID(schemaAttributes()), "id")
 	attributes["project_id"] = shared.ProjectIDDataSourceAttribute()
+	attributes["config"] = shared.ConfigDataSourceAttribute("Destination configuration as JSON using API version 2026-09-01.")
 	return attributes
 }

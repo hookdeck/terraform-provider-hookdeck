@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"reflect"
+	"terraform-provider-hookdeck/internal/configjson"
 	"terraform-provider-hookdeck/internal/sdkclient"
 	"testing"
 
@@ -30,15 +31,21 @@ func TestDeliveryPolicyPayload(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			m := destinationResourceModel{Config: jsontypes.NewNormalizedValue(tt.config), Type: types.StringValue("HTTP")}
 			var prior *destinationResourceModel
+			var managed configjson.Paths
 			if tt.prior != "" {
 				prior = &destinationResourceModel{Config: jsontypes.NewNormalizedValue(tt.prior)}
+				priorConfig, err := configjson.Parse(tt.prior)
+				if err != nil {
+					t.Fatal(err)
+				}
+				managed = configjson.PathsOf(priorConfig)
 			}
-			payload, diags := m.toUpdatePayload(prior)
+			payload, diags := m.toUpdatePayload(m.Config, managed, prior)
 			if diags.HasError() {
 				t.Fatal(diags)
 			}
-			var want map[string]interface{}
-			if err := json.Unmarshal([]byte(tt.want), &want); err != nil {
+			want, err := configjson.Parse(tt.want)
+			if err != nil {
 				t.Fatal(err)
 			}
 			if !reflect.DeepEqual(payload["config"], want) {
@@ -86,10 +93,10 @@ func TestDestinationUsesNewAPIVersion(t *testing.T) {
 	client := sdkclient.InitHookdeckSDKClient(server.URL, "", "test", "test")
 	m := destinationResourceModel{Name: types.StringValue("test"), Config: jsontypes.NewNormalizedValue(`{"delivery_policy":{"rate":10}}`)}
 	ctx := t.Context()
-	if d := m.Create(ctx, &client); d.HasError() {
+	if d := m.Create(ctx, &client, m.Config); d.HasError() {
 		t.Fatal(d)
 	}
-	if d := m.Update(ctx, &client, nil); d.HasError() {
+	if d := m.Update(ctx, &client, m.Config, nil, nil); d.HasError() {
 		t.Fatal(d)
 	}
 	if found, d := m.Retrieve(ctx, &client); d.HasError() || !found {

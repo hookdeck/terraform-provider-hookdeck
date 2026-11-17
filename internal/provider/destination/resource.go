@@ -4,6 +4,8 @@ import (
 	"context"
 	"terraform-provider-hookdeck/internal/provider/shared"
 
+	"github.com/hashicorp/terraform-plugin-framework-jsontypes/jsontypes"
+	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 )
@@ -15,6 +17,7 @@ var (
 	_ resource.ResourceWithImportState    = &destinationResource{}
 	_ resource.ResourceWithModifyPlan     = &destinationResource{}
 	_ resource.ResourceWithMoveState      = &destinationResource{}
+	_ resource.ResourceWithUpgradeState   = &destinationResource{}
 	_ resource.ResourceWithValidateConfig = &destinationResource{}
 )
 
@@ -57,10 +60,17 @@ func (r *destinationResource) schema() schema.Schema {
 
 func resourceSchema(naming shared.Naming) schema.Schema {
 	return schema.Schema{
+		Version:             shared.ConfigSchemaVersion,
 		DeprecationMessage:  naming.ResourceDeprecation(),
 		MarkdownDescription: naming.Description("Destination Resource"),
 		Attributes:          naming.WithTeamID(schemaAttributes()),
 	}
+}
+
+// UpgradeState accepts state written before config was read back from
+// Hookdeck. Nothing in it changes.
+func (r *destinationResource) UpgradeState(_ context.Context) map[int64]resource.StateUpgrader {
+	return shared.UnchangedStateUpgraders(r.schema())
 }
 
 // MoveState accepts state from the v2 name via a moved block.
@@ -69,6 +79,17 @@ func (r *destinationResource) MoveState(_ context.Context) []resource.StateMover
 		return nil
 	}
 	return []resource.StateMover{shared.RenamedStateMover(r.naming.LegacyTypeName(), resourceSchema(r.naming.AsLegacy()), r.schema())}
+}
+
+// ModifyPlan checks the project, then turns a plan that changes only computed
+// values back into the state, so a config that already matches Hookdeck plans
+// no update.
+func (r *destinationResource) ModifyPlan(ctx context.Context, req resource.ModifyPlanRequest, resp *resource.ModifyPlanResponse) {
+	r.ProjectScopedResource.ModifyPlan(ctx, req, resp)
+	if resp.Diagnostics.HasError() || len(resp.RequiresReplace) > 0 {
+		return
+	}
+	resp.Diagnostics.Append(shared.KeepUnchangedPlan(ctx, req.State, &resp.Plan)...)
 }
 
 // Create creates the resource and sets the initial Terraform state.
@@ -83,7 +104,16 @@ func (r *destinationResource) Create(ctx context.Context, req resource.CreateReq
 	if !ok {
 		return
 	}
-	resp.Diagnostics.Append(data.Create(ctx, client)...)
+	var userConfig jsontypes.Normalized
+	resp.Diagnostics.Append(req.Config.GetAttribute(ctx, path.Root("config"), &userConfig)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	resp.Diagnostics.Append(data.Create(ctx, client, userConfig)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	resp.Diagnostics.Append(shared.SetManagedConfigPaths(ctx, resp.Private, userConfig)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -101,6 +131,10 @@ func (r *destinationResource) Read(ctx context.Context, req resource.ReadRequest
 
 	client, ok := r.ClientForState(shared.StoredProject(data.ProjectID, teamID), &resp.Diagnostics)
 	if !ok {
+		return
+	}
+	resp.Diagnostics.Append(shared.SeedManagedConfigPaths(ctx, resp.Private, data.Config)...)
+	if resp.Diagnostics.HasError() {
 		return
 	}
 	found, diags := data.Retrieve(ctx, client)
@@ -134,9 +168,29 @@ func (r *destinationResource) Update(ctx context.Context, req resource.UpdateReq
 	if !ok {
 		return
 	}
-	resp.Diagnostics.Append(data.Update(ctx, client, state)...)
+	var userConfig jsontypes.Normalized
+	resp.Diagnostics.Append(req.Config.GetAttribute(ctx, path.Root("config"), &userConfig)...)
+	managed, _, diags := shared.ManagedConfigPaths(ctx, req.Private, state.Config.StringValue)
+	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return
+	}
+	// A plan that keeps the stored config (nothing to change in it, or
+	// ignore_changes) sends no config and leaves the recorded keys as they are.
+	keepConfig := shared.ConfigUnchanged(data.Config, state.Config, data.Type, state.Type)
+	if keepConfig {
+		userConfig = jsontypes.NewNormalizedNull()
+		managed = nil
+	}
+	resp.Diagnostics.Append(data.Update(ctx, client, userConfig, managed, state)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	if !keepConfig {
+		resp.Diagnostics.Append(shared.SetManagedConfigPaths(ctx, resp.Private, userConfig)...)
+		if resp.Diagnostics.HasError() {
+			return
+		}
 	}
 
 	resp.Diagnostics.Append(setModel(ctx, &resp.State, r.naming.Legacy, data)...)
@@ -159,6 +213,7 @@ func (r *destinationResource) Delete(ctx context.Context, req resource.DeleteReq
 
 func (r *destinationResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	r.ImportProjectState(ctx, "id", req, resp)
+	shared.MarkConfigUnrecorded(ctx, resp)
 }
 
 // ValidateConfig runs plan-time checks on the resource configuration.
