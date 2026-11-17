@@ -109,8 +109,9 @@ func (m *connectionResourceModel) Refresh(connection map[string]interface{}) dia
 			// than null so that a configuration with `rules = []` stays consistent.
 			m.Rules = []rule{}
 		}
+		// Empty response and no rules in the model: stays null, as in a
+		// configuration without `rules`.
 	}
-	// Keep rules as nil if not present or empty to maintain consistency with Terraform state
 
 	return diags
 }
