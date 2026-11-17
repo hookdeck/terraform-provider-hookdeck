@@ -5,7 +5,7 @@ Deletes what acceptance tests leave behind when they fail or are interrupted. No
 It deletes only objects whose name starts with `tf-acc-` (the prefix every test resource uses) and that were created more than an hour ago:
 
 - connections, sources, destinations and transformations in the projects `tf-ci-a` and `tf-ci-b`
-- projects, Event Gateway and Outpost
+- projects, Event Gateway and Outpost; the portal custom domain of an Outpost project is deleted first
 - project API keys, matched by label
 
 Anything else, including the two fixed projects themselves, is left alone.
@@ -34,7 +34,7 @@ go run ./cmd/teardown --env .env.production --dry-run
 
 ## Configuration
 
-The tool uses the `HOOKDECK_ORG_API_KEY` environment variable for authentication, and `HOOKDECK_API_BASE` to target another environment.
+The tool uses the `HOOKDECK_ORG_API_KEY` environment variable for authentication, and `HOOKDECK_API_BASE` and `HOOKDECK_OUTPOST_API_BASE` to target another environment.
 
 By default, it loads from `.env.test` when the variable is not set. You can override this:
 - Using `--env` flag: `go run ./cmd/teardown --env .env.custom`
