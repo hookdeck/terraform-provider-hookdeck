@@ -226,3 +226,40 @@ moved {
 		},
 	})
 }
+
+// A connection's rules written by the released v2 provider (none, an empty
+// list, one rule) plan nothing with the provider under test, which then
+// clears the rules once they are removed from the configuration.
+func TestAccMock_UpgradeReleasedV2ConnectionRules(t *testing.T) {
+	acc.SkipUnlessAcc(t)
+	t.Setenv("TF_ACC_PROVIDER_NAMESPACE", "hookdeck")
+	const address = "hookdeck_connection.test"
+
+	for name, rules := range map[string]string{"null": "", "empty": "  rules = []\n", "populated": delayRules} {
+		t.Run(name, func(t *testing.T) {
+			m := mockOrganization(t)
+			acc.UseAPIKey(t, mockProjectKeyA)
+			config := requiredProviders(releasedV2) + mockConnectionConfig("hookdeck_connection", "v2-con", rules)
+			current := requiredProviders("") + mockConnectionConfig("hookdeck_connection", "v2-con", rules)
+
+			steps := []resource.TestStep{
+				{
+					ExternalProviders: map[string]resource.ExternalProvider{
+						"hookdeck": {Source: "hookdeck/hookdeck", VersionConstraint: releasedV2},
+					},
+					Config: config,
+				},
+				{ProtoV6ProviderFactories: acc.ProviderFactories, Config: current, ConfigPlanChecks: emptyPlan()},
+			}
+			if rules != "" {
+				steps = append(steps, resource.TestStep{
+					ProtoV6ProviderFactories: acc.ProviderFactories,
+					Config:                   requiredProviders("") + mockConnectionConfig("hookdeck_connection", "v2-con", ""),
+					ConfigPlanChecks:         updateAction(address),
+					Check:                    m.checkNoStoredRules(),
+				})
+			}
+			resource.Test(t, resource.TestCase{Steps: steps})
+		})
+	}
+}

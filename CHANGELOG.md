@@ -3,6 +3,7 @@
 BUG FIXES:
 
 * Destroying a source, source auth, destination, connection or transformation that no longer exists in Hookdeck succeeds instead of failing, for example with `terraform destroy -refresh=false`.
+* Removing `rules` from a connection's configuration clears the rules in Hookdeck. Before, the apply failed with "Provider produced inconsistent result after apply". Rules added outside Terraform to a connection configured without `rules` are now cleared the same way.
 
 ## 3.0.0 (2026-11-17)
 

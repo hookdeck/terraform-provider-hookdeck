@@ -205,10 +205,10 @@ func (m *connectionResourceModel) Create(ctx context.Context, client *sdkclient.
 	return m.Refresh(connection)
 }
 
-func (m *connectionResourceModel) Update(ctx context.Context, client *sdkclient.Client) diag.Diagnostics {
+func (m *connectionResourceModel) Update(ctx context.Context, client *sdkclient.Client, priorRules []rule) diag.Diagnostics {
 	var diags diag.Diagnostics
 
-	payload, err := m.toUpdatePayload(ctx)
+	payload, err := m.toUpdatePayload(ctx, priorRules)
 	if err != nil {
 		diags.AddError("Error updating connection", err.Error())
 		return diags
@@ -310,8 +310,9 @@ func (m *connectionResourceModel) toCreatePayload(ctx context.Context) (map[stri
 	return payload, nil
 }
 
-// toUpdatePayload converts the model to API update payload.
-func (m *connectionResourceModel) toUpdatePayload(ctx context.Context) (map[string]interface{}, error) {
+// toUpdatePayload converts the model to API update payload. priorRules are
+// the rules in state before the update.
+func (m *connectionResourceModel) toUpdatePayload(ctx context.Context, priorRules []rule) (map[string]interface{}, error) {
 	payload := map[string]interface{}{}
 
 	if !m.Name.IsNull() && !m.Name.IsUnknown() {
@@ -326,17 +327,17 @@ func (m *connectionResourceModel) toUpdatePayload(ctx context.Context) (map[stri
 		payload["description"] = nil
 	}
 
-	// Convert rules - only include if not nil
-	if m.Rules != nil {
-		if len(m.Rules) > 0 {
-			apiRules, err := rulesToAPI(ctx, m.Rules)
-			if err != nil {
-				return nil, err
-			}
-			payload["rules"] = apiRules
-		} else {
-			payload["rules"] = []interface{}{}
+	// The API keeps a connection's rules when the update omits them, so null
+	// rules after rules were in state are sent as an empty list.
+	switch {
+	case len(m.Rules) > 0:
+		apiRules, err := rulesToAPI(ctx, m.Rules)
+		if err != nil {
+			return nil, err
 		}
+		payload["rules"] = apiRules
+	case m.Rules != nil || len(priorRules) > 0:
+		payload["rules"] = []interface{}{}
 	}
 
 	return payload, nil
