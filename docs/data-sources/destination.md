@@ -24,7 +24,7 @@ Both names take the same arguments. Examples and import instructions are on the 
 
 ### Read-Only
 
-- `config` (String, Sensitive) Destination configuration as JSON using API version 2026-09-01.
+- `config` (String, Sensitive) Destination configuration as JSON using API version 2026-09-01. Hookdeck's full configuration, including defaults Hookdeck adds and authentication secrets.
 - `created_at` (String) Date the destination was created
 - `description` (String) Description for the destination
 - `disabled_at` (String) Date the destination was disabled

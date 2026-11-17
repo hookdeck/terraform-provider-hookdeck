@@ -31,7 +31,7 @@ data "hookdeck_gateway_source" "example" {
 
 ### Read-Only
 
-- `config` (String, Sensitive) Source configuration
+- `config` (String, Sensitive) Source configuration as JSON. Hookdeck's full configuration, including defaults Hookdeck adds and authentication secrets.
 - `created_at` (String) Date the source was created
 - `description` (String) Description for the source
 - `disabled_at` (String) Date the source was disabled
