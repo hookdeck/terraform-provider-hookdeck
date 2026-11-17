@@ -30,6 +30,9 @@ type mockAPI struct {
 	outpostServer  *httptest.Server
 	provisionReads int
 	patchBodies    []map[string]*string
+	// hostnames are the portal hostnames registered; a deleted project
+	// keeps its hostname registered.
+	hostnames map[string]bool
 }
 
 type mockKey struct {
@@ -68,10 +71,11 @@ var apiVersionPrefix = regexp.MustCompile(`^/\d{4}-\d{2}-\d{2}`)
 func newMockAPI(t *testing.T) *mockAPI {
 	t.Helper()
 	m := &mockAPI{
-		keys:     map[string]*mockKey{},
-		projects: map[string]*mockProject{},
-		sources:  map[string]map[string]any{},
-		outposts: map[string]*mockOutpost{},
+		keys:      map[string]*mockKey{},
+		projects:  map[string]*mockProject{},
+		sources:   map[string]map[string]any{},
+		outposts:  map[string]*mockOutpost{},
+		hostnames: map[string]bool{},
 	}
 	m.server = httptest.NewServer(http.HandlerFunc(m.handle))
 	t.Cleanup(m.server.Close)

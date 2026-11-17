@@ -10,9 +10,11 @@ import (
 
 type outpostProjectModel struct {
 	projectResourceModel
-	Config          types.Map      `tfsdk:"config"`
-	SensitiveConfig types.Map      `tfsdk:"sensitive_config"`
-	Timeouts        timeouts.Value `tfsdk:"timeouts"`
+	Config                   types.Map      `tfsdk:"config"`
+	SensitiveConfig          types.Map      `tfsdk:"sensitive_config"`
+	PortalCustomDomain       types.String   `tfsdk:"portal_custom_domain"`
+	PortalCustomDomainStatus types.Object   `tfsdk:"portal_custom_domain_status"`
+	Timeouts                 timeouts.Value `tfsdk:"timeouts"`
 }
 
 type outpostProjectDataModel struct {
