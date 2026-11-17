@@ -159,6 +159,26 @@ func expectWriteError(t *testing.T, diags []*tfprotov6.Diagnostic, summary strin
 	}
 }
 
+// expectDeleteRefused checks a destroy the API refused. An Outpost project
+// removes its portal custom domain first, so the refusal can come from either
+// call.
+func expectDeleteRefused(t *testing.T, typeName string, diags []*tfprotov6.Diagnostic) {
+	t.Helper()
+	if typeName != "hookdeck_outpost_project" {
+		expectWriteError(t, diags, "Error deleting project")
+		return
+	}
+	if len(diags) == 0 {
+		t.Fatal("no error, want a refused delete")
+	}
+	if s := diags[0].Summary; s != "Error deleting project" && s != "Error deleting portal custom domain" {
+		t.Errorf("error %q, want a refused delete", s)
+	}
+	if !regexp.MustCompile(`(?s)cannot\s+access\s+project.*(Use\s+an|Check\s+that\s+the)\s+API\s+key`).MatchString(diags[0].Detail) {
+		t.Errorf("detail = %q", diags[0].Detail)
+	}
+}
+
 // A destroy that skips the refresh, with a key that cannot reach the project,
 // fails and keeps the project and its state.
 func TestAccMock_ProjectDelete_UnreachableKeepsProject(t *testing.T) {
@@ -179,7 +199,7 @@ func TestAccMock_ProjectDelete_UnreachableKeepsProject(t *testing.T) {
 
 				diags, after := p.delete("tm_target", "target")
 
-				expectWriteError(t, diags, "Error deleting project")
+				expectDeleteRefused(t, typeName, diags)
 				if !after.Equal(p.state("tm_target", "target")) {
 					t.Errorf("state = %v, want it unchanged", after)
 				}
