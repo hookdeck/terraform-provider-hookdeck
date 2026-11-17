@@ -67,10 +67,10 @@ Only an organization admin can create an organization API key. When creating one
 | `gateway.destinations.write` | `hookdeck_gateway_destination` |
 | `gateway.connections.write` | `hookdeck_gateway_connection` |
 | `gateway.transformations.write` | `hookdeck_gateway_transformation` |
-| `projects.read` | the `hookdeck_gateway_project` data source |
-| `projects.write` | the `hookdeck_gateway_project` resource, which also reads the project |
+| `projects.read` | the `hookdeck_gateway_project` and `hookdeck_outpost_project` data sources |
+| `projects.write` | the `hookdeck_gateway_project` and `hookdeck_outpost_project` resources, which also read the project and, for Outpost, its configuration |
 
-A project API key uses the same `gateway.*` scopes. It uses `projects.read` for the `hookdeck_gateway_project` data source and for the lookup of its own project at startup; the lookup is optional, as described under [Project API key](#project-api-key).
+A project API key uses the same `gateway.*` scopes. It uses `projects.read` for the `hookdeck_gateway_project` and `hookdeck_outpost_project` data sources, which read its own project, and for the lookup of its own project at startup; the lookup is optional, as described under [Project API key](#project-api-key).
 
 A key created with "Specific projects" also gets access to each project it creates.
 
@@ -296,4 +296,5 @@ Reads, updates and deletes always go to the project recorded in state. If the pr
 
 - `api_base` (String) Hookdeck API Base URL. Alternatively, can be configured using the `HOOKDECK_API_BASE` environment variable.
 - `api_key` (String, Sensitive) Hookdeck API Key, either a project key or an organization key (`hd_org_` prefix). Alternatively, can be configured using the `HOOKDECK_API_KEY` environment variable.
+- `outpost_api_base` (String) Hookdeck Outpost API Base URL, used by `hookdeck_outpost_project`. Defaults to `https://api.outpost.hookdeck.com`. Alternatively, can be configured using the `HOOKDECK_OUTPOST_API_BASE` environment variable.
 - `project_id` (String) Project that every resource and data source of this provider configuration belongs to. Not needed with a project API key, which is bound to its project. With an organization API key, set it to manage a single project, or leave it unset and set `project_id` on each resource. With an organization API key, changing it replaces every resource; with a project API key, the plan fails. Alternatively, can be configured using the `HOOKDECK_PROJECT_ID` environment variable.

@@ -1,3 +1,10 @@
+## 3.1.0 (Unreleased)
+
+FEATURES:
+
+* New resource `hookdeck_outpost_project` creates an Outpost project and manages its configuration (`config` and `sensitive_config`), and new data source `hookdeck_outpost_project` reads a project and its whole configuration. See [Managing Outpost with Terraform](https://registry.terraform.io/providers/hookdeck/hookdeck/latest/docs/guides/outpost). The resource needs an organization API key.
+* New provider attribute `outpost_api_base` (environment variable `HOOKDECK_OUTPOST_API_BASE`) sets the Outpost API host. The default is `api.outpost.hookdeck.com`.
+
 ## 3.0.0 (2026-11-17)
 
 See the [v2 to v3 migration guide](https://registry.terraform.io/providers/hookdeck/hookdeck/latest/docs/guides/v2-to-v3-migration).

@@ -31,10 +31,10 @@ Only an organization admin can create an organization API key. When creating one
 | `gateway.destinations.write` | `hookdeck_gateway_destination` |
 | `gateway.connections.write` | `hookdeck_gateway_connection` |
 | `gateway.transformations.write` | `hookdeck_gateway_transformation` |
-| `projects.read` | the `hookdeck_gateway_project` data source |
-| `projects.write` | the `hookdeck_gateway_project` resource, which also reads the project |
+| `projects.read` | the `hookdeck_gateway_project` and `hookdeck_outpost_project` data sources |
+| `projects.write` | the `hookdeck_gateway_project` and `hookdeck_outpost_project` resources, which also read the project and, for Outpost, its configuration |
 
-A project API key uses the same `gateway.*` scopes. It uses `projects.read` for the `hookdeck_gateway_project` data source and for the lookup of its own project at startup; the lookup is optional, as described under [Project API key](#project-api-key).
+A project API key uses the same `gateway.*` scopes. It uses `projects.read` for the `hookdeck_gateway_project` and `hookdeck_outpost_project` data sources, which read its own project, and for the lookup of its own project at startup; the lookup is optional, as described under [Project API key](#project-api-key).
 
 A key created with "Specific projects" also gets access to each project it creates.
 
