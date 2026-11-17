@@ -202,8 +202,8 @@ func (m *destinationResourceModel) Update(ctx context.Context, client *sdkclient
 	if diags.HasError() {
 		return diags
 	}
-	// The API requires config whenever type is sent, and keeps the stored
-	// config when neither is.
+	// The API requires config with the type for types that must have one,
+	// and keeps the stored type and config when neither is sent.
 	if _, hasConfig := payload["config"]; !hasConfig && priorState != nil && m.Type.Equal(priorState.Type) {
 		delete(payload, "type")
 	}
@@ -321,7 +321,8 @@ var nonNullableConfigDefaults = map[string]map[string]interface{}{
 // config keys, and delivery policy members, that the provider sent earlier
 // (managed) and the configuration no longer has. The Hookdeck API merges
 // config updates, so omitted keys would otherwise be retained on the
-// destination. priorState supplies the type of the value being cleared.
+// destination. priorState tells whether a cleared key held an array or a
+// boolean, which the API rejects as null.
 func (m *destinationResourceModel) toUpdatePayload(userConfig jsontypes.Normalized, managed configjson.Paths, priorState *destinationResourceModel) (map[string]interface{}, diag.Diagnostics) {
 	payload, diags := m.toPayload(userConfig)
 	if diags.HasError() {

@@ -103,9 +103,8 @@ func (m configPlanModifier) PlanModifyString(ctx context.Context, req planmodifi
 // data that cannot be read), in which case nothing counts as removed or
 // added. missing lists configured keys Hookdeck does not return.
 //
-// A configuration that serialises exactly like Hookdeck's full config plans
-// no change, so the apply that would record its keys does not run; they are
-// recorded by the next apply that changes config.
+// After an import (recorded false) a configuration that matches Hookdeck plans
+// no change, so its keys are recorded by the next apply that changes config.
 func planConfig(config, state, plan types.String, managed configjson.Paths, recorded bool) (planned types.String, missing []string, err error) {
 	if state.IsNull() || state.IsUnknown() || config.IsUnknown() {
 		return plan, nil, nil

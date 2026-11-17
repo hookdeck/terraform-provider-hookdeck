@@ -72,8 +72,9 @@ func (r *sourceResource) MoveState(_ context.Context) []resource.StateMover {
 	return []resource.StateMover{shared.RenamedStateMover(r.naming.LegacyTypeName(), resourceSchema(r.naming.AsLegacy()), r.schema())}
 }
 
-// ModifyPlan checks the project, then drops a plan that changes only computed
-// values: a config that already matches Hookdeck is no change.
+// ModifyPlan checks the project, then turns a plan that changes only computed
+// values back into the state, so a config that already matches Hookdeck plans
+// no update.
 func (r *sourceResource) ModifyPlan(ctx context.Context, req resource.ModifyPlanRequest, resp *resource.ModifyPlanResponse) {
 	r.ProjectScopedResource.ModifyPlan(ctx, req, resp)
 	if resp.Diagnostics.HasError() || len(resp.RequiresReplace) > 0 {
