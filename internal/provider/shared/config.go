@@ -23,7 +23,8 @@ import (
 const configKeysPrivateKey = "config_keys"
 
 const configDescription = "Only the keys you set are compared with Hookdeck: a different value in Hookdeck " +
-	"shows as a change, and the next apply restores yours. Keys you don't set, including defaults Hookdeck " +
+	"shows as a change, and the next apply restores yours. The plan shows it as `(sensitive value)`; to see " +
+	"which key differs, save the plan with `-out` and read `terraform show -json`. Keys you don't set, including defaults Hookdeck " +
 	"adds, are kept in state and not compared. To clear a key in Hookdeck, remove it from `config` or set it " +
 	"to `null`; after an import, use `null` until an apply has changed `config`. Read back from Hookdeck on " +
 	"refresh and import, so it also holds secrets Hookdeck returns, such as authentication tokens."

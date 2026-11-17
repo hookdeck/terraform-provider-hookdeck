@@ -2,19 +2,30 @@
 
 FEATURES:
 
-* `config` on sources and destinations is read from Hookdeck. A change made in the dashboard or API to a key you set in `config` now shows in the plan, and the next apply restores the configured value. Keys you do not set in `config`, including defaults Hookdeck adds, are kept in state and are not compared.
+* `config` on sources and destinations is read from Hookdeck. Keys you do not set in `config`, including defaults Hookdeck adds, are kept in state and are not compared.
 * The `hookdeck_gateway_source` and `hookdeck_gateway_destination` data sources (and the deprecated `hookdeck_source` and `hookdeck_destination`) return `config`.
 * Importing a source or destination plans no change when `config` matches what Hookdeck has.
 
 NOTES:
 
-* The first refresh after upgrading stores Hookdeck's full configuration in state. The plan stays empty unless a key you set in `config` differs in Hookdeck.
+* Behaviour change: a change made in the dashboard or API to a key you set in `config` now shows in the plan as `config = (sensitive value)`, and the next apply restores the configured value. To keep a value managed outside Terraform, remove its key from `config`, or add `lifecycle { ignore_changes = [config] }`. To see which key differs, run `terraform plan -out=tfplan` and read `terraform show -json tfplan`, which prints the values.
+* Going back to 3.0.x: once 3.1.0 has refreshed or applied a source or destination, 3.0.x and earlier stop with "Resource instance managed by newer provider version" for it. This is deliberate. Those versions would take every key Hookdeck returned for one you had set, and their next apply would remove authentication, rate limits and other settings that are not in your `config`. To go back, remove the sources and destinations from state with `terraform state rm` and import them again on 3.0.x. A `terraform plan` on 3.1.0 alone does not change the state.
+* The first refresh after upgrading stores Hookdeck's full configuration in state. The plan stays empty unless a key you set in `config` differs in Hookdeck. Upgrading needs no configuration change.
 * `config` in state and in the data sources now holds the secrets Hookdeck returns, such as authentication tokens. It stays sensitive.
 * After an apply that changes `config`, state holds exactly your `config`, and the next refresh replaces it with Hookdeck's full configuration. Terraform 1.0 and 1.1 list this under "Objects have changed outside of Terraform" on the next plan, and `-refresh-only` plans show it. The plan still reports no changes.
-* A key in `config` that Hookdeck does not return for the type (a typo, or a key of another type) has no effect in Hookdeck. After the apply that sends it, plans ignore it and warn on each run.
-* Numbers and booleans written as strings (`"10"`, `"true"`) match the number or boolean Hookdeck returns. Other values must be written as Hookdeck stores them: a value Hookdeck rewrites shows as a change on every plan.
+* A key in `config` that Hookdeck does not return for the type (a typo, a key of another type, or `url` on a `MOCK_API` destination) has no effect in Hookdeck. After the apply that sends it, plans ignore it and warn on each run.
+* Numbers and booleans written as strings (`"10"`, `"true"`) match the number or boolean Hookdeck returns.
 * After an import, removing a key from `config` does not clear it in Hookdeck until an apply has changed `config`; set the key to `null` to clear it before then. Adding a key whose value Hookdeck already holds plans no change until then either.
-* Going back to 3.0.x after 3.1.0 has refreshed state is not safe: the first update of a source or destination on 3.0.x clears every key Hookdeck added to it, including `auth`. Remove the sources and destinations from state and import them again on 3.0.x instead.
+
+KNOWN LIMITATIONS:
+
+A value in `config` that Hookdeck stores differently from how you wrote it shows as `config = (sensitive value)` on every plan, and applying does not clear it. These configurations planned no change on 3.0. The known cases:
+
+* `allowed_http_methods` on a source type whose methods Hookdeck fixes, such as `STRIPE` or `ZOOM`: Hookdeck keeps its own list. Remove the key.
+* `custom_response` on a source type that does not support it (any type other than `WEBHOOK`, `HTTP` and `SENDGRID_INBOUND`): Hookdeck stores `null`. Remove the key.
+* `path` on a `CLI` destination without a leading `/`: Hookdeck adds it. Write `"/path"`.
+* `delivery_policy.period` with capitals or surrounding spaces: Hookdeck stores it trimmed and in lower case. Write it that way.
+* `url` on a destination with surrounding spaces: Hookdeck trims them. Remove the spaces.
 
 BUG FIXES:
 
