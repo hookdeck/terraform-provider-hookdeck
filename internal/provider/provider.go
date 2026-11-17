@@ -227,6 +227,8 @@ func (p *hookdeckProvider) Resources(ctx context.Context) []func() resource.Reso
 		source.NewSourceResource,
 		sourceauth.NewSourceAuthResource,
 		transformation.NewTransformationResource,
+		// Outpost
+		project.NewOutpostProjectResource,
 		// Third-party services
 		webhookregistration.NewWebhookRegistrationResource,
 		// v2 names, deprecated, removed in v4
