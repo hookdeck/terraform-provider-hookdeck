@@ -75,7 +75,8 @@ func TestRenamedStateMover(t *testing.T) {
 		{"another type", resource.MoveStateRequest{SourceTypeName: "hookdeck_destination", SourceProviderAddress: "registry.terraform.io/hookdeck/hookdeck", SourceSchemaVersion: 1}, false, ""},
 		{"another provider", resource.MoveStateRequest{SourceTypeName: "hookdeck_source", SourceProviderAddress: "registry.terraform.io/acme/other", SourceSchemaVersion: 1}, false, ""},
 		{"provider whose name ends in hookdeck", resource.MoveStateRequest{SourceTypeName: "hookdeck_source", SourceProviderAddress: "registry.terraform.io/acme/nothookdeck", SourceSchemaVersion: 1}, false, ""},
-		{"older schema version", resource.MoveStateRequest{SourceTypeName: "hookdeck_source", SourceProviderAddress: "registry.terraform.io/hookdeck/hookdeck", SourceSchemaVersion: 0}, false, "Unsupported state version for move"},
+		{"older schema version", resource.MoveStateRequest{SourceTypeName: "hookdeck_source", SourceProviderAddress: "registry.terraform.io/hookdeck/hookdeck", SourceSchemaVersion: 0}, true, ""},
+		{"newer schema version", resource.MoveStateRequest{SourceTypeName: "hookdeck_source", SourceProviderAddress: "registry.terraform.io/hookdeck/hookdeck", SourceSchemaVersion: 2}, false, "Unsupported state version for move"},
 	}
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
