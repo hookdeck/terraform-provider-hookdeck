@@ -12,7 +12,10 @@ type kind struct {
 	label   string
 }
 
-var gateway = kind{typeSuffix: "_gateway_project", apiType: "event_gateway", label: "Event Gateway"}
+var (
+	gateway = kind{typeSuffix: "_gateway_project", apiType: "event_gateway", label: "Event Gateway"}
+	outpost = kind{typeSuffix: "_outpost_project", apiType: "outpost", label: "Outpost"}
+)
 
 func (k kind) typeName(providerTypeName string) string {
 	return providerTypeName + k.typeSuffix
