@@ -9,9 +9,22 @@ description: |-
 
 Outpost project, looked up by ID or name.
 
-Unlike the `hookdeck_outpost_project` resource, whose `config` holds the keys you manage, `config` and `sensitive_config` here hold the whole configuration of the project, defaults included. Keys the provider does not know to be non-sensitive, including keys added to Outpost after this provider release, are in `sensitive_config`.
+Unlike the `hookdeck_outpost_project` resource, whose `config` holds the keys you manage, `config` and `sensitive_config` here hold the whole configuration of the project, defaults included. Keys the provider does not know to be non-sensitive, including keys added to Outpost after this provider release, are in `sensitive_config`. So is a value that is a URL with a user or password, and a value of a URL setting that is not a valid URL, whatever the key.
+
+~> `sensitive_config` includes the project's credentials and is stored in the Terraform state, even when the data source is only used to look up a project's ID. Protect the state as you would for any secret.
 
 Works with an organization API key (`projects.read`) or the project's own API key.
+
+## Keys that move to `config`
+
+A key added to Outpost after this provider release is in `sensitive_config`. If it is not a credential, a later provider release returns it in `config` instead, and the changelog names it. A reference to `sensitive_config["KEY"]` then fails with "Invalid index". For such a key, write the reference so that it works in both releases:
+
+```terraform
+output "new_setting" {
+  value     = try(data.hookdeck_outpost_project.by_name.config["KEY"], data.hookdeck_outpost_project.by_name.sensitive_config["KEY"])
+  sensitive = true
+}
+```
 
 ## Example Usage
 
@@ -40,9 +53,9 @@ output "max_retry_limit" {
 
 ### Read-Only
 
-- `config` (Map of String) The project's configuration, defaults included, keyed by Outpost environment variable name: every key that has a value and is known to be non-sensitive, whether or not a `hookdeck_outpost_project` resource manages it.
+- `config` (Map of String) The project's configuration, defaults included, keyed by Outpost environment variable name: every key that has a value and is known to be non-sensitive, whether or not a `hookdeck_outpost_project` resource manages it. A value that is a URL with a user or password is in `sensitive_config` instead.
 - `created_at` (String) Date the project was created
 - `organization_id` (String) ID of the organization the project belongs to
-- `sensitive_config` (Map of String, Sensitive) The rest of the project's configuration: credential keys, and any key this provider version does not know to be non-sensitive, including keys added to Outpost after this provider release.
+- `sensitive_config` (Map of String, Sensitive) The rest of the project's configuration: credential keys, and any key this provider version does not know to be non-sensitive, including keys added to Outpost after this provider release. It includes the project's credentials and is stored in the Terraform state.
 - `type` (String) Project type, always `outpost`
 - `updated_at` (String) Date the project was last updated
