@@ -160,7 +160,7 @@ func (r *sourceResource) Update(ctx context.Context, req resource.UpdateRequest,
 	}
 	var userConfig jsontypes.Normalized
 	resp.Diagnostics.Append(req.Config.GetAttribute(ctx, path.Root("config"), &userConfig)...)
-	managed, _, diags := shared.ManagedConfigPaths(ctx, req.Private)
+	managed, _, diags := shared.ManagedConfigPaths(ctx, req.Private, state.Config.StringValue)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return

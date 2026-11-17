@@ -51,6 +51,11 @@ func TestCovers(t *testing.T) {
 		{name: "decimals", user: `{"n":0.1}`, state: `{"n":0.10}`, want: true},
 		{name: "numeric string vs number", user: `{"n":"10"}`, state: `{"n":10}`, want: true},
 		{name: "number vs numeric string", user: `{"n":10}`, state: `{"n":"10"}`, want: true},
+		{name: "two strings compare as strings, decimals", user: `{"n":"10"}`, state: `{"n":"10.0"}`, want: false},
+		{name: "two strings compare as strings, leading zeros", user: `{"n":"007"}`, state: `{"n":"7"}`, want: false},
+		{name: "two strings compare as strings, exponent", user: `{"n":"1e2"}`, state: `{"n":"100"}`, want: false},
+		{name: "two equal strings", user: `{"n":"007"}`, state: `{"n":"007"}`, want: true},
+		{name: "two boolean strings that differ", user: `{"b":"true"}`, state: `{"b":"True"}`, want: false},
 		{name: "different numeric string", user: `{"n":"11"}`, state: `{"n":10}`, want: false},
 		{name: "boolean string vs boolean", user: `{"b":"true"}`, state: `{"b":true}`, want: true},
 		{name: "false string vs true", user: `{"b":"false"}`, state: `{"b":true}`, want: false},
@@ -97,9 +102,9 @@ func TestPathsRoundTrip(t *testing.T) {
 	if string(b) != `{"v":1,"keys":{"delivery_policy":{"rate":{}},"url":{}}}` {
 		t.Fatalf("envelope = %s", b)
 	}
-	got, err := UnmarshalPaths(b)
-	if err != nil {
-		t.Fatal(err)
+	got, recorded, err := UnmarshalPaths(b)
+	if err != nil || !recorded {
+		t.Fatal(recorded, err)
 	}
 	if !reflect.DeepEqual(got, paths) {
 		t.Fatalf("got %v, want %v", got, paths)
@@ -109,14 +114,49 @@ func TestPathsRoundTrip(t *testing.T) {
 	if err != nil || string(empty) != `{"v":1,"keys":{}}` {
 		t.Fatalf("empty = %s, %v", empty, err)
 	}
-	if got, err := UnmarshalPaths(empty); err != nil || got == nil || len(got) != 0 {
-		t.Fatalf("empty round trip = %v, %v", got, err)
+	if got, recorded, err := UnmarshalPaths(empty); err != nil || !recorded || got == nil || len(got) != 0 {
+		t.Fatalf("empty round trip = %v, %v, %v", got, recorded, err)
+	}
+}
+
+func TestUnrecordedMarker(t *testing.T) {
+	b, err := MarshalUnrecorded()
+	if err != nil {
+		t.Fatal(err)
+	}
+	got, recorded, err := UnmarshalPaths(b)
+	if err != nil || recorded || len(got) != 0 {
+		t.Fatalf("marker = %v, %v, %v", got, recorded, err)
+	}
+}
+
+func TestAdded(t *testing.T) {
+	managed := Paths{"url": {}, "delivery_policy": {"rate": {}}, "methods": {}}
+	tests := []struct {
+		name string
+		user string
+		want []string
+	}{
+		{name: "same keys", user: `{"url":"x","delivery_policy":{"rate":1},"methods":["POST"]}`},
+		{name: "new top level key", user: `{"url":"x","auth_type":"X"}`, want: []string{"auth_type"}},
+		{name: "new nested key", user: `{"delivery_policy":{"rate":1,"period":"second"}}`, want: []string{"delivery_policy.period"}},
+		{name: "new key set to null", user: `{"custom_response":null}`, want: []string{"custom_response"}},
+		{name: "keys inside arrays are leaves", user: `{"methods":[{"a":1}]}`},
+		{name: "fewer keys", user: `{}`},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := Added(managed, mustParse(t, tt.user))
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Fatalf("got %v, want %v", got, tt.want)
+			}
+		})
 	}
 }
 
 func TestUnmarshalPathsRejects(t *testing.T) {
 	for _, in := range []string{`{"v":2,"keys":{}}`, `{"keys":{}}`, `not json`, ``} {
-		if _, err := UnmarshalPaths([]byte(in)); err == nil {
+		if _, _, err := UnmarshalPaths([]byte(in)); err == nil {
 			t.Errorf("%q: expected an error", in)
 		}
 	}

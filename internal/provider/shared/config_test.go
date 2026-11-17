@@ -8,7 +8,10 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework-jsontypes/jsontypes"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/hashicorp/terraform-plugin-go/tftypes"
 )
 
 func TestPlanConfig(t *testing.T) {
@@ -40,6 +43,9 @@ func TestPlanConfig(t *testing.T) {
 		{name: "imported and never applied", config: str(`{"url":"https://x"}`), state: str(full), plan: str(`{"url":"https://x"}`), want: str(full)},
 		{name: "imported and never applied, no config", config: null, state: str(full), plan: str(full), want: str(full)},
 		{name: "state holds the applied config and a key is added", config: str(`{"url":"https://x","http_method":"POST"}`), state: str(`{"url":"https://x"}`), plan: str(`{"url":"https://x","http_method":"POST"}`), managed: configjson.Paths{"url": {}}, recorded: true, want: str(`{"url":"https://x","http_method":"POST"}`)},
+		{name: "key added that Hookdeck already holds", config: str(`{"url":"https://x","delivery_policy":{"rate":5}}`), state: str(full), plan: str(`{"url":"https://x","delivery_policy":{"rate":5}}`), managed: configjson.Paths{"url": {}}, recorded: true, want: str(`{"url":"https://x","delivery_policy":{"rate":5}}`)},
+		{name: "nested key added that Hookdeck already holds", config: str(`{"url":"https://x","delivery_policy":{"rate":5,"period":"second"}}`), state: str(full), plan: str(`{"url":"https://x","delivery_policy":{"rate":5,"period":"second"}}`), managed: managed, recorded: true, want: str(`{"url":"https://x","delivery_policy":{"rate":5,"period":"second"}}`)},
+		{name: "recorded with no keys and a key added", config: str(`{"url":"https://x"}`), state: str(full), plan: str(`{"url":"https://x"}`), managed: configjson.Paths{}, recorded: true, want: str(`{"url":"https://x"}`)},
 		{name: "whitespace and key order are not a change", config: str("{\n \"delivery_policy\": {\"rate\": 5},\n \"url\": \"https://x\"\n}"), state: str(full), plan: str("{}"), managed: managed, recorded: true, want: str(full)},
 		{name: "state is not JSON", config: str(`{"url":"https://x"}`), state: str(`oops`), plan: str(`{"url":"https://x"}`), want: str(`{"url":"https://x"}`)},
 	}
@@ -81,8 +87,9 @@ func (f fakePrivate) SetKey(_ context.Context, key string, value []byte) diag.Di
 func TestManagedConfigPaths(t *testing.T) {
 	ctx := context.Background()
 	p := fakePrivate{}
+	none := types.StringNull()
 
-	if _, recorded, _ := ManagedConfigPaths(ctx, p); recorded {
+	if _, recorded, _ := ManagedConfigPaths(ctx, p, none); recorded {
 		t.Fatal("nothing recorded yet")
 	}
 	if d := SetManagedConfigPaths(ctx, p, jsontypes.NewNormalizedValue(`{"url":"x","delivery_policy":{"rate":1}}`)); d.HasError() {
@@ -91,7 +98,8 @@ func TestManagedConfigPaths(t *testing.T) {
 	if string(p[configKeysPrivateKey]) != `{"v":1,"keys":{"delivery_policy":{"rate":{}},"url":{}}}` {
 		t.Fatalf("stored %s", p[configKeysPrivateKey])
 	}
-	paths, recorded, d := ManagedConfigPaths(ctx, p)
+	// State is the full config: stored paths win over it.
+	paths, recorded, d := ManagedConfigPaths(ctx, p, types.StringValue(`{"url":"x","auth":{}}`))
 	if d.HasError() || !recorded || len(paths) != 2 || len(paths["delivery_policy"]) != 1 {
 		t.Fatalf("got %v %v %v", paths, recorded, d)
 	}
@@ -99,41 +107,96 @@ func TestManagedConfigPaths(t *testing.T) {
 	if d := SetManagedConfigPaths(ctx, p, jsontypes.NewNormalizedNull()); d.HasError() {
 		t.Fatal(d)
 	}
-	if paths, recorded, _ := ManagedConfigPaths(ctx, p); !recorded || len(paths) != 0 {
+	if paths, recorded, _ := ManagedConfigPaths(ctx, p, none); !recorded || len(paths) != 0 {
 		t.Fatalf("null config records an empty set, got %v %v", paths, recorded)
 	}
+}
 
-	p[configKeysPrivateKey] = []byte(`{"v":9,"keys":{}}`)
-	if _, recorded, d := ManagedConfigPaths(ctx, p); recorded || d.HasError() {
-		t.Fatalf("unknown version is treated as not recorded: %v %v", recorded, d)
+// Private data that is missing derives the keys from state, which in that case
+// holds exactly the user's config. Private data that exists but cannot be read
+// is never derived from state, which holds Hookdeck's full config.
+func TestManagedConfigPathsFromState(t *testing.T) {
+	ctx := context.Background()
+	state := types.StringValue(`{"url":"x","auth":{"token":"t"}}`)
+
+	paths, recorded, d := ManagedConfigPaths(ctx, fakePrivate{}, state)
+	if d.HasError() || !recorded || len(paths) != 2 || len(paths["auth"]) != 1 {
+		t.Fatalf("absent private data: %v %v %v", paths, recorded, d)
+	}
+	if _, recorded, _ := ManagedConfigPaths(ctx, fakePrivate{}, types.StringNull()); recorded {
+		t.Fatal("absent private data and no config in state is not recorded")
+	}
+	if _, recorded, _ := ManagedConfigPaths(ctx, fakePrivate{}, types.StringValue(`oops`)); recorded {
+		t.Fatal("absent private data and unreadable state is not recorded")
+	}
+
+	for name, raw := range map[string]string{
+		"unknown version": `{"v":9,"keys":{}}`,
+		"not json":        `oops`,
+		"no version":      `{"keys":{}}`,
+	} {
+		p := fakePrivate{configKeysPrivateKey: []byte(raw)}
+		if paths, recorded, d := ManagedConfigPaths(ctx, p, state); recorded || len(paths) != 0 || d.HasError() {
+			t.Fatalf("%s: got %v %v %v, want not recorded", name, paths, recorded, d)
+		}
 	}
 }
 
 func TestSeedManagedConfigPaths(t *testing.T) {
 	ctx := context.Background()
+	full := jsontypes.NewNormalizedValue(`{"url":"x","auth":{}}`)
 
+	// State from a version that did not track the keys: its config is the user's.
 	p := fakePrivate{}
 	if d := SeedManagedConfigPaths(ctx, p, jsontypes.NewNormalizedValue(`{"url":"x"}`)); d.HasError() {
 		t.Fatal(d)
 	}
-	if paths, recorded, _ := ManagedConfigPaths(ctx, p); !recorded || len(paths) != 1 {
+	if paths, recorded, _ := ManagedConfigPaths(ctx, p, types.StringNull()); !recorded || len(paths) != 1 {
 		t.Fatalf("seeded from state config: %v %v", paths, recorded)
 	}
 
 	// Already recorded: state is the full config and must not overwrite the set.
-	if d := SeedManagedConfigPaths(ctx, p, jsontypes.NewNormalizedValue(`{"url":"x","auth":{}}`)); d.HasError() {
+	if d := SeedManagedConfigPaths(ctx, p, full); d.HasError() {
 		t.Fatal(d)
 	}
-	if paths, _, _ := ManagedConfigPaths(ctx, p); len(paths) != 1 {
+	if paths, _, _ := ManagedConfigPaths(ctx, p, types.StringNull()); len(paths) != 1 {
 		t.Fatalf("recorded set was replaced: %v", paths)
 	}
 
+	// Import: no config in state yet. Marked not recorded, and a later read,
+	// when state holds the full config, does not seed from it.
 	imported := fakePrivate{}
 	if d := SeedManagedConfigPaths(ctx, imported, jsontypes.NewNormalizedNull()); d.HasError() {
 		t.Fatal(d)
 	}
-	if paths, recorded, _ := ManagedConfigPaths(ctx, imported); !recorded || len(paths) != 0 {
-		t.Fatalf("import seeds an empty set: %v %v", paths, recorded)
+	if paths, recorded, _ := ManagedConfigPaths(ctx, imported, full.StringValue); recorded || len(paths) != 0 {
+		t.Fatalf("import is not recorded: %v %v", paths, recorded)
+	}
+	if d := SeedManagedConfigPaths(ctx, imported, full); d.HasError() {
+		t.Fatal(d)
+	}
+	if paths, recorded, _ := ManagedConfigPaths(ctx, imported, full.StringValue); recorded || len(paths) != 0 {
+		t.Fatalf("later read seeded from the full config: %v %v", paths, recorded)
+	}
+
+	// Unreadable private data is left alone, not reseeded from state.
+	broken := fakePrivate{configKeysPrivateKey: []byte(`{"v":9,"keys":{}}`)}
+	if d := SeedManagedConfigPaths(ctx, broken, full); d.HasError() {
+		t.Fatal(d)
+	}
+	if string(broken[configKeysPrivateKey]) != `{"v":9,"keys":{}}` {
+		t.Fatalf("unreadable data was replaced: %s", broken[configKeysPrivateKey])
+	}
+	if _, recorded, _ := ManagedConfigPaths(ctx, broken, full.StringValue); recorded {
+		t.Fatal("unreadable data counts as not recorded")
+	}
+
+	// The first apply records the keys.
+	if d := SetManagedConfigPaths(ctx, imported, jsontypes.NewNormalizedValue(`{"url":"x"}`)); d.HasError() {
+		t.Fatal(d)
+	}
+	if paths, recorded, _ := ManagedConfigPaths(ctx, imported, full.StringValue); !recorded || len(paths) != 1 {
+		t.Fatalf("after the first apply: %v %v", paths, recorded)
 	}
 }
 
@@ -156,4 +219,87 @@ func TestConfigFromAPI(t *testing.T) {
 	if _, err := DecodeObject([]byte(`<html>`)); err == nil {
 		t.Fatal("expected an error")
 	}
+}
+
+func TestKeepUnchangedPlan(t *testing.T) {
+	ctx := context.Background()
+	s := schema.Schema{Attributes: map[string]schema.Attribute{
+		"id":         schema.StringAttribute{Computed: true},
+		"name":       schema.StringAttribute{Required: true},
+		"type":       schema.StringAttribute{Required: true},
+		"project_id": schema.StringAttribute{Optional: true, Computed: true},
+		"config":     schema.StringAttribute{Optional: true, Computed: true},
+		"updated_at": schema.StringAttribute{Computed: true},
+	}}
+	objectType := s.Type().TerraformType(ctx)
+	unknown := tftypes.NewValue(tftypes.String, tftypes.UnknownValue)
+	str := func(v string) tftypes.Value { return tftypes.NewValue(tftypes.String, v) }
+	object := func(overrides map[string]tftypes.Value) tftypes.Value {
+		values := map[string]tftypes.Value{
+			"id":         str("src_1"),
+			"name":       str("a"),
+			"type":       str("HTTP"),
+			"project_id": str("tm_1"),
+			"config":     str(`{"url":"x","extra":1}`),
+			"updated_at": str("t0"),
+		}
+		for k, v := range overrides {
+			values[k] = v
+		}
+		return tftypes.NewValue(objectType, values)
+	}
+	state := object(nil)
+
+	tests := []struct {
+		name string
+		plan tftypes.Value
+		// want is the plan after the call: state when restored, plan when left alone.
+		restored bool
+	}{
+		{name: "computed values unknown and nothing else differs", plan: object(map[string]tftypes.Value{"updated_at": unknown}), restored: true},
+		{name: "several computed values unknown", plan: object(map[string]tftypes.Value{"updated_at": unknown, "id": unknown}), restored: true},
+		{name: "config planned equal to state", plan: object(map[string]tftypes.Value{"config": str(`{"url":"x","extra":1}`), "updated_at": unknown}), restored: true},
+		{name: "a known attribute changed", plan: object(map[string]tftypes.Value{"name": str("b"), "updated_at": unknown})},
+		{name: "config planned differently", plan: object(map[string]tftypes.Value{"config": str(`{"url":"y"}`), "updated_at": unknown})},
+		{name: "type changed", plan: object(map[string]tftypes.Value{"type": str("STRIPE"), "updated_at": unknown})},
+		{name: "project changed", plan: object(map[string]tftypes.Value{"project_id": str("tm_2"), "updated_at": unknown})},
+		{name: "config unknown", plan: object(map[string]tftypes.Value{"config": unknown, "updated_at": unknown})},
+		{name: "value from another resource unknown", plan: object(map[string]tftypes.Value{"name": unknown, "updated_at": unknown})},
+		{name: "optional value from another resource unknown", plan: object(map[string]tftypes.Value{"project_id": unknown, "updated_at": unknown})},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			plan := tfsdk.Plan{Schema: s, Raw: tt.plan}
+			if d := KeepUnchangedPlan(ctx, tfsdk.State{Schema: s, Raw: state}, &plan); d.HasError() {
+				t.Fatal(d)
+			}
+			want := tt.plan
+			if tt.restored {
+				want = state
+			}
+			if !plan.Raw.Equal(want) {
+				t.Fatalf("plan = %s\nwant %s", plan.Raw, want)
+			}
+		})
+	}
+
+	t.Run("create", func(t *testing.T) {
+		plan := tfsdk.Plan{Schema: s, Raw: object(map[string]tftypes.Value{"id": unknown, "updated_at": unknown})}
+		before := plan.Raw.Copy()
+		if d := KeepUnchangedPlan(ctx, tfsdk.State{Schema: s, Raw: tftypes.NewValue(objectType, nil)}, &plan); d.HasError() {
+			t.Fatal(d)
+		}
+		if !plan.Raw.Equal(before) {
+			t.Fatalf("create plan changed: %s", plan.Raw)
+		}
+	})
+	t.Run("destroy", func(t *testing.T) {
+		plan := tfsdk.Plan{Schema: s, Raw: tftypes.NewValue(objectType, nil)}
+		if d := KeepUnchangedPlan(ctx, tfsdk.State{Schema: s, Raw: state}, &plan); d.HasError() {
+			t.Fatal(d)
+		}
+		if !plan.Raw.IsNull() {
+			t.Fatalf("destroy plan changed: %s", plan.Raw)
+		}
+	})
 }

@@ -113,6 +113,23 @@ func (m *mockAPI) requestsTo(prefix string) []mockRequest {
 	return out
 }
 
+// copyJSON returns a deep copy of a decoded JSON object, so a recorded request
+// does not change when the mock later merges the same body into stored data.
+func copyJSON(v map[string]any) map[string]any {
+	if v == nil {
+		return nil
+	}
+	b, err := json.Marshal(v)
+	if err != nil {
+		return v
+	}
+	var out map[string]any
+	if err := json.Unmarshal(b, &out); err != nil {
+		return v
+	}
+	return out
+}
+
 func (m *mockAPI) handle(w http.ResponseWriter, r *http.Request) {
 	m.mu.Lock()
 	defer m.mu.Unlock()
@@ -123,7 +140,7 @@ func (m *mockAPI) handle(w http.ResponseWriter, r *http.Request) {
 	header := r.Header.Get(sdkclient.ProjectHeader)
 	var body map[string]any
 	_ = json.NewDecoder(r.Body).Decode(&body)
-	m.requests = append(m.requests, mockRequest{key: apiKey, method: r.Method, path: path, project: header, body: body})
+	m.requests = append(m.requests, mockRequest{key: apiKey, method: r.Method, path: path, project: header, body: copyJSON(body)})
 
 	key, ok := m.keys[apiKey]
 	if !ok {

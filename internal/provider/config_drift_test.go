@@ -66,11 +66,11 @@ func storedConfig(m *mockAPI, id string) string {
 	return ""
 }
 
-func checkStoredConfig(m *mockAPI, addr string, check func(config map[string]any) error) resource.TestCheckFunc {
+func checkStoredConfig(m *mockAPI, check func(config map[string]any) error) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
-		rs, ok := s.RootModule().Resources[addr]
+		rs, ok := s.RootModule().Resources[sourceAddr]
 		if !ok {
-			return fmt.Errorf("resource not found: %s", addr)
+			return fmt.Errorf("resource not found: %s", sourceAddr)
 		}
 		var config map[string]any
 		if err := json.Unmarshal([]byte(storedConfig(m, rs.Primary.ID)), &config); err != nil {
@@ -134,7 +134,7 @@ func TestAccMock_ConfigDriftOnManagedKey(t *testing.T) {
 				PreConfig:        func() { m.setSourceConfig(id, "allowed_http_methods", []any{"GET"}) },
 				Config:           config,
 				ConfigPlanChecks: updatePlan(sourceAddr),
-				Check: checkStoredConfig(m, sourceAddr, func(c map[string]any) error {
+				Check: checkStoredConfig(m, func(c map[string]any) error {
 					if !reflect.DeepEqual(c["allowed_http_methods"], []any{"POST"}) {
 						return fmt.Errorf("allowed_http_methods = %v", c["allowed_http_methods"])
 					}
@@ -189,7 +189,7 @@ func TestAccMock_ConfigRemovedKeyIsCleared(t *testing.T) {
 						}
 						return nil
 					},
-					checkStoredConfig(m, sourceAddr, func(c map[string]any) error {
+					checkStoredConfig(m, func(c map[string]any) error {
 						if c["custom_response"] != nil {
 							return fmt.Errorf("custom_response = %v", c["custom_response"])
 						}
@@ -254,18 +254,68 @@ func TestAccMock_ConfigKeyDroppedByHookdeck(t *testing.T) {
 	})
 }
 
+func hasNullCustomResponse(m *mockAPI) resource.TestCheckFunc {
+	return func(*terraform.State) error {
+		sent := lastWrittenConfig(m, "/sources/")
+		if v, present := sent["custom_response"]; !present || v != nil {
+			return fmt.Errorf("custom_response in the update = %v (present %v), want null", v, present)
+		}
+		return nil
+	}
+}
+
 // A source created outside Terraform and imported plans nothing when the
-// configuration matches, and an update when a key it sets differs. Removing
-// a key does nothing until the configuration has been applied once.
-func TestAccMock_ConfigImport(t *testing.T) {
+// configuration matches. Removing a key does nothing until an apply has
+// recorded which keys the configuration sets; a key set to null clears it
+// straight away.
+func TestAccMock_ConfigImportRemovedKey(t *testing.T) {
 	m := driftMock(t)
 	id := m.createSource("tm_a", "mock-drift-src", "HTTP", map[string]any{
 		"allowed_http_methods": []any{"POST"},
 		"custom_response":      map[string]any{"content_type": "json", "body": "x"},
 	})
+	with := driftSource("hookdeck_gateway_source", `{"allowed_http_methods":["POST"],"custom_response":{"content_type":"json","body":"x"}}`)
+	without := driftSource("hookdeck_gateway_source", `{"allowed_http_methods":["POST"]}`)
+	cleared := driftSource("hookdeck_gateway_source", `{"allowed_http_methods":["POST"],"custom_response":null}`)
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: acc.ProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				Config:             with,
+				ResourceName:       sourceAddr,
+				ImportState:        true,
+				ImportStateId:      id,
+				ImportStatePersist: true,
+			},
+			{Config: with, ConfigPlanChecks: emptyPlan()},
+			// The documented edge: nothing was recorded as set, so a removed key
+			// is not planned.
+			{Config: without, ConfigPlanChecks: emptyPlan()},
+			{
+				Config:           cleared,
+				ConfigPlanChecks: updatePlan(sourceAddr),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					hasNullCustomResponse(m),
+					checkStoredConfig(m, func(c map[string]any) error {
+						if c["custom_response"] != nil {
+							return fmt.Errorf("custom_response = %v", c["custom_response"])
+						}
+						return nil
+					}),
+				),
+			},
+			{Config: cleared, ConfigPlanChecks: emptyPlan()},
+		},
+	})
+}
+
+// An imported source plans an update when a key the configuration sets differs.
+func TestAccMock_ConfigImportDiffering(t *testing.T) {
+	m := driftMock(t)
+	id := m.createSource("tm_a", "mock-drift-src", "HTTP", map[string]any{"allowed_http_methods": []any{"POST"}})
 	matching := driftSource("hookdeck_gateway_source", `{"allowed_http_methods":["POST"]}`)
 	differing := driftSource("hookdeck_gateway_source", `{"allowed_http_methods":["PUT"]}`)
-	clearing := driftSource("hookdeck_gateway_source", `{"allowed_http_methods":["POST"],"custom_response":null}`)
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: acc.ProviderFactories,
@@ -278,12 +328,88 @@ func TestAccMock_ConfigImport(t *testing.T) {
 				ImportStatePersist: true,
 			},
 			{Config: matching, ConfigPlanChecks: emptyPlan()},
-			// Dropping custom_response from the configuration changes nothing:
-			// it was never recorded as set.
-			{Config: driftSource("hookdeck_gateway_source", `{"allowed_http_methods":["POST"]}`), ConfigPlanChecks: emptyPlan()},
-			{Config: differing, ConfigPlanChecks: updatePlan(sourceAddr)},
-			{Config: clearing, ConfigPlanChecks: updatePlan(sourceAddr)},
-			{Config: clearing, ConfigPlanChecks: emptyPlan()},
+			{
+				Config:           differing,
+				ConfigPlanChecks: updatePlan(sourceAddr),
+				Check: checkStoredConfig(m, func(c map[string]any) error {
+					if !reflect.DeepEqual(c["allowed_http_methods"], []any{"PUT"}) {
+						return fmt.Errorf("allowed_http_methods = %v", c["allowed_http_methods"])
+					}
+					return nil
+				}),
+			},
+			{Config: differing, ConfigPlanChecks: emptyPlan()},
+		},
+	})
+}
+
+// A key added with the value Hookdeck already holds is recorded by an apply,
+// so removing it later clears it.
+func TestAccMock_ConfigAddedKeyWithMatchingValueIsRecorded(t *testing.T) {
+	m := driftMock(t)
+	without := driftSource("hookdeck_gateway_source", `{"allowed_http_methods":["POST"]}`)
+	with := driftSource("hookdeck_gateway_source", `{"allowed_http_methods":["POST"],"custom_response":{"content_type":"json","body":"x"}}`)
+	var id string
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: acc.ProviderFactories,
+		Steps: []resource.TestStep{
+			{Config: without, Check: captureID(sourceAddr, &id)},
+			{
+				// Someone sets the key in Hookdeck.
+				PreConfig: func() {
+					m.setSourceConfig(id, "custom_response", map[string]any{"content_type": "json", "body": "x"})
+				},
+				Config:           with,
+				ConfigPlanChecks: updatePlan(sourceAddr),
+			},
+			{Config: with, ConfigPlanChecks: emptyPlan()},
+			{
+				Config:           without,
+				ConfigPlanChecks: updatePlan(sourceAddr),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					hasNullCustomResponse(m),
+					checkStoredConfig(m, func(c map[string]any) error {
+						if c["custom_response"] != nil {
+							return fmt.Errorf("custom_response = %v", c["custom_response"])
+						}
+						return nil
+					}),
+				),
+			},
+			{Config: without, ConfigPlanChecks: emptyPlan()},
+		},
+	})
+}
+
+// A configuration that matches Hookdeck is no change by itself, and does not
+// hide another change made in the same plan.
+func TestAccMock_ConfigMatchingDoesNotHideOtherChanges(t *testing.T) {
+	m := driftMock(t)
+	config := `{"allowed_http_methods":["POST"]}`
+	plain := driftSource("hookdeck_gateway_source", config)
+	described := fmt.Sprintf("resource \"hookdeck_gateway_source\" \"test\" {\n  name = \"mock-drift-src\"\n  type = \"HTTP\"\n  description = \"new\"\n  config = %q\n}\n", config)
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: acc.ProviderFactories,
+		Steps: []resource.TestStep{
+			{Config: plain},
+			{RefreshState: true},
+			{Config: plain, ConfigPlanChecks: emptyPlan()},
+			{
+				Config:           described,
+				ConfigPlanChecks: updatePlan(sourceAddr),
+				Check: func(s *terraform.State) error {
+					id := s.RootModule().Resources[sourceAddr].Primary.ID
+					m.mu.Lock()
+					defer m.mu.Unlock()
+					if got := m.sources[id]["description"]; got != "new" {
+						return fmt.Errorf("description = %v", got)
+					}
+					return nil
+				},
+			},
+			{Config: described, ConfigPlanChecks: emptyPlan()},
 		},
 	})
 }

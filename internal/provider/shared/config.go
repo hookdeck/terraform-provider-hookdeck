@@ -80,7 +80,7 @@ func (m configPlanModifier) PlanModifyString(ctx context.Context, req planmodifi
 	if req.State.Raw.IsNull() {
 		return
 	}
-	managed, recorded, diags := ManagedConfigPaths(ctx, req.Private)
+	managed, recorded, diags := ManagedConfigPaths(ctx, req.Private, req.StateValue)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return
@@ -101,7 +101,7 @@ func (m configPlanModifier) PlanModifyString(ctx context.Context, req planmodifi
 // framework proposed: the configuration when set, otherwise state, or unknown
 // on create. managed holds the key paths the provider sent earlier; recorded
 // is false when none were recorded (imported and not yet applied), in which
-// case nothing counts as removed. missing lists configured keys Hookdeck does
+// case nothing counts as removed or added. missing lists configured keys Hookdeck does
 // not return.
 func planConfig(config, state, plan types.String, managed configjson.Paths, recorded bool) (planned types.String, missing []string, err error) {
 	if state.IsNull() || state.IsUnknown() || config.IsUnknown() {
@@ -132,6 +132,12 @@ func planConfig(config, state, plan types.String, managed configjson.Paths, reco
 	if !covers || len(configjson.Removed(managed, user)) > 0 {
 		return config, missing, nil
 	}
+	// A key the provider has not sent before is recorded by the apply, even
+	// when Hookdeck already holds its value: without it, removing the key
+	// later would change nothing.
+	if recorded && len(configjson.Added(managed, user)) > 0 {
+		return config, missing, nil
+	}
 	return state, missing, nil
 }
 
@@ -143,21 +149,60 @@ type privateSetter interface {
 	SetKey(ctx context.Context, key string, value []byte) diag.Diagnostics
 }
 
-// ManagedConfigPaths returns the config key paths recorded by the last create
-// or update. recorded is false when there are none, or they cannot be read.
-func ManagedConfigPaths(ctx context.Context, p privateGetter) (paths configjson.Paths, recorded bool, diags diag.Diagnostics) {
+type configKeys int
+
+const (
+	// configKeysAbsent: nothing stored. State written before the keys were
+	// tracked, which holds exactly the configuration the user applied.
+	configKeysAbsent configKeys = iota
+	// configKeysUnrecorded: the provider never sent keys for this resource
+	// (imported), or the stored value cannot be read. Which keys the user
+	// manages is not known, and state cannot tell: it holds Hookdeck's full config.
+	configKeysUnrecorded
+	configKeysRecorded
+)
+
+func readConfigKeys(ctx context.Context, p privateGetter) (configjson.Paths, configKeys, diag.Diagnostics) {
 	if p == nil {
-		return nil, false, nil
+		return nil, configKeysAbsent, nil
 	}
 	raw, diags := p.GetKey(ctx, configKeysPrivateKey)
-	if diags.HasError() || len(raw) == 0 {
-		return nil, false, diags
+	if diags.HasError() {
+		return nil, configKeysUnrecorded, diags
 	}
-	paths, err := configjson.UnmarshalPaths(raw)
-	if err != nil {
-		return nil, false, diags
+	if len(raw) == 0 {
+		return nil, configKeysAbsent, diags
 	}
-	return paths, true, diags
+	paths, recorded, err := configjson.UnmarshalPaths(raw)
+	if err != nil || !recorded {
+		return nil, configKeysUnrecorded, diags
+	}
+	return paths, configKeysRecorded, diags
+}
+
+// ManagedConfigPaths returns the config key paths the provider sent to
+// Hookdeck. recorded is false when they are not known: an imported resource
+// that was not applied yet, or private data that cannot be read.
+//
+// When nothing is stored the resource comes from a version that did not track
+// them, and state still holds exactly the configuration the user applied, so
+// the paths are taken from it.
+func ManagedConfigPaths(ctx context.Context, p privateGetter, state types.String) (paths configjson.Paths, recorded bool, diags diag.Diagnostics) {
+	paths, kind, diags := readConfigKeys(ctx, p)
+	switch kind {
+	case configKeysRecorded:
+		return paths, true, diags
+	case configKeysAbsent:
+		if state.IsNull() || state.IsUnknown() {
+			return nil, false, diags
+		}
+		user, err := configjson.Parse(state.ValueString())
+		if err != nil {
+			return nil, false, diags
+		}
+		return configjson.PathsOf(user), true, diags
+	}
+	return nil, false, diags
 }
 
 // SetManagedConfigPaths records the key paths of the configured config. Only
@@ -181,20 +226,30 @@ func SetManagedConfigPaths(ctx context.Context, p privateSetter, config jsontype
 	return p.SetKey(ctx, configKeysPrivateKey, raw)
 }
 
-// SeedManagedConfigPaths records config key paths from state written before
-// they were tracked. That state holds exactly the configuration the user
-// applied, so its keys are the managed ones. Imported resources have no config
-// in state yet and get an empty set.
+// SeedManagedConfigPaths stores what Read can tell about the keys the
+// provider manages, when nothing is stored yet. State from a version that did
+// not track them holds exactly the user's configuration: its keys are the
+// managed ones. Without a config in state (an import) the keys are marked as
+// not recorded, and later reads leave that alone: state then holds Hookdeck's
+// full config, which says nothing about what the user manages. The first apply
+// records them.
 //
-// State that lost its private data after the provider started storing the full
-// configuration would seed every key Hookdeck returned, and a later apply with
-// fewer keys would then clear defaults. Only a hand-edited state push gets there.
+// Private data that exists but cannot be read is never replaced from state.
 func SeedManagedConfigPaths(ctx context.Context, p interface {
 	privateGetter
 	privateSetter
 }, state jsontypes.Normalized) diag.Diagnostics {
-	_, recorded, diags := ManagedConfigPaths(ctx, p)
-	if diags.HasError() || recorded {
+	_, kind, diags := readConfigKeys(ctx, p)
+	if diags.HasError() || kind != configKeysAbsent {
+		return diags
+	}
+	if state.IsNull() || state.IsUnknown() {
+		raw, err := configjson.MarshalUnrecorded()
+		if err != nil {
+			diags.AddError("Error recording config keys", err.Error())
+			return diags
+		}
+		diags.Append(p.SetKey(ctx, configKeysPrivateKey, raw)...)
 		return diags
 	}
 	diags.Append(SetManagedConfigPaths(ctx, p, state)...)

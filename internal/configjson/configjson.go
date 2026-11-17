@@ -76,8 +76,9 @@ func PathsOf(v map[string]any) Paths {
 const envelopeVersion = 1
 
 type envelope struct {
-	Version int   `json:"v"`
-	Keys    Paths `json:"keys"`
+	Version    int   `json:"v"`
+	Keys       Paths `json:"keys"`
+	Unrecorded bool  `json:"unrecorded,omitempty"`
 }
 
 // Marshal encodes the paths for storage.
@@ -89,19 +90,30 @@ func (p Paths) Marshal() ([]byte, error) {
 	return json.Marshal(envelope{Version: envelopeVersion, Keys: keys})
 }
 
-// UnmarshalPaths decodes paths written by Marshal.
-func UnmarshalPaths(b []byte) (Paths, error) {
+// MarshalUnrecorded encodes the marker for a resource whose config keys were
+// never sent by the provider, such as an imported one. Nothing is known about
+// which keys the user manages.
+func MarshalUnrecorded() ([]byte, error) {
+	return json.Marshal(envelope{Version: envelopeVersion, Unrecorded: true})
+}
+
+// UnmarshalPaths decodes what Marshal or MarshalUnrecorded wrote. recorded is
+// false for the unrecorded marker.
+func UnmarshalPaths(b []byte) (paths Paths, recorded bool, err error) {
 	var e envelope
 	if err := json.Unmarshal(b, &e); err != nil {
-		return nil, err
+		return nil, false, err
 	}
 	if e.Version != envelopeVersion {
-		return nil, fmt.Errorf("unsupported version %d", e.Version)
+		return nil, false, fmt.Errorf("unsupported version %d", e.Version)
+	}
+	if e.Unrecorded {
+		return nil, false, nil
 	}
 	if e.Keys == nil {
 		e.Keys = Paths{}
 	}
-	return e.Keys, nil
+	return e.Keys, true, nil
 }
 
 // Covers reports whether every key in user holds the same value in state.
@@ -178,11 +190,18 @@ const maxExponent = 1000
 
 // scalarEqual reports whether two scalars denote the same value. Hookdeck
 // coerces on write, so a number sent as "10" comes back as 10 and a boolean
-// sent as "true" comes back as true. Other types must match exactly.
+// sent as "true" comes back as true. That coercion applies only between a
+// string and a number or boolean: two strings must match exactly.
 func scalarEqual(a, b any) bool {
 	if a == nil || b == nil {
 		return a == nil && b == nil
 	}
+	as, aIsString := a.(string)
+	bs, bIsString := b.(string)
+	if aIsString && bIsString {
+		return as == bs
+	}
+	// Exactly one side is a string here, or neither is.
 	if an, ok := toRat(a); ok {
 		if bn, ok := toRat(b); ok {
 			return an.Cmp(bn) == 0
@@ -193,9 +212,7 @@ func scalarEqual(a, b any) bool {
 			return ab == bb
 		}
 	}
-	as, aok := a.(string)
-	bs, bok := b.(string)
-	return aok && bok && as == bs
+	return false
 }
 
 // toRat converts a JSON number, or a string that reads as one, to an exact value.
@@ -236,6 +253,29 @@ func toBool(v any) (bool, bool) {
 		}
 	}
 	return false, false
+}
+
+// Added returns the dotted paths of keys in user that managed does not have:
+// keys the configuration sets that the provider has not sent before. Arrays
+// are leaves.
+func Added(managed Paths, user map[string]any) []string {
+	var added []string
+	collectAdded(managed, user, "", &added)
+	sort.Strings(added)
+	return added
+}
+
+func collectAdded(managed Paths, user map[string]any, prefix string, added *[]string) {
+	for key, value := range user {
+		children, ok := managed[key]
+		if !ok {
+			*added = append(*added, prefix+key)
+			continue
+		}
+		if child, isObject := value.(map[string]any); isObject {
+			collectAdded(children, child, prefix+key+".", added)
+		}
+	}
 }
 
 // Removed returns the dotted paths in managed that user no longer has: keys
