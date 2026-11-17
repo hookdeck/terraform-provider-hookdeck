@@ -23,9 +23,8 @@ func loadTestConfigFormatted(t *testing.T, filename string, args ...interface{})
 }
 
 // fetchSourceConfig retrieves the source's config object from the Hookdeck
-// API. Used to verify the API state independently of Terraform state, because
-// the `config` attribute is not Computed — Terraform state stores the user's
-// input, not what the API actually has.
+// API. Used to verify the API state independently of Terraform state, which
+// holds the configuration as applied until the next refresh.
 func fetchSourceConfig(id string) (map[string]interface{}, error) {
 	status, src, err := acc.RequestCurrent("GET", "/sources/"+id, nil, nil)
 	if err != nil {
