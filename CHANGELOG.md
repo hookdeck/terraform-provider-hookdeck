@@ -4,6 +4,7 @@ BUG FIXES:
 
 * Destroying a source, source auth, destination, connection or transformation that no longer exists in Hookdeck succeeds instead of failing, for example with `terraform destroy -refresh=false`.
 * Removing `rules` from a connection's configuration clears the rules in Hookdeck. Before, the apply failed with "Provider produced inconsistent result after apply". Rules added outside Terraform to a connection configured without `rules` are now cleared the same way.
+* `hookdeck_gateway_project` is no longer removed from state, and created again on the next apply, when the API key cannot reach the project, for example a key from another organization. Terraform reports that the key cannot access the project and keeps it in state. A project deleted outside Terraform is still removed from state. With an organization API key, importing such a project, or reading it by `id` with the `hookdeck_gateway_project` data source, gives the same error instead of "not found".
 
 ## 3.0.0 (2026-11-17)
 
