@@ -10,11 +10,11 @@ NOTES:
 
 * The first refresh after upgrading stores Hookdeck's full configuration in state. The plan stays empty unless a key you set in `config` differs in Hookdeck.
 * `config` in state and in the data sources now holds the secrets Hookdeck returns, such as authentication tokens. It stays sensitive.
-* After an apply, state holds exactly your `config`, and the next refresh replaces it with Hookdeck's full configuration. Terraform 1.0 and 1.1 list this under "Objects have changed outside of Terraform" on the next plan, and `-refresh-only` plans show it. The plan still reports no changes.
+* After an apply that changes `config`, state holds exactly your `config`, and the next refresh replaces it with Hookdeck's full configuration. Terraform 1.0 and 1.1 list this under "Objects have changed outside of Terraform" on the next plan, and `-refresh-only` plans show it. The plan still reports no changes.
 * A key in `config` that Hookdeck does not return for the type (a typo, or a key of another type) has no effect in Hookdeck. After the apply that sends it, plans ignore it and warn on each run.
 * Numbers and booleans written as strings (`"10"`, `"true"`) match the number or boolean Hookdeck returns. Other values must be written as Hookdeck stores them: a value Hookdeck rewrites shows as a change on every plan.
 * After an import, removing a key from `config` does not clear it in Hookdeck until an apply has changed `config`; set the key to `null` to clear it before then. Adding a key whose value Hookdeck already holds plans no change until then either.
-* Going back to 3.0.x after 3.1.0 has refreshed state is not safe: the first apply on 3.0.x clears every key Hookdeck added, including `auth`. Remove the sources and destinations from state and import them again on 3.0.x instead.
+* Going back to 3.0.x after 3.1.0 has refreshed state is not safe: the first update of a source or destination on 3.0.x clears every key Hookdeck added to it, including `auth`. Remove the sources and destinations from state and import them again on 3.0.x instead.
 
 ## 3.0.0 (2026-10-17)
 

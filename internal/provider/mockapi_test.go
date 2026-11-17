@@ -295,6 +295,8 @@ type mockKind struct {
 	merge func(stored map[string]any, key string, value any) bool
 	// extra adds the fields only this kind has.
 	extra func(object map[string]any, seq int)
+	// typeNeedsConfig rejects an update that sends type without config.
+	typeNeedsConfig bool
 }
 
 var sourceKind = mockKind{
@@ -325,6 +327,7 @@ var destinationKind = mockKind{
 		setDefault(config, "path_forwarding_disabled", false)
 		setDefault(config, "delivery_policy", map[string]any{"rate": nil, "period": nil, "groups": nil})
 	},
+	typeNeedsConfig: true,
 	// Delivery policy members are merged one by one.
 	merge: func(stored map[string]any, key string, value any) bool {
 		if key != "delivery_policy" {
@@ -421,6 +424,12 @@ func (m *mockAPI) handleObjects(w http.ResponseWriter, method string, key *mockK
 	}
 	switch method {
 	case http.MethodPut:
+		_, hasType := body["type"]
+		_, hasConfig := body["config"]
+		if kind.typeNeedsConfig && hasType && !hasConfig {
+			apiError(w, 422, "UNPROCESSABLE_ENTITY", "config is required", nil)
+			return
+		}
 		for _, field := range []string{"name", "type", "description"} {
 			if v, present := body[field]; present {
 				object[field] = v
