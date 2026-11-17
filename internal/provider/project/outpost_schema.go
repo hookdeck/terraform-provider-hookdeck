@@ -28,7 +28,7 @@ func outpostSchemaAttributes() map[string]schema.Attribute {
 		Optional: true,
 		Validators: []validator.String{
 			stringvalidator.LengthAtMost(253),
-			stringvalidator.RegexMatches(hostnamePattern, "must be a hostname such as portal.example.com, without scheme, port or path"),
+			stringvalidator.RegexMatches(hostnamePattern, "must be a lowercase hostname such as portal.example.com, without scheme, port or path"),
 		},
 		Description: "Hostname that serves the project's portal, for example `portal.example.com`. Changing it deletes the current domain and adds the new one. `portal_custom_domain_status` lists the DNS records to create. A domain added outside Terraform is removed on the next apply unless it is set here.",
 	}
