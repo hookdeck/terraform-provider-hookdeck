@@ -11,6 +11,8 @@ description: |-
 
 Unlike the `hookdeck_outpost_project` resource, whose `config` holds the keys you manage, `config` and `sensitive_config` here hold the whole configuration of the project, defaults included. Keys the provider does not know to be non-sensitive, including keys added to Outpost after this provider release, are in `sensitive_config`.
 
+`portal_custom_domain` and `portal_custom_domain_status` describe the project's portal custom domain, and are null when it has none.
+
 Works with an organization API key (`projects.read`) or the project's own API key.
 
 ## Example Usage

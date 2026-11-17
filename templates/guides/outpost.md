@@ -81,6 +81,23 @@ output "retry_limit" {
 
 Credentials and keys the provider does not know to be non-sensitive are in `sensitive_config`.
 
+## Portal custom domain
+
+Set `portal_custom_domain` to serve the project's portal on your own hostname. Applying adds the domain, and `portal_custom_domain_status` lists the DNS records to create for it.
+
+```terraform
+resource "hookdeck_outpost_project" "deliveries" {
+  name                 = "customer-deliveries"
+  portal_custom_domain = "portal.example.com"
+}
+
+output "portal_dns_records" {
+  value = hookdeck_outpost_project.deliveries.portal_custom_domain_status.verification_records
+}
+```
+
+Create the records at your DNS provider. They verify the hostname and issue its certificate. The status is `pending` until the hostname is verified, then `active`, which means the hostname is verified; the [resource page](https://registry.terraform.io/providers/hookdeck/hookdeck/latest/docs/resources/outpost_project) describes the status fields and what changing or removing the hostname does.
+
 ## Several projects
 
 Each Outpost project is a resource of its own, for example one per environment:

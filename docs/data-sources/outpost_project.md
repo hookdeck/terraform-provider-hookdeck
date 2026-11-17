@@ -11,6 +11,8 @@ Outpost project, looked up by ID or name.
 
 Unlike the `hookdeck_outpost_project` resource, whose `config` holds the keys you manage, `config` and `sensitive_config` here hold the whole configuration of the project, defaults included. Keys the provider does not know to be non-sensitive, including keys added to Outpost after this provider release, are in `sensitive_config`.
 
+`portal_custom_domain` and `portal_custom_domain_status` describe the project's portal custom domain, and are null when it has none.
+
 Works with an organization API key (`projects.read`) or the project's own API key.
 
 ## Example Usage
@@ -43,6 +45,27 @@ output "max_retry_limit" {
 - `config` (Map of String) The project's configuration, defaults included, keyed by Outpost environment variable name: every key that has a value and is known to be non-sensitive, whether or not a `hookdeck_outpost_project` resource manages it.
 - `created_at` (String) Date the project was created
 - `organization_id` (String) ID of the organization the project belongs to
+- `portal_custom_domain` (String) Hostname that serves the project's portal. Null when no custom domain is set.
+- `portal_custom_domain_status` (Attributes) State of the portal custom domain. Null when no domain is set. Refreshed on every plan, so it moves from `pending` to `active` once the DNS records are in place. (see [below for nested schema](#nestedatt--portal_custom_domain_status))
 - `sensitive_config` (Map of String, Sensitive) The rest of the project's configuration: credential keys, and any key this provider version does not know to be non-sensitive, including keys added to Outpost after this provider release.
 - `type` (String) Project type, always `outpost`
 - `updated_at` (String) Date the project was last updated
+
+<a id="nestedatt--portal_custom_domain_status"></a>
+### Nested Schema for `portal_custom_domain_status`
+
+Read-Only:
+
+- `ssl_status` (String) Certificate status, for example `pending_validation` or `active`
+- `status` (String) Domain status: `pending` until the hostname is verified, then `active`
+- `verification_errors` (List of String) Reasons the domain could not be verified, if any
+- `verification_records` (Attributes List) DNS records to create to verify the domain and issue its certificate (see [below for nested schema](#nestedatt--portal_custom_domain_status--verification_records))
+
+<a id="nestedatt--portal_custom_domain_status--verification_records"></a>
+### Nested Schema for `portal_custom_domain_status.verification_records`
+
+Read-Only:
+
+- `name` (String) Record name
+- `type` (String) Record type, for example `txt`
+- `value` (String) Record value

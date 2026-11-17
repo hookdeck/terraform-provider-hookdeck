@@ -52,6 +52,28 @@ The keys of `config` and `sensitive_config` are Outpost environment variable nam
 - `OPERATOR_EVENTS_HTTP_URL` and `OPERATOR_EVENTS_TOPICS` are set by operator event destinations, and `DESTINATIONS_WEBHOOK_PROXY_URL` is a deprecated alias of `DESTINATIONS_PROXY_URL`. They cannot be set here.
 - Only the keys you set are managed. Other keys keep their value, and changes to them outside Terraform do not show in the plan; a change to a managed key does. Removing a key from the configuration returns it to its default. The [`hookdeck_outpost_project` data source](https://registry.terraform.io/providers/hookdeck/hookdeck/latest/docs/data-sources/outpost_project) returns the whole configuration, defaults included.
 
+## Portal custom domain
+
+Set `portal_custom_domain` to serve the project's portal on your own hostname.
+
+```terraform
+resource "hookdeck_outpost_project" "example" {
+  name                 = "production-outpost"
+  portal_custom_domain = "portal.example.com"
+}
+
+output "portal_dns_records" {
+  value = hookdeck_outpost_project.example.portal_custom_domain_status.verification_records
+}
+```
+
+- Applying adds the domain after the project is configured. `portal_custom_domain_status.verification_records` then lists the DNS records to create at your DNS provider, each with a `type`, `name` and `value`. These records verify the hostname and issue its certificate. `verification_records` is unknown until the domain is added, so if you manage your DNS in Terraform, apply the project first (for example with `-target`), then the records.
+- `portal_custom_domain_status.status` is `pending` until the hostname is verified, then `active`, which means the hostname is verified. `ssl_status` is the state of the domain's certificate: `pending_validation` until the records are in place, `active` once it is issued. `verification_errors` lists the reasons the API reports when verification fails. Terraform refreshes the status on every plan.
+- Changing the hostname deletes the current domain and adds the new one, which needs new DNS records. Removing `portal_custom_domain` deletes the domain.
+- A domain added or changed outside Terraform shows in the plan and is removed or replaced on the next apply, unless `portal_custom_domain` is set to it.
+- A hostname serves one project at a time: adding one that another project uses fails.
+- Deleting the project deletes its domain first, which frees the hostname.
+
 ## Behavior
 
 - Creating a project waits until it is ready, then applies the configuration. If provisioning is slow, raise `timeouts.create` (20 minutes by default).
@@ -69,6 +91,7 @@ The keys of `config` and `sensitive_config` are Outpost environment variable nam
 ### Optional
 
 - `config` (Map of String) Outpost configuration to manage, keyed by Outpost environment variable name (for example `TOPICS` or `RETRY_INTERVAL_SECONDS`). Only the keys set here are managed and tracked; other keys keep their value. Removing a key restores its default. Keys that can carry credentials belong in `sensitive_config`.
+- `portal_custom_domain` (String) Hostname that serves the project's portal, for example `portal.example.com`. Changing it deletes the current domain and adds the new one. `portal_custom_domain_status` lists the DNS records to create. A domain added outside Terraform is removed on the next apply unless it is set here.
 - `sensitive_config` (Map of String, Sensitive) Outpost configuration to manage like `config`, for keys whose values are secrets or can carry credentials, such as `OTEL_EXPORTER_OTLP_HEADERS`, `DESTINATIONS_PROXY_URL` and the `PUBLISH_*` connection strings and secret keys. Values are stored in the Terraform state.
 - `timeouts` (Block, Optional) (see [below for nested schema](#nestedblock--timeouts))
 
@@ -77,6 +100,7 @@ The keys of `config` and `sensitive_config` are Outpost environment variable nam
 - `created_at` (String) Date the project was created
 - `id` (String) ID of the project
 - `organization_id` (String) ID of the organization the project belongs to
+- `portal_custom_domain_status` (Attributes) State of the portal custom domain. Null when no domain is set. Refreshed on every plan, so it moves from `pending` to `active` once the DNS records are in place. (see [below for nested schema](#nestedatt--portal_custom_domain_status))
 - `type` (String) Project type, always `outpost`
 - `updated_at` (String) Date the project was last updated
 
@@ -89,6 +113,26 @@ Optional:
 - `delete` (String) A string that can be [parsed as a duration](https://pkg.go.dev/time#ParseDuration) consisting of numbers and unit suffixes, such as "30s" or "2h45m". Valid time units are "s" (seconds), "m" (minutes), "h" (hours). Setting a timeout for a Delete operation is only applicable if changes are saved into state before the destroy operation occurs.
 - `update` (String) A string that can be [parsed as a duration](https://pkg.go.dev/time#ParseDuration) consisting of numbers and unit suffixes, such as "30s" or "2h45m". Valid time units are "s" (seconds), "m" (minutes), "h" (hours).
 
+
+<a id="nestedatt--portal_custom_domain_status"></a>
+### Nested Schema for `portal_custom_domain_status`
+
+Read-Only:
+
+- `ssl_status` (String) Certificate status, for example `pending_validation` or `active`
+- `status` (String) Domain status: `pending` until the hostname is verified, then `active`
+- `verification_errors` (List of String) Reasons the domain could not be verified, if any
+- `verification_records` (Attributes List) DNS records to create to verify the domain and issue its certificate (see [below for nested schema](#nestedatt--portal_custom_domain_status--verification_records))
+
+<a id="nestedatt--portal_custom_domain_status--verification_records"></a>
+### Nested Schema for `portal_custom_domain_status.verification_records`
+
+Read-Only:
+
+- `name` (String) Record name
+- `type` (String) Record type, for example `txt`
+- `value` (String) Record value
+
 ## Import
 
 Import is supported using the following syntax:
@@ -97,4 +141,4 @@ Import is supported using the following syntax:
 $ terraform import hookdeck_outpost_project.example <project_id>
 ```
 
-Import fills the project's name and metadata. `config` and `sensitive_config` stay empty, so the first plan lists the keys in your configuration as additions. Applying sends nothing when their values already match the project.
+Import fills the project's name, metadata and portal custom domain. `config` and `sensitive_config` stay empty, so the first plan lists the keys in your configuration as additions. Applying sends nothing when their values already match the project.

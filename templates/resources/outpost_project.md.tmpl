@@ -24,6 +24,28 @@ The keys of `config` and `sensitive_config` are Outpost environment variable nam
 - `OPERATOR_EVENTS_HTTP_URL` and `OPERATOR_EVENTS_TOPICS` are set by operator event destinations, and `DESTINATIONS_WEBHOOK_PROXY_URL` is a deprecated alias of `DESTINATIONS_PROXY_URL`. They cannot be set here.
 - Only the keys you set are managed. Other keys keep their value, and changes to them outside Terraform do not show in the plan; a change to a managed key does. Removing a key from the configuration returns it to its default. The [`hookdeck_outpost_project` data source](https://registry.terraform.io/providers/hookdeck/hookdeck/latest/docs/data-sources/outpost_project) returns the whole configuration, defaults included.
 
+## Portal custom domain
+
+Set `portal_custom_domain` to serve the project's portal on your own hostname.
+
+```terraform
+resource "hookdeck_outpost_project" "example" {
+  name                 = "production-outpost"
+  portal_custom_domain = "portal.example.com"
+}
+
+output "portal_dns_records" {
+  value = hookdeck_outpost_project.example.portal_custom_domain_status.verification_records
+}
+```
+
+- Applying adds the domain after the project is configured. `portal_custom_domain_status.verification_records` then lists the DNS records to create at your DNS provider, each with a `type`, `name` and `value`. These records verify the hostname and issue its certificate. `verification_records` is unknown until the domain is added, so if you manage your DNS in Terraform, apply the project first (for example with `-target`), then the records.
+- `portal_custom_domain_status.status` is `pending` until the hostname is verified, then `active`, which means the hostname is verified. `ssl_status` is the state of the domain's certificate: `pending_validation` until the records are in place, `active` once it is issued. `verification_errors` lists the reasons the API reports when verification fails. Terraform refreshes the status on every plan.
+- Changing the hostname deletes the current domain and adds the new one, which needs new DNS records. Removing `portal_custom_domain` deletes the domain.
+- A domain added or changed outside Terraform shows in the plan and is removed or replaced on the next apply, unless `portal_custom_domain` is set to it.
+- A hostname serves one project at a time: adding one that another project uses fails.
+- Deleting the project deletes its domain first, which frees the hostname.
+
 ## Behavior
 
 - Creating a project waits until it is ready, then applies the configuration. If provisioning is slow, raise `timeouts.create` (20 minutes by default).
@@ -40,5 +62,5 @@ Import is supported using the following syntax:
 
 {{ codefile "shell" .ImportFile }}
 
-Import fills the project's name and metadata. `config` and `sensitive_config` stay empty, so the first plan lists the keys in your configuration as additions. Applying sends nothing when their values already match the project.
+Import fills the project's name, metadata and portal custom domain. `config` and `sensitive_config` stay empty, so the first plan lists the keys in your configuration as additions. Applying sends nothing when their values already match the project.
 {{- end }}
