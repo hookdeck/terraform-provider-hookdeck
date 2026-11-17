@@ -13,9 +13,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
-	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"github.com/hashicorp/terraform-plugin-go/tftypes"
 )
 
 // configKeysPrivateKey is the private state key that records which config keys
@@ -24,11 +22,11 @@ import (
 // from a key Hookdeck added.
 const configKeysPrivateKey = "config_keys"
 
-const configDescription = "Only the keys you set are compared with Hookdeck. A different value in Hookdeck " +
-	"shows as a change, and the next apply restores yours. Keys Hookdeck adds or defaults are kept in state " +
-	"and are not compared. To clear a key in Hookdeck, remove it from `config` or set it to `null`. " +
-	"Read back from Hookdeck on refresh and import, so it also holds secrets Hookdeck returns, such as " +
-	"authentication tokens."
+const configDescription = "Only the keys you set are compared with Hookdeck: a different value in Hookdeck " +
+	"shows as a change, and the next apply restores yours. Keys you don't set, including defaults Hookdeck " +
+	"adds, are kept in state and not compared. To clear a key in Hookdeck, remove it from `config` or set it " +
+	"to `null`; after an import, use `null` until an apply has changed `config`. Read back from Hookdeck on " +
+	"refresh and import, so it also holds secrets Hookdeck returns, such as authentication tokens."
 
 // ConfigAttribute returns the config attribute of a source or destination.
 // lead is the first sentence of its description and kind ("source" or
@@ -50,7 +48,7 @@ func ConfigDataSourceAttribute(lead string) datasourceschema.StringAttribute {
 	return datasourceschema.StringAttribute{
 		Computed:            true,
 		Sensitive:           true,
-		MarkdownDescription: lead + " Hookdeck's full configuration, including defaults Hookdeck adds and authentication secrets.",
+		MarkdownDescription: strings.TrimSuffix(lead, ".") + ", as Hookdeck returns it, including defaults Hookdeck adds and authentication secrets.",
 		CustomType:          jsontypes.NormalizedType{},
 	}
 }
@@ -93,7 +91,7 @@ func (m configPlanModifier) PlanModifyString(ctx context.Context, req planmodifi
 	}
 	for _, key := range missing {
 		resp.Diagnostics.AddAttributeWarning(req.Path, "Config key not returned by Hookdeck",
-			fmt.Sprintf("Hookdeck does not return config key `%s` for this %s; it has no effect.", key, m.kind))
+			fmt.Sprintf("Hookdeck does not return config key `%s` for this %s, so it has no effect. Check the key name or remove it from `config`.", key, m.kind))
 	}
 	resp.PlanValue = planned
 }
@@ -159,9 +157,8 @@ type configKeys int
 const (
 	// configKeysAbsent: nothing stored. State written before the keys were
 	// tracked, which holds exactly the configuration the user applied (none
-	// when config was not set). A state that lost its private data also lands
-	// here: its config is Hookdeck's full config, so every key Hookdeck
-	// returned would count as set and be cleared by the next update.
+	// when config was not set). Private data is lost only by editing state by
+	// hand; such a state's full config then counts as set.
 	configKeysAbsent configKeys = iota
 	// configKeysUnrecorded: the provider never sent keys for this resource
 	// (imported), or the stored value cannot be read. Which keys the user
@@ -295,49 +292,10 @@ func DecodeObject(body []byte) (map[string]any, error) {
 	return obj, nil
 }
 
-// KeepUnchangedPlan turns a plan that only differs from state in computed
-// values into the state itself. config is Optional and Computed: when the
-// configuration sets it, the framework proposes a change to it and marks every
-// computed attribute that has no configuration (updated_at, disabled_at) as
-// unknown, before the config plan modifier decides there is no change. The
-// plan would then show an update for nothing. Call it from ModifyPlan, which
-// runs after attribute plan modifiers.
-//
-// An attribute that is unknown but not only computed (a value from another
-// resource, or the config attribute itself) is a real change: the plan is left alone.
-func KeepUnchangedPlan(ctx context.Context, state tfsdk.State, plan *tfsdk.Plan) diag.Diagnostics {
-	var diags diag.Diagnostics
-	if state.Raw.IsNull() || plan.Raw.IsNull() || !plan.Raw.IsKnown() {
-		return diags
-	}
-	var planned, prior map[string]tftypes.Value
-	if err := plan.Raw.As(&planned); err != nil {
-		diags.AddError("Error reading the plan", err.Error())
-		return diags
-	}
-	if err := state.Raw.As(&prior); err != nil {
-		diags.AddError("Error reading the state", err.Error())
-		return diags
-	}
-	restored := make(map[string]tftypes.Value, len(planned))
-	for name, value := range planned {
-		before, ok := prior[name]
-		if !ok {
-			return diags
-		}
-		if value.IsFullyKnown() {
-			if !value.Equal(before) {
-				return diags
-			}
-			restored[name] = value
-			continue
-		}
-		attribute, ok := plan.Schema.GetAttributes()[name]
-		if !ok || !attribute.IsComputed() || attribute.IsOptional() {
-			return diags
-		}
-		restored[name] = before
-	}
-	plan.Raw = tftypes.NewValue(plan.Raw.Type(), restored)
-	return diags
+// ConfigUnchanged reports whether an update leaves config as it is: the
+// planned config equals the stored one and the type is the same. The update
+// then sends no config, so a configuration the plan ignored (ignore_changes)
+// is not applied on the side.
+func ConfigUnchanged(plan, state jsontypes.Normalized, planType, stateType types.String) bool {
+	return !plan.IsUnknown() && !state.IsUnknown() && plan.Equal(state) && planType.Equal(stateType)
 }

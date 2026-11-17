@@ -272,9 +272,10 @@ func (m *sourceResourceModel) Delete(ctx context.Context, client *sdkclient.Clie
 	return nil
 }
 
-// toPayload builds the create payload. The config sent is the one the user
-// wrote, never m.Config: that can hold everything Hookdeck returned, including
-// auth, and sending auth back to a source creates a new integration.
+// toPayload builds the create payload and the base of the update payload from
+// the config the user wrote, never m.Config. m.Config can hold everything
+// Hookdeck returned, including auth, and sending auth back would replace the
+// authentication hookdeck_gateway_source_auth manages.
 func (m *sourceResourceModel) toPayload(userConfig jsontypes.Normalized) (map[string]interface{}, diag.Diagnostics) {
 	var diags diag.Diagnostics
 

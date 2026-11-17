@@ -74,12 +74,13 @@ func checkAPIConfigKeyIsObject(resourceName, key string) resource.TestCheckFunc 
 	}
 }
 
-func checkAPIConfigStringSlice(resourceName, key string, expected []string) resource.TestCheckFunc {
+func checkAPIAllowedHTTPMethods(resourceName string, expected []string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[resourceName]
 		if !ok {
 			return fmt.Errorf("resource not found: %s", resourceName)
 		}
+		const key = "allowed_http_methods"
 		config, err := fetchSourceConfig(rs.Primary.ID)
 		if err != nil {
 			return err
@@ -151,13 +152,13 @@ func TestAccSourceResource_RemoveAllowedHTTPMethodsResetsToDefault(t *testing.T)
 			{
 				Config: loadTestConfigFormatted(t, "with_allowed_http_methods.tf", rName),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					checkAPIConfigStringSlice(resourceName, "allowed_http_methods", []string{"GET", "POST"}),
+					checkAPIAllowedHTTPMethods(resourceName, []string{"GET", "POST"}),
 				),
 			},
 			{
 				Config: loadTestConfigFormatted(t, "without_allowed_http_methods.tf", rName),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					checkAPIConfigStringSlice(resourceName, "allowed_http_methods",
+					checkAPIAllowedHTTPMethods(resourceName,
 						[]string{"PUT", "POST", "PATCH", "DELETE"}),
 				),
 			},

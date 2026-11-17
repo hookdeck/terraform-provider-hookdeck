@@ -202,6 +202,11 @@ func (m *destinationResourceModel) Update(ctx context.Context, client *sdkclient
 	if diags.HasError() {
 		return diags
 	}
+	// The API requires config whenever type is sent, and keeps the stored
+	// config when neither is.
+	if _, hasConfig := payload["config"]; !hasConfig && priorState != nil && m.Type.Equal(priorState.Type) {
+		delete(payload, "type")
+	}
 
 	jsonData, err := json.Marshal(payload)
 	if err != nil {
@@ -265,8 +270,9 @@ func (m *destinationResourceModel) Delete(ctx context.Context, client *sdkclient
 	return nil
 }
 
-// toPayload builds the create payload. The config sent is the one the user
-// wrote, never m.Config, which can hold everything Hookdeck returned.
+// toPayload builds the create payload and the base of the update payload from
+// the config the user wrote, never m.Config. m.Config can hold everything
+// Hookdeck returned.
 func (m *destinationResourceModel) toPayload(userConfig jsontypes.Normalized) (map[string]interface{}, diag.Diagnostics) {
 	var diags diag.Diagnostics
 

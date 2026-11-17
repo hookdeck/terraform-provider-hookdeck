@@ -117,7 +117,7 @@ func TestAccDestinationResource_ConfigDrift(t *testing.T) {
 	})
 }
 
-// A secret set in the configuration is compared in clear.
+// A secret set in the configuration is compared by value, like any other key.
 func TestAccDestinationResource_ConfigWithAuth(t *testing.T) {
 	rName := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
 	address := "hookdeck_gateway_destination.test"
@@ -193,6 +193,46 @@ func TestAccDestinationResource_ConfigImport(t *testing.T) {
 			},
 			{Config: matching, ConfigPlanChecks: emptyPlan()},
 			{Config: differing, ConfigPlanChecks: updatePlan(address)},
+		},
+	})
+}
+
+// With ignore_changes on config, an update of another attribute sends no
+// config and Hookdeck keeps the config it holds.
+func TestAccDestinationResource_ConfigIgnoreChangesKeepsStoredConfig(t *testing.T) {
+	rName := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
+	address := "hookdeck_gateway_destination.test"
+	render := func(description string) string {
+		return fmt.Sprintf(`resource "hookdeck_gateway_destination" "test" {
+  name        = "tf-acc-destination-%s"
+  type        = "HTTP"
+  description = %q
+  config      = jsonencode({ url = "https://mock.hookdeck.com" })
+
+  lifecycle {
+    ignore_changes = [config]
+  }
+}
+`, rName, description)
+	}
+	var id string
+
+	acc.Test(t, resource.TestCase{
+		Steps: []resource.TestStep{
+			{Config: render("one"), Check: capture(address, &id)},
+			{
+				PreConfig:        func() { putConfig(t, id, map[string]any{"url": "https://changed.hookdeck.com"}) },
+				Config:           render("one"),
+				ConfigPlanChecks: emptyPlan(),
+			},
+			{
+				Config:           render("two"),
+				ConfigPlanChecks: updatePlan(address),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr(address, "description", "two"),
+					checkAPIConfigValue(address, "url", "https://changed.hookdeck.com"),
+				),
+			},
 		},
 	})
 }

@@ -165,13 +165,22 @@ func (r *sourceResource) Update(ctx context.Context, req resource.UpdateRequest,
 	if resp.Diagnostics.HasError() {
 		return
 	}
+	// A plan that keeps the stored config (nothing to change in it, or
+	// ignore_changes) sends no config and leaves the recorded keys as they are.
+	keepConfig := shared.ConfigUnchanged(data.Config, state.Config, data.Type, state.Type)
+	if keepConfig {
+		userConfig = jsontypes.NewNormalizedNull()
+		managed = nil
+	}
 	resp.Diagnostics.Append(data.Update(ctx, client, userConfig, managed, state)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	resp.Diagnostics.Append(shared.SetManagedConfigPaths(ctx, resp.Private, userConfig)...)
-	if resp.Diagnostics.HasError() {
-		return
+	if !keepConfig {
+		resp.Diagnostics.Append(shared.SetManagedConfigPaths(ctx, resp.Private, userConfig)...)
+		if resp.Diagnostics.HasError() {
+			return
+		}
 	}
 
 	resp.Diagnostics.Append(setModel(ctx, &resp.State, r.naming.Legacy, data)...)

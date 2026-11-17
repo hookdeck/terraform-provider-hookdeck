@@ -167,8 +167,7 @@ func TestAccMock_ConfigDriftOnUnmanagedKeyIsIgnored(t *testing.T) {
 	})
 }
 
-// Removing a key from the configuration clears it in Hookdeck, as before
-// the config was read back.
+// Removing a key from the configuration clears it in Hookdeck.
 func TestAccMock_ConfigRemovedKeyIsCleared(t *testing.T) {
 	m := driftMock(t)
 	with := driftSource("hookdeck_gateway_source", `{"allowed_http_methods":["POST"],"custom_response":{"content_type":"json","body":"x"}}`)
@@ -289,8 +288,7 @@ func TestAccMock_ConfigImportRemovedKey(t *testing.T) {
 				ImportStatePersist: true,
 			},
 			{Config: with, ConfigPlanChecks: emptyPlan()},
-			// The documented edge: nothing was recorded as set, so a removed key
-			// is not planned.
+			// After an import nothing is recorded as set, so a removed key is not planned.
 			{Config: without, ConfigPlanChecks: emptyPlan()},
 			{
 				Config:           cleared,
@@ -412,6 +410,91 @@ func TestAccMock_ConfigMatchingDoesNotHideOtherChanges(t *testing.T) {
 			{Config: described, ConfigPlanChecks: emptyPlan()},
 		},
 	})
+}
+
+// With ignore_changes on config, an update of another attribute sends no
+// config: a value changed in Hookdeck, and a configuration edit the plan
+// ignored, both stay as they are.
+func TestAccMock_ConfigIgnoreChangesSendsNoConfig(t *testing.T) {
+	for _, tc := range []struct {
+		name, resourceType, objectType, addr, prefix, key string
+		edited                                            any
+		config                                            string
+		set                                               func(m *mockAPI, id string)
+	}{
+		{
+			name: "source", resourceType: "hookdeck_gateway_source", objectType: "HTTP", addr: sourceAddr,
+			prefix: "/sources/", key: "allowed_http_methods",
+			edited: []any{"PUT"},
+			config: `{"allowed_http_methods":["POST"]}`,
+			set:    func(m *mockAPI, id string) { m.setSourceConfig(id, "allowed_http_methods", []any{"PUT"}) },
+		},
+		{
+			name: "destination", resourceType: "hookdeck_gateway_destination", objectType: "HTTP", addr: destinationAddr,
+			prefix: "/destinations/", key: "url",
+			edited: "https://changed.hookdeck.com",
+			config: `{"url":"https://mock.hookdeck.com"}`,
+			set:    func(m *mockAPI, id string) { m.setDestinationConfig(id, "url", "https://changed.hookdeck.com") },
+		},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			m := driftMock(t)
+			render := func(description, config string) string {
+				return fmt.Sprintf(`resource %q "test" {
+  name        = "mock-drift"
+  type        = %q
+  description = %q
+  config      = %q
+
+  lifecycle {
+    ignore_changes = [config]
+  }
+}
+`, tc.resourceType, tc.objectType, description, config)
+			}
+			var id string
+
+			resource.Test(t, resource.TestCase{
+				ProtoV6ProviderFactories: acc.ProviderFactories,
+				Steps: []resource.TestStep{
+					{Config: render("one", tc.config), Check: captureID(tc.addr, &id)},
+					{
+						PreConfig:        func() { tc.set(m, id) },
+						Config:           render("one", tc.config),
+						ConfigPlanChecks: emptyPlan(),
+					},
+					{
+						// The edited configuration is ignored too.
+						Config:           render("two", `{"`+tc.key+`":"ignored"}`),
+						ConfigPlanChecks: updatePlan(tc.addr),
+						Check: func(*terraform.State) error {
+							var puts []mockRequest
+							for _, r := range m.requestsTo(tc.prefix) {
+								if r.method == http.MethodPut {
+									puts = append(puts, r)
+								}
+							}
+							if len(puts) == 0 {
+								return fmt.Errorf("no PUT sent")
+							}
+							if config, ok := puts[len(puts)-1].body["config"]; ok {
+								return fmt.Errorf("the update sent config %v", config)
+							}
+							var stored map[string]any
+							if err := json.Unmarshal([]byte(storedConfig(m, id)), &stored); err != nil {
+								return err
+							}
+							if !reflect.DeepEqual(stored[tc.key], tc.edited) {
+								return fmt.Errorf("%s = %v, want the value set in Hookdeck %v", tc.key, stored[tc.key], tc.edited)
+							}
+							return nil
+						},
+					},
+					{Config: render("two", tc.config), ConfigPlanChecks: emptyPlan()},
+				},
+			})
+		})
+	}
 }
 
 // The data source returns the config Hookdeck holds, defaults included.

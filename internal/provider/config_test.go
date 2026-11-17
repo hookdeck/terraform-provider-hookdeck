@@ -13,9 +13,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 )
 
-// releasedV3 is a released v3 provider, whose state holds the configuration
-// as written.
-const releasedV3 = "3.0.0-rc.1"
+// releasedV3 is the last v3 provider before config is read back from
+// Hookdeck: its state holds the configuration as written.
+const releasedV3 = "3.0.0"
 
 // A source and its authentication: Hookdeck returns the authentication in
 // the source's config, which the source does not compare. Changing the

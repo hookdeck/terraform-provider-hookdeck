@@ -82,7 +82,7 @@ func TestAccSourceResource_ConfigDrift(t *testing.T) {
 				},
 				Config:           config,
 				ConfigPlanChecks: updatePlan(address),
-				Check:            checkAPIConfigStringSlice(address, "allowed_http_methods", []string{"GET", "POST"}),
+				Check:            checkAPIAllowedHTTPMethods(address, []string{"GET", "POST"}),
 			},
 		},
 	})
@@ -139,6 +139,54 @@ func TestAccSourceResource_ConfigImport(t *testing.T) {
 				ImportStatePersist: true,
 			},
 			{Config: matching, ConfigPlanChecks: emptyPlan()},
+		},
+	})
+}
+
+// With ignore_changes on config, an update of another attribute sends no
+// config and Hookdeck keeps the config it holds.
+func TestAccSourceResource_ConfigIgnoreChangesKeepsStoredConfig(t *testing.T) {
+	rName := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
+	address := "hookdeck_gateway_source.test"
+	render := func(description string) string {
+		return fmt.Sprintf(`resource "hookdeck_gateway_source" "test" {
+  name        = "tf-acc-source-%s"
+  type        = "HTTP"
+  description = %q
+  config      = jsonencode({ allowed_http_methods = ["GET", "POST"] })
+
+  lifecycle {
+    ignore_changes = [config]
+  }
+}
+`, rName, description)
+	}
+	var id string
+
+	acc.Test(t, resource.TestCase{
+		Steps: []resource.TestStep{
+			{Config: render("one"), Check: capture(address, &id)},
+			{
+				PreConfig: func() {
+					status, body, err := acc.RequestCurrent("PUT", "/sources/"+id, nil, map[string]any{
+						"type":   "HTTP",
+						"config": map[string]any{"allowed_http_methods": []string{"PUT"}},
+					})
+					if err != nil || status > 299 {
+						t.Fatalf("PUT source %s: %d %v %v", id, status, body, err)
+					}
+				},
+				Config:           render("one"),
+				ConfigPlanChecks: emptyPlan(),
+			},
+			{
+				Config:           render("two"),
+				ConfigPlanChecks: updatePlan(address),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr(address, "description", "two"),
+					checkAPIAllowedHTTPMethods(address, []string{"PUT"}),
+				),
+			},
 		},
 	})
 }
