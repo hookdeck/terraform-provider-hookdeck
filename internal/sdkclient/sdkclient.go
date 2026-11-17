@@ -21,6 +21,8 @@ import (
 type Client struct {
 	RawClient RawClientInterface
 
+	OutpostRawClient RawClientInterface
+
 	// Scope is the key kind and the provider's project.
 	Scope projectscope.Scope
 
@@ -28,7 +30,8 @@ type Client struct {
 }
 
 const (
-	defaultAPIBase = "api.hookdeck.com"
+	defaultAPIBase        = "api.hookdeck.com"
+	defaultOutpostAPIBase = "api.outpost.hookdeck.com"
 
 	// APIVersion is the Hookdeck API version every request targets.
 	APIVersion = "2026-09-01"
@@ -166,13 +169,9 @@ func getSharedTestRateLimiter() RateLimiter {
 }
 
 // InitHookdeckSDKClient creates a client with Hookdeck's rate limiting.
-func InitHookdeckSDKClient(apiBase string, apiKey string, providerVersion string, opts ...RawClientOption) Client {
-	if apiBase == "" {
-		apiBase = defaultAPIBase
-	}
-	if !strings.HasPrefix(apiBase, "http") {
-		apiBase = "https://" + apiBase
-	}
+func InitHookdeckSDKClient(apiBase, outpostAPIBase, apiKey, providerVersion string, opts ...RawClientOption) Client {
+	apiBase = baseURL(apiBase, defaultAPIBase)
+	outpostAPIBase = baseURL(outpostAPIBase, defaultOutpostAPIBase)
 	header := http.Header{}
 	initUserAgentHeader(header, providerVersion)
 
@@ -203,11 +202,30 @@ func InitHookdeckSDKClient(apiBase string, apiKey string, providerVersion string
 		opt(rawClient)
 	}
 
-	return Client{
-		RawClient:     rawClient,
-		Scope:         projectscope.Scope{KeyKind: projectscope.KindOfKey(apiKey)},
-		projectChecks: &projectChecks{results: map[string]*projectCheck{}},
+	outpostRawClient := &RawClient{
+		apiKey:      apiKey,
+		apiBase:     outpostAPIBase,
+		header:      header,
+		httpClient:  rawClient.httpClient,
+		rateLimiter: rawClient.rateLimiter,
 	}
+
+	return Client{
+		RawClient:        rawClient,
+		OutpostRawClient: outpostRawClient,
+		Scope:            projectscope.Scope{KeyKind: projectscope.KindOfKey(apiKey)},
+		projectChecks:    &projectChecks{results: map[string]*projectCheck{}},
+	}
+}
+
+func baseURL(base, fallback string) string {
+	if base == "" {
+		base = fallback
+	}
+	if !strings.HasPrefix(base, "http") {
+		base = "https://" + base
+	}
+	return base
 }
 
 // SendRequest sends an HTTP request with rate limiting.

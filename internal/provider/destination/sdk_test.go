@@ -83,7 +83,7 @@ func TestDestinationUsesNewAPIVersion(t *testing.T) {
 		_, _ = io.WriteString(w, `{"id":"des_test","name":"test","team_id":"tm_test","created_at":"2026-09-01T00:00:00Z","updated_at":"2026-09-01T00:00:00Z","type":"HTTP"}`)
 	}))
 	defer server.Close()
-	client := sdkclient.InitHookdeckSDKClient(server.URL, "test", "test")
+	client := sdkclient.InitHookdeckSDKClient(server.URL, "", "test", "test")
 	m := destinationResourceModel{Name: types.StringValue("test"), Config: jsontypes.NewNormalizedValue(`{"delivery_policy":{"rate":10}}`)}
 	ctx := t.Context()
 	if d := m.Create(ctx, &client); d.HasError() {

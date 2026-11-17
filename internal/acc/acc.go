@@ -36,10 +36,11 @@ import (
 )
 
 const (
-	EnvAPIKey    = "HOOKDECK_API_KEY"
-	EnvOrgAPIKey = "HOOKDECK_ORG_API_KEY"
-	EnvProjectID = "HOOKDECK_PROJECT_ID"
-	EnvAPIBase   = "HOOKDECK_API_BASE"
+	EnvAPIKey         = "HOOKDECK_API_KEY"
+	EnvOrgAPIKey      = "HOOKDECK_ORG_API_KEY"
+	EnvProjectID      = "HOOKDECK_PROJECT_ID"
+	EnvAPIBase        = "HOOKDECK_API_BASE"
+	EnvOutpostAPIBase = "HOOKDECK_OUTPOST_API_BASE"
 
 	// NamePrefix starts the name of everything a test creates.
 	NamePrefix = "tf-acc-"
@@ -213,7 +214,7 @@ func OrgKey(t *testing.T) string {
 
 func orgClient(t *testing.T) sdkclient.Client {
 	t.Helper()
-	return sdkclient.InitHookdeckSDKClient(os.Getenv(EnvAPIBase), OrgKey(t), "test")
+	return sdkclient.InitHookdeckSDKClient(os.Getenv(EnvAPIBase), os.Getenv(EnvOutpostAPIBase), OrgKey(t), "test")
 }
 
 // RandSuffix returns a random string for resource names.
@@ -337,7 +338,7 @@ func cleanup() {
 	if projectKeyID == "" {
 		return
 	}
-	client := sdkclient.InitHookdeckSDKClient(os.Getenv(EnvAPIBase), os.Getenv(EnvOrgAPIKey), "test")
+	client := sdkclient.InitHookdeckSDKClient(os.Getenv(EnvAPIBase), os.Getenv(EnvOutpostAPIBase), os.Getenv(EnvOrgAPIKey), "test")
 	if err := client.Do(context.Background(), http.MethodDelete, "/organizations/current/api-keys/"+projectKeyID, nil, nil, nil); err != nil {
 		fmt.Fprintf(os.Stderr, "deleting test project key %s: %v\n", projectKeyID, err)
 	}
@@ -364,7 +365,25 @@ func RequestCurrent(method, path string, query url.Values, payload any) (int, ma
 // Send calls the API under the API version, in projectID when it is not
 // empty.
 func Send(apiKey, projectID, method, path string, query url.Values, payload any) (int, map[string]any, error) {
-	client := sdkclient.InitHookdeckSDKClient(os.Getenv(EnvAPIBase), apiKey, "test")
+	client := sdkclient.InitHookdeckSDKClient(os.Getenv(EnvAPIBase), os.Getenv(EnvOutpostAPIBase), apiKey, "test")
+	return send(client.RawClient, projectID, method, path, query, payload)
+}
+
+// OutpostRequest calls the Outpost API with the organization key, in
+// projectID. It returns the status and the decoded JSON object, if the body
+// is one.
+func OutpostRequest(t *testing.T, projectID, method, path string, payload any) (int, map[string]any) {
+	t.Helper()
+	OrgKey(t)
+	client := sdkclient.InitHookdeckSDKClient(os.Getenv(EnvAPIBase), os.Getenv(EnvOutpostAPIBase), os.Getenv(EnvOrgAPIKey), "test")
+	status, body, err := send(client.Outpost().RawClient, projectID, method, path, nil, payload)
+	if err != nil {
+		t.Fatalf("%s %s: %v", method, path, err)
+	}
+	return status, body
+}
+
+func send(raw sdkclient.RawClientInterface, projectID, method, path string, query url.Values, payload any) (int, map[string]any, error) {
 	opts := &sdkclient.RequestOptions{Headers: http.Header{}, QueryParams: query}
 	if projectID != "" {
 		opts.Headers.Set(sdkclient.ProjectHeader, projectID)
@@ -377,7 +396,7 @@ func Send(apiKey, projectID, method, path string, query url.Values, payload any)
 		opts.Body = bytes.NewReader(data)
 		opts.Headers.Set("Content-Type", "application/json")
 	}
-	resp, err := client.RawClient.SendRequest(context.Background(), method, "/"+sdkclient.APIVersion+path, opts)
+	resp, err := raw.SendRequest(context.Background(), method, "/"+sdkclient.APIVersion+path, opts)
 	if err != nil {
 		return 0, nil, err
 	}
