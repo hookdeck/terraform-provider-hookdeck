@@ -229,6 +229,10 @@ func (m *transformationResourceModel) Delete(ctx context.Context, client *sdkcli
 		return diags
 	}
 
+	if sdkclient.IsGoneStatus(response.StatusCode) {
+		return nil
+	}
+
 	if response.StatusCode > 299 {
 		if body, err := io.ReadAll(response.Body); err == nil {
 			diags.AddError("Error deleting transformation", string(body))

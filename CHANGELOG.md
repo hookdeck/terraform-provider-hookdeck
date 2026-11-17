@@ -6,6 +6,10 @@ FEATURES:
 * New provider attribute `outpost_api_base` (environment variable `HOOKDECK_OUTPOST_API_BASE`) sets the Outpost API host. The default is `api.outpost.hookdeck.com`.
 * `hookdeck_outpost_project` has `portal_custom_domain` to serve the project's portal on your own hostname, and `portal_custom_domain_status` with the DNS records to create and the status of the domain. The data source returns both.
 
+BUG FIXES:
+
+* Destroying a source, source auth, destination, connection or transformation that no longer exists in Hookdeck succeeds instead of failing, for example with `terraform destroy -refresh=false`.
+
 ## 3.0.0 (2026-11-17)
 
 See the [v2 to v3 migration guide](https://registry.terraform.io/providers/hookdeck/hookdeck/latest/docs/guides/v2-to-v3-migration).

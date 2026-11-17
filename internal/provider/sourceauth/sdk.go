@@ -104,8 +104,8 @@ func (m *sourceAuthResourceModel) Retrieve(ctx context.Context, client *sdkclien
 	return true, m.Refresh(source)
 }
 
-// existingSource is doRetrieve for writes, where a missing source is an
-// error.
+// existingSource is doRetrieve for create and update, where a missing source
+// is an error.
 func (m *sourceAuthResourceModel) existingSource(ctx context.Context, client *sdkclient.Client) (map[string]interface{}, diag.Diagnostics) {
 	source, diags := m.doRetrieve(ctx, client)
 	if !diags.HasError() && source == nil {
@@ -172,8 +172,9 @@ func (m *sourceAuthResourceModel) Update(ctx context.Context, client *sdkclient.
 func (m *sourceAuthResourceModel) Delete(ctx context.Context, client *sdkclient.Client) diag.Diagnostics {
 	var diags diag.Diagnostics
 
-	initSource, diags := m.existingSource(ctx, client)
-	if diags.HasError() {
+	// A missing source means its auth is already gone.
+	initSource, diags := m.doRetrieve(ctx, client)
+	if diags.HasError() || initSource == nil {
 		return diags
 	}
 
@@ -205,6 +206,10 @@ func (m *sourceAuthResourceModel) Delete(ctx context.Context, client *sdkclient.
 	if err != nil {
 		diags.AddError("Error deleting source auth", err.Error())
 		return diags
+	}
+
+	if sdkclient.IsGoneStatus(response.StatusCode) {
+		return nil
 	}
 
 	if response.StatusCode > 299 {
