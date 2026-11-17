@@ -28,8 +28,15 @@ type mockAPI struct {
 	// strippedKeys are top-level config keys the API drops on write, the way
 	// it drops keys it does not know for the type.
 	strippedKeys map[string]bool
-	seq          int
-	requests     []mockRequest
+	// items holds connections and transformations by id.
+	items map[string]map[string]any
+	// faults answers any request that names a resource id with a fixed
+	// status, keyed "METHOD collection" (for example "DELETE destinations").
+	faults map[string]int
+	// faultHits counts the requests each fault answered.
+	faultHits map[string]int
+	seq       int
+	requests  []mockRequest
 }
 
 type mockKey struct {
@@ -69,12 +76,14 @@ var apiVersionPrefix = regexp.MustCompile(`^/\d{4}-\d{2}-\d{2}`)
 func newMockAPI(t *testing.T) *mockAPI {
 	t.Helper()
 	m := &mockAPI{
-		keys:     map[string]*mockKey{},
-		projects: map[string]*mockProject{},
-		sources:  map[string]map[string]any{},
-
+		keys:         map[string]*mockKey{},
+		projects:     map[string]*mockProject{},
+		sources:      map[string]map[string]any{},
 		destinations: map[string]map[string]any{},
 		strippedKeys: map[string]bool{},
+		items:        map[string]map[string]any{},
+		faults:       map[string]int{},
+		faultHits:    map[string]int{},
 	}
 	m.server = httptest.NewServer(http.HandlerFunc(m.handle))
 	t.Cleanup(m.server.Close)
@@ -153,7 +162,14 @@ func (m *mockAPI) handle(w http.ResponseWriter, r *http.Request) {
 	if len(parts) > 1 {
 		id = parts[1]
 	}
+	if status, faulty := m.faults[r.Method+" "+parts[0]]; faulty && id != "" {
+		m.faultHits[r.Method+" "+parts[0]]++
+		apiError(w, status, "FAULT", "Injected", map[string]any{"id": id})
+		return
+	}
 	switch parts[0] {
+	case "connections", "transformations":
+		m.handleItems(w, r.Method, key, header, parts[0], id, body)
 	case "projects":
 		m.handleProjects(w, r.Method, key, id, body)
 	case "sources":
@@ -453,6 +469,47 @@ func (m *mockAPI) setSourceConfig(id, key string, value any) {
 // setDestinationConfig is setSourceConfig for a destination.
 func (m *mockAPI) setDestinationConfig(id, key string, value any) {
 	m.update(func() { m.destinations[id]["config"].(map[string]any)[key] = value }) //nolint:forcetypeassert
+}
+
+// handleItems serves the resources that have no behaviour of their own in
+// the tests: it stores what it is sent.
+func (m *mockAPI) handleItems(w http.ResponseWriter, method string, key *mockKey, header, collection, id string, body map[string]any) {
+	project, ok := m.project(w, key, header)
+	if !ok {
+		return
+	}
+	if id == "" && method == http.MethodPost {
+		m.seq++
+		item := map[string]any{}
+		for k, v := range body {
+			item[k] = v
+		}
+		item["id"] = fmt.Sprintf("%s_%d", collection[:3], m.seq)
+		item["team_id"] = project
+		item["created_at"] = mockTime
+		item["updated_at"] = mockTime
+		if collection == "connections" {
+			item["source"] = map[string]any{"id": body["source_id"]}
+			item["destination"] = map[string]any{"id": body["destination_id"]}
+		}
+		m.items[item["id"].(string)] = item //nolint:forcetypeassert
+		writeJSON(w, 200, item)
+		return
+	}
+	item, ok := m.items[id]
+	if !ok || item["team_id"] != project {
+		apiError(w, 404, "NOT_FOUND", "Not Found", map[string]any{"id": id})
+		return
+	}
+	switch method {
+	case http.MethodPut:
+		for k, v := range body {
+			item[k] = v
+		}
+	case http.MethodDelete:
+		delete(m.items, id)
+	}
+	writeJSON(w, 200, item)
 }
 
 func writeJSON(w http.ResponseWriter, status int, v any) {

@@ -461,3 +461,23 @@ func TestAccConnectionResource_Issue191(t *testing.T) {
 		},
 	})
 }
+
+func TestAccConnectionResource_EmptyRules(t *testing.T) {
+	rName := acctest.RandStringFromCharSet(10, acctest.CharSetAlphaNum)
+	resourceName := fmt.Sprintf("hookdeck_connection.test_%s", rName)
+
+	acc.Test(t, resource.TestCase{
+		Steps: []resource.TestStep{
+			// Create with an empty list; a null result fails the apply as inconsistent
+			{
+				Config: loadTestConfigFormatted("with_empty_rules.tf", rName),
+				Check:  resource.TestCheckResourceAttr(resourceName, "rules.#", "0"),
+			},
+			// Re-plan the same config to verify no drift
+			{
+				Config:   loadTestConfigFormatted("with_empty_rules.tf", rName),
+				PlanOnly: true,
+			},
+		},
+	})
+}

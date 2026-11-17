@@ -1,4 +1,4 @@
-## 3.1.0 (unreleased)
+## 3.1.0 (Unreleased)
 
 FEATURES:
 
@@ -16,7 +16,11 @@ NOTES:
 * After an import, removing a key from `config` does not clear it in Hookdeck until an apply has changed `config`; set the key to `null` to clear it before then. Adding a key whose value Hookdeck already holds plans no change until then either.
 * Going back to 3.0.x after 3.1.0 has refreshed state is not safe: the first update of a source or destination on 3.0.x clears every key Hookdeck added to it, including `auth`. Remove the sources and destinations from state and import them again on 3.0.x instead.
 
-## 3.0.0 (2026-10-17)
+BUG FIXES:
+
+* Destroying a source, source auth, destination, connection or transformation that no longer exists in Hookdeck succeeds instead of failing, for example with `terraform destroy -refresh=false`.
+
+## 3.0.0 (2026-11-17)
 
 See the [v2 to v3 migration guide](https://registry.terraform.io/providers/hookdeck/hookdeck/latest/docs/guides/v2-to-v3-migration).
 

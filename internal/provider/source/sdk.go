@@ -260,6 +260,10 @@ func (m *sourceResourceModel) Delete(ctx context.Context, client *sdkclient.Clie
 		return diags
 	}
 
+	if sdkclient.IsGoneStatus(response.StatusCode) {
+		return nil
+	}
+
 	if response.StatusCode > 299 {
 		if body, err := io.ReadAll(response.Body); err == nil {
 			diags.AddError("Error deleting source", string(body))
