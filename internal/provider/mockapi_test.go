@@ -25,6 +25,11 @@ type mockAPI struct {
 	sources  map[string]map[string]any
 	seq      int
 	requests []mockRequest
+
+	outposts       map[string]*mockOutpost
+	outpostServer  *httptest.Server
+	provisionReads int
+	patchBodies    []map[string]*string
 }
 
 type mockKey struct {
@@ -66,10 +71,14 @@ func newMockAPI(t *testing.T) *mockAPI {
 		keys:     map[string]*mockKey{},
 		projects: map[string]*mockProject{},
 		sources:  map[string]map[string]any{},
+		outposts: map[string]*mockOutpost{},
 	}
 	m.server = httptest.NewServer(http.HandlerFunc(m.handle))
 	t.Cleanup(m.server.Close)
 	t.Setenv("HOOKDECK_API_BASE", m.server.URL)
+	m.outpostServer = httptest.NewServer(http.HandlerFunc(m.handleOutpost))
+	t.Cleanup(m.outpostServer.Close)
+	t.Setenv("HOOKDECK_OUTPOST_API_BASE", m.outpostServer.URL)
 	return m
 }
 
@@ -77,6 +86,9 @@ func (m *mockAPI) addProject(id, name, projectType string) {
 	m.mu.Lock()
 	defer m.mu.Unlock()
 	m.projects[id] = &mockProject{ID: id, Name: name, Type: projectType, OrganizationID: mockOrg, NotificationMethods: []string{}, CreatedAt: mockTime, UpdatedAt: mockTime}
+	if projectType == "outpost" {
+		m.outposts[id] = &mockOutpost{overrides: map[string]string{}}
+	}
 }
 
 func (m *mockAPI) addKey(apiKey string, key mockKey) {
@@ -170,6 +182,9 @@ func (m *mockAPI) handleProjects(w http.ResponseWriter, method string, key *mock
 			projectType, _ := body["type"].(string)
 			p := &mockProject{ID: fmt.Sprintf("tm_new%d", m.seq), Name: name, Type: projectType, OrganizationID: key.org, NotificationMethods: []string{}, CreatedAt: mockTime, UpdatedAt: mockTime}
 			m.projects[p.ID] = p
+			if projectType == "outpost" {
+				m.outposts[p.ID] = &mockOutpost{overrides: map[string]string{}, notProvisioned: m.provisionReads}
+			}
 			if key.grants != nil {
 				key.grants[p.ID] = true
 			}
@@ -216,6 +231,7 @@ func (m *mockAPI) handleProjects(w http.ResponseWriter, method string, key *mock
 		writeJSON(w, 200, p)
 	case http.MethodDelete:
 		delete(m.projects, id)
+		delete(m.outposts, id)
 		for sourceID, source := range m.sources {
 			if source["team_id"] == id {
 				delete(m.sources, sourceID)
