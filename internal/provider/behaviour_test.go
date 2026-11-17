@@ -1,6 +1,7 @@
 package provider_test
 
 import (
+	"fmt"
 	"regexp"
 	"testing"
 
@@ -74,6 +75,51 @@ func TestAccBehaviour_DeletedOutsideTerraform(t *testing.T) {
 				},
 				Config:           loadFixture(t, "gateway_basic.tf", suffix),
 				ConfigPlanChecks: resource.ConfigPlanChecks{PreApply: recreated},
+			},
+		},
+	})
+}
+
+// Rules removed from a connection outside Terraform show as drift on refresh
+// and the next apply puts them back.
+func TestAccBehaviour_ConnectionRulesRemovedOutsideTerraform(t *testing.T) {
+	suffix := acctest.RandStringFromCharSet(8, acctest.CharSetAlphaNum)
+	address := "hookdeck_gateway_connection.test"
+	var id string
+
+	acc.Test(t, resource.TestCase{
+		Steps: []resource.TestStep{
+			{
+				Config: loadFixture(t, "gateway_basic.tf", suffix),
+				Check: func(s *terraform.State) error {
+					id = s.RootModule().Resources[address].Primary.ID
+					return nil
+				},
+			},
+			{
+				PreConfig: func() {
+					status, body := acc.Request(t, acc.OrgKey(t), acc.ProjectA(t), "PUT", "/connections/"+id, map[string]any{"rules": []any{}})
+					if status > 299 {
+						t.Fatalf("clear rules of %s: %d %v", id, status, body)
+					}
+				},
+				Config: loadFixture(t, "gateway_basic.tf", suffix),
+				ConfigPlanChecks: resource.ConfigPlanChecks{PreApply: []plancheck.PlanCheck{
+					plancheck.ExpectResourceAction(address, plancheck.ResourceActionUpdate),
+				}},
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr(address, "rules.#", "1"),
+					func(*terraform.State) error {
+						status, body, err := acc.RequestCurrent("GET", "/connections/"+id, nil, nil)
+						if err != nil {
+							return err
+						}
+						if rules, _ := body["rules"].([]any); status > 299 || len(rules) != 1 {
+							return fmt.Errorf("connection %s after apply: status %d, rules %v", id, status, body["rules"])
+						}
+						return nil
+					},
+				),
 			},
 		},
 	})
