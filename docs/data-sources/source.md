@@ -24,7 +24,7 @@ Both names take the same arguments. Examples and import instructions are on the 
 
 ### Read-Only
 
-- `config` (String, Sensitive) Source configuration as JSON. Hookdeck's full configuration, including defaults Hookdeck adds and authentication secrets.
+- `config` (String, Sensitive) Source configuration as JSON, as Hookdeck returns it, including defaults Hookdeck adds and authentication secrets.
 - `created_at` (String) Date the source was created
 - `description` (String) Description for the source
 - `disabled_at` (String) Date the source was disabled

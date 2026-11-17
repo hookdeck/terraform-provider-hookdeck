@@ -20,7 +20,7 @@ Both names take the same arguments. Examples and import instructions are on the 
 
 ### Optional
 
-- `config` (String, Sensitive) Source configuration as JSON. Leave `auth` out when `hookdeck_gateway_source_auth` manages the source's authentication. Only the keys you set are compared with Hookdeck. A different value in Hookdeck shows as a change, and the next apply restores yours. Keys Hookdeck adds or defaults are kept in state and are not compared. To clear a key in Hookdeck, remove it from `config` or set it to `null`. Read back from Hookdeck on refresh and import, so it also holds secrets Hookdeck returns, such as authentication tokens.
+- `config` (String, Sensitive) Source configuration as JSON. Leave `auth` out when `hookdeck_gateway_source_auth` manages the source's authentication. Only the keys you set are compared with Hookdeck: a different value in Hookdeck shows as a change, and the next apply restores yours. Keys you don't set, including defaults Hookdeck adds, are kept in state and not compared. To clear a key in Hookdeck, remove it from `config` or set it to `null`; after an import, use `null` until an apply has changed `config`. Read back from Hookdeck on refresh and import, so it also holds secrets Hookdeck returns, such as authentication tokens.
 - `description` (String) Description for the source
 - `project_id` (String) ID of the project the resource belongs to. With a project API key or a provider `project_id`, every resource is in that project and this can be omitted. With an organization API key and no provider `project_id`, it is required. Changing it replaces the resource.
 - `type` (String) Type of the source
