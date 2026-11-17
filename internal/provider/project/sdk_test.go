@@ -117,6 +117,9 @@ func TestRetrieve(t *testing.T) {
 		{"outpost project", response{200, projectJSON("tm_1", "prod", "outpost")}, true, "Unsupported project type"},
 		{"console project", response{200, projectJSON("tm_1", "prod", "console")}, true, "Unsupported project type"},
 		{"not found", response{404, `{"message":"Not Found"}`}, false, ""},
+		{"unknown project", response{404, `{"code":"NOT_FOUND","message":"Team Not Found","data":{"id":"tm_1"}}`}, false, ""},
+		{"deleted project", response{410, `{"message":"Gone"}`}, false, ""},
+		{"another organization", response{401, "Unauthorized"}, false, "Error reading project"},
 		{"no access", response{403, `{"code":"INSUFFICIENT_SCOPE"}`}, false, "Error reading project"},
 	}
 	for _, tc := range cases {
@@ -222,4 +225,44 @@ func TestResource_projectKeyIsRefused(t *testing.T) {
 	if planResp.Diagnostics.HasError() {
 		t.Errorf("organization key: %v", planResp.Diagnostics)
 	}
+}
+
+// A project key sends no project header: the API answers 404 for another
+// project without it and 401 with it.
+func TestRetrieve_onlyOrganizationKeySendsHeader(t *testing.T) {
+	var headers http.Header
+	client := sdkclient.Client{
+		RawClient: headerAPI{seen: &headers, status: 404, body: `{"message":"Not Found"}`},
+		Scope:     projectscope.Scope{KeyKind: projectscope.KeyKindProject},
+	}
+	m := projectResourceModel{ID: types.StringValue("tm_2")}
+	found, diags := m.retrieve(t.Context(), gateway, client)
+	if found || diags.HasError() {
+		t.Fatalf("found = %v, diagnostics = %v", found, diags)
+	}
+	if headers.Get(sdkclient.ProjectHeader) != "" {
+		t.Errorf("project header sent: %v", headers)
+	}
+
+	orgClient := sdkclient.Client{
+		RawClient: headerAPI{seen: &headers, status: 404, body: `{"message":"Not Found"}`},
+		Scope:     projectscope.Scope{KeyKind: projectscope.KeyKindOrganization},
+	}
+	if _, diags := m.retrieve(t.Context(), gateway, orgClient); diags.HasError() {
+		t.Fatal(diags)
+	}
+	if headers.Get(sdkclient.ProjectHeader) != "tm_2" {
+		t.Errorf("organization key: header = %v", headers)
+	}
+}
+
+type headerAPI struct {
+	seen   *http.Header
+	status int
+	body   string
+}
+
+func (h headerAPI) SendRequest(_ context.Context, _, _ string, opts *sdkclient.RequestOptions) (*http.Response, error) {
+	*h.seen = opts.Headers
+	return &http.Response{StatusCode: h.status, Body: io.NopCloser(strings.NewReader(h.body))}, nil
 }
