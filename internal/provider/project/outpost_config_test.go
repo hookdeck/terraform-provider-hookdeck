@@ -52,6 +52,14 @@ func TestValidateConfig(t *testing.T) {
 		{name: "null value in sensitive_config", sensitive: map[string]types.String{"OTEL_EXPORTER_OTLP_HEADERS": types.StringNull()}, wantError: []string{"OTEL_EXPORTER_OTLP_HEADERS", "Remove the key"}},
 		{name: "null and unknown maps", config: nil, sensitive: nil},
 		{name: "unknown value", config: map[string]types.String{"TOPICS": types.StringUnknown()}},
+		{name: "unknown value of a url key", config: map[string]types.String{"OTEL_EXPORTER_OTLP_ENDPOINT": types.StringUnknown()}},
+		{name: "url without credentials in config", config: strs("OTEL_EXPORTER_OTLP_ENDPOINT", "https://otel.example.com:4318/v1?x=a@b")},
+		{name: "url with user and password in config", config: strs("OTEL_EXPORTER_OTLP_ENDPOINT", "https://user:token@otel.example.com"), wantError: []string{"OTEL_EXPORTER_OTLP_ENDPOINT", "sensitive_config"}},
+		{name: "url with user only in config", config: strs("PORTAL_LOGO", "https://user@cdn.example.com/logo.png"), wantError: []string{"PORTAL_LOGO", "sensitive_config"}},
+		{name: "url with credentials under an unknown key", config: strs("NEW_URL", "https://user:token@example.com"), wantError: []string{"NEW_URL", "sensitive_config"}},
+		{name: "unparseable url with credentials in config", config: strs("PUBLISH_AWS_SQS_ENDPOINT", "https://user:p%ss@sqs.example.com"), wantError: []string{"PUBLISH_AWS_SQS_ENDPOINT", "sensitive_config"}},
+		{name: "url with credentials in sensitive_config", sensitive: strs("OTEL_EXPORTER_OTLP_ENDPOINT", "https://user:token@otel.example.com")},
+		{name: "email address is not a url", config: strs("PORTAL_ORGANIZATION_NAME", "support@example.com")},
 	}
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
@@ -174,6 +182,44 @@ func TestSplitConfig(t *testing.T) {
 	}
 	if !reflect.DeepEqual(sensitive, wantSensitive) {
 		t.Errorf("sensitive = %v, want %v", sensitive, wantSensitive)
+	}
+}
+
+func TestSplitConfig_urlValues(t *testing.T) {
+	tests := []struct {
+		name, key, value string
+		wantSensitive    bool
+	}{
+		{name: "url", key: "OTEL_EXPORTER_OTLP_ENDPOINT", value: "https://otel.example.com:4318/v1"},
+		{name: "url with an at sign in the query", key: "PORTAL_REFERER_URL", value: "https://example.com/?next=a@b"},
+		{name: "empty url key", key: "PORTAL_LOGO", value: ""},
+		{name: "user and password", key: "OTEL_EXPORTER_OTLP_ENDPOINT", value: "https://user:token@otel.example.com", wantSensitive: true},
+		{name: "user only", key: "PUBLISH_AWS_SQS_ENDPOINT", value: "http://user@localhost:4566", wantSensitive: true},
+		{name: "surrounding space", key: "PORTAL_LOGO", value: " https://user:token@cdn.example.com/logo.png", wantSensitive: true},
+		{name: "userinfo under a key that is not a url key", key: "HTTP_USER_AGENT", value: "https://user:token@example.com", wantSensitive: true},
+		{name: "unparseable with userinfo under a key that is not a url key", key: "HTTP_USER_AGENT", value: "https://user:p%ss@example.com", wantSensitive: true},
+		{name: "unparseable url key", key: "PORTAL_FAVICON_URL", value: "https://exa mple.com/%zz", wantSensitive: true},
+		{name: "url key without a host", key: "OTEL_EXPORTER_OTLP_ENDPOINT", value: "user:token@otel.example.com:4318", wantSensitive: true},
+		{name: "url key with backslashes", key: "PORTAL_LOGO_DARK", value: `https:\\user:token@cdn.example.com`, wantSensitive: true},
+		{name: "plain text under a key that is not a url key", key: "PORTAL_ORGANIZATION_NAME", value: "support@example.com"},
+	}
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			plain, sensitive := splitConfig(map[string]*string{tc.key: ptr(tc.value)})
+			_, inPlain := plain[tc.key]
+			got, inSensitive := sensitive[tc.key]
+			if inPlain == tc.wantSensitive || inSensitive != tc.wantSensitive || (inSensitive && got != tc.value) {
+				t.Errorf("plain = %v, sensitive = %v, want sensitive %v", plain, sensitive, tc.wantSensitive)
+			}
+		})
+	}
+}
+
+func TestSplitConfig_urlKeysAreNonSensitive(t *testing.T) {
+	for k := range urlKeys {
+		if !nonSensitiveKeys[k] {
+			t.Errorf("%s is a url key but not a non-sensitive key", k)
+		}
 	}
 }
 
