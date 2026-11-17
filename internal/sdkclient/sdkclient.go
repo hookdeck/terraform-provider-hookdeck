@@ -108,12 +108,13 @@ type HookdeckRateLimiter struct {
 // on these headers, but they're available for debugging and future enhancements.
 //
 // Retry Considerations:
-//   - We intentionally DO NOT implement automatic retries on 429 errors
-//   - Retries would consume additional tokens from our rate limit bucket,
-//     potentially causing cascading failures for subsequent requests
-//   - If retry logic is needed, implement using recursion with retry count tracking,
-//     ensuring each retry attempt goes through the rate limiter to maintain
-//     the global rate limit invariant
+//   - The client does not retry a 429 by itself: a retry takes another token
+//     from the rate limit bucket, which can make later requests fail in turn
+//   - The Outpost config calls are the exception. The wait for a new project
+//     and the config write retry 429 and 5xx a bounded number of times, after
+//     a fixed delay (Retry-After is not read)
+//   - Every retry goes through the rate limiter, so the global rate limit
+//     still holds
 //
 // Performance Trade-offs:
 // - This rate limiter works well for large Terraform states (200+ resources)

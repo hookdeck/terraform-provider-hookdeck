@@ -41,13 +41,13 @@ func (d *outpostProjectDataSource) Schema(_ context.Context, _ datasource.Schema
 	attributes["config"] = schema.MapAttribute{
 		Computed:    true,
 		ElementType: types.StringType,
-		Description: "The project's configuration, defaults included, keyed by Outpost environment variable name: every key that has a value and is known to be non-sensitive, whether or not a `hookdeck_outpost_project` resource manages it.",
+		Description: "The project's configuration, defaults included, keyed by Outpost environment variable name: every key that has a value and is known to be non-sensitive, whether or not a `hookdeck_outpost_project` resource manages it. A value that is a URL with a user or password is in `sensitive_config` instead.",
 	}
 	attributes["sensitive_config"] = schema.MapAttribute{
 		Computed:    true,
 		Sensitive:   true,
 		ElementType: types.StringType,
-		Description: "The rest of the project's configuration: credential keys, and any key this provider version does not know to be non-sensitive, including keys added to Outpost after this provider release.",
+		Description: "The rest of the project's configuration: credential keys, and any key this provider version does not know to be non-sensitive, including keys added to Outpost after this provider release. It includes the project's credentials and is stored in the Terraform state.",
 	}
 	maps.Copy(attributes, outpostDomainDataAttributes())
 	resp.Schema = schema.Schema{
@@ -83,7 +83,7 @@ func (d *outpostProjectDataSource) Read(ctx context.Context, req datasource.Read
 	}
 
 	id := data.ID.ValueString()
-	live, err := getConfig(ctx, outpostAPI(d.client, id))
+	live, err := getConfig(ctx, d.client.Outpost().WithProject(id, dataSourceKeyHint))
 	if sdkclient.IsCode(err, http.StatusConflict, codeNotProvisioned) {
 		resp.Diagnostics.AddError("Outpost project is not ready yet", "Project "+id+" is still being provisioned, so its configuration cannot be read. Try again in a few minutes.")
 		return
@@ -98,7 +98,7 @@ func (d *outpostProjectDataSource) Read(ctx context.Context, req datasource.Read
 	resp.Diagnostics.Append(diags...)
 	data.SensitiveConfig, diags = types.MapValueFrom(ctx, types.StringType, sensitive)
 	resp.Diagnostics.Append(diags...)
-	domain, err := getDomain(ctx, outpostAPI(d.client, id))
+	domain, err := getDomain(ctx, d.client.Outpost().WithProject(id, dataSourceKeyHint))
 	if err != nil {
 		resp.Diagnostics.AddError("Error reading portal custom domain", err.Error())
 		return

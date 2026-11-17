@@ -94,6 +94,21 @@ var credentialKeys = toSet(
 	"DESTINATIONS_PROXY_URL",
 )
 
+// urlKeys hold an http or https URL. The data source returns a value it
+// cannot parse as one in sensitive_config.
+var urlKeys = toSet(
+	"OTEL_EXPORTER_OTLP_ENDPOINT",
+	"OTEL_EXPORTER_OTLP_LOGS_ENDPOINT",
+	"OTEL_EXPORTER_OTLP_METRICS_ENDPOINT",
+	"OTEL_EXPORTER_OTLP_TRACES_ENDPOINT",
+	"PORTAL_FAVICON_URL",
+	"PORTAL_LOGO",
+	"PORTAL_LOGO_DARK",
+	"PORTAL_REFERER_URL",
+	"PORTAL_REFRESH_URL",
+	"PUBLISH_AWS_SQS_ENDPOINT",
+)
+
 // rejectedKeys cannot be managed through config or sensitive_config, with
 // the reason shown for each.
 var rejectedKeys = map[string]string{
@@ -102,9 +117,10 @@ var rejectedKeys = map[string]string{
 	"DESTINATIONS_WEBHOOK_PROXY_URL": "it is a deprecated alias; use DESTINATIONS_PROXY_URL",
 }
 
-// nonSensitiveKeys are the keys the data source returns in config. Every
-// other key, including keys this provider version has never seen, is
-// returned in sensitive_config. It classifies output only and is never used
+// nonSensitiveKeys are the keys the data source returns in config, unless
+// the value itself carries credentials (sensitiveValue). Every other key,
+// including keys this provider version has never seen, is returned in
+// sensitive_config. It classifies output only and is never used
 // to validate input.
 var nonSensitiveKeys = func() map[string]bool {
 	out := map[string]bool{}

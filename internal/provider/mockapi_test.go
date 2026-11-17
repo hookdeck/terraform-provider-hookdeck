@@ -65,6 +65,7 @@ type mockProject struct {
 
 type mockRequest struct {
 	key, method, path, project string
+	body                       map[string]any
 }
 
 const (
@@ -138,15 +139,15 @@ func (m *mockAPI) handle(w http.ResponseWriter, r *http.Request) {
 	path := apiVersionPrefix.ReplaceAllString(r.URL.Path, "")
 	apiKey := strings.TrimPrefix(r.Header.Get("Authorization"), "Bearer ")
 	header := r.Header.Get(sdkclient.ProjectHeader)
-	m.requests = append(m.requests, mockRequest{key: apiKey, method: r.Method, path: path, project: header})
+	var body map[string]any
+	_ = json.NewDecoder(r.Body).Decode(&body)
+	m.requests = append(m.requests, mockRequest{key: apiKey, method: r.Method, path: path, project: header, body: body})
 
 	key, ok := m.keys[apiKey]
 	if !ok {
 		unauthorized(w)
 		return
 	}
-	var body map[string]any
-	_ = json.NewDecoder(r.Body).Decode(&body)
 
 	parts := strings.Split(strings.Trim(path, "/"), "/")
 	id := ""

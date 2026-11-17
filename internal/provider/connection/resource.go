@@ -134,7 +134,7 @@ func (r *connectionResource) Update(ctx context.Context, req resource.UpdateRequ
 	if !ok {
 		return
 	}
-	resp.Diagnostics.Append(data.Update(ctx, client)...)
+	resp.Diagnostics.Append(data.Update(ctx, client, state.Rules)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}

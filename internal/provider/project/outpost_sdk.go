@@ -27,8 +27,13 @@ var (
 	lockRetryDelay  = 5 * time.Second
 )
 
+const (
+	resourceKeyHint   = "Check that the API key is an organization API key with access to the project."
+	dataSourceKeyHint = "Use an organization API key with access to the project, or the project's own API key."
+)
+
 func outpostAPI(client sdkclient.Client, projectID string) sdkclient.Client {
-	return client.Outpost().WithProject(projectID, "Check that the API key is an organization API key with access to the project.")
+	return client.Outpost().WithProject(projectID, resourceKeyHint)
 }
 
 func getConfig(ctx context.Context, api sdkclient.Client) (map[string]*string, error) {
