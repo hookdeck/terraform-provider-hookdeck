@@ -2,9 +2,11 @@ package project
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net/http"
 
+	"terraform-provider-hookdeck/internal/projectscope"
 	"terraform-provider-hookdeck/internal/sdkclient"
 
 	"github.com/hashicorp/terraform-plugin-framework/diag"
@@ -41,11 +43,22 @@ func (m *projectResourceModel) refresh(k kind, project map[string]any) diag.Diag
 	return diags
 }
 
+const unreachableHint = "Use an API key that can read this project."
+
+// retrieve reads the project. An organization key names it in the project
+// header, so the API tells a missing project (404) from one of another
+// organization (401); without the header both are 404. A project key sends
+// none: it reaches only its own project, and the API answers 404 for any other.
 func (m *projectResourceModel) retrieve(ctx context.Context, k kind, client sdkclient.Client) (bool, diag.Diagnostics) {
 	var diags diag.Diagnostics
 	var project map[string]any
-	err := client.Do(ctx, http.MethodGet, "/projects/"+m.ID.ValueString(), nil, nil, &project)
-	if sdkclient.IsNotFound(err) {
+	id := m.ID.ValueString()
+	if client.Scope.KeyKind == projectscope.KeyKindOrganization {
+		client = client.WithProject(id, unreachableHint)
+	}
+	err := client.Do(ctx, http.MethodGet, "/projects/"+id, nil, nil, &project)
+	var refused *sdkclient.ProjectAccessError
+	if sdkclient.IsNotFound(err) || (errors.As(err, &refused) && sdkclient.IsGoneStatus(refused.Status)) {
 		return false, diags
 	}
 	if err != nil {
