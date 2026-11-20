@@ -25,6 +25,10 @@ type mockOutpost struct {
 	// lockedPatches is the number of PATCH requests still answered with 409
 	// OUTPOST_CONFIG_LOCKED.
 	lockedPatches int
+	domain        *mockDomain
+	// domainFaults answers every request to /config/custom_domain with a
+	// method in it with the status.
+	domainFaults map[string]int
 }
 
 // mockOutpostDefaults are the values the API returns for a key nobody set.
@@ -89,6 +93,10 @@ func (m *mockAPI) handleOutpost(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	outpost, ok := m.outposts[projectID]
+	if ok && path == "/config/custom_domain" {
+		m.handleDomain(w, r, outpost)
+		return
+	}
 	if !ok || path != "/config" {
 		apiError(w, 404, "NOT_FOUND", "Not Found", nil)
 		return

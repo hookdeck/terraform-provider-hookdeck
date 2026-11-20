@@ -52,6 +52,91 @@ The keys of `config` and `sensitive_config` are Outpost environment variable nam
 - `OPERATOR_EVENTS_HTTP_URL` and `OPERATOR_EVENTS_TOPICS` are set by operator event destinations, and `DESTINATIONS_WEBHOOK_PROXY_URL` is a deprecated alias of `DESTINATIONS_PROXY_URL`. They cannot be set here.
 - Only the keys you set are managed. Other keys keep their value, and changes to them outside Terraform do not show in the plan; a change to a managed key does. Removing a key from the configuration returns it to its default. The [`hookdeck_outpost_project` data source](https://registry.terraform.io/providers/hookdeck/hookdeck/latest/docs/data-sources/outpost_project) returns the whole configuration, defaults included.
 
+## Portal custom domain
+
+Set `portal_custom_domain` to serve the project's portal on your own hostname. Give the hostname in lowercase: the API stores it as typed, and an uppercase hostname does not match browser requests.
+
+```terraform
+resource "hookdeck_outpost_project" "example" {
+  name                 = "production-outpost"
+  portal_custom_domain = "portal.example.com"
+}
+
+output "portal_domain" {
+  value = hookdeck_outpost_project.example.portal_custom_domain_status
+}
+```
+
+`portal_custom_domain_status` mirrors what the API returns for the domain. Applying adds the domain after the project is configured, and the output looks like this:
+
+```
+portal_domain = {
+  "cname_target" = "portal.outpost.example.net"
+  "ownership_verification" = {
+    "name" = "_cf-custom-hostname.portal.example.com"
+    "type" = "txt"
+    "value" = "0c1d5e2a-..."
+  }
+  "ssl" = {
+    "method" = "txt"
+    "status" = "pending_validation"
+    "txt_name" = "_acme-challenge.portal.example.com"
+    "txt_value" = "kQ3t..."
+  }
+  "status" = "pending"
+  "verification_errors" = []
+}
+```
+
+The DNS records to create at your DNS provider are:
+
+- a CNAME record for the hostname that points at `cname_target`, so requests for the hostname reach the portal;
+- the TXT record in `ownership_verification`, which verifies that you own the hostname;
+- the TXT record in `ssl` (`txt_name` and `txt_value`), which validates the certificate. It can be empty for a short time after the domain is added; apply again once it is set.
+
+`ownership_verification` is null when the API returns none. This example creates the records in Route 53:
+
+```terraform
+locals {
+  domain = hookdeck_outpost_project.example.portal_custom_domain_status
+}
+
+resource "aws_route53_record" "portal_cname" {
+  zone_id = var.zone_id
+  name    = hookdeck_outpost_project.example.portal_custom_domain
+  type    = "CNAME"
+  ttl     = 300
+  records = [local.domain.cname_target]
+}
+
+resource "aws_route53_record" "portal_ownership" {
+  count   = local.domain.ownership_verification == null ? 0 : 1
+  zone_id = var.zone_id
+  name    = local.domain.ownership_verification.name
+  type    = "TXT"
+  ttl     = 300
+  records = [local.domain.ownership_verification.value]
+}
+
+resource "aws_route53_record" "portal_ssl" {
+  zone_id = var.zone_id
+  name    = local.domain.ssl.txt_name
+  type    = "TXT"
+  ttl     = 300
+  records = [local.domain.ssl.txt_value]
+}
+```
+
+`portal_custom_domain_status` is unknown until the domain is added, so if you manage your DNS in Terraform, apply the project first (for example with `-target`), then the records.
+
+- `status` is the state of the domain, for example `pending` until the hostname is verified, then `active`. `ssl.status` is the state of the certificate, for example `pending_validation` until the records are in place and `active` once it is issued. `verification_errors` lists the reasons the API reports when verification fails. Terraform refreshes the status on every plan.
+- Changing the hostname deletes the current domain first, then adds the new one. The portal is unreachable on the old hostname from that point, and the new hostname needs its own DNS records. Removing `portal_custom_domain` deletes the domain.
+- If adding the domain fails on create, the project is tainted and the next apply replaces it.
+- A domain added or changed outside Terraform shows in the plan and is removed or replaced on the next apply, unless `portal_custom_domain` is set to it.
+- Adding a hostname that is already registered fails, including one kept by a deleted project.
+- Hookdeck validates the hostname when the domain is added, so an invalid one fails at apply with the API's message.
+- Deleting the project deletes its domain first, which frees the hostname.
+
 ## Behavior
 
 - Creating a project waits until it is ready, then applies the configuration. If provisioning is slow, raise `timeouts.create` (20 minutes by default).
@@ -69,6 +154,7 @@ The keys of `config` and `sensitive_config` are Outpost environment variable nam
 ### Optional
 
 - `config` (Map of String) Outpost configuration to manage, keyed by Outpost environment variable name (for example `TOPICS` or `RETRY_INTERVAL_SECONDS`). Only the keys set here are managed and tracked; other keys keep their value. Removing a key restores its default. Keys that can carry credentials belong in `sensitive_config`.
+- `portal_custom_domain` (String) Hostname that serves the project's portal, for example `portal.example.com`. Give it in lowercase: the API stores it as typed, and an uppercase hostname does not match browser requests. Changing it deletes the current domain and adds the new one. `portal_custom_domain_status` has the DNS records to create. A domain added outside Terraform is removed on the next apply unless it is set here.
 - `sensitive_config` (Map of String, Sensitive) Outpost configuration to manage like `config`, for keys whose values are secrets or can carry credentials, such as `OTEL_EXPORTER_OTLP_HEADERS`, `DESTINATIONS_PROXY_URL` and the `PUBLISH_*` connection strings and secret keys. Values are stored in the Terraform state.
 - `timeouts` (Block, Optional) (see [below for nested schema](#nestedblock--timeouts))
 
@@ -77,6 +163,7 @@ The keys of `config` and `sensitive_config` are Outpost environment variable nam
 - `created_at` (String) Date the project was created
 - `id` (String) ID of the project
 - `organization_id` (String) ID of the organization the project belongs to
+- `portal_custom_domain_status` (Attributes) The portal custom domain as the API reports it. Null when no domain is set. Refreshed on every plan, so `status` moves from `pending` to `active` once the DNS records are in place. (see [below for nested schema](#nestedatt--portal_custom_domain_status))
 - `type` (String) Project type, always `outpost`
 - `updated_at` (String) Date the project was last updated
 
@@ -89,6 +176,38 @@ Optional:
 - `delete` (String) A string that can be [parsed as a duration](https://pkg.go.dev/time#ParseDuration) consisting of numbers and unit suffixes, such as "30s" or "2h45m". Valid time units are "s" (seconds), "m" (minutes), "h" (hours). Setting a timeout for a Delete operation is only applicable if changes are saved into state before the destroy operation occurs.
 - `update` (String) A string that can be [parsed as a duration](https://pkg.go.dev/time#ParseDuration) consisting of numbers and unit suffixes, such as "30s" or "2h45m". Valid time units are "s" (seconds), "m" (minutes), "h" (hours).
 
+
+<a id="nestedatt--portal_custom_domain_status"></a>
+### Nested Schema for `portal_custom_domain_status`
+
+Read-Only:
+
+- `cname_target` (String) Host to point a CNAME record for the hostname at
+- `ownership_verification` (Attributes) TXT record that verifies ownership of the hostname. Null when the API returns none. (see [below for nested schema](#nestedatt--portal_custom_domain_status--ownership_verification))
+- `ssl` (Attributes) Certificate issued for the hostname (see [below for nested schema](#nestedatt--portal_custom_domain_status--ssl))
+- `status` (String) Domain status, for example `pending` until the hostname is verified, then `active`
+- `verification_errors` (List of String) Reasons the domain could not be verified. An empty list when there are none.
+
+<a id="nestedatt--portal_custom_domain_status--ownership_verification"></a>
+### Nested Schema for `portal_custom_domain_status.ownership_verification`
+
+Read-Only:
+
+- `name` (String) Record name
+- `type` (String) Record type
+- `value` (String) Record value
+
+
+<a id="nestedatt--portal_custom_domain_status--ssl"></a>
+### Nested Schema for `portal_custom_domain_status.ssl`
+
+Read-Only:
+
+- `method` (String) Method used to validate the certificate, for example `txt`
+- `status` (String) Certificate status, for example `initializing`, `pending_validation` or `active`
+- `txt_name` (String) Name of the TXT record that validates the certificate. Can be empty right after the domain is added.
+- `txt_value` (String) Value of the TXT record that validates the certificate. Can be empty right after the domain is added.
+
 ## Import
 
 Import is supported using the following syntax:
@@ -97,4 +216,4 @@ Import is supported using the following syntax:
 $ terraform import hookdeck_outpost_project.example <project_id>
 ```
 
-Import fills the project's name and metadata. `config` and `sensitive_config` stay empty, so the first plan lists the keys in your configuration as additions. Applying sends nothing when their values already match the project.
+Import fills the project's name, metadata and portal custom domain. `config` and `sensitive_config` stay empty, so the first plan lists the keys in your configuration as additions. Applying sends nothing when their values already match the project.

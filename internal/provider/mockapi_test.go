@@ -42,7 +42,12 @@ type mockAPI struct {
 	outposts       map[string]*mockOutpost
 	outpostServer  *httptest.Server
 	provisionReads int
-	patchBodies    []map[string]*string
+	// refuseHostnames makes the domain route answer 422 to every POST.
+	refuseHostnames bool
+	patchBodies     []map[string]*string
+	// hostnames are the portal hostnames registered; a deleted project
+	// keeps its hostname registered.
+	hostnames map[string]bool
 }
 
 type mockKey struct {
@@ -91,6 +96,7 @@ func newMockAPI(t *testing.T) *mockAPI {
 		faults:       map[string]int{},
 		faultHits:    map[string]int{},
 		outposts:     map[string]*mockOutpost{},
+		hostnames:    map[string]bool{},
 	}
 	m.server = httptest.NewServer(http.HandlerFunc(m.handle))
 	t.Cleanup(m.server.Close)

@@ -103,7 +103,11 @@ func (r *outpostProjectResource) Create(ctx context.Context, req resource.Create
 		return
 	}
 	// The project exists from here on. State keeps its id, so a later
-	// failure taints the resource instead of leaking the project.
+	// failure taints the resource instead of leaking the project. The domain
+	// is not added yet, so state has none.
+	hostname := data.PortalCustomDomain
+	data.PortalCustomDomain = types.StringNull()
+	data.PortalCustomDomainStatus = types.ObjectNull(domainStatusTypes)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 	if resp.Diagnostics.HasError() {
 		return
@@ -121,6 +125,14 @@ func (r *outpostProjectResource) Create(ctx context.Context, req resource.Create
 			return
 		}
 		resp.Diagnostics.Append(data.setManaged(ctx, refreshManaged(managed, live))...)
+	}
+	if !hostname.IsNull() {
+		domain, err := addDomain(ctx, api, hostname.ValueString())
+		if err != nil {
+			resp.Diagnostics.AddError("Error adding portal custom domain", err.Error())
+			return
+		}
+		resp.Diagnostics.Append(data.setDomain(ctx, domain)...)
 	}
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
@@ -162,6 +174,13 @@ func (r *outpostProjectResource) Read(ctx context.Context, req resource.ReadRequ
 			resp.Diagnostics.Append(data.setManaged(ctx, refreshManaged(managed, live))...)
 		}
 	}
+
+	domain, err := getDomain(ctx, outpostAPI(r.client, data.ID.ValueString()))
+	if err != nil {
+		resp.Diagnostics.AddError("Error reading portal custom domain", err.Error())
+		return
+	}
+	resp.Diagnostics.Append(data.setDomain(ctx, domain)...)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
@@ -212,6 +231,33 @@ func (r *outpostProjectResource) Update(ctx context.Context, req resource.Update
 		}
 		resp.Diagnostics.Append(data.setManaged(ctx, refreshManaged(desired, live))...)
 	}
+
+	// The API has no update and allows one domain per project: delete the old one, then add the new one.
+	if !data.PortalCustomDomain.Equal(prior.PortalCustomDomain) {
+		api := outpostAPI(r.client, data.ID.ValueString())
+		if !prior.PortalCustomDomain.IsNull() {
+			if err := deleteDomain(ctx, api); err != nil {
+				resp.Diagnostics.AddError("Error deleting portal custom domain", err.Error())
+				// The old domain is still there: state keeps it, not the planned hostname.
+				data.PortalCustomDomain, data.PortalCustomDomainStatus = prior.PortalCustomDomain, prior.PortalCustomDomainStatus
+				resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
+				return
+			}
+		}
+		var domain *customDomain
+		if !data.PortalCustomDomain.IsNull() {
+			var err error
+			if domain, err = addDomain(ctx, api, data.PortalCustomDomain.ValueString()); err != nil {
+				resp.Diagnostics.AddError("Error adding portal custom domain", err.Error())
+				// The old domain is gone: state must not keep it or claim the new one.
+				data.PortalCustomDomain = types.StringNull()
+				data.PortalCustomDomainStatus = types.ObjectNull(domainStatusTypes)
+				resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
+				return
+			}
+		}
+		resp.Diagnostics.Append(data.setDomain(ctx, domain)...)
+	}
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
@@ -228,6 +274,12 @@ func (r *outpostProjectResource) Delete(ctx context.Context, req resource.Delete
 	}
 	ctx, cancel := context.WithTimeout(ctx, timeout)
 	defer cancel()
+	// Delete the domain first: it is registered apart from the project and
+	// would keep its hostname after the project is deleted.
+	if err := deleteDomain(ctx, outpostAPI(r.client, data.ID.ValueString())); err != nil {
+		resp.Diagnostics.AddError("Error deleting portal custom domain", err.Error())
+		return
+	}
 	resp.Diagnostics.Append(data.delete(ctx, r.client)...)
 }
 

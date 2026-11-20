@@ -13,6 +13,8 @@ Unlike the `hookdeck_outpost_project` resource, whose `config` holds the keys yo
 
 ~> `sensitive_config` includes the project's credentials and is stored in the Terraform state, even when the data source is only used to look up a project's ID. Protect the state as you would for any secret.
 
+`portal_custom_domain` and `portal_custom_domain_status` describe the project's portal custom domain, and are null when it has none.
+
 Works with an organization API key (`projects.read`) or the project's own API key.
 
 ## Keys that move to `config`
@@ -56,6 +58,39 @@ output "max_retry_limit" {
 - `config` (Map of String) The project's configuration, defaults included, keyed by Outpost environment variable name: every key that has a value and is known to be non-sensitive, whether or not a `hookdeck_outpost_project` resource manages it. A value that is a URL with a user or password is in `sensitive_config` instead.
 - `created_at` (String) Date the project was created
 - `organization_id` (String) ID of the organization the project belongs to
+- `portal_custom_domain` (String) Hostname that serves the project's portal. Null when no custom domain is set.
+- `portal_custom_domain_status` (Attributes) The portal custom domain as the API reports it. Null when no domain is set. Refreshed on every plan, so `status` moves from `pending` to `active` once the DNS records are in place. (see [below for nested schema](#nestedatt--portal_custom_domain_status))
 - `sensitive_config` (Map of String, Sensitive) The rest of the project's configuration: credential keys, and any key this provider version does not know to be non-sensitive, including keys added to Outpost after this provider release. It includes the project's credentials and is stored in the Terraform state.
 - `type` (String) Project type, always `outpost`
 - `updated_at` (String) Date the project was last updated
+
+<a id="nestedatt--portal_custom_domain_status"></a>
+### Nested Schema for `portal_custom_domain_status`
+
+Read-Only:
+
+- `cname_target` (String) Host to point a CNAME record for the hostname at
+- `ownership_verification` (Attributes) TXT record that verifies ownership of the hostname. Null when the API returns none. (see [below for nested schema](#nestedatt--portal_custom_domain_status--ownership_verification))
+- `ssl` (Attributes) Certificate issued for the hostname (see [below for nested schema](#nestedatt--portal_custom_domain_status--ssl))
+- `status` (String) Domain status, for example `pending` until the hostname is verified, then `active`
+- `verification_errors` (List of String) Reasons the domain could not be verified. An empty list when there are none.
+
+<a id="nestedatt--portal_custom_domain_status--ownership_verification"></a>
+### Nested Schema for `portal_custom_domain_status.ownership_verification`
+
+Read-Only:
+
+- `name` (String) Record name
+- `type` (String) Record type
+- `value` (String) Record value
+
+
+<a id="nestedatt--portal_custom_domain_status--ssl"></a>
+### Nested Schema for `portal_custom_domain_status.ssl`
+
+Read-Only:
+
+- `method` (String) Method used to validate the certificate, for example `txt`
+- `status` (String) Certificate status, for example `initializing`, `pending_validation` or `active`
+- `txt_name` (String) Name of the TXT record that validates the certificate. Can be empty right after the domain is added.
+- `txt_value` (String) Value of the TXT record that validates the certificate. Can be empty right after the domain is added.

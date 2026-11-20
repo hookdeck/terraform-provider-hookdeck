@@ -13,6 +13,8 @@ Unlike the `hookdeck_outpost_project` resource, whose `config` holds the keys yo
 
 ~> `sensitive_config` includes the project's credentials and is stored in the Terraform state, even when the data source is only used to look up a project's ID. Protect the state as you would for any secret.
 
+`portal_custom_domain` and `portal_custom_domain_status` describe the project's portal custom domain, and are null when it has none.
+
 Works with an organization API key (`projects.read`) or the project's own API key.
 
 ## Keys that move to `config`

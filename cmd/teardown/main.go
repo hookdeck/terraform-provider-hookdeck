@@ -6,7 +6,7 @@
 //
 //   - connections, sources, destinations and transformations in the two
 //     fixed test projects,
-//   - test projects,
+//   - test projects, after the portal custom domain of the Outpost ones,
 //   - test project API keys.
 package main
 
@@ -33,11 +33,15 @@ const (
 	projectHdr   = sdkclient.ProjectHeader
 )
 
-var baseURL = "https://api.hookdeck.com"
+var (
+	baseURL        = "https://api.hookdeck.com"
+	outpostBaseURL = "https://api.outpost.hookdeck.com"
+)
 
 type resource struct {
 	ID        string
 	Name      string
+	Type      string
 	TeamID    string
 	CreatedAt time.Time
 }
@@ -48,6 +52,8 @@ type target struct {
 	Path      string // collection path, deleted at Path + "/" + id
 	ProjectID string // sent as the project header when not empty
 	Items     []resource
+	// Before runs on an item just before it is deleted.
+	Before func(resource) error
 }
 
 type api struct {
@@ -56,7 +62,11 @@ type api struct {
 }
 
 func (a api) do(method, path, projectID string, query url.Values) ([]byte, int, error) {
-	u := fmt.Sprintf("%s/%s%s", baseURL, sdkclient.APIVersion, path)
+	return a.doAt(baseURL, method, path, projectID, query)
+}
+
+func (a api) doAt(base, method, path, projectID string, query url.Values) ([]byte, int, error) {
+	u := fmt.Sprintf("%s/%s%s", base, sdkclient.APIVersion, path)
 	if len(query) > 0 {
 		u += "?" + query.Encode()
 	}
@@ -93,6 +103,7 @@ func parseResources(models []any) []resource {
 		} else if label, ok := m["label"].(string); ok {
 			r.Name = label
 		}
+		r.Type, _ = m["type"].(string)
 		r.TeamID, _ = m["team_id"].(string)
 		if created, ok := m["created_at"].(string); ok {
 			r.CreatedAt, _ = time.Parse(time.RFC3339, created)
@@ -161,6 +172,23 @@ func (a api) delete(t target, r resource) error {
 	}
 	if status >= 300 && !sdkclient.IsGoneStatus(status) {
 		return fmt.Errorf("delete failed (%d): %s", status, string(body))
+	}
+	return nil
+}
+
+// deleteDomain removes the portal custom domain of an Outpost project. The
+// domain is registered apart from the project and stays registered when the
+// project is deleted. A project without a domain answers 404.
+func (a api) deleteDomain(r resource) error {
+	if r.Type != "outpost" {
+		return nil
+	}
+	body, status, err := a.doAt(outpostBaseURL, http.MethodDelete, "/config/custom_domain", r.ID, nil)
+	if err != nil {
+		return err
+	}
+	if status >= 300 && !sdkclient.IsGoneStatus(status) {
+		return fmt.Errorf("delete custom domain failed (%d): %s", status, string(body))
 	}
 	return nil
 }
@@ -245,7 +273,7 @@ func collect(a api, cutoff time.Time) ([]target, error) {
 		}
 		targets = append(targets, target{Kind: "project API keys", Path: "/organizations/current/api-keys", Items: stale(projectKeys, cutoff)})
 	}
-	targets = append(targets, target{Kind: "projects", Path: "/projects", Items: stale(projects, cutoff)})
+	targets = append(targets, target{Kind: "projects", Path: "/projects", Items: stale(projects, cutoff), Before: a.deleteDomain})
 	return targets, nil
 }
 
@@ -260,12 +288,13 @@ func main() {
 		fmt.Fprintf(os.Stderr, "Deletes what acceptance tests leave behind when they fail or are interrupted.\n")
 		fmt.Fprintf(os.Stderr, "Only objects named %q... and older than --older-than are deleted:\n", namePrefix)
 		fmt.Fprintf(os.Stderr, "  - connections, sources, destinations and transformations in the projects %s and %s\n", projectNameA, projectNameB)
-		fmt.Fprintf(os.Stderr, "  - projects\n  - project API keys (by label)\n\n")
+		fmt.Fprintf(os.Stderr, "  - projects (the portal custom domain of Outpost projects is deleted first)\n  - project API keys (by label)\n\n")
 		fmt.Fprintf(os.Stderr, "Usage:\n  %s [flags]\n\nFlags:\n", os.Args[0])
 		flag.PrintDefaults()
 		fmt.Fprintf(os.Stderr, "\nEnvironment:\n")
 		fmt.Fprintf(os.Stderr, "  HOOKDECK_ORG_API_KEY  organization API key (required)\n")
 		fmt.Fprintf(os.Stderr, "  HOOKDECK_API_BASE     API base URL (optional)\n")
+		fmt.Fprintf(os.Stderr, "  HOOKDECK_OUTPOST_API_BASE  Outpost API base URL (optional)\n")
 	}
 	flag.Parse()
 	if *help {
@@ -287,6 +316,12 @@ func main() {
 			base = "https://" + base
 		}
 		baseURL = strings.TrimRight(base, "/")
+	}
+	if base := os.Getenv("HOOKDECK_OUTPOST_API_BASE"); base != "" {
+		if !strings.HasPrefix(base, "http") {
+			base = "https://" + base
+		}
+		outpostBaseURL = strings.TrimRight(base, "/")
 	}
 
 	if *dryRun {
@@ -332,6 +367,12 @@ func main() {
 		}
 		fmt.Printf("\nDeleting %s...\n", t.Kind)
 		for _, r := range t.Items {
+			if t.Before != nil {
+				if err := t.Before(r); err != nil {
+					log.Printf("  ❌ Failed to prepare %s %s: %v", t.Kind, r.ID, err)
+					continue
+				}
+			}
 			if err := a.delete(t, r); err != nil {
 				log.Printf("  ❌ Failed to delete %s %s: %v", t.Kind, r.ID, err)
 				continue
