@@ -100,7 +100,7 @@ output "portal_domain" {
 }
 ```
 
-Create these records at your DNS provider: a CNAME record for the hostname that points at `cname_target`, the TXT record in `ownership_verification`, and the TXT record in `ssl` (`txt_name` and `txt_value`). The status is `pending` until the hostname is verified, then `active`.
+Create these records at your DNS provider: a CNAME record for the hostname that points at `cname_target`, the TXT record in `ownership_verification`, and the TXT record in `ssl` (`txt_name` and `txt_value`). `status` changes once the hostname is verified, for example from `pending` to `active`.
 
 If adding the domain fails on create, the project is tainted and the next apply replaces it. Changing the hostname deletes the old domain first, so the portal is unreachable on the old hostname from that point. The [resource page](https://registry.terraform.io/providers/hookdeck/hookdeck/latest/docs/resources/outpost_project) has an example output, an example that creates the records, and the details of the status fields.
 

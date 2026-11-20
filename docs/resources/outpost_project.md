@@ -129,9 +129,9 @@ resource "aws_route53_record" "portal_ssl" {
 
 `portal_custom_domain_status` is unknown until the domain is added, so if you manage your DNS in Terraform, apply the project first (for example with `-target`), then the records.
 
-- `status` is for example `pending` until the hostname is verified, then `active`. `ssl.status` is the state of the certificate, for example `pending_validation` until the records are in place and `active` once it is issued. `verification_errors` lists the reasons the API reports when verification fails. Terraform refreshes the status on every plan.
+- `status` is the state of the domain, for example `pending` until the hostname is verified, then `active`. `ssl.status` is the state of the certificate, for example `pending_validation` until the records are in place and `active` once it is issued. `verification_errors` lists the reasons the API reports when verification fails. Terraform refreshes the status on every plan.
 - Changing the hostname deletes the current domain first, then adds the new one. The portal is unreachable on the old hostname from that point, and the new hostname needs its own DNS records. Removing `portal_custom_domain` deletes the domain.
-- If adding the domain fails on create, for example because the hostname is already registered, the project is tainted and the next apply replaces it.
+- If adding the domain fails on create, the project is tainted and the next apply replaces it.
 - A domain added or changed outside Terraform shows in the plan and is removed or replaced on the next apply, unless `portal_custom_domain` is set to it.
 - Adding a hostname that is already registered fails, including one kept by a deleted project.
 - Hookdeck validates the hostname when the domain is added, so an invalid one fails at apply with the API's message.

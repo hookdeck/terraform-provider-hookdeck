@@ -257,14 +257,6 @@ func (r *outpostProjectResource) Update(ctx context.Context, req resource.Update
 			}
 		}
 		resp.Diagnostics.Append(data.setDomain(ctx, domain)...)
-	} else if data.PortalCustomDomainStatus.IsUnknown() {
-		// The hostname was unknown at plan time and turned out unchanged: read the status.
-		domain, err := getDomain(ctx, outpostAPI(r.client, data.ID.ValueString()))
-		if err != nil {
-			resp.Diagnostics.AddError("Error reading portal custom domain", err.Error())
-			return
-		}
-		resp.Diagnostics.Append(data.setDomain(ctx, domain)...)
 	}
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }

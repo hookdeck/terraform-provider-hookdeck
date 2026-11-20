@@ -546,7 +546,7 @@ func TestAccMock_OutpostProject_HostnameRefusedByAPI(t *testing.T) {
 }
 
 // A hostname that is unknown at plan time and resolves to the current one
-// changes nothing: the status is read, and the domain is not touched.
+// changes nothing: the domain is not touched.
 func TestAccMock_OutpostProject_UnknownHostnameUnchanged(t *testing.T) {
 	acc.SkipUnlessAcc(t)
 	m := mockOutpostOrganization(t)
