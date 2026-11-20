@@ -4,10 +4,8 @@ import (
 	"context"
 
 	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
-	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
-	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
@@ -25,28 +23,34 @@ func outpostSchemaAttributes() map[string]schema.Attribute {
 		Description: "Outpost configuration to manage like `config`, for keys whose values are secrets or can carry credentials, such as `OTEL_EXPORTER_OTLP_HEADERS`, `DESTINATIONS_PROXY_URL` and the `PUBLISH_*` connection strings and secret keys. Values are stored in the Terraform state.",
 	}
 	attributes["portal_custom_domain"] = schema.StringAttribute{
-		Optional: true,
-		Validators: []validator.String{
-			stringvalidator.LengthAtMost(253),
-			stringvalidator.RegexMatches(hostnamePattern, "must be a lowercase hostname such as portal.example.com, without scheme, port or path"),
-		},
-		Description: "Hostname that serves the project's portal, for example `portal.example.com`. Changing it deletes the current domain and adds the new one. `portal_custom_domain_status` lists the DNS records to create. A domain added outside Terraform is removed on the next apply unless it is set here.",
+		Optional:    true,
+		Description: "Hostname that serves the project's portal, for example `portal.example.com`. Give it in lowercase: the API stores it as typed, and an uppercase hostname does not match browser requests. Changing it deletes the current domain and adds the new one. `portal_custom_domain_status` has the DNS records to create. A domain added outside Terraform is removed on the next apply unless it is set here.",
 	}
 	attributes["portal_custom_domain_status"] = schema.SingleNestedAttribute{
 		Computed:      true,
 		PlanModifiers: []planmodifier.Object{domainStatusPlan{}},
 		Description:   domainStatusDescription,
 		Attributes: map[string]schema.Attribute{
-			"status":     schema.StringAttribute{Computed: true, Description: domainStatusFieldDescription},
-			"ssl_status": schema.StringAttribute{Computed: true, Description: domainSSLStatusDescription},
-			"verification_records": schema.ListNestedAttribute{
+			"status":       schema.StringAttribute{Computed: true, Description: domainStatusFieldDescription},
+			"cname_target": schema.StringAttribute{Computed: true, Description: domainCnameDescription},
+			"ssl": schema.SingleNestedAttribute{
 				Computed:    true,
-				Description: domainRecordsDescription,
-				NestedObject: schema.NestedAttributeObject{Attributes: map[string]schema.Attribute{
-					"type":  schema.StringAttribute{Computed: true, Description: "Record type, for example `txt`"},
+				Description: domainSSLDescription,
+				Attributes: map[string]schema.Attribute{
+					"status":    schema.StringAttribute{Computed: true, Description: domainSSLStatusDescription},
+					"method":    schema.StringAttribute{Computed: true, Description: domainSSLMethodDescription},
+					"txt_name":  schema.StringAttribute{Computed: true, Description: domainSSLTxtNameDescription},
+					"txt_value": schema.StringAttribute{Computed: true, Description: domainSSLTxtValueDescription},
+				},
+			},
+			"ownership_verification": schema.SingleNestedAttribute{
+				Computed:    true,
+				Description: domainOwnershipDescription,
+				Attributes: map[string]schema.Attribute{
+					"type":  schema.StringAttribute{Computed: true, Description: "Record type"},
 					"name":  schema.StringAttribute{Computed: true, Description: "Record name"},
 					"value": schema.StringAttribute{Computed: true, Description: "Record value"},
-				}},
+				},
 			},
 			"verification_errors": schema.ListAttribute{Computed: true, ElementType: types.StringType, Description: domainErrorsDescription},
 		},
@@ -54,11 +58,17 @@ func outpostSchemaAttributes() map[string]schema.Attribute {
 	return attributes
 }
 
+// The status attributes mirror the response of GET /config/custom_domain.
 const (
-	domainStatusDescription      = "State of the portal custom domain. Null when no domain is set. Refreshed on every plan, so it moves from `pending` to `active` once the DNS records are in place."
+	domainStatusDescription      = "The portal custom domain as the API reports it. Null when no domain is set. Refreshed on every plan, so `status` moves from `pending` to `active` once the DNS records are in place."
 	domainStatusFieldDescription = "Domain status: `pending` until the hostname is verified, then `active`"
-	domainSSLStatusDescription   = "Certificate status, for example `pending_validation` or `active`"
-	domainRecordsDescription     = "DNS records to create to verify the domain and issue its certificate"
+	domainCnameDescription       = "Host to point a CNAME record for the hostname at"
+	domainSSLDescription         = "Certificate issued for the hostname"
+	domainSSLStatusDescription   = "Certificate status, for example `initializing`, `pending_validation` or `active`"
+	domainSSLMethodDescription   = "Method used to validate the certificate, for example `txt`"
+	domainSSLTxtNameDescription  = "Name of the TXT record that validates the certificate. Can be empty right after the domain is added."
+	domainSSLTxtValueDescription = "Value of the TXT record that validates the certificate. Can be empty right after the domain is added."
+	domainOwnershipDescription   = "TXT record that verifies ownership of the hostname. Null when the API returns none."
 	domainErrorsDescription      = "Reasons the domain could not be verified, if any"
 )
 

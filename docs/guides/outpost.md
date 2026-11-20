@@ -87,7 +87,7 @@ Credentials and keys the provider does not know to be non-sensitive are in `sens
 
 ## Portal custom domain
 
-Set `portal_custom_domain` to serve the project's portal on your own hostname. Applying adds the domain, and `portal_custom_domain_status` lists the DNS records to create for it.
+Set `portal_custom_domain` to serve the project's portal on your own hostname. Give the hostname in lowercase: the API stores it as typed, and an uppercase hostname does not match browser requests. Applying adds the domain, and `portal_custom_domain_status` has what you need to create the DNS records for it.
 
 ```terraform
 resource "hookdeck_outpost_project" "deliveries" {
@@ -95,12 +95,14 @@ resource "hookdeck_outpost_project" "deliveries" {
   portal_custom_domain = "portal.example.com"
 }
 
-output "portal_dns_records" {
-  value = hookdeck_outpost_project.deliveries.portal_custom_domain_status.verification_records
+output "portal_domain" {
+  value = hookdeck_outpost_project.deliveries.portal_custom_domain_status
 }
 ```
 
-Create the records at your DNS provider. They verify the hostname and issue its certificate. The status is `pending` until the hostname is verified, then `active`, which means the hostname is verified; the [resource page](https://registry.terraform.io/providers/hookdeck/hookdeck/latest/docs/resources/outpost_project) describes the status fields and what changing or removing the hostname does.
+Create these records at your DNS provider: a CNAME record for the hostname that points at `cname_target`, the TXT record in `ownership_verification`, and the TXT record in `ssl` (`txt_name` and `txt_value`). The status is `pending` until the hostname is verified, then `active`.
+
+If adding the domain fails on create, the project is tainted and the next apply replaces it. Changing the hostname deletes the old domain first, so the portal is unreachable on the old hostname from that point. The [resource page](https://registry.terraform.io/providers/hookdeck/hookdeck/latest/docs/resources/outpost_project) has an example output, an example that creates the records, and the details of the status fields.
 
 ## Several projects
 

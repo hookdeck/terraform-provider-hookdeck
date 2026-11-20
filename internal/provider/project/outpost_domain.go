@@ -2,11 +2,8 @@ package project
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"net/http"
-	"regexp"
-	"strings"
 
 	"terraform-provider-hookdeck/internal/sdkclient"
 
@@ -22,15 +19,16 @@ const (
 
 	codeDomainAlreadyConfigured = "CUSTOM_DOMAIN_ALREADY_CONFIGURED"
 	codeDomainAlreadyExists     = "CUSTOM_DOMAIN_ALREADY_EXISTS"
-	codeDomainInvalid           = "CUSTOM_DOMAIN_INVALID"
 )
 
 // customDomain is the portal custom domain as the API returns it.
 type customDomain struct {
-	Hostname string `json:"hostname"`
-	Status   string `json:"status"`
-	SSL      struct {
+	Hostname    string `json:"hostname"`
+	Status      string `json:"status"`
+	CnameTarget string `json:"cname_target"`
+	SSL         struct {
 		Status   string `json:"status"`
+		Method   string `json:"method"`
 		TxtName  string `json:"txt_name"`
 		TxtValue string `json:"txt_value"`
 	} `json:"ssl"`
@@ -43,18 +41,24 @@ type customDomain struct {
 }
 
 var (
-	recordTypes = map[string]attr.Type{
+	sslTypes = map[string]attr.Type{
+		"status":    types.StringType,
+		"method":    types.StringType,
+		"txt_name":  types.StringType,
+		"txt_value": types.StringType,
+	}
+	ownershipTypes = map[string]attr.Type{
 		"type":  types.StringType,
 		"name":  types.StringType,
 		"value": types.StringType,
 	}
 	domainStatusTypes = map[string]attr.Type{
-		"status":               types.StringType,
-		"ssl_status":           types.StringType,
-		"verification_records": types.ListType{ElemType: types.ObjectType{AttrTypes: recordTypes}},
-		"verification_errors":  types.ListType{ElemType: types.StringType},
+		"status":                 types.StringType,
+		"cname_target":           types.StringType,
+		"ssl":                    types.ObjectType{AttrTypes: sslTypes},
+		"ownership_verification": types.ObjectType{AttrTypes: ownershipTypes},
+		"verification_errors":    types.ListType{ElemType: types.StringType},
 	}
-	hostnamePattern = regexp.MustCompile(`^([a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?\.)+([a-z]{2,63}|xn--[a-z0-9-]{1,59})$`)
 )
 
 // getDomain returns the portal custom domain, or nil when the project has
@@ -80,9 +84,6 @@ func addDomain(ctx context.Context, api sdkclient.Client, hostname string) (*cus
 		return nil, fmt.Errorf("the project already has a portal custom domain: %w", err)
 	case sdkclient.IsCode(err, http.StatusConflict, codeDomainAlreadyExists):
 		return nil, fmt.Errorf("%s is already in use by another project: %w", hostname, err)
-	// The API answers an invalid hostname with 429.
-	case sdkclient.IsCode(err, http.StatusTooManyRequests, codeDomainInvalid):
-		return nil, fmt.Errorf("%s is not a valid hostname: %w", hostname, err)
 	case err != nil:
 		return nil, err
 	}
@@ -92,12 +93,10 @@ func addDomain(ctx context.Context, api sdkclient.Client, hostname string) (*cus
 // deleteDomain removes the portal custom domain. A project without a domain,
 // or one already deleted, is not an error.
 func deleteDomain(ctx context.Context, api sdkclient.Client) error {
-	err := api.Do(ctx, http.MethodDelete, domainPath, nil, nil, nil)
-	var refused *sdkclient.ProjectAccessError
-	if sdkclient.IsNotFound(err) || (errors.As(err, &refused) && refused.Status == http.StatusNotFound) {
-		return nil
+	if err := api.Do(ctx, http.MethodDelete, domainPath, nil, nil, nil); err != nil && !isGone(err) {
+		return err
 	}
-	return err
+	return nil
 }
 
 // statusObject maps the API's domain to portal_custom_domain_status.
@@ -105,38 +104,41 @@ func (d *customDomain) statusObject(ctx context.Context) (types.Object, diag.Dia
 	if d == nil {
 		return types.ObjectNull(domainStatusTypes), nil
 	}
-	type record struct {
-		Type  string `tfsdk:"type"`
-		Name  string `tfsdk:"name"`
-		Value string `tfsdk:"value"`
-	}
-	records := []record{}
-	if d.SSL.TxtName != "" {
-		records = append(records, record{Type: "txt", Name: d.SSL.TxtName, Value: d.SSL.TxtValue})
-	}
-	if o := d.OwnershipVerification; o != nil && o.Name != "" {
-		records = append(records, record{Type: strings.ToLower(o.Type), Name: o.Name, Value: o.Value})
-	}
 	errs := d.VerificationErrors
 	if errs == nil {
 		errs = []string{}
 	}
-
 	var diags diag.Diagnostics
-	recordList, d1 := types.ListValueFrom(ctx, types.ObjectType{AttrTypes: recordTypes}, records)
-	errorList, d2 := types.ListValueFrom(ctx, types.StringType, errs)
+	errorList, d1 := types.ListValueFrom(ctx, types.StringType, errs)
+	ssl, d2 := types.ObjectValue(sslTypes, map[string]attr.Value{
+		"status":    types.StringValue(d.SSL.Status),
+		"method":    types.StringValue(d.SSL.Method),
+		"txt_name":  types.StringValue(d.SSL.TxtName),
+		"txt_value": types.StringValue(d.SSL.TxtValue),
+	})
+	ownership := types.ObjectNull(ownershipTypes)
+	var d3 diag.Diagnostics
+	if o := d.OwnershipVerification; o != nil {
+		ownership, d3 = types.ObjectValue(ownershipTypes, map[string]attr.Value{
+			"type":  types.StringValue(o.Type),
+			"name":  types.StringValue(o.Name),
+			"value": types.StringValue(o.Value),
+		})
+	}
 	diags.Append(d1...)
 	diags.Append(d2...)
+	diags.Append(d3...)
 	if diags.HasError() {
 		return types.ObjectNull(domainStatusTypes), diags
 	}
-	obj, d3 := types.ObjectValue(domainStatusTypes, map[string]attr.Value{
-		"status":               types.StringValue(d.Status),
-		"ssl_status":           types.StringValue(d.SSL.Status),
-		"verification_records": recordList,
-		"verification_errors":  errorList,
+	obj, d4 := types.ObjectValue(domainStatusTypes, map[string]attr.Value{
+		"status":                 types.StringValue(d.Status),
+		"cname_target":           types.StringValue(d.CnameTarget),
+		"ssl":                    ssl,
+		"ownership_verification": ownership,
+		"verification_errors":    errorList,
 	})
-	diags.Append(d3...)
+	diags.Append(d4...)
 	return obj, diags
 }
 

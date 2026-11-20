@@ -59,7 +59,7 @@ output "max_retry_limit" {
 - `created_at` (String) Date the project was created
 - `organization_id` (String) ID of the organization the project belongs to
 - `portal_custom_domain` (String) Hostname that serves the project's portal. Null when no custom domain is set.
-- `portal_custom_domain_status` (Attributes) State of the portal custom domain. Null when no domain is set. Refreshed on every plan, so it moves from `pending` to `active` once the DNS records are in place. (see [below for nested schema](#nestedatt--portal_custom_domain_status))
+- `portal_custom_domain_status` (Attributes) The portal custom domain as the API reports it. Null when no domain is set. Refreshed on every plan, so `status` moves from `pending` to `active` once the DNS records are in place. (see [below for nested schema](#nestedatt--portal_custom_domain_status))
 - `sensitive_config` (Map of String, Sensitive) The rest of the project's configuration: credential keys, and any key this provider version does not know to be non-sensitive, including keys added to Outpost after this provider release. It includes the project's credentials and is stored in the Terraform state.
 - `type` (String) Project type, always `outpost`
 - `updated_at` (String) Date the project was last updated
@@ -69,16 +69,28 @@ output "max_retry_limit" {
 
 Read-Only:
 
-- `ssl_status` (String) Certificate status, for example `pending_validation` or `active`
+- `cname_target` (String) Host to point a CNAME record for the hostname at
+- `ownership_verification` (Attributes) TXT record that verifies ownership of the hostname. Null when the API returns none. (see [below for nested schema](#nestedatt--portal_custom_domain_status--ownership_verification))
+- `ssl` (Attributes) Certificate issued for the hostname (see [below for nested schema](#nestedatt--portal_custom_domain_status--ssl))
 - `status` (String) Domain status: `pending` until the hostname is verified, then `active`
 - `verification_errors` (List of String) Reasons the domain could not be verified, if any
-- `verification_records` (Attributes List) DNS records to create to verify the domain and issue its certificate (see [below for nested schema](#nestedatt--portal_custom_domain_status--verification_records))
 
-<a id="nestedatt--portal_custom_domain_status--verification_records"></a>
-### Nested Schema for `portal_custom_domain_status.verification_records`
+<a id="nestedatt--portal_custom_domain_status--ownership_verification"></a>
+### Nested Schema for `portal_custom_domain_status.ownership_verification`
 
 Read-Only:
 
 - `name` (String) Record name
-- `type` (String) Record type, for example `txt`
+- `type` (String) Record type
 - `value` (String) Record value
+
+
+<a id="nestedatt--portal_custom_domain_status--ssl"></a>
+### Nested Schema for `portal_custom_domain_status.ssl`
+
+Read-Only:
+
+- `method` (String) Method used to validate the certificate, for example `txt`
+- `status` (String) Certificate status, for example `initializing`, `pending_validation` or `active`
+- `txt_name` (String) Name of the TXT record that validates the certificate. Can be empty right after the domain is added.
+- `txt_value` (String) Value of the TXT record that validates the certificate. Can be empty right after the domain is added.

@@ -10,8 +10,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-const domainJSON = `{"id":"d1","hostname":"portal.example.com","status":"pending",
-"ssl":{"status":"pending_validation","txt_name":"_acme-challenge.portal.example.com","txt_value":"ssl-token"},
+const domainJSON = `{"id":"d1","hostname":"portal.example.com","status":"pending","cname_target":"portal.outpost.example.net",
+"ssl":{"id":"s1","method":"txt","status":"pending_validation","txt_name":"_acme-challenge.portal.example.com","txt_value":"ssl-token"},
 "verification_errors":["not verified yet"],
 "ownership_verification":{"type":"txt","name":"_ownership.portal.example.com","value":"ownership-token"}}`
 
@@ -55,7 +55,7 @@ func TestAddDomain(t *testing.T) {
 		{"added", response{200, domainJSON}, ""},
 		{"already configured", response{409, `{"code":"CUSTOM_DOMAIN_ALREADY_CONFIGURED","status":409,"message":"Custom domain already configured"}`}, "already has a portal custom domain"},
 		{"hostname in use", response{409, `{"code":"CUSTOM_DOMAIN_ALREADY_EXISTS","status":409,"message":"Custom domain already exists"}`}, "portal.example.com is already in use by another project"},
-		{"invalid hostname", response{429, `{"code":"CUSTOM_DOMAIN_INVALID","status":429,"message":"invalid"}`}, "portal.example.com is not a valid hostname"},
+		{"invalid hostname is the API error", response{422, `{"code":"VALIDATION_ERROR","status":422,"message":"invalid hostname"}`}, "invalid hostname"},
 		{"other error keeps the API message", response{500, `{"code":"INTERNAL","message":"boom"}`}, "boom"},
 	}
 	for _, tc := range tests {
@@ -129,7 +129,7 @@ func TestStatusObject(t *testing.T) {
 		}
 	})
 
-	t.Run("records and errors", func(t *testing.T) {
+	t.Run("mirrors the API response", func(t *testing.T) {
 		d, err := addDomain(t.Context(), sdkclient.Client{RawClient: &queuedAPI{responses: []response{{200, domainJSON}}}}, "portal.example.com")
 		if err != nil {
 			t.Fatal(err)
@@ -139,22 +139,28 @@ func TestStatusObject(t *testing.T) {
 			t.Fatal(diags)
 		}
 		attrs := got.Attributes()
-		if attrs["status"] != types.StringValue("pending") || attrs["ssl_status"] != types.StringValue("pending_validation") {
-			t.Errorf("status = %v, ssl_status = %v", attrs["status"], attrs["ssl_status"])
+		for key, want := range map[string]string{"status": "pending", "cname_target": "portal.outpost.example.net"} {
+			if attrs[key] != types.StringValue(want) {
+				t.Errorf("%s = %v, want %s", key, attrs[key], want)
+			}
 		}
-		records := asList(t, attrs["verification_records"]).Elements()
-		if len(records) != 2 {
-			t.Fatalf("%d records, want 2", len(records))
-		}
-		wantRecords := [][3]string{
-			{"txt", "_acme-challenge.portal.example.com", "ssl-token"},
-			{"txt", "_ownership.portal.example.com", "ownership-token"},
-		}
-		for i, want := range wantRecords {
-			fields := asObject(t, records[i]).Attributes()
-			for j, key := range []string{"type", "name", "value"} {
-				if fields[key] != types.StringValue(want[j]) {
-					t.Errorf("record %d %s = %v, want %s", i, key, fields[key], want[j])
+		for key, want := range map[string]map[string]string{
+			"ssl": {
+				"status":    "pending_validation",
+				"method":    "txt",
+				"txt_name":  "_acme-challenge.portal.example.com",
+				"txt_value": "ssl-token",
+			},
+			"ownership_verification": {
+				"type":  "txt",
+				"name":  "_ownership.portal.example.com",
+				"value": "ownership-token",
+			},
+		} {
+			fields := asObject(t, attrs[key]).Attributes()
+			for field, value := range want {
+				if fields[field] != types.StringValue(value) {
+					t.Errorf("%s.%s = %v, want %s", key, field, fields[field], value)
 				}
 			}
 		}
@@ -164,18 +170,35 @@ func TestStatusObject(t *testing.T) {
 		}
 	})
 
-	t.Run("a record the API left out is not listed, lists are never null", func(t *testing.T) {
-		d := &customDomain{Hostname: "portal.example.com", Status: "active"}
-		d.SSL.Status = "active"
+	t.Run("values are kept as the API returns them", func(t *testing.T) {
+		d := &customDomain{}
+		d.OwnershipVerification = &struct {
+			Type  string `json:"type"`
+			Name  string `json:"name"`
+			Value string `json:"value"`
+		}{Type: "TXT", Name: "_Owner.Portal.example.com", Value: "Token"}
 		got, diags := d.statusObject(t.Context())
 		if diags.HasError() {
 			t.Fatal(diags)
 		}
-		for _, key := range []string{"verification_records", "verification_errors"} {
-			list := asList(t, got.Attributes()[key])
-			if list.IsNull() || len(list.Elements()) != 0 {
-				t.Errorf("%s = %v, want an empty list", key, list)
-			}
+		fields := asObject(t, got.Attributes()["ownership_verification"]).Attributes()
+		if fields["type"] != types.StringValue("TXT") || fields["name"] != types.StringValue("_Owner.Portal.example.com") || fields["value"] != types.StringValue("Token") {
+			t.Errorf("ownership_verification = %v", fields)
+		}
+	})
+
+	t.Run("no ownership record is null, the error list is never null", func(t *testing.T) {
+		d := &customDomain{Hostname: "portal.example.com", Status: "active"}
+		got, diags := d.statusObject(t.Context())
+		if diags.HasError() {
+			t.Fatal(diags)
+		}
+		attrs := got.Attributes()
+		if !asObject(t, attrs["ownership_verification"]).IsNull() {
+			t.Errorf("ownership_verification = %v, want null", attrs["ownership_verification"])
+		}
+		if list := asList(t, attrs["verification_errors"]); list.IsNull() || len(list.Elements()) != 0 {
+			t.Errorf("verification_errors = %v, want an empty list", list)
 		}
 	})
 
@@ -207,32 +230,5 @@ func TestDomainValues(t *testing.T) {
 				t.Errorf("hostname = %v (want %v), status null = %v, diags = %v", got, tc.want, status.IsNull(), diags)
 			}
 		})
-	}
-}
-
-func TestHostnamePattern(t *testing.T) {
-	for host, ok := range map[string]bool{
-		"portal.example.com":      true,
-		"xn--80ak6aa92e.xn--p1ai": true,
-		"portal.example.xn--p1ai": true,
-		"Portal.example.com":      false,
-		"portal.Example.com":      false,
-		"portal.example.COM":      false,
-		"portal.xn--":             false,
-		"a-b.c.example.co.uk":     true,
-		"portal":                  false,
-		"https://portal.acme.com": false,
-		"portal.example.com:8080": false,
-		"portal.example.com/path": false,
-		"portal.example.com.":     false,
-		"-portal.example.com":     false,
-		"por tal.example.com":     false,
-		"portal.example.123":      false,
-		"":                        false,
-		"under_score.example.com": false,
-	} {
-		if got := hostnamePattern.MatchString(host); got != ok {
-			t.Errorf("%q: match = %v, want %v", host, got, ok)
-		}
 	}
 }

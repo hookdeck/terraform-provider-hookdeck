@@ -122,16 +122,26 @@ func outpostDomainDataAttributes() map[string]schema.Attribute {
 			Computed:    true,
 			Description: domainStatusDescription,
 			Attributes: map[string]schema.Attribute{
-				"status":     schema.StringAttribute{Computed: true, Description: domainStatusFieldDescription},
-				"ssl_status": schema.StringAttribute{Computed: true, Description: domainSSLStatusDescription},
-				"verification_records": schema.ListNestedAttribute{
+				"status":       schema.StringAttribute{Computed: true, Description: domainStatusFieldDescription},
+				"cname_target": schema.StringAttribute{Computed: true, Description: domainCnameDescription},
+				"ssl": schema.SingleNestedAttribute{
 					Computed:    true,
-					Description: domainRecordsDescription,
-					NestedObject: schema.NestedAttributeObject{Attributes: map[string]schema.Attribute{
-						"type":  schema.StringAttribute{Computed: true, Description: "Record type, for example `txt`"},
+					Description: domainSSLDescription,
+					Attributes: map[string]schema.Attribute{
+						"status":    schema.StringAttribute{Computed: true, Description: domainSSLStatusDescription},
+						"method":    schema.StringAttribute{Computed: true, Description: domainSSLMethodDescription},
+						"txt_name":  schema.StringAttribute{Computed: true, Description: domainSSLTxtNameDescription},
+						"txt_value": schema.StringAttribute{Computed: true, Description: domainSSLTxtValueDescription},
+					},
+				},
+				"ownership_verification": schema.SingleNestedAttribute{
+					Computed:    true,
+					Description: domainOwnershipDescription,
+					Attributes: map[string]schema.Attribute{
+						"type":  schema.StringAttribute{Computed: true, Description: "Record type"},
 						"name":  schema.StringAttribute{Computed: true, Description: "Record name"},
 						"value": schema.StringAttribute{Computed: true, Description: "Record value"},
-					}},
+					},
 				},
 				"verification_errors": schema.ListAttribute{Computed: true, ElementType: types.StringType, Description: domainErrorsDescription},
 			},

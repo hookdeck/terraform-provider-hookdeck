@@ -26,7 +26,7 @@ The keys of `config` and `sensitive_config` are Outpost environment variable nam
 
 ## Portal custom domain
 
-Set `portal_custom_domain` to serve the project's portal on your own hostname.
+Set `portal_custom_domain` to serve the project's portal on your own hostname. Give the hostname in lowercase: the API stores it as typed, and an uppercase hostname does not match browser requests.
 
 ```terraform
 resource "hookdeck_outpost_project" "example" {
@@ -34,16 +34,70 @@ resource "hookdeck_outpost_project" "example" {
   portal_custom_domain = "portal.example.com"
 }
 
-output "portal_dns_records" {
-  value = hookdeck_outpost_project.example.portal_custom_domain_status.verification_records
+output "portal_domain" {
+  value = hookdeck_outpost_project.example.portal_custom_domain_status
 }
 ```
 
-- Applying adds the domain after the project is configured. `portal_custom_domain_status.verification_records` then lists the DNS records to create at your DNS provider, each with a `type`, `name` and `value`. These records verify the hostname and issue its certificate. `verification_records` is unknown until the domain is added, so if you manage your DNS in Terraform, apply the project first (for example with `-target`), then the records.
-- `portal_custom_domain_status.status` is `pending` until the hostname is verified, then `active`, which means the hostname is verified. `ssl_status` is the state of the domain's certificate: `pending_validation` until the records are in place, `active` once it is issued. `verification_errors` lists the reasons the API reports when verification fails. Terraform refreshes the status on every plan.
-- Changing the hostname deletes the current domain and adds the new one, which needs new DNS records. Removing `portal_custom_domain` deletes the domain.
+`portal_custom_domain_status` mirrors what the API returns for the domain. Applying adds the domain after the project is configured, and the output looks like this:
+
+```
+portal_domain = {
+  "cname_target" = "portal.outpost.example.net"
+  "ownership_verification" = {
+    "name" = "_cf-custom-hostname.portal.example.com"
+    "type" = "txt"
+    "value" = "0c1d5e2a-..."
+  }
+  "ssl" = {
+    "method" = "txt"
+    "status" = "pending_validation"
+    "txt_name" = "_acme-challenge.portal.example.com"
+    "txt_value" = "kQ3t..."
+  }
+  "status" = "pending"
+  "verification_errors" = []
+}
+```
+
+The DNS records to create at your DNS provider are:
+
+- a CNAME record for the hostname that points at `cname_target`, so requests for the hostname reach the portal;
+- the TXT record in `ownership_verification`, which verifies that you own the hostname;
+- the TXT record in `ssl` (`txt_name` and `txt_value`), which validates the certificate. It can be empty for a short time after the domain is added; apply again once it is set.
+
+`ownership_verification` is null when the API returns none. This example creates the records in Route 53:
+
+```terraform
+locals {
+  domain = hookdeck_outpost_project.example.portal_custom_domain_status
+}
+
+resource "aws_route53_record" "portal_cname" {
+  zone_id = var.zone_id
+  name    = hookdeck_outpost_project.example.portal_custom_domain
+  type    = "CNAME"
+  ttl     = 300
+  records = [local.domain.cname_target]
+}
+
+resource "aws_route53_record" "portal_ownership" {
+  zone_id = var.zone_id
+  name    = local.domain.ownership_verification.name
+  type    = "TXT"
+  ttl     = 300
+  records = [local.domain.ownership_verification.value]
+}
+```
+
+`portal_custom_domain_status` is unknown until the domain is added, so if you manage your DNS in Terraform, apply the project first (for example with `-target`), then the records.
+
+- `status` is `pending` until the hostname is verified, then `active`. `ssl.status` is the state of the certificate, for example `pending_validation` until the records are in place and `active` once it is issued. `verification_errors` lists the reasons the API reports when verification fails. Terraform refreshes the status on every plan.
+- Changing the hostname deletes the current domain first, then adds the new one. The portal is unreachable on the old hostname from that point, and the new hostname needs its own DNS records. Removing `portal_custom_domain` deletes the domain.
+- If adding the domain fails on create, for example because another project uses the hostname, the project is tainted and the next apply replaces it.
 - A domain added or changed outside Terraform shows in the plan and is removed or replaced on the next apply, unless `portal_custom_domain` is set to it.
 - A hostname serves one project at a time: adding one that another project uses fails.
+- Hookdeck validates the hostname when the domain is added, so an invalid one fails at apply with the API's message.
 - Deleting the project deletes its domain first, which frees the hostname.
 
 ## Behavior
