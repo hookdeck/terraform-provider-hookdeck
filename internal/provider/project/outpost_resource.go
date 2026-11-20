@@ -238,6 +238,9 @@ func (r *outpostProjectResource) Update(ctx context.Context, req resource.Update
 		if !prior.PortalCustomDomain.IsNull() {
 			if err := deleteDomain(ctx, api); err != nil {
 				resp.Diagnostics.AddError("Error deleting portal custom domain", err.Error())
+				// The old domain is still there: state keeps it, not the planned hostname.
+				data.PortalCustomDomain, data.PortalCustomDomainStatus = prior.PortalCustomDomain, prior.PortalCustomDomainStatus
+				resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 				return
 			}
 		}

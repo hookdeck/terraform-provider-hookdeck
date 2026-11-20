@@ -298,7 +298,7 @@ func TestAccMock_OutpostProject_FailedDomainAddIsReplaced(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config:      config,
-				ExpectError: regexp.MustCompile(`(?s)Error adding portal custom domain.*portal\.example\.com is already in use by another project`),
+				ExpectError: regexp.MustCompile(`(?s)Error adding portal custom domain.*CUSTOM_DOMAIN_ALREADY_EXISTS`),
 			},
 			{
 				PreConfig: func() {
@@ -341,7 +341,7 @@ func TestAccMock_OutpostProject_FailedDomainChange(t *testing.T) {
 			{
 				PreConfig:   func() { m.update(func() { m.hostnames[domainB] = true }) },
 				Config:      outpostDomainConfig("deliveries", domainB),
-				ExpectError: regexp.MustCompile(`(?s)Error adding portal custom domain.*deliveries\.example\.com is already in use by another project`),
+				ExpectError: regexp.MustCompile(`(?s)Error adding portal custom domain.*CUSTOM_DOMAIN_ALREADY_EXISTS`),
 			},
 			{
 				PreConfig: func() {
@@ -422,8 +422,10 @@ func setDomainFault(m *mockAPI, projectID *string, method string, status int) fu
 	}
 }
 
-// A hostname change whose DELETE of the old domain fails keeps the old
-// hostname in state; the next apply deletes it and adds the new one.
+// A hostname change whose DELETE of the old domain fails saves what the
+// update had already applied (here the rename) and keeps the old domain in
+// state. The plans skip the refresh, so they show the state as saved; the next
+// apply deletes the old domain and adds the new one.
 func TestAccMock_OutpostProject_FailedDomainDeleteOnChangeKeepsState(t *testing.T) {
 	acc.SkipUnlessAcc(t)
 	m := mockOutpostOrganization(t)
@@ -432,19 +434,23 @@ func TestAccMock_OutpostProject_FailedDomainDeleteOnChangeKeepsState(t *testing.
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: acc.ProviderFactories,
+		AdditionalCLIOptions:     &resource.AdditionalCLIOptions{Plan: resource.PlanOptions{NoRefresh: true}},
 		Steps: []resource.TestStep{
 			{Config: outpostDomainConfig("deliveries", domainA), Check: captureID(outpostAddr, &projectID)},
 			{
 				PreConfig:   setDomainFault(m, &projectID, http.MethodDelete, 500),
-				Config:      outpostDomainConfig("deliveries", domainB),
+				Config:      outpostDomainConfig("renamed", domainB),
 				ExpectError: regexp.MustCompile(`Error deleting portal custom domain`),
 			},
 			{
-				PreConfig: func() {
-					setDomainFault(m, &projectID, http.MethodDelete, 0)()
-					posts, deletes = domainCalls(m, http.MethodPost), domainCalls(m, http.MethodDelete)
-				},
-				Config: outpostDomainConfig("deliveries", domainB),
+				// State has the new name and the old hostname: no change left for them.
+				PreConfig: setDomainFault(m, &projectID, http.MethodDelete, 0),
+				Config:    outpostDomainConfig("renamed", domainA),
+				PlanOnly:  true,
+			},
+			{
+				PreConfig: func() { posts, deletes = domainCalls(m, http.MethodPost), domainCalls(m, http.MethodDelete) },
+				Config:    outpostDomainConfig("renamed", domainB),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					checkDomain(domainB, false),
 					func(_ *terraform.State) error {
@@ -537,4 +543,56 @@ func TestAccMock_OutpostProject_HostnameRefusedByAPI(t *testing.T) {
 	if got := domainCalls(m, http.MethodPost); got != 1 {
 		t.Errorf("%d POST /config/custom_domain requests, want 1", got)
 	}
+}
+
+// A hostname that is unknown at plan time and resolves to the current one
+// changes nothing: the status is read, and the domain is not touched.
+func TestAccMock_OutpostProject_UnknownHostnameUnchanged(t *testing.T) {
+	acc.SkipUnlessAcc(t)
+	m := mockOutpostOrganization(t)
+	var posts, deletes int
+	// Changing the trigger replaces the hostname resource, so its output is
+	// unknown at plan time and the same value after apply.
+	config := func(trigger string) string {
+		return fmt.Sprintf(`resource "terraform_data" "trigger" {
+  input = %q
+}
+
+resource "terraform_data" "hostname" {
+  input = %q
+
+  lifecycle {
+    replace_triggered_by = [terraform_data.trigger]
+  }
+}
+
+resource "hookdeck_outpost_project" "test" {
+  name                 = "deliveries"
+  portal_custom_domain = terraform_data.hostname.output
+}
+`, trigger, domainA)
+	}
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: acc.ProviderFactories,
+		Steps: []resource.TestStep{
+			{Config: config("one"), Check: checkDomain(domainA, false)},
+			{
+				PreConfig: func() { posts, deletes = domainCalls(m, http.MethodPost), domainCalls(m, http.MethodDelete) },
+				Config:    config("two"),
+				ConfigPlanChecks: resource.ConfigPlanChecks{PreApply: []plancheck.PlanCheck{
+					plancheck.ExpectUnknownValue(outpostAddr, tfjsonpath.New("portal_custom_domain")),
+				}},
+				Check: resource.ComposeAggregateTestCheckFunc(
+					checkDomain(domainA, false),
+					func(_ *terraform.State) error {
+						if p, d := domainCalls(m, http.MethodPost)-posts, domainCalls(m, http.MethodDelete)-deletes; p != 0 || d != 0 {
+							return fmt.Errorf("%d POST and %d DELETE on the domain, want none", p, d)
+						}
+						return nil
+					},
+				),
+			},
+		},
+	})
 }
