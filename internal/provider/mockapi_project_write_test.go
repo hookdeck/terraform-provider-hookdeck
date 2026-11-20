@@ -160,46 +160,55 @@ func expectWriteError(t *testing.T, diags []*tfprotov6.Diagnostic, summary strin
 }
 
 // expectDeleteRefused checks a destroy the API refused. An Outpost project
-// removes its portal custom domain first, so the refusal can come from either
-// call.
-func expectDeleteRefused(t *testing.T, typeName string, diags []*tfprotov6.Diagnostic) {
+// removes its portal custom domain first, so the refusal comes from the
+// domain call unless the key can reach the domain route and is refused at the
+// project delete: each key names the call it fails at.
+func expectDeleteRefused(t *testing.T, typeName string, k deleteKey, diags []*tfprotov6.Diagnostic) {
 	t.Helper()
-	if typeName != "hookdeck_outpost_project" {
+	if typeName != "hookdeck_outpost_project" || !k.atDomain {
 		expectWriteError(t, diags, "Error deleting project")
 		return
 	}
 	if len(diags) == 0 {
 		t.Fatal("no error, want a refused delete")
 	}
-	if s := diags[0].Summary; s != "Error deleting project" && s != "Error deleting portal custom domain" {
-		t.Errorf("error %q, want a refused delete", s)
+	if diags[0].Summary != "Error deleting portal custom domain" {
+		t.Errorf("error %q, want %q", diags[0].Summary, "Error deleting portal custom domain")
 	}
-	if !regexp.MustCompile(`(?s)cannot\s+access\s+project.*(Use\s+an|Check\s+that\s+the)\s+API\s+key`).MatchString(diags[0].Detail) {
+	if !regexp.MustCompile(`(?s)cannot\s+access\s+project.*Check\s+that\s+the\s+API\s+key`).MatchString(diags[0].Detail) {
 		t.Errorf("detail = %q", diags[0].Detail)
 	}
+}
+
+// deleteKey is a key that cannot reach the project. atDomain is whether an
+// Outpost project's destroy is refused at its domain DELETE; otherwise the
+// domain DELETE passes and the project DELETE is refused.
+type deleteKey struct {
+	mockKey
+	atDomain bool
 }
 
 // A destroy that skips the refresh, with a key that cannot reach the project,
 // fails and keeps the project and its state.
 func TestAccMock_ProjectDelete_UnreachableKeepsProject(t *testing.T) {
 	acc.SkipUnlessAcc(t)
-	keys := map[string]mockKey{
-		"another organization":      {org: mockOtherOrg},
-		"key limited to others":     {org: mockOrg, grants: map[string]bool{"tm_a": true}},
-		"key without projects.read": {org: mockOrg, noProjectsRead: true},
+	keys := map[string]deleteKey{
+		"another organization":      {mockKey: mockKey{org: mockOtherOrg}, atDomain: true},
+		"key limited to others":     {mockKey: mockKey{org: mockOrg, grants: map[string]bool{"tm_a": true}}, atDomain: true},
+		"key without projects.read": {mockKey: mockKey{org: mockOrg, noProjectsRead: true}},
 	}
 	for _, typeName := range projectResources {
 		for name, key := range keys {
 			t.Run(typeName+"/"+name, func(t *testing.T) {
 				m := mockOrganization(t)
 				m.addProject("tm_target", "target", apiTypeOf(typeName))
-				m.addKey("hd_org_mock_unreachable", key)
+				m.addKey("hd_org_mock_unreachable", key.mockKey)
 				acc.UseAPIKey(t, "hd_org_mock_unreachable")
 				p := newProtoProject(t, typeName)
 
 				diags, after := p.delete("tm_target", "target")
 
-				expectDeleteRefused(t, typeName, diags)
+				expectDeleteRefused(t, typeName, key, diags)
 				if !after.Equal(p.state("tm_target", "target")) {
 					t.Errorf("state = %v, want it unchanged", after)
 				}
