@@ -20,6 +20,8 @@ func (d *mockDomain) view() map[string]any {
 		"id":       "dom_" + d.hostname,
 		"hostname": d.hostname,
 		"status":   status,
+		// The CNAME target is the portal host, the same for every domain.
+		"cname_target": "portal.outpost.example.net",
 		"ssl": map[string]any{
 			"id":        "cert_1",
 			"method":    "txt",
@@ -40,8 +42,13 @@ func (d *mockDomain) view() map[string]any {
 // handleDomain serves /config/custom_domain: GET
 // answers 200 with null when there is no domain, POST on a project that has
 // one is a 409, a hostname registered anywhere is a 409, and DELETE without
-// a domain is a 404. Deleting a project does not release its hostname.
+// a domain is a 404. Deleting a project does not release its hostname. The
+// route does not check that the project is provisioned.
 func (m *mockAPI) handleDomain(w http.ResponseWriter, r *http.Request, outpost *mockOutpost) {
+	if status, faulty := outpost.domainFaults[r.Method]; faulty {
+		apiError(w, status, "FAULT", "Injected", nil)
+		return
+	}
 	switch r.Method {
 	case http.MethodGet:
 		if outpost.domain == nil {
@@ -55,6 +62,10 @@ func (m *mockAPI) handleDomain(w http.ResponseWriter, r *http.Request, outpost *
 		}
 		if err := json.NewDecoder(r.Body).Decode(&body); err != nil || body.Hostname == "" {
 			apiError(w, 422, "VALIDATION_ERROR", "\"hostname\" is required", nil)
+			return
+		}
+		if m.refuseHostnames {
+			apiError(w, 422, "VALIDATION_ERROR", "\"hostname\" must be a valid hostname", nil)
 			return
 		}
 		if outpost.domain != nil {

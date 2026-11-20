@@ -35,9 +35,10 @@ data "hookdeck_outpost_project" "without" {
 			Check: resource.ComposeAggregateTestCheckFunc(
 				resource.TestCheckResourceAttr(addr("with"), "portal_custom_domain", domainA),
 				resource.TestCheckResourceAttr(addr("with"), statusAttr+".status", "active"),
-				resource.TestCheckResourceAttr(addr("with"), statusAttr+".ssl_status", "active"),
-				resource.TestCheckResourceAttr(addr("with"), statusAttr+".verification_records.#", "2"),
-				resource.TestCheckResourceAttr(addr("with"), statusAttr+".verification_records.0.name", "_acme-challenge."+domainA),
+				resource.TestCheckResourceAttr(addr("with"), statusAttr+".cname_target", "portal.outpost.example.net"),
+				resource.TestCheckResourceAttr(addr("with"), statusAttr+".ssl.status", "active"),
+				resource.TestCheckResourceAttr(addr("with"), statusAttr+".ssl.txt_name", "_acme-challenge."+domainA),
+				resource.TestCheckResourceAttr(addr("with"), statusAttr+".ownership_verification.name", "_ownership."+domainA),
 				resource.TestCheckNoResourceAttr(addr("without"), "portal_custom_domain"),
 				resource.TestCheckNoResourceAttr(addr("without"), statusAttr+".status"),
 			),

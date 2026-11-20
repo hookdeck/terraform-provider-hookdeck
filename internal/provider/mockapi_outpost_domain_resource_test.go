@@ -48,19 +48,19 @@ func checkDomain(hostname string, active bool) resource.TestCheckFunc {
 	return resource.ComposeAggregateTestCheckFunc(
 		resource.TestCheckResourceAttr(outpostAddr, "portal_custom_domain", hostname),
 		resource.TestCheckResourceAttr(outpostAddr, statusAttr+".status", status),
-		resource.TestCheckResourceAttr(outpostAddr, statusAttr+".ssl_status", ssl),
-		resource.TestCheckResourceAttr(outpostAddr, statusAttr+".verification_records.#", "2"),
-		resource.TestCheckResourceAttr(outpostAddr, statusAttr+".verification_records.0.type", "txt"),
-		resource.TestCheckResourceAttr(outpostAddr, statusAttr+".verification_records.0.name", "_acme-challenge."+hostname),
-		resource.TestCheckResourceAttr(outpostAddr, statusAttr+".verification_records.0.value", "ssl-token"),
-		resource.TestCheckResourceAttr(outpostAddr, statusAttr+".verification_records.1.type", "txt"),
-		resource.TestCheckResourceAttr(outpostAddr, statusAttr+".verification_records.1.name", "_ownership."+hostname),
-		resource.TestCheckResourceAttr(outpostAddr, statusAttr+".verification_records.1.value", "ownership-token"),
+		resource.TestCheckResourceAttr(outpostAddr, statusAttr+".cname_target", "portal.outpost.example.net"),
+		resource.TestCheckResourceAttr(outpostAddr, statusAttr+".ssl.status", ssl),
+		resource.TestCheckResourceAttr(outpostAddr, statusAttr+".ssl.method", "txt"),
+		resource.TestCheckResourceAttr(outpostAddr, statusAttr+".ssl.txt_name", "_acme-challenge."+hostname),
+		resource.TestCheckResourceAttr(outpostAddr, statusAttr+".ssl.txt_value", "ssl-token"),
+		resource.TestCheckResourceAttr(outpostAddr, statusAttr+".ownership_verification.type", "txt"),
+		resource.TestCheckResourceAttr(outpostAddr, statusAttr+".ownership_verification.name", "_ownership."+hostname),
+		resource.TestCheckResourceAttr(outpostAddr, statusAttr+".ownership_verification.value", "ownership-token"),
 		resource.TestCheckResourceAttr(outpostAddr, statusAttr+".verification_errors.#", "0"),
 	)
 }
 
-// The domain is added after the configuration. The status lists the DNS
+// The domain is added after the configuration. The status has the DNS
 // records and follows the domain as it becomes active.
 func TestAccMock_OutpostProject_CreateWithDomain(t *testing.T) {
 	acc.SkipUnlessAcc(t)
@@ -361,4 +361,180 @@ func TestAccMock_OutpostProject_FailedDomainChange(t *testing.T) {
 			},
 		},
 	})
+}
+
+// The domain route answers for a project that is not provisioned: refresh,
+// replacement and destroy work on one whose create timed out before the
+// domain was added.
+func TestAccMock_OutpostProject_NotProvisionedProjectReplaced(t *testing.T) {
+	acc.SkipUnlessAcc(t)
+	m := mockOutpostOrganization(t)
+	m.update(func() { m.provisionReads = -1 })
+	var firstID string
+	body := "  portal_custom_domain = \"" + domainA + "\"\n"
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: acc.ProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				Config:      outpostConfig("deliveries", body+"  timeouts {\n    create = \"5s\"\n  }\n"),
+				ExpectError: regexp.MustCompile(`(?s)Outpost project tm_new\d+ was created but is not ready after 5s`),
+			},
+			{
+				PreConfig: func() {
+					m.update(func() {
+						m.provisionReads = 0
+						for id, p := range m.projects {
+							if p.Type == "outpost" {
+								firstID = id
+							}
+						}
+					})
+				},
+				Config:           outpostConfig("deliveries", body),
+				ConfigPlanChecks: replacePlan(),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					checkDomain(domainA, false),
+					func(s *terraform.State) error {
+						if got := s.RootModule().Resources[outpostAddr].Primary.ID; got == firstID {
+							return fmt.Errorf("the tainted project %s was not replaced", got)
+						}
+						return nil
+					},
+				),
+			},
+		},
+	})
+}
+
+func setDomainFault(m *mockAPI, projectID *string, method string, status int) func() {
+	return func() {
+		m.update(func() {
+			if status == 0 {
+				delete(m.outposts[*projectID].domainFaults, method)
+				return
+			}
+			if m.outposts[*projectID].domainFaults == nil {
+				m.outposts[*projectID].domainFaults = map[string]int{}
+			}
+			m.outposts[*projectID].domainFaults[method] = status
+		})
+	}
+}
+
+// A hostname change whose DELETE of the old domain fails keeps the old
+// hostname in state; the next apply deletes it and adds the new one.
+func TestAccMock_OutpostProject_FailedDomainDeleteOnChangeKeepsState(t *testing.T) {
+	acc.SkipUnlessAcc(t)
+	m := mockOutpostOrganization(t)
+	var projectID string
+	var posts, deletes int
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: acc.ProviderFactories,
+		Steps: []resource.TestStep{
+			{Config: outpostDomainConfig("deliveries", domainA), Check: captureID(outpostAddr, &projectID)},
+			{
+				PreConfig:   setDomainFault(m, &projectID, http.MethodDelete, 500),
+				Config:      outpostDomainConfig("deliveries", domainB),
+				ExpectError: regexp.MustCompile(`Error deleting portal custom domain`),
+			},
+			{
+				PreConfig: func() {
+					setDomainFault(m, &projectID, http.MethodDelete, 0)()
+					posts, deletes = domainCalls(m, http.MethodPost), domainCalls(m, http.MethodDelete)
+				},
+				Config: outpostDomainConfig("deliveries", domainB),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					checkDomain(domainB, false),
+					func(_ *terraform.State) error {
+						if p, d := domainCalls(m, http.MethodPost)-posts, domainCalls(m, http.MethodDelete)-deletes; p != 1 || d != 1 {
+							return fmt.Errorf("%d POST and %d DELETE on the domain, want 1 and 1", p, d)
+						}
+						return nil
+					},
+				),
+			},
+		},
+	})
+}
+
+// A destroy whose domain DELETE succeeds and whose project DELETE fails keeps
+// the project in state; the next refresh finds no domain, so the plan adds it
+// back.
+func TestAccMock_OutpostProject_FailedProjectDeleteAfterDomain(t *testing.T) {
+	acc.SkipUnlessAcc(t)
+	m := mockOutpostOrganization(t)
+	config := outpostDomainConfig("deliveries", domainA)
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: acc.ProviderFactories,
+		Steps: []resource.TestStep{
+			{Config: config},
+			{
+				PreConfig:   func() { m.update(func() { m.faults["DELETE projects"] = 500 }) },
+				Config:      config,
+				Destroy:     true,
+				ExpectError: regexp.MustCompile(`Error deleting project`),
+			},
+			{
+				PreConfig: func() {
+					m.update(func() {
+						delete(m.faults, "DELETE projects")
+						if m.hostnames[domainA] {
+							t.Errorf("%s is still registered: the domain was not deleted before the project", domainA)
+						}
+					})
+				},
+				Config:           config,
+				ConfigPlanChecks: statusIsUnknown(),
+				Check:            checkDomain(domainA, false),
+			},
+		},
+	})
+}
+
+// A refresh whose domain read is refused fails and keeps the state.
+func TestAccMock_OutpostProject_DomainReadRefusedKeepsState(t *testing.T) {
+	acc.SkipUnlessAcc(t)
+	m := mockOutpostOrganization(t)
+	var projectID string
+	config := outpostDomainConfig("deliveries", domainA)
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: acc.ProviderFactories,
+		Steps: []resource.TestStep{
+			{Config: config, Check: captureID(outpostAddr, &projectID)},
+			{
+				PreConfig:   setDomainFault(m, &projectID, http.MethodGet, 403),
+				Config:      config,
+				PlanOnly:    true,
+				ExpectError: regexp.MustCompile(`Error reading portal custom domain`),
+			},
+			{
+				PreConfig: setDomainFault(m, &projectID, http.MethodGet, 0),
+				Config:    config,
+				PlanOnly:  true,
+			},
+		},
+	})
+}
+
+// The API's refusal of a hostname is reported as it comes, with no check or
+// rewrite by the provider.
+func TestAccMock_OutpostProject_HostnameRefusedByAPI(t *testing.T) {
+	acc.SkipUnlessAcc(t)
+	m := mockOutpostOrganization(t)
+	m.update(func() { m.refuseHostnames = true })
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: acc.ProviderFactories,
+		Steps: []resource.TestStep{{
+			Config:      outpostDomainConfig("deliveries", "Not A Host"),
+			ExpectError: regexp.MustCompile(`(?s)Error adding portal custom domain.*must\s+be\s+a\s+valid\s+hostname`),
+		}},
+	})
+	if got := domainCalls(m, http.MethodPost); got != 1 {
+		t.Errorf("%d POST /config/custom_domain requests, want 1", got)
+	}
 }

@@ -42,7 +42,9 @@ type mockAPI struct {
 	outposts       map[string]*mockOutpost
 	outpostServer  *httptest.Server
 	provisionReads int
-	patchBodies    []map[string]*string
+	// refuseHostnames makes the domain route answer 422 to every POST.
+	refuseHostnames bool
+	patchBodies     []map[string]*string
 	// hostnames are the portal hostnames registered; a deleted project
 	// keeps its hostname registered.
 	hostnames map[string]bool

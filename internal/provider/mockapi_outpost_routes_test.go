@@ -26,6 +26,9 @@ type mockOutpost struct {
 	// OUTPOST_CONFIG_LOCKED.
 	lockedPatches int
 	domain        *mockDomain
+	// domainFaults answers every request to /config/custom_domain with a
+	// method in it with the status.
+	domainFaults map[string]int
 }
 
 // mockOutpostDefaults are the values the API returns for a key nobody set.
