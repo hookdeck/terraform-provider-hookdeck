@@ -61,7 +61,7 @@ func outpostSchemaAttributes() map[string]schema.Attribute {
 // The status attributes mirror the response of GET /config/custom_domain.
 const (
 	domainStatusDescription      = "The portal custom domain as the API reports it. Null when no domain is set. Refreshed on every plan, so `status` moves from `pending` to `active` once the DNS records are in place."
-	domainStatusFieldDescription = "Domain status: `pending` until the hostname is verified, then `active`"
+	domainStatusFieldDescription = "Domain status, for example `pending` until the hostname is verified, then `active`"
 	domainCnameDescription       = "Host to point a CNAME record for the hostname at"
 	domainSSLDescription         = "Certificate issued for the hostname"
 	domainSSLStatusDescription   = "Certificate status, for example `initializing`, `pending_validation` or `active`"
@@ -69,7 +69,7 @@ const (
 	domainSSLTxtNameDescription  = "Name of the TXT record that validates the certificate. Can be empty right after the domain is added."
 	domainSSLTxtValueDescription = "Value of the TXT record that validates the certificate. Can be empty right after the domain is added."
 	domainOwnershipDescription   = "TXT record that verifies ownership of the hostname. Null when the API returns none."
-	domainErrorsDescription      = "Reasons the domain could not be verified, if any"
+	domainErrorsDescription      = "Reasons the domain could not be verified. An empty list when there are none."
 )
 
 func outpostTimeoutsBlock(ctx context.Context) schema.Block {

@@ -53,8 +53,8 @@ func TestAddDomain(t *testing.T) {
 		wantErr  string
 	}{
 		{"added", response{200, domainJSON}, ""},
-		{"already configured", response{409, `{"code":"CUSTOM_DOMAIN_ALREADY_CONFIGURED","status":409,"message":"Custom domain already configured"}`}, "already has a portal custom domain"},
-		{"hostname in use", response{409, `{"code":"CUSTOM_DOMAIN_ALREADY_EXISTS","status":409,"message":"Custom domain already exists"}`}, "portal.example.com is already in use by another project"},
+		{"already configured", response{409, `{"code":"CUSTOM_DOMAIN_ALREADY_CONFIGURED","status":409,"message":"Custom domain already configured"}`}, "CUSTOM_DOMAIN_ALREADY_CONFIGURED"},
+		{"hostname in use", response{409, `{"code":"CUSTOM_DOMAIN_ALREADY_EXISTS","status":409,"message":"Custom domain already exists"}`}, "CUSTOM_DOMAIN_ALREADY_EXISTS"},
 		{"invalid hostname is the API error", response{422, `{"code":"VALIDATION_ERROR","status":422,"message":"invalid hostname"}`}, "invalid hostname"},
 		{"other error keeps the API message", response{500, `{"code":"INTERNAL","message":"boom"}`}, "boom"},
 	}

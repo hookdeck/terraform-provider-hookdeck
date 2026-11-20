@@ -72,8 +72,8 @@ Read-Only:
 - `cname_target` (String) Host to point a CNAME record for the hostname at
 - `ownership_verification` (Attributes) TXT record that verifies ownership of the hostname. Null when the API returns none. (see [below for nested schema](#nestedatt--portal_custom_domain_status--ownership_verification))
 - `ssl` (Attributes) Certificate issued for the hostname (see [below for nested schema](#nestedatt--portal_custom_domain_status--ssl))
-- `status` (String) Domain status: `pending` until the hostname is verified, then `active`
-- `verification_errors` (List of String) Reasons the domain could not be verified, if any
+- `status` (String) Domain status, for example `pending` until the hostname is verified, then `active`
+- `verification_errors` (List of String) Reasons the domain could not be verified. An empty list when there are none.
 
 <a id="nestedatt--portal_custom_domain_status--ownership_verification"></a>
 ### Nested Schema for `portal_custom_domain_status.ownership_verification`

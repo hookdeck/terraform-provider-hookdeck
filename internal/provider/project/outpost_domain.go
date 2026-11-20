@@ -2,7 +2,6 @@ package project
 
 import (
 	"context"
-	"fmt"
 	"net/http"
 
 	"terraform-provider-hookdeck/internal/sdkclient"
@@ -16,9 +15,6 @@ import (
 
 const (
 	domainPath = "/config/custom_domain"
-
-	codeDomainAlreadyConfigured = "CUSTOM_DOMAIN_ALREADY_CONFIGURED"
-	codeDomainAlreadyExists     = "CUSTOM_DOMAIN_ALREADY_EXISTS"
 )
 
 // customDomain is the portal custom domain as the API returns it.
@@ -78,13 +74,7 @@ func getDomain(ctx context.Context, api sdkclient.Client) (*customDomain, error)
 
 func addDomain(ctx context.Context, api sdkclient.Client, hostname string) (*customDomain, error) {
 	var domain customDomain
-	err := api.Do(ctx, http.MethodPost, domainPath, map[string]string{"hostname": hostname}, nil, &domain)
-	switch {
-	case sdkclient.IsCode(err, http.StatusConflict, codeDomainAlreadyConfigured):
-		return nil, fmt.Errorf("the project already has a portal custom domain: %w", err)
-	case sdkclient.IsCode(err, http.StatusConflict, codeDomainAlreadyExists):
-		return nil, fmt.Errorf("%s is already in use by another project: %w", hostname, err)
-	case err != nil:
+	if err := api.Do(ctx, http.MethodPost, domainPath, map[string]string{"hostname": hostname}, nil, &domain); err != nil {
 		return nil, err
 	}
 	return &domain, nil
