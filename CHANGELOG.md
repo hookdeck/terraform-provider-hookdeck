@@ -15,7 +15,7 @@ NOTES:
 * Going back to 3.0.x: once `terraform apply` (also with `-refresh-only`) or `terraform refresh` has run on 3.1.0, 3.0.x and earlier stop on its sources and destinations with "Resource instance managed by newer provider version". This is deliberate. Those versions would treat every key stored in state, including the ones Hookdeck returned, as one you had set, and their next apply would remove authentication, rate limits and other settings that are not in your `config`. To go back, remove the sources and destinations from state with `terraform state rm` and import them again on 3.0.x. Running only `terraform plan` on 3.1.0 leaves the state readable by 3.0.x.
 * `config` in state and in the data sources now holds the secrets Hookdeck returns, such as authentication tokens. It stays sensitive.
 * After an apply that changes `config`, state holds exactly your `config`, and the next refresh replaces it with Hookdeck's full configuration. Terraform 1.0 and 1.1 list this under "Objects have changed outside of Terraform" on the next plan, and `-refresh-only` plans show it. The plan still reports no changes.
-* A key in `config` that Hookdeck does not return for the type (a typo, a key of another type, or `url` on a `MOCK_API` destination) has no effect in Hookdeck. After the apply that sends it, plans ignore it and warn on each run.
+* A top-level key in `config` that Hookdeck does not return for the type (a typo, a key of another type, or `url` on a `MOCK_API` destination) has no effect in Hookdeck. After the apply that sends it, plans ignore it and warn on each run.
 * Numbers and booleans written as strings (`"10"`, `"true"`) match the number or boolean Hookdeck returns.
 * After an import, removing a key from `config` does not clear it in Hookdeck until an apply has changed `config`; set the key to `null` to clear it before then (see the limitation on `null` below). Adding a key whose value Hookdeck already holds plans no change until then either.
 * Known limitations: a value in `config` that Hookdeck stores differently from how you wrote it shows as `config = (sensitive value)` on every plan, and applying does not make the plan empty. These configurations planned no change on 3.0. The known cases:
@@ -24,6 +24,7 @@ NOTES:
   * `path` on a `CLI` destination with surrounding spaces or without a leading `/`: Hookdeck trims it and adds the `/`. Write `"/path"`.
   * `delivery_policy.period` with capitals or surrounding spaces: Hookdeck stores it trimmed and in lower case. Write it that way.
   * `url` on a destination with surrounding spaces: Hookdeck trims them. Remove the spaces.
+  * A nested key that Hookdeck drops, such as a misspelled key inside `auth`, `custom_response` or `delivery_policy`, or a key of another authentication method than `auth_type`: Hookdeck does not return it, so the plan shows the change on every run. Remove the key.
   * A key set to `null` whose cleared value in Hookdeck is a default (`delivery_timeout`, `auth`, `auth_type`, `delivery_policy` and `delivery_policy.period` on a destination): Hookdeck returns the default. Remove the key once the apply has cleared it.
 
 BUG FIXES:
