@@ -230,6 +230,33 @@ func TestAccMock_ConfigRemovedEntirelyIsCleared(t *testing.T) {
 	})
 }
 
+// Removing the whole config of a destination clears the keys that were set,
+// and the plan expects the update to change the timestamps.
+func TestAccMock_ConfigRemovedEntirelyFromDestination(t *testing.T) {
+	m := driftMock(t)
+	with := driftObject("hookdeck_gateway_destination", "mock-drift-dst", "MOCK_API", `{"delivery_timeout":30}`)
+	without := driftObject("hookdeck_gateway_destination", "mock-drift-dst", "MOCK_API", "")
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: acc.ProviderFactories,
+		Steps: []resource.TestStep{
+			{Config: with},
+			{
+				Config:           without,
+				ConfigPlanChecks: updatePlan(destinationAddr),
+				Check: func(*terraform.State) error {
+					sent := lastWrittenConfig(m, "/destinations/")
+					if v, present := sent["delivery_timeout"]; !present || v != nil {
+						return fmt.Errorf("delivery_timeout in the update = %v (present %v), want null", v, present)
+					}
+					return nil
+				},
+			},
+			{Config: without, ConfigPlanChecks: emptyPlan()},
+		},
+	})
+}
+
 // A key Hookdeck drops (it is not valid for the type) does not plan an
 // update on every run.
 func TestAccMock_ConfigKeyDroppedByHookdeck(t *testing.T) {
