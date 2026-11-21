@@ -24,7 +24,7 @@ NOTES:
   * `path` on a `CLI` destination with surrounding spaces or without a leading `/`: Hookdeck trims it and adds the `/`. Write `"/path"`.
   * `delivery_policy.period` with capitals or surrounding spaces: Hookdeck stores it trimmed and in lower case. Write it that way.
   * `url` on a destination with surrounding spaces: Hookdeck trims them. Remove the spaces.
-  * A nested key that Hookdeck drops, such as a misspelled key inside `auth`, `custom_response` or `delivery_policy`, or a key of another authentication method than `auth_type`: Hookdeck does not return it, so the plan shows the change on every run. Remove the key.
+  * A nested key that Hookdeck drops, such as a misspelled key inside `auth`, `custom_response` or `delivery_policy`, or a key of an authentication method other than the one in `auth_type`: Hookdeck does not return it, so the plan shows the change on every run. Remove the key.
   * A key set to `null` whose cleared value in Hookdeck is a default (`delivery_timeout`, `auth`, `auth_type`, `delivery_policy` and `delivery_policy.period` on a destination): Hookdeck returns the default. Remove the key once the apply has cleared it.
 
 BUG FIXES:

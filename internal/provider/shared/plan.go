@@ -17,11 +17,10 @@ import (
 // runs after attribute plan modifiers.
 //
 // An attribute that is unknown but not only computed (a value from another
-// resource, or the config attribute itself) is a real change: the plan is left
-// alone, except that the timestamps an update changes are marked unknown. The
-// framework marks them before attribute plan modifiers run, so a change that
-// only a modifier introduces (config removed from the configuration) would
-// leave them known, and the update would then return new values.
+// resource, or the config attribute itself) is a real change: the plan is
+// kept, with updated_at and disabled_at marked unknown. The framework marks
+// them only for a change in the configuration, not for one a plan modifier
+// makes (config planned unknown when it is removed).
 func KeepUnchangedPlan(ctx context.Context, state tfsdk.State, plan *tfsdk.Plan) diag.Diagnostics {
 	var diags diag.Diagnostics
 	if state.Raw.IsNull() || plan.Raw.IsNull() || !plan.Raw.IsKnown() {
@@ -33,7 +32,8 @@ func KeepUnchangedPlan(ctx context.Context, state tfsdk.State, plan *tfsdk.Plan)
 	return diags
 }
 
-// updateTimestamps are the computed attributes the API changes on every update.
+// updateTimestamps are the computed attributes without a plan modifier: the
+// framework marks them unknown for any change in the configuration.
 var updateTimestamps = []string{"updated_at", "disabled_at"}
 
 func markTimestampsUnknown(plan *tfsdk.Plan) {
