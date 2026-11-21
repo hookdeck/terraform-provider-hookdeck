@@ -96,12 +96,8 @@ resource "hookdeck_outpost_project" "staging" {
 
 resource "hookdeck_outpost_project" "production" {
   name = "deliveries-production"
-
-  depends_on = [hookdeck_outpost_project.staging]
 }
 ```
-
-For now, projects are best created one after another, which `depends_on` does here.
 
 ## Import and deleting
 
