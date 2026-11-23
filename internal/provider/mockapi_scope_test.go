@@ -173,6 +173,30 @@ func TestAccMock_OrgKeyProjectDeletedDropsResources(t *testing.T) {
 	})
 }
 
+// A data source looks a resource up and reports a project that does not
+// exist as such; only a resource's refresh treats a missing project as the
+// resource being gone.
+func TestAccMock_DataSourceInMissingProjectReportsTheProject(t *testing.T) {
+	acc.SkipUnlessAcc(t)
+	m := mockOrganization(t)
+	acc.UseAPIKey(t, mockOrgKey)
+	sourceID := m.createSource("tm_b", "mock-src", "WEBHOOK", nil)
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: acc.ProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				Config: fmt.Sprintf(`data "hookdeck_gateway_source" "test" {
+  id         = %q
+  project_id = "tm_missing"
+}
+`, sourceID),
+				ExpectError: regexp.MustCompile(`(?s)cannot access project tm_missing.*does not exist`),
+			},
+		},
+	})
+}
+
 // The two modes of an organization key, end to end: explicit mode needs
 // project_id on the resource and replaces on a change; single-project mode
 // refuses another project on a resource and replaces on a provider change.
