@@ -24,8 +24,8 @@ const configKeysPrivateKey = "config_keys"
 
 const configDescription = "Only the keys you set are compared with Hookdeck; a change made outside Terraform to " +
 	"one of them shows in the plan, and the next apply restores your value. Other keys, including defaults Hookdeck " +
-	"adds, are kept in state and not compared. Removing a key clears it in Hookdeck. Holds the secrets Hookdeck " +
-	"returns, such as authentication tokens. See [Source and destination config]" +
+	"adds, are kept in state and not compared. Removing a key clears it in Hookdeck, with the exceptions in the guide. State " +
+	"holds everything Hookdeck returns, including secrets such as authentication tokens. See [Source and destination config]" +
 	"(https://registry.terraform.io/providers/hookdeck/hookdeck/latest/docs/guides/config)."
 
 // ConfigAttribute returns the config attribute of a source or destination.

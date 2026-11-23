@@ -2,22 +2,25 @@
 
 NOTES:
 
-* Sources and destinations: `config` is now read from Hookdeck. A key you set in `config` that was changed in the dashboard or API shows in the plan as `config = (sensitive value)`, and the next apply restores your value. To keep values managed outside Terraform, add `lifecycle { ignore_changes = [config] }`; removing a key from `config` clears it in Hookdeck. A few values that Hookdeck stores differently from how they were written plan a change on every run. [Source and destination config](https://registry.terraform.io/providers/hookdeck/hookdeck/latest/docs/guides/config) lists them and what to write instead. Upgrading needs no configuration change.
-* Sources and destinations: once `terraform apply`, `terraform refresh` or `terraform import` has run on 3.1.0, 3.0.x and earlier stop with "Resource instance managed by newer provider version". [Source and destination config](https://registry.terraform.io/providers/hookdeck/hookdeck/latest/docs/guides/config) describes how to go back.
+* Sources and destinations: `config` is now read from Hookdeck. A key you set that was changed in the dashboard or API shows in the plan as `config = (sensitive value)`, and the next apply restores your value. Keys you do not set are not compared. See [Source and destination config](https://registry.terraform.io/providers/hookdeck/hookdeck/latest/docs/guides/config).
+* Sources and destinations: removing a key from `config` clears it in Hookdeck or resets it to its default (the guide lists the exceptions). To keep values managed outside Terraform, add `lifecycle { ignore_changes = [config] }`.
+* Sources and destinations: a few values that Hookdeck stores differently from how they were written plan a change on every run until rewritten. The guide lists them. Other configurations need no change.
+* Sources and destinations: once `terraform apply`, `terraform refresh` or `terraform import` has run on 3.1.0, 3.0.x and earlier stop with "Resource instance managed by newer provider version". The guide describes how to go back.
 * `config` in state, and in the source and destination data sources, now holds the secrets Hookdeck returns, such as authentication tokens. It stays sensitive.
+* Connections: rules added outside Terraform to a connection configured without `rules` show in the plan, and the next apply removes them. To keep them, add `lifecycle { ignore_changes = [rules] }`.
 
 FEATURES:
 
-* New resource and data source `hookdeck_outpost_project`: create an Outpost project and manage its configuration. The resource needs an organization API key. See [Managing Outpost with Terraform](https://registry.terraform.io/providers/hookdeck/hookdeck/latest/docs/guides/outpost). The provider attribute `outpost_api_base` (`HOOKDECK_OUTPOST_API_BASE`) sets the Outpost API host.
+* New resource and data source `hookdeck_outpost_project`: create an Outpost project and manage its configuration. The resource needs an organization API key. See [Managing Outpost with Terraform](https://registry.terraform.io/providers/hookdeck/hookdeck/latest/docs/guides/outpost). New provider attribute `outpost_api_base` (`HOOKDECK_OUTPOST_API_BASE`) sets the Outpost API host.
 * The `hookdeck_gateway_source` and `hookdeck_gateway_destination` data sources (and the deprecated `hookdeck_source` and `hookdeck_destination`) return `config`.
 * Importing a source or destination plans no change when `config` matches Hookdeck.
 
 BUG FIXES:
 
 * Destroying a source, source auth, destination, connection or transformation that no longer exists in Hookdeck succeeds.
-* Removing `rules` from a connection clears its rules in Hookdeck instead of failing the apply. Rules added outside Terraform to a connection configured without `rules` now show in the plan and are removed on the next apply; to keep them, add `lifecycle { ignore_changes = [rules] }`.
+* Removing `rules` from a connection clears its rules in Hookdeck. Before, the apply failed with "Provider produced inconsistent result after apply".
 * Rules removed from a connection outside Terraform show in the plan, and the next apply restores them.
-* `hookdeck_gateway_project` stays in state when the API key cannot reach the project, for example a key from another organization, instead of being created again on the next apply. Renaming or destroying it fails with the same error.
+* `hookdeck_gateway_project` stays in state when the API key cannot reach the project, for example a key from another organization, instead of being created again on the next apply. Plan, rename and destroy fail with an error saying the key cannot access the project. Importing such a project, or reading it by `id` with the data source, gives the same error instead of "not found".
 
 ## 3.0.0 (2026-11-17)
 

@@ -45,7 +45,7 @@ resource "hookdeck_gateway_destination" "example" {
 
 ### Optional
 
-- `config` (String, Sensitive) Destination configuration as JSON using API version 2026-09-01. Only the keys you set are compared with Hookdeck; a change made outside Terraform to one of them shows in the plan, and the next apply restores your value. Other keys, including defaults Hookdeck adds, are kept in state and not compared. Removing a key clears it in Hookdeck. Holds the secrets Hookdeck returns, such as authentication tokens. See [Source and destination config](https://registry.terraform.io/providers/hookdeck/hookdeck/latest/docs/guides/config).
+- `config` (String, Sensitive) Destination configuration as JSON using API version 2026-09-01. Only the keys you set are compared with Hookdeck; a change made outside Terraform to one of them shows in the plan, and the next apply restores your value. Other keys, including defaults Hookdeck adds, are kept in state and not compared. Removing a key clears it in Hookdeck, with the exceptions in the guide. State holds everything Hookdeck returns, including secrets such as authentication tokens. See [Source and destination config](https://registry.terraform.io/providers/hookdeck/hookdeck/latest/docs/guides/config).
 - `description` (String) Description for the destination
 - `project_id` (String) ID of the project the resource belongs to. With a project API key or a provider `project_id`, every resource is in that project and this can be omitted. With an organization API key and no provider `project_id`, it is required. Changing it replaces the resource.
 - `type` (String) Type of the destination

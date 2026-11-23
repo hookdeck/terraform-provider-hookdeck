@@ -5,7 +5,7 @@ description: "How the provider compares the config of a source or destination wi
 
 # Source and destination config
 
-`config` on `hookdeck_gateway_source` and `hookdeck_gateway_destination` is a JSON object, written with `jsonencode`. From 3.1.0 the provider reads it back from Hookdeck, so a change made in the dashboard or through the API shows in the plan.
+`config` on `hookdeck_gateway_source` and `hookdeck_gateway_destination` (and the deprecated `hookdeck_source` and `hookdeck_destination`) is a JSON object, written with `jsonencode`. From 3.1.0 the provider reads it back from Hookdeck, so a change made in the dashboard or through the API shows in the plan.
 
 ```terraform
 resource "hookdeck_gateway_destination" "api" {
@@ -38,11 +38,15 @@ terraform plan -out=tfplan
 terraform show -json tfplan
 ```
 
+The plan file and the JSON output include the secrets in `config`. Keep them out of tickets and CI logs.
+
 ## Removing a key
 
-Removing a key from `config` clears it in Hookdeck on the next apply. The value does not stay as it was.
+Removing a key from `config` clears it in Hookdeck on the next apply, or resets it to its default.
 
-To keep values that are managed outside Terraform, add `lifecycle { ignore_changes = [config] }`. It covers every key of `config`, not one.
+One exception: a list or true/false key that has no default keeps its value, for example `allowed_http_methods` on a `WEBHOOK` source. To change it, write the value you want.
+
+To manage a key in the dashboard, leave it out of `config`. If the key was in `config` before, the apply that removes it clears it, so set it again in the dashboard after that apply. To keep every value as it is in Hookdeck, add `lifecycle { ignore_changes = [config] }`, which applies to all of `config`.
 
 Leave `auth` out of a source's `config` when `hookdeck_gateway_source_auth` manages the source's authentication. With both, each resource changes the other's value back on every apply.
 
@@ -52,7 +56,7 @@ Importing a source or destination plans no change when `config` matches what Hoo
 
 After an import, the provider does not know yet which keys are yours. Until an apply has changed `config`:
 
-- Removing a key does not clear it in Hookdeck. Set the key to `null` to clear it.
+- Removing a key does not clear it in Hookdeck. To clear it, set it to `null`, apply, then remove it.
 - Adding a key whose value Hookdeck already holds plans no change.
 
 ## Keys Hookdeck does not return
@@ -65,15 +69,15 @@ State holds the whole `config` Hookdeck returns, including secrets you did not w
 
 ## Upgrading from 3.0
 
-Upgrading needs no configuration change. The first refresh stores Hookdeck's full configuration in state, and the plan stays empty unless a key you set differs in Hookdeck or is listed under [Known limitations](#known-limitations).
+The first refresh stores Hookdeck's full configuration in state. The plan stays empty unless a key you set differs in Hookdeck. A value listed under [Known limitations](#known-limitations) plans a change on every run until you rewrite it as the table shows. Nothing else needs a configuration change.
 
-After an apply that changes `config`, the next refresh replaces `config` in state with Hookdeck's full configuration. Terraform 1.0 and 1.1 list this under "Objects have changed outside of Terraform", and `-refresh-only` plans show it. The plan still reports no changes.
+After an apply that changes `config`, state holds your `config` until the next refresh replaces it with Hookdeck's full configuration. Terraform 1.0 and 1.1 list this under "Objects have changed outside of Terraform", and `-refresh-only` plans show it. Nothing changes in Hookdeck.
 
 ## Going back to 3.0.x
 
 Once `terraform apply` (also with `-refresh-only`), `terraform refresh` or `terraform import` has run on 3.1.0, 3.0.x and earlier stop on sources and destinations with "Resource instance managed by newer provider version". Running only `terraform plan` on 3.1.0 leaves the state readable by 3.0.x.
 
-This is deliberate. Those versions treat every key in state as one you set, and their next apply would remove authentication, rate limits and other settings that are not in your `config`.
+3.1.0 does this on purpose: those versions treat every key in state as one you set, and their next apply would remove authentication, rate limits and other settings that are not in your `config`.
 
 To go back, remove the sources and destinations from state with `terraform state rm` and import them again on 3.0.x.
 
@@ -83,10 +87,10 @@ A value that Hookdeck stores differently from how you wrote it shows as `config 
 
 | In `config` | What Hookdeck stores | What to write |
 |---|---|---|
-| `allowed_http_methods` on a source type whose methods Hookdeck fixes, such as `STRIPE` or `ZOOM` | its own list | Remove the key, or write exactly that list |
+| `allowed_http_methods` on a source type whose methods Hookdeck fixes, such as `STRIPE` or `ZOOM` | its own list | Remove the key, or write the list Hookdeck returns, in the same order (`["POST"]` for `STRIPE` and `ZOOM`) |
 | `custom_response` on a source type other than `WEBHOOK`, `HTTP` and `SENDGRID_INBOUND` | `null` | Remove the key |
 | `path` on a `CLI` destination with surrounding spaces or without a leading `/` | the path trimmed, with a leading `/` | `"/path"` |
 | `delivery_policy.period` with capitals or surrounding spaces | the value trimmed, in lower case | The value trimmed, in lower case |
 | `url` on a destination with surrounding spaces | the URL trimmed | The URL without the spaces |
-| A key set to `null` whose cleared value is a default: `delivery_timeout`, `auth`, `auth_type`, `delivery_policy` and `delivery_policy.period` on a destination | the default | Remove the key once the apply has cleared it |
+| A key set to `null` whose cleared value is a default: `delivery_timeout`, `auth`, `auth_type`, `delivery_policy` and `delivery_policy.period` on a destination | the default | Remove the key instead of setting it to `null` |
 | A key inside `auth`, `custom_response` or `delivery_policy` that Hookdeck drops: a misspelled key, or a key of an authentication method other than the one in `auth_type` | nothing | Remove the key |
