@@ -58,14 +58,14 @@ func (p *hookdeckProvider) Schema(ctx context.Context, req provider.SchemaReques
 		Attributes: map[string]schema.Attribute{
 			"api_base": schema.StringAttribute{
 				Optional:            true,
-				MarkdownDescription: fmt.Sprintf("Hookdeck API Base URL. Alternatively, can be configured using the `%s` environment variable.", apiBaseEnvVarKey),
+				MarkdownDescription: fmt.Sprintf("Hookdeck API Base URL. Alternatively, can be configured using the `%s` environment variable. `hookdeck_outpost_project` calls the Outpost API at `outpost_api_base`, so set that too when `api_base` is not the default.", apiBaseEnvVarKey),
 				Validators: []validator.String{
 					validators.NewHookdeckAPIBaseURLValidator(),
 				},
 			},
 			"outpost_api_base": schema.StringAttribute{
 				Optional:            true,
-				MarkdownDescription: fmt.Sprintf("Hookdeck Outpost API Base URL, used by `hookdeck_outpost_project`. Defaults to `https://api.outpost.hookdeck.com`. Alternatively, can be configured using the `%s` environment variable.", outpostAPIBaseEnvVarKey),
+				MarkdownDescription: fmt.Sprintf("Hookdeck Outpost API Base URL, used by `hookdeck_outpost_project`. Defaults to `https://api.outpost.hookdeck.com`, whatever `api_base` is set to; set it when `api_base` points at a non-default host. Alternatively, can be configured using the `%s` environment variable.", outpostAPIBaseEnvVarKey),
 				Validators: []validator.String{
 					validators.NewHookdeckAPIBaseURLValidator(),
 				},
