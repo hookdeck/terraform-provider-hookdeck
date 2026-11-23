@@ -13,13 +13,13 @@ func outpostSchemaAttributes() map[string]schema.Attribute {
 	attributes["config"] = schema.MapAttribute{
 		Optional:    true,
 		ElementType: types.StringType,
-		Description: "Outpost configuration to manage, keyed by Outpost environment variable name (for example `TOPICS` or `RETRY_INTERVAL_SECONDS`). Only the keys set here are managed and tracked; other keys keep their value. Removing a key restores its default. Keys that can carry credentials belong in `sensitive_config`.",
+		Description: "Outpost configuration to manage, keyed by Outpost environment variable name (for example `TOPICS` or `RETRY_INTERVAL_SECONDS`). Only the keys set here and in `sensitive_config` are managed and tracked; other keys keep their value. Removing a key restores its default. A key goes in one of the two maps.",
 	}
 	attributes["sensitive_config"] = schema.MapAttribute{
 		Optional:    true,
 		Sensitive:   true,
 		ElementType: types.StringType,
-		Description: "Outpost configuration to manage like `config`, for keys whose values are secrets or can carry credentials, such as `OTEL_EXPORTER_OTLP_HEADERS`, `DESTINATIONS_PROXY_URL` and the `PUBLISH_*` connection strings and secret keys. Values are stored in the Terraform state.",
+		Description: "Outpost configuration to manage like `config`, hidden from plan output. Put the values you do not want shown here; any key can go in either map. Values are stored in the Terraform state.",
 	}
 	return attributes
 }

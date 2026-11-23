@@ -39,14 +39,9 @@ func (d *outpostProjectDataSource) Schema(_ context.Context, _ datasource.Schema
 	attributes := dataSourceAttributes(outpost)
 	attributes["config"] = schema.MapAttribute{
 		Computed:    true,
-		ElementType: types.StringType,
-		Description: "The project's configuration, defaults included, keyed by Outpost environment variable name: every key that has a value and is known to be non-sensitive, whether or not a `hookdeck_outpost_project` resource manages it. A value that is a URL with a user or password is in `sensitive_config` instead.",
-	}
-	attributes["sensitive_config"] = schema.MapAttribute{
-		Computed:    true,
 		Sensitive:   true,
 		ElementType: types.StringType,
-		Description: "The rest of the project's configuration: credential keys, and any key this provider version does not know to be non-sensitive, including keys added to Outpost after this provider release. It includes the project's credentials and is stored in the Terraform state.",
+		Description: "The project's whole configuration, defaults included, keyed by Outpost environment variable name, whether or not a `hookdeck_outpost_project` resource manages it. It includes secret values, so it is sensitive and stored in the Terraform state. Wrap a value in `nonsensitive()` to use it in an output.",
 	}
 	resp.Schema = schema.Schema{
 		Description: fmt.Sprintf("%s project, looked up by ID or name.", outpost.label),
@@ -90,11 +85,14 @@ func (d *outpostProjectDataSource) Read(ctx context.Context, req datasource.Read
 		resp.Diagnostics.AddError("Error reading Outpost project configuration", err.Error())
 		return
 	}
-	plain, sensitive := splitConfig(live)
+	all := map[string]string{}
+	for k, v := range live {
+		if v != nil {
+			all[k] = *v
+		}
+	}
 	var diags diag.Diagnostics
-	data.Config, diags = types.MapValueFrom(ctx, types.StringType, plain)
-	resp.Diagnostics.Append(diags...)
-	data.SensitiveConfig, diags = types.MapValueFrom(ctx, types.StringType, sensitive)
+	data.Config, diags = types.MapValueFrom(ctx, types.StringType, all)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return
