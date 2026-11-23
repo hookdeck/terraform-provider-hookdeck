@@ -245,7 +245,7 @@ func baseURL(base, fallback string) string {
 // Terraform is interrupted it cancels the operation's context while the API
 // may already have applied the write, and abandoning the request would leave
 // the object in Hookdeck but not in state. The write is bounded by
-// writeTimeout instead.
+// writeTimeout, or by the operation's deadline when that is later.
 func (c *RawClient) SendRequest(ctx context.Context, method, path string, opts *RequestOptions) (*http.Response, error) {
 	if c.rateLimiter != nil {
 		if err := c.rateLimiter.Wait(ctx); err != nil {
@@ -274,7 +274,13 @@ func (c *RawClient) SendRequest(ctx context.Context, method, path string, opts *
 		if timeout <= 0 {
 			timeout = defaultWriteTimeout
 		}
-		reqCtx, cancel = context.WithTimeout(context.WithoutCancel(ctx), timeout)
+		// An operation deadline later than the limit wins, so a resource's
+		// timeouts can allow a longer write.
+		limit := time.Now().Add(timeout)
+		if deadline, ok := ctx.Deadline(); ok && deadline.After(limit) {
+			limit = deadline
+		}
+		reqCtx, cancel = context.WithDeadline(context.WithoutCancel(ctx), limit)
 	}
 
 	req, err := http.NewRequestWithContext(reqCtx, method, url, body)
