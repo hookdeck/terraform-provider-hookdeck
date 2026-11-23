@@ -137,7 +137,7 @@ func (r *destinationResource) Read(ctx context.Context, req resource.ReadRequest
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	found, diags := data.Retrieve(ctx, client)
+	found, diags := data.Retrieve(ctx, client, true)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return

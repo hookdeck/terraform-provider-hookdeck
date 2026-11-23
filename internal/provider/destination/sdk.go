@@ -79,7 +79,10 @@ func (m *destinationResourceModel) Refresh(destination map[string]interface{}) d
 	return diags
 }
 
-func (m *destinationResourceModel) Retrieve(ctx context.Context, client *sdkclient.Client) (bool, diag.Diagnostics) {
+// Retrieve reads the resource. With projectGoneOK a missing project counts as a
+// missing resource. A resource's refresh sets it; a data source does not, so
+// a wrong project_id keeps saying the project does not exist.
+func (m *destinationResourceModel) Retrieve(ctx context.Context, client *sdkclient.Client, projectGoneOK bool) (bool, diag.Diagnostics) {
 	var diags diag.Diagnostics
 	response, err := client.RawClient.SendRequest(ctx, "GET", fmt.Sprintf("/%s/destinations/%s", apiVersion, m.ID.ValueString()), &sdkclient.RequestOptions{
 		QueryParams: url.Values{
@@ -87,7 +90,7 @@ func (m *destinationResourceModel) Retrieve(ctx context.Context, client *sdkclie
 		},
 	})
 	if err != nil {
-		if sdkclient.IsProjectGone(err) {
+		if projectGoneOK && sdkclient.IsProjectGone(err) {
 			return false, diags
 		}
 		diags.AddError("Error reading destination", err.Error())

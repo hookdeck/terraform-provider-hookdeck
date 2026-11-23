@@ -5,12 +5,15 @@ import (
 	"context"
 	"errors"
 	"io"
+	"net"
 	"net/http"
 	"net/http/httptest"
 	"sync"
 	"sync/atomic"
 	"testing"
 	"time"
+
+	"golang.org/x/time/rate"
 
 	"fmt"
 	"strings"
@@ -503,5 +506,69 @@ func TestRawClient_ContextEndsRateLimiterWait(t *testing.T) {
 	defer cancel()
 	if _, err := rawClient.SendRequest(ctx, "GET", "/test", nil); !errors.Is(err, context.DeadlineExceeded) {
 		t.Fatalf("expected context deadline error, got %v", err)
+	}
+}
+
+func TestRawClient_CancelledContextDoesNotAbortWrite(t *testing.T) {
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		time.Sleep(300 * time.Millisecond)
+		w.WriteHeader(http.StatusCreated)
+	}))
+	defer srv.Close()
+
+	rawClient := &RawClient{apiKey: "k", apiBase: srv.URL, header: make(http.Header), httpClient: http.DefaultClient}
+	for _, method := range []string{"POST", "PUT", "PATCH", "DELETE"} {
+		ctx, cancel := context.WithCancel(context.Background())
+		time.AfterFunc(100*time.Millisecond, cancel)
+		resp, err := rawClient.SendRequest(ctx, method, "/w", nil)
+		if err != nil {
+			t.Fatalf("%s: a cancelled context aborted the write: %v", method, err)
+		}
+		_ = resp.Body.Close()
+		if resp.StatusCode != http.StatusCreated {
+			t.Errorf("%s: status %d", method, resp.StatusCode)
+		}
+	}
+}
+
+func TestRawClient_HungWriteEndsAtTimeLimit(t *testing.T) {
+	release := make(chan struct{})
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		select {
+		case <-release:
+		case <-r.Context().Done():
+		}
+	}))
+	defer srv.Close()
+	defer close(release)
+
+	rawClient := &RawClient{apiKey: "k", apiBase: srv.URL, header: make(http.Header), httpClient: http.DefaultClient, writeTimeout: 200 * time.Millisecond}
+	start := time.Now()
+	_, err := rawClient.SendRequest(context.Background(), "POST", "/hang", nil)
+	if !errors.Is(err, context.DeadlineExceeded) {
+		t.Fatalf("expected the write time limit to end the request, got %v", err)
+	}
+	if elapsed := time.Since(start); elapsed > 2*time.Second {
+		t.Fatalf("write outlived its limit: %s", elapsed)
+	}
+}
+
+// The limiter refuses a wait that would pass the deadline without waiting for
+// it; the error still reports the deadline.
+func TestRawClient_RateLimiterDeadlineIsDeadlineExceeded(t *testing.T) {
+	limiter := &HookdeckRateLimiter{limiter: rate.NewLimiter(rate.Every(time.Minute), 1)}
+	rawClient := &RawClient{apiKey: "k", apiBase: "https://api.test.com", header: make(http.Header), httpClient: NewTrackingMockHTTPClient(), rateLimiter: limiter}
+	if _, err := rawClient.SendRequest(context.Background(), "GET", "/a", nil); err != nil {
+		t.Fatal(err)
+	}
+	ctx, cancel := context.WithTimeout(context.Background(), 200*time.Millisecond)
+	defer cancel()
+	_, err := rawClient.SendRequest(ctx, "GET", "/b", nil)
+	if !errors.Is(err, context.DeadlineExceeded) {
+		t.Fatalf("expected a deadline error, got %v", err)
+	}
+	var netErr net.Error
+	if !errors.As(err, &netErr) || !netErr.Timeout() {
+		t.Errorf("error is not a timeout: %v", err)
 	}
 }

@@ -54,7 +54,16 @@ type RawClient struct {
 	header      http.Header
 	httpClient  HTTPDoer
 	rateLimiter RateLimiter
+	// writeTimeout bounds a write request; zero means defaultWriteTimeout.
+	writeTimeout time.Duration
 }
+
+// defaultWriteTimeout bounds one write (POST, PUT, PATCH, DELETE). Writes
+// ignore cancellation of the operation's context (see SendRequest), so this
+// limit is what ends a write the server never answers. It is far above what a
+// healthy write takes, project creation included, so it only ever ends a
+// hung connection.
+const defaultWriteTimeout = 5 * time.Minute
 
 // HTTPDoer allows for mocking HTTP client in tests.
 type HTTPDoer interface {
@@ -230,11 +239,21 @@ func baseURL(base, fallback string) string {
 }
 
 // SendRequest sends an HTTP request with rate limiting.
+//
+// A deadline or cancellation of ctx stops the rate limiter wait and a GET in
+// flight. A write runs on a context detached from ctx once it is sent: when
+// Terraform is interrupted it cancels the operation's context while the API
+// may already have applied the write, and abandoning the request would leave
+// the object in Hookdeck but not in state. The write is bounded by
+// writeTimeout instead.
 func (c *RawClient) SendRequest(ctx context.Context, method, path string, opts *RequestOptions) (*http.Response, error) {
-	// Apply rate limiting if configured
 	if c.rateLimiter != nil {
-		// The wait ends with ctx, so a deadline or Ctrl-C stops a queued request.
 		if err := c.rateLimiter.Wait(ctx); err != nil {
+			// The limiter refuses a wait that would pass the deadline before
+			// the deadline arrives; report it as the deadline.
+			if _, hasDeadline := ctx.Deadline(); hasDeadline && ctx.Err() == nil {
+				err = fmt.Errorf("%w (%v)", context.DeadlineExceeded, err)
+			}
 			return nil, fmt.Errorf("rate limit wait failed: %w", err)
 		}
 	}
@@ -249,9 +268,18 @@ func (c *RawClient) SendRequest(ctx context.Context, method, path string, opts *
 		body = opts.Body
 	}
 
-	// The request carries ctx so a deadline or cancellation stops it in flight.
-	req, err := http.NewRequestWithContext(ctx, method, url, body)
+	reqCtx, cancel := ctx, context.CancelFunc(func() {})
+	if method != http.MethodGet && method != http.MethodHead {
+		timeout := c.writeTimeout
+		if timeout <= 0 {
+			timeout = defaultWriteTimeout
+		}
+		reqCtx, cancel = context.WithTimeout(context.WithoutCancel(ctx), timeout)
+	}
+
+	req, err := http.NewRequestWithContext(reqCtx, method, url, body)
 	if err != nil {
+		cancel()
 		return nil, err
 	}
 
@@ -272,5 +300,28 @@ func (c *RawClient) SendRequest(ctx context.Context, method, path string, opts *
 		}
 	}
 
-	return c.httpClient.Do(req)
+	resp, err := c.httpClient.Do(req)
+	if err != nil {
+		cancel()
+		return nil, err
+	}
+	// The response body is read after this returns, so the write's time limit
+	// stays in force until the body is closed or the limit passes.
+	if resp.Body == nil {
+		resp.Body = http.NoBody
+	}
+	resp.Body = &cancelOnClose{ReadCloser: resp.Body, cancel: cancel}
+	return resp, nil
+}
+
+// cancelOnClose releases a request context when the response body is closed.
+type cancelOnClose struct {
+	io.ReadCloser
+	cancel context.CancelFunc
+}
+
+func (b *cancelOnClose) Close() error {
+	err := b.ReadCloser.Close()
+	b.cancel()
+	return err
 }
