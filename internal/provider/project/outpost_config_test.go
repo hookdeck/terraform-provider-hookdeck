@@ -131,6 +131,8 @@ func TestPlanPatch(t *testing.T) {
 		{name: "empty string against null is sent for other keys", desired: map[string]string{"PORTAL_LOGO": ""}, prior: nil, want: map[string]*string{"PORTAL_LOGO": ptr("")}},
 		{name: "new key", desired: map[string]string{"OTEL_SERVICE_NAME": "svc"}, prior: nil, want: map[string]*string{"OTEL_SERVICE_NAME": ptr("svc")}},
 		{name: "empty", desired: nil, prior: nil, want: map[string]*string{}},
+		{name: "redaction placeholder is never sent", desired: map[string]string{"PORTAL_LOGO": redactedValue, "TOPICS": "b"}, prior: map[string]string{"PORTAL_LOGO": redactedValue, "TOPICS": "a,b"},
+			want: map[string]*string{"TOPICS": ptr("b")}},
 	}
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {

@@ -116,6 +116,11 @@ func sensitiveValue(key, value string) bool {
 func planPatch(desired, prior map[string]string, live map[string]*string) map[string]*string {
 	patch := map[string]*string{}
 	for k, v := range desired {
+		// The placeholder stands for a live value the provider never stored
+		// (a key under ignore_changes); it is not a value to send.
+		if v == redactedValue {
+			continue
+		}
 		current := live[k]
 		// The API reads an empty DESTINATIONS_PROXY_URL back as unset, so "" already matches.
 		if current == nil && v == "" && k == proxyKey {
