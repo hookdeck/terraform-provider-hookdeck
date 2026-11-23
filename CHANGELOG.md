@@ -11,13 +11,14 @@ NOTES:
 
 FEATURES:
 
-* New resource and data source `hookdeck_outpost_project`: create an Outpost project and manage its configuration. The resource needs an organization API key. See [Managing Outpost with Terraform](https://registry.terraform.io/providers/hookdeck/hookdeck/latest/docs/guides/outpost). New provider attribute `outpost_api_base` (`HOOKDECK_OUTPOST_API_BASE`) sets the Outpost API host.
+* New resource and data source `hookdeck_outpost_project`: create an Outpost project and manage its configuration. The resource needs an organization API key. See [Managing Outpost with Terraform](https://registry.terraform.io/providers/hookdeck/hookdeck/latest/docs/guides/outpost). New provider attribute `outpost_api_base` (`HOOKDECK_OUTPOST_API_BASE`) sets the Outpost API host. It does not follow `api_base`: set both for a non-default host.
 * The `hookdeck_gateway_source` and `hookdeck_gateway_destination` data sources (and the deprecated `hookdeck_source` and `hookdeck_destination`) return `config`.
 * Importing a source or destination plans no change when `config` matches Hookdeck.
 
 BUG FIXES:
 
-* Destroying a source, source auth, destination, connection or transformation that no longer exists in Hookdeck succeeds.
+* Destroying a source, source auth, destination, connection or transformation that no longer exists in Hookdeck succeeds. So does destroying one whose project was deleted; with an organization API key, a refresh removes it from state.
+* API reads stop when Terraform is interrupted or a resource's `timeouts` pass. A write already sent to Hookdeck still finishes, so the result reaches state.
 * Removing `rules` from a connection clears its rules in Hookdeck. Before, the apply failed with "Provider produced inconsistent result after apply".
 * Rules removed from a connection outside Terraform show in the plan, and the next apply restores them.
 * `hookdeck_gateway_project` stays in state when the API key cannot reach the project, for example a key from another organization, instead of being created again on the next apply. Plan, rename and destroy fail with an error saying the key cannot access the project. Importing such a project, or reading it by `id` with the data source, gives the same error instead of "not found".
