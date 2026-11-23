@@ -15,7 +15,7 @@ resource "hookdeck_outpost_project" "example" {
     OTEL_EXPORTER_OTLP_ENDPOINT = "https://otel.example.com"
   }
 
-  # Values that are secrets or can carry credentials.
+  # Same as config, but the values are hidden in plan output.
   sensitive_config = {
     OTEL_EXPORTER_OTLP_HEADERS = var.otlp_headers
   }

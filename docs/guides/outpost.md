@@ -45,7 +45,7 @@ Your application talks to the project through the Outpost API at `https://api.ou
 
 ## Credentials
 
-Keys whose values are secrets or can carry credentials go in `sensitive_config`, and so does a URL that includes a user or password, whatever its key. Terraform hides them in plan output and stores them in the state, so protect the state as you would for any secret. Pass the values in as sensitive variables rather than writing them in the configuration.
+Put the values you want hidden in `sensitive_config`. It works like `config`: any key can go in either map. Terraform hides the values in plan output and stores them in the state, so protect the state as you would for any secret. Pass the values in as sensitive variables rather than writing them in the configuration.
 
 ```terraform
 variable "otlp_headers" {
@@ -67,8 +67,6 @@ resource "hookdeck_outpost_project" "deliveries" {
 }
 ```
 
-`terraform plan` fails when one of these keys, or such a URL, is in `config`. The page of the [`hookdeck_outpost_project` resource](https://registry.terraform.io/providers/hookdeck/hookdeck/latest/docs/resources/outpost_project) lists them.
-
 ## Read the whole configuration
 
 `config` on the resource holds only the keys you manage. The data source returns the whole configuration of a project, including values you did not set.
@@ -79,11 +77,11 @@ data "hookdeck_outpost_project" "deliveries" {
 }
 
 output "retry_limit" {
-  value = data.hookdeck_outpost_project.deliveries.config["MAX_RETRY_LIMIT"]
+  value = nonsensitive(data.hookdeck_outpost_project.deliveries.config["MAX_RETRY_LIMIT"])
 }
 ```
 
-Credentials and keys the provider does not know to be non-sensitive are in `sensitive_config`, which is stored in the Terraform state like every other attribute.
+The data source returns everything in one attribute, `config`. It is sensitive, because it can include credentials, and it is stored in the Terraform state like every other attribute. Wrap a value in `nonsensitive()` to output it, as above, only when it is not a secret.
 
 ## Several projects
 
