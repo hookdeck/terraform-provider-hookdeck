@@ -62,6 +62,9 @@ func (m *sourceAuthResourceModel) doRetrieve(ctx context.Context, client *sdkcli
 		},
 	})
 	if err != nil {
+		if sdkclient.IsProjectGone(err) {
+			return nil, diags
+		}
 		diags.AddError("Error reading source auth", err.Error())
 		return nil, diags
 	}
@@ -204,6 +207,9 @@ func (m *sourceAuthResourceModel) Delete(ctx context.Context, client *sdkclient.
 		},
 	})
 	if err != nil {
+		if sdkclient.IsProjectGone(err) {
+			return nil
+		}
 		diags.AddError("Error deleting source auth", err.Error())
 		return diags
 	}

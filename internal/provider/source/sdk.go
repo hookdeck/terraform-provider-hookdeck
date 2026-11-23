@@ -94,6 +94,9 @@ func (m *sourceResourceModel) Retrieve(ctx context.Context, client *sdkclient.Cl
 		},
 	})
 	if err != nil {
+		if sdkclient.IsProjectGone(err) {
+			return false, diags
+		}
 		diags.AddError("Error reading source", err.Error())
 		return false, diags
 	}
@@ -261,6 +264,9 @@ func (m *sourceResourceModel) Delete(ctx context.Context, client *sdkclient.Clie
 
 	response, err := client.RawClient.SendRequest(ctx, "DELETE", fmt.Sprintf("/%s/sources/%s", apiVersion, m.ID.ValueString()), &sdkclient.RequestOptions{})
 	if err != nil {
+		if sdkclient.IsProjectGone(err) {
+			return nil
+		}
 		diags.AddError("Error deleting source", err.Error())
 		return diags
 	}

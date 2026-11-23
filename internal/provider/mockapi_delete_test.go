@@ -169,20 +169,17 @@ func TestAccMock_LegacySourceDeleteAlreadyGone(t *testing.T) {
 	destroyWithFault(t, m, legacySourceConfig, "DELETE sources", 410, nil)
 }
 
-// A 404 that refuses the project is not a resource that is gone: deleting
-// with an organization key whose project no longer exists fails and keeps
-// the resource in state.
-func TestAccMock_DeleteProjectRefusedFails(t *testing.T) {
+// Deleting with an organization key whose project no longer exists succeeds:
+// the project header is answered 404, and the resource went with the project.
+// The destroy skips the refresh so the DELETE is what meets the 404.
+func TestAccMock_DeleteProjectGone(t *testing.T) {
 	acc.SkipUnlessAcc(t)
 	m := mockOrganization(t)
 	acc.UseAPIKey(t, mockOrgKey)
-	var removed *mockProject
 	config := sourceConfig(t, "mock", "tm_a")
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: acc.ProviderFactories,
-		// A refresh would hit the same refusal in Read; skipping it makes
-		// the destroy send the DELETE.
 		AdditionalCLIOptions: &resource.AdditionalCLIOptions{
 			Plan: resource.PlanOptions{NoRefresh: true},
 		},
@@ -190,33 +187,20 @@ func TestAccMock_DeleteProjectRefusedFails(t *testing.T) {
 			{Config: config},
 			{
 				PreConfig: func() {
-					m.update(func() {
-						removed = m.projects["tm_a"]
-						delete(m.projects, "tm_a")
-					})
+					m.update(func() { delete(m.projects, "tm_a") })
 				},
-				Config:      config,
-				Destroy:     true,
-				ExpectError: regexp.MustCompile(`(?s)cannot access project tm_a.*does not exist`),
-			},
-			{
-				PreConfig: func() {
-					deletes := 0
-					for _, r := range m.requestsTo("/sources/") {
-						if r.method == http.MethodDelete {
-							deletes++
-						}
-					}
-					if deletes == 0 {
-						t.Error("the destroy never sent a DELETE")
-					}
-					m.update(func() { m.projects["tm_a"] = removed })
-				},
-				Config: config,
-				ConfigPlanChecks: resource.ConfigPlanChecks{
-					PreApply: []plancheck.PlanCheck{plancheck.ExpectEmptyPlan()},
-				},
+				Config:  config,
+				Destroy: true,
 			},
 		},
 	})
+	deletes := 0
+	for _, r := range m.requestsTo("/sources/") {
+		if r.method == http.MethodDelete {
+			deletes++
+		}
+	}
+	if deletes == 0 {
+		t.Error("the destroy never sent a DELETE")
+	}
 }

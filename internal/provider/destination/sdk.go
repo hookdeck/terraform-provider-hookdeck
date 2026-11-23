@@ -87,6 +87,9 @@ func (m *destinationResourceModel) Retrieve(ctx context.Context, client *sdkclie
 		},
 	})
 	if err != nil {
+		if sdkclient.IsProjectGone(err) {
+			return false, diags
+		}
 		diags.AddError("Error reading destination", err.Error())
 		return false, diags
 	}
@@ -254,6 +257,9 @@ func (m *destinationResourceModel) Delete(ctx context.Context, client *sdkclient
 
 	response, err := client.RawClient.SendRequest(ctx, "DELETE", fmt.Sprintf("/%s/destinations/%s", apiVersion, m.ID.ValueString()), &sdkclient.RequestOptions{})
 	if err != nil {
+		if sdkclient.IsProjectGone(err) {
+			return nil
+		}
 		diags.AddError("Error deleting destination", err.Error())
 		return diags
 	}

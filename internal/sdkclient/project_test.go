@@ -3,6 +3,7 @@ package sdkclient
 import (
 	"context"
 	"errors"
+	"fmt"
 	"io"
 	"net/http"
 	"strings"
@@ -331,5 +332,31 @@ func TestCheckProject_answersAreKept(t *testing.T) {
 	}
 	if len(raw.paths) != 6 {
 		t.Errorf("%d requests, want 6: %v", len(raw.paths), raw.paths)
+	}
+}
+
+func TestIsGone(t *testing.T) {
+	tests := []struct {
+		name string
+		err  error
+		want bool
+	}{
+		{name: "resource 404", err: &APIError{Status: 404}, want: true},
+		{name: "resource 410", err: &APIError{Status: 410}, want: true},
+		{name: "project 404", err: &ProjectAccessError{Status: 404}, want: true},
+		{name: "project 410", err: &ProjectAccessError{Status: 410}, want: true},
+		{name: "wrapped project 404", err: fmt.Errorf("x: %w", &ProjectAccessError{Status: 404}), want: true},
+		{name: "project 401", err: &ProjectAccessError{Status: 401}},
+		{name: "project 403", err: &ProjectAccessError{Status: 403}},
+		{name: "resource 500", err: &APIError{Status: 500}},
+		{name: "other error", err: errors.New("boom")},
+		{name: "nil"},
+	}
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			if got := IsGone(tc.err); got != tc.want {
+				t.Errorf("IsGone = %v, want %v", got, tc.want)
+			}
+		})
 	}
 }

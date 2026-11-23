@@ -121,6 +121,9 @@ func (m *connectionResourceModel) Retrieve(ctx context.Context, client *sdkclien
 
 	response, err := client.RawClient.SendRequest(ctx, "GET", fmt.Sprintf("/%s/connections/%s", apiVersion, m.ID.ValueString()), &sdkclient.RequestOptions{})
 	if err != nil {
+		if sdkclient.IsProjectGone(err) {
+			return false, diags
+		}
 		diags.AddError("Error reading connection", err.Error())
 		return false, diags
 	}
@@ -261,6 +264,9 @@ func (m *connectionResourceModel) Delete(ctx context.Context, client *sdkclient.
 
 	response, err := client.RawClient.SendRequest(ctx, "DELETE", fmt.Sprintf("/%s/connections/%s", apiVersion, m.ID.ValueString()), &sdkclient.RequestOptions{})
 	if err != nil {
+		if sdkclient.IsProjectGone(err) {
+			return nil
+		}
 		diags.AddError("Error deleting connection", err.Error())
 		return diags
 	}

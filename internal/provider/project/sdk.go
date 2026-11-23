@@ -2,7 +2,6 @@ package project
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"net/http"
 
@@ -60,20 +59,13 @@ func forProject(client sdkclient.Client, id, hint string) sdkclient.Client {
 	return client
 }
 
-// isGone reports whether the API says the project does not exist: 404 or
-// 410, with or without the project header.
-func isGone(err error) bool {
-	var refused *sdkclient.ProjectAccessError
-	return sdkclient.IsNotFound(err) || (errors.As(err, &refused) && sdkclient.IsGoneStatus(refused.Status))
-}
-
 // retrieve reads the project; false means it no longer exists.
 func (m *projectResourceModel) retrieve(ctx context.Context, k kind, client sdkclient.Client) (bool, diag.Diagnostics) {
 	var diags diag.Diagnostics
 	var project map[string]any
 	id := m.ID.ValueString()
 	err := forProject(client, id, readHint).Do(ctx, http.MethodGet, "/projects/"+id, nil, nil, &project)
-	if isGone(err) {
+	if sdkclient.IsGone(err) {
 		return false, diags
 	}
 	if err != nil {
@@ -106,7 +98,7 @@ func (m *projectResourceModel) update(ctx context.Context, k kind, client sdkcli
 	err := forProject(client, id, writeHint).Do(ctx, http.MethodPut, "/projects/"+id, map[string]any{
 		"name": m.Name.ValueString(),
 	}, nil, &project)
-	if isGone(err) {
+	if sdkclient.IsGone(err) {
 		diags.AddError("Error updating project", fmt.Sprintf("Project %s no longer exists.", id))
 		return diags
 	}
@@ -121,7 +113,7 @@ func (m *projectResourceModel) delete(ctx context.Context, client sdkclient.Clie
 	var diags diag.Diagnostics
 	id := m.ID.ValueString()
 	err := forProject(client, id, writeHint).Do(ctx, http.MethodDelete, "/projects/"+id, nil, nil, nil)
-	if err != nil && !isGone(err) {
+	if err != nil && !sdkclient.IsGone(err) {
 		diags.AddError("Error deleting project", err.Error())
 	}
 	return diags

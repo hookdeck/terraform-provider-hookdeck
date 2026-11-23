@@ -93,6 +93,9 @@ func (m *transformationResourceModel) Retrieve(ctx context.Context, client *sdkc
 
 	response, err := client.RawClient.SendRequest(ctx, "GET", fmt.Sprintf("/%s/transformations/%s", apiVersion, m.ID.ValueString()), &sdkclient.RequestOptions{})
 	if err != nil {
+		if sdkclient.IsProjectGone(err) {
+			return false, diags
+		}
 		diags.AddError("Error reading transformation", err.Error())
 		return false, diags
 	}
@@ -225,6 +228,9 @@ func (m *transformationResourceModel) Delete(ctx context.Context, client *sdkcli
 
 	response, err := client.RawClient.SendRequest(ctx, "DELETE", fmt.Sprintf("/%s/transformations/%s", apiVersion, m.ID.ValueString()), &sdkclient.RequestOptions{})
 	if err != nil {
+		if sdkclient.IsProjectGone(err) {
+			return nil
+		}
 		diags.AddError("Error deleting transformation", err.Error())
 		return diags
 	}
