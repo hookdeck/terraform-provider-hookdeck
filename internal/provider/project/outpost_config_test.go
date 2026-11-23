@@ -85,10 +85,9 @@ func TestPlanPatch(t *testing.T) {
 		{name: "key moved between maps", desired: map[string]string{"TOPICS": "a,b"}, prior: map[string]string{"TOPICS": "a,b"}, want: map[string]*string{}},
 		{name: "equal to live after import", desired: map[string]string{"TOPICS": "a,b", "MAX_RETRY_LIMIT": "10"}, prior: nil, want: map[string]*string{}},
 		{name: "empty string against a default is sent", desired: map[string]string{"TOPICS": ""}, prior: nil, want: map[string]*string{"TOPICS": ptr("")}},
-		{name: "empty string against null is sent for other keys", desired: map[string]string{"PORTAL_LOGO": ""}, prior: nil, want: map[string]*string{"PORTAL_LOGO": ptr("")}},
+		{name: "empty string against null is sent", desired: map[string]string{"PORTAL_LOGO": ""}, prior: nil, want: map[string]*string{"PORTAL_LOGO": ptr("")}},
 		{name: "new key", desired: map[string]string{"OTEL_SERVICE_NAME": "svc"}, prior: nil, want: map[string]*string{"OTEL_SERVICE_NAME": ptr("svc")}},
 		{name: "empty", desired: nil, prior: nil, want: map[string]*string{}},
-		{name: "value moved from config to sensitive_config keeps its value", desired: map[string]string{"TOPICS": "a,b", "MAX_RETRY_LIMIT": "10"}, prior: map[string]string{"TOPICS": "a,b", "MAX_RETRY_LIMIT": "10"}, want: map[string]*string{}},
 	}
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
@@ -120,7 +119,7 @@ func TestRefreshManaged(t *testing.T) {
 }
 
 // Both maps are merged into one object for the API, and a key that moves from
-// one map to the other keeps its value: nothing is sent, and certainly no null.
+// one map to the other keeps its value: nothing is sent, and no null.
 func TestManagedMergesBothMaps(t *testing.T) {
 	ctx := context.Background()
 	mapOf := func(kv ...string) types.Map {

@@ -41,7 +41,7 @@ func (d *outpostProjectDataSource) Schema(_ context.Context, _ datasource.Schema
 		Computed:    true,
 		Sensitive:   true,
 		ElementType: types.StringType,
-		Description: "The project's whole configuration, defaults included, keyed by Outpost environment variable name, whether or not a `hookdeck_outpost_project` resource manages it. It includes secret values, so it is sensitive and stored in the Terraform state. Wrap a value in `nonsensitive()` to use it in an output.",
+		Description: "The project's whole configuration, defaults included, keyed by Outpost environment variable name, whether or not a `hookdeck_outpost_project` resource manages it. It includes secret values, so it is sensitive and stored in the Terraform state. Wrap a value that is not a secret in `nonsensitive()` to use it in an output.",
 	}
 	resp.Schema = schema.Schema{
 		Description: fmt.Sprintf("%s project, looked up by ID or name.", outpost.label),

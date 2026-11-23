@@ -43,7 +43,7 @@ output "max_retry_limit" {
 
 ### Read-Only
 
-- `config` (Map of String, Sensitive) The project's whole configuration, defaults included, keyed by Outpost environment variable name, whether or not a `hookdeck_outpost_project` resource manages it. It includes secret values, so it is sensitive and stored in the Terraform state. Wrap a value in `nonsensitive()` to use it in an output.
+- `config` (Map of String, Sensitive) The project's whole configuration, defaults included, keyed by Outpost environment variable name, whether or not a `hookdeck_outpost_project` resource manages it. It includes secret values, so it is sensitive and stored in the Terraform state. Wrap a value that is not a secret in `nonsensitive()` to use it in an output.
 - `created_at` (String) Date the project was created
 - `organization_id` (String) ID of the organization the project belongs to
 - `type` (String) Project type, always `outpost`

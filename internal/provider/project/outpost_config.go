@@ -18,10 +18,11 @@ func sortedKeys[V any](m map[string]V) []string {
 	return keys
 }
 
-// validateConfig checks what Terraform needs: a map value cannot be null, and
-// a key is in one map only. Refresh gives both maps the one value the API
-// holds, so a key in both with different values would show a difference on
-// every plan. Which keys exist, and which values are valid, is the API's call.
+// validateConfig checks only what Terraform needs. A null element can't be
+// sent or stored as a string. A key in both maps would get the one value the
+// API holds in each map on refresh, so a sensitive_config value would land in
+// config and show in plan output. Which keys exist and which values are valid
+// is the API's call.
 func validateConfig(config, sensitive map[string]types.String) diag.Diagnostics {
 	var diags diag.Diagnostics
 	for _, k := range sortedKeys(config) {

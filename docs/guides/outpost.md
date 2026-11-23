@@ -69,7 +69,7 @@ resource "hookdeck_outpost_project" "deliveries" {
 
 ## Read the whole configuration
 
-`config` on the resource holds only the keys you manage. The data source returns the whole configuration of a project, including values you did not set.
+`config` and `sensitive_config` on the resource hold only the keys you manage. The data source returns the whole configuration of a project, including values you did not set.
 
 ```terraform
 data "hookdeck_outpost_project" "deliveries" {
