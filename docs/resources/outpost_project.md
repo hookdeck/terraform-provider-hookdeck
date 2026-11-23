@@ -67,8 +67,8 @@ The keys of `config` and `sensitive_config` are Outpost environment variable nam
 
 ### Optional
 
-- `config` (Map of String) Outpost configuration to manage, keyed by Outpost environment variable name (for example `TOPICS` or `RETRY_INTERVAL_SECONDS`). Only the keys set here and in `sensitive_config` are managed and tracked; other keys keep their value. Removing a key restores its default. A key goes in one of the two maps.
-- `sensitive_config` (Map of String, Sensitive) Outpost configuration to manage like `config`, hidden from plan output. Put the values you do not want shown here; any key can go in either map. Values are stored in the Terraform state.
+- `config` (Map of String) Outpost configuration to manage, keyed by Outpost environment variable name (for example `TOPICS` or `RETRY_INTERVAL_SECONDS`). Only the keys set here and in `sensitive_config` are managed and tracked; other keys keep their value. Removing a key restores its default. A key goes in `config` or in `sensitive_config`, not both.
+- `sensitive_config` (Map of String, Sensitive) The same as `config`, marked sensitive: Terraform hides the values in plan output. Any key can go in either map, so put the values you want hidden here. Values are stored in the Terraform state.
 - `timeouts` (Block, Optional) (see [below for nested schema](#nestedblock--timeouts))
 
 ### Read-Only

@@ -45,7 +45,7 @@ Your application talks to the project through the Outpost API at `https://api.ou
 
 ## Credentials
 
-Put the values you want hidden in `sensitive_config`. It works like `config`: any key can go in either map. Terraform hides the values in plan output and stores them in the state, so protect the state as you would for any secret. Pass the values in as sensitive variables rather than writing them in the configuration.
+`sensitive_config` is the same as `config`, marked sensitive. Any key can go in either map, but not in both, so put the values you want hidden in `sensitive_config`. Terraform hides them in plan output and stores them in the state, so protect the state as you would for any secret. Pass the values in as sensitive variables rather than writing them in the configuration.
 
 ```terraform
 variable "otlp_headers" {
