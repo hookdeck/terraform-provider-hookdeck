@@ -38,6 +38,8 @@ func TestValidateConfig(t *testing.T) {
 		{name: "known keys pass", config: strs("TOPICS", "a,b", "RETRY_INTERVAL_SECONDS", "5"), sensitive: strs("OTEL_EXPORTER_OTLP_HEADERS", "k=v")},
 		{name: "credential key in config", config: strs("OTEL_EXPORTER_OTLP_HEADERS", "k=v"), wantError: []string{"OTEL_EXPORTER_OTLP_HEADERS", "sensitive_config"}},
 		{name: "proxy url in config", config: strs("DESTINATIONS_PROXY_URL", "http://u:p@proxy:8080"), wantError: []string{"DESTINATIONS_PROXY_URL", "sensitive_config"}},
+		{name: "proxy url alias in config", config: strs("DESTINATIONS_WEBHOOK_PROXY_URL", "http://proxy:8080"), wantError: []string{"DESTINATIONS_WEBHOOK_PROXY_URL", "sensitive_config"}},
+		{name: "proxy url alias in sensitive_config", sensitive: strs("DESTINATIONS_WEBHOOK_PROXY_URL", "http://u:p@proxy:8080")},
 		{name: "credential key in sensitive_config", sensitive: strs("PUBLISH_RABBITMQ_SERVER_URL", "amqp://u:p@h")},
 		{name: "access key id in either map", config: strs("PUBLISH_AWS_SQS_ACCESS_KEY_ID", "AKIA")},
 		{name: "access key id in sensitive_config", sensitive: strs("PUBLISH_AWS_SQS_ACCESS_KEY_ID", "AKIA")},

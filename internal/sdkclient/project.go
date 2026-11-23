@@ -35,7 +35,7 @@ func (e *ProjectAccessError) Error() string {
 	var reason string
 	switch {
 	case e.Status == http.StatusNotFound:
-		reason = "The project does not exist or belongs to another organization."
+		reason = "The project does not exist."
 	case e.Status == http.StatusForbidden:
 		reason = "The organization API key has no grant on the project, or the grant lacks the scope this request needs."
 	case e.KeyKind == projectscope.KeyKindProject:

@@ -92,6 +92,7 @@ var credentialKeys = toSet(
 	"PUBLISH_RABBITMQ_SERVER_URL",
 	"OTEL_EXPORTER_OTLP_HEADERS",
 	"DESTINATIONS_PROXY_URL",
+	"DESTINATIONS_WEBHOOK_PROXY_URL",
 )
 
 // urlKeys hold an http or https URL. The data source returns a value it
@@ -117,9 +118,7 @@ var urlKeys = toSet(
 var nonSensitiveKeys = func() map[string]bool {
 	out := map[string]bool{}
 	for k := range knownKeys {
-		// DESTINATIONS_WEBHOOK_PROXY_URL is an alias that mirrors
-		// DESTINATIONS_PROXY_URL, so it carries the same credentials.
-		if !credentialKeys[k] && k != "DESTINATIONS_WEBHOOK_PROXY_URL" {
+		if !credentialKeys[k] {
 			out[k] = true
 		}
 	}
