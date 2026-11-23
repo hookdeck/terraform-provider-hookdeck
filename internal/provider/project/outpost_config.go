@@ -65,10 +65,7 @@ func nullValueMessage(key string) string {
 
 func checkKey(at path.Path, key string) diag.Diagnostics {
 	var diags diag.Diagnostics
-	switch reason, rejected := rejectedKeys[key]; {
-	case rejected:
-		diags.AddAttributeError(at, "Key cannot be managed", fmt.Sprintf("%s cannot be set here: %s.", key, reason))
-	case !knownKeys[key]:
+	if !knownKeys[key] {
 		diags.AddAttributeWarning(at, "Unknown config key",
 			fmt.Sprintf("%s is not a config key this provider version knows. Check the spelling: Hookdeck rejects a key that does not exist when you apply. If the key was added to Outpost after this provider release, ignore this warning.", key))
 	}

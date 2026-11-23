@@ -42,10 +42,6 @@ func TestValidateConfig(t *testing.T) {
 		{name: "access key id in either map", config: strs("PUBLISH_AWS_SQS_ACCESS_KEY_ID", "AKIA")},
 		{name: "access key id in sensitive_config", sensitive: strs("PUBLISH_AWS_SQS_ACCESS_KEY_ID", "AKIA")},
 		{name: "key in both maps", config: strs("TOPICS", "a"), sensitive: strs("TOPICS", "a"), wantError: []string{"TOPICS", "both"}},
-		{name: "operator events url in config", config: strs("OPERATOR_EVENTS_HTTP_URL", "x"), wantError: []string{"OPERATOR_EVENTS_HTTP_URL", "operator event destinations"}},
-		{name: "operator events topics in sensitive_config", sensitive: strs("OPERATOR_EVENTS_TOPICS", "x"), wantError: []string{"OPERATOR_EVENTS_TOPICS"}},
-		{name: "webhook proxy alias in config", config: strs("DESTINATIONS_WEBHOOK_PROXY_URL", "x"), wantError: []string{"DESTINATIONS_WEBHOOK_PROXY_URL", "DESTINATIONS_PROXY_URL"}},
-		{name: "webhook proxy alias in sensitive_config", sensitive: strs("DESTINATIONS_WEBHOOK_PROXY_URL", "x"), wantError: []string{"DESTINATIONS_WEBHOOK_PROXY_URL"}},
 		{name: "unknown key in config warns", config: strs("TOPIC", "a"), wantWarn: []string{"TOPIC", "Check the spelling"}},
 		{name: "unknown key in sensitive_config warns", sensitive: strs("NEW_SECRET", "a"), wantWarn: []string{"NEW_SECRET"}},
 		{name: "null value in config", config: map[string]types.String{"TOPICS": types.StringNull()}, wantError: []string{"TOPICS", "Remove the key"}},
@@ -94,9 +90,6 @@ func TestValidateConfig(t *testing.T) {
 func TestValidateConfig_knownKeysNeverWarn(t *testing.T) {
 	config, sensitive := map[string]types.String{}, map[string]types.String{}
 	for k := range knownKeys {
-		if _, rejected := rejectedKeys[k]; rejected {
-			continue
-		}
 		if credentialKeys[k] {
 			sensitive[k] = types.StringValue("v")
 		} else {

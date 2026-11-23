@@ -40,11 +40,6 @@ func TestAccMock_OutpostProject_PlanErrors(t *testing.T) {
 				ExpectError: regexp.MustCompile(`(?s)Credential key in config.*sensitive_config`),
 			},
 			{
-				Config:      outpostConfig("deliveries", "  sensitive_config = {\n    OPERATOR_EVENTS_TOPICS = \"x\"\n  }\n"),
-				PlanOnly:    true,
-				ExpectError: regexp.MustCompile(`OPERATOR_EVENTS_TOPICS cannot be set here`),
-			},
-			{
 				Config:      outpostConfig("deliveries", "  config = {\n    TOPICS = \"a\"\n  }\n  sensitive_config = {\n    TOPICS = \"a\"\n  }\n"),
 				PlanOnly:    true,
 				ExpectError: regexp.MustCompile(`TOPICS is set in both config and sensitive_config`),

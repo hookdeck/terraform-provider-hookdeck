@@ -109,14 +109,6 @@ var urlKeys = toSet(
 	"PUBLISH_AWS_SQS_ENDPOINT",
 )
 
-// rejectedKeys cannot be managed through config or sensitive_config, with
-// the reason shown for each.
-var rejectedKeys = map[string]string{
-	"OPERATOR_EVENTS_HTTP_URL":       "it is set by the project's operator event destinations",
-	"OPERATOR_EVENTS_TOPICS":         "it is set by the project's operator event destinations",
-	"DESTINATIONS_WEBHOOK_PROXY_URL": "it is a deprecated alias; use DESTINATIONS_PROXY_URL",
-}
-
 // nonSensitiveKeys are the keys the data source returns in config, unless
 // the value itself carries credentials (sensitiveValue). Every other key,
 // including keys this provider version has never seen, is returned in
@@ -125,10 +117,9 @@ var rejectedKeys = map[string]string{
 var nonSensitiveKeys = func() map[string]bool {
 	out := map[string]bool{}
 	for k := range knownKeys {
-		// DESTINATIONS_WEBHOOK_PROXY_URL (rejected) mirrors
+		// DESTINATIONS_WEBHOOK_PROXY_URL is an alias that mirrors
 		// DESTINATIONS_PROXY_URL, so it carries the same credentials.
-		_, rejected := rejectedKeys[k]
-		if !credentialKeys[k] && !rejected {
+		if !credentialKeys[k] && k != "DESTINATIONS_WEBHOOK_PROXY_URL" {
 			out[k] = true
 		}
 	}
