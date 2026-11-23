@@ -3,8 +3,10 @@ package sdkclient
 import (
 	"bytes"
 	"context"
+	"errors"
 	"io"
 	"net/http"
+	"net/http/httptest"
 	"sync"
 	"sync/atomic"
 	"testing"
@@ -455,5 +457,51 @@ func TestRawClient_RequestThroughputWithRateLimiter(t *testing.T) {
 	// Allow 20% tolerance for throughput
 	if throughput > expectedThroughput*1.2 {
 		t.Errorf("Throughput too high: %.2f req/s (expected ~%.2f req/s)", throughput, expectedThroughput)
+	}
+}
+
+func TestRawClient_ContextDeadlineEndsInFlightRequest(t *testing.T) {
+	release := make(chan struct{})
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		select {
+		case <-release:
+		case <-r.Context().Done():
+		}
+	}))
+	defer srv.Close()
+	defer close(release)
+
+	rawClient := &RawClient{
+		apiKey:      "test-key",
+		apiBase:     srv.URL,
+		header:      make(http.Header),
+		httpClient:  http.DefaultClient,
+		rateLimiter: &MockRateLimiter{},
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 200*time.Millisecond)
+	defer cancel()
+	start := time.Now()
+	_, err := rawClient.SendRequest(ctx, "GET", "/hang", nil)
+	if !errors.Is(err, context.DeadlineExceeded) {
+		t.Fatalf("expected context deadline error, got %v", err)
+	}
+	if elapsed := time.Since(start); elapsed > 2*time.Second {
+		t.Fatalf("request outlived its deadline: %s", elapsed)
+	}
+}
+
+func TestRawClient_ContextEndsRateLimiterWait(t *testing.T) {
+	rawClient := &RawClient{
+		apiKey:      "test-key",
+		apiBase:     "https://api.test.com",
+		header:      make(http.Header),
+		httpClient:  NewTrackingMockHTTPClient(),
+		rateLimiter: &MockRateLimiter{waitDelay: time.Minute},
+	}
+	ctx, cancel := context.WithTimeout(context.Background(), 100*time.Millisecond)
+	defer cancel()
+	if _, err := rawClient.SendRequest(ctx, "GET", "/test", nil); !errors.Is(err, context.DeadlineExceeded) {
+		t.Fatalf("expected context deadline error, got %v", err)
 	}
 }

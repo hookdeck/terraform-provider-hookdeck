@@ -231,30 +231,10 @@ func baseURL(base, fallback string) string {
 
 // SendRequest sends an HTTP request with rate limiting.
 func (c *RawClient) SendRequest(ctx context.Context, method, path string, opts *RequestOptions) (*http.Response, error) {
-	// IMPORTANT: Context Handling in Acceptance Tests
-	//
-	// We accept a context parameter to maintain interface compatibility, but we DO NOT use it
-	// for the HTTP request. This is specifically to work around an issue with Terraform's
-	// acceptance test framework, which cancels contexts aggressively during certain test
-	// operations (particularly during post-apply refresh), causing requests to fail with
-	// "context canceled" errors.
-	//
-	// Trade-off: We lose the ability to cancel in-flight requests, but this is acceptable
-	// because:
-	// - We're only making simple API calls without complex cancellation logic
-	// - The production provider currently doesn't pass context to HTTP requests either
-	// - Terraform operations need to complete for state consistency
-	//
-	// This matches the existing production behavior, so we're not losing any functionality.
-	//
-	// TODO: Understand acceptance test framework context cancellation and make it work properly
-	_ = ctx // Explicitly ignore the context parameter
-
 	// Apply rate limiting if configured
 	if c.rateLimiter != nil {
-		// Use context.Background() for rate limiting to ensure it's never canceled
-		// and we always respect API rate limits
-		if err := c.rateLimiter.Wait(context.Background()); err != nil {
+		// The wait ends with ctx, so a deadline or Ctrl-C stops a queued request.
+		if err := c.rateLimiter.Wait(ctx); err != nil {
 			return nil, fmt.Errorf("rate limit wait failed: %w", err)
 		}
 	}
@@ -269,7 +249,8 @@ func (c *RawClient) SendRequest(ctx context.Context, method, path string, opts *
 		body = opts.Body
 	}
 
-	req, err := http.NewRequest(method, url, body)
+	// The request carries ctx so a deadline or cancellation stops it in flight.
+	req, err := http.NewRequestWithContext(ctx, method, url, body)
 	if err != nil {
 		return nil, err
 	}
