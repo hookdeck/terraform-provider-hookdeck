@@ -22,13 +22,11 @@ import (
 // from a key Hookdeck added.
 const configKeysPrivateKey = "config_keys"
 
-const configDescription = "Only the keys you set are compared with Hookdeck: a different value in Hookdeck " +
-	"shows as a change, and the next apply restores yours. The plan shows it as `(sensitive value)`; to see " +
-	"which key differs, save the plan with `-out` and read `terraform show -json`. Keys you don't set, including defaults Hookdeck " +
-	"adds, are kept in state and not compared. To clear a key in Hookdeck, remove it from `config`; after an import, " +
-	"set it to `null` until an apply has changed `config`. An explicit `null` also clears, but can show a change " +
-	"on every plan when Hookdeck replaces the cleared value with a default. Read back from Hookdeck on " +
-	"refresh and import, so it also holds secrets Hookdeck returns, such as authentication tokens."
+const configDescription = "Only the keys you set are compared with Hookdeck; a change made outside Terraform to " +
+	"one of them shows in the plan, and the next apply restores your value. Other keys, including defaults Hookdeck " +
+	"adds, are kept in state and not compared. Removing a key clears it in Hookdeck. Holds the secrets Hookdeck " +
+	"returns, such as authentication tokens. See [Source and destination config]" +
+	"(https://registry.terraform.io/providers/hookdeck/hookdeck/latest/docs/guides/config)."
 
 // ConfigAttribute returns the config attribute of a source or destination.
 // lead is the first sentence of its description and kind ("source" or
