@@ -121,7 +121,7 @@ Notes on replacement:
 
 ### When the key cannot reach a resource's project
 
-Reads, updates and deletes always go to the project recorded in state. If the provider's key cannot act on that project, the plan fails with `Project not reachable`, or with a message that starts with `The API key cannot access project`, and the resource stays in state. A resource is never silently created again in another project. Your options:
+Reads, updates and deletes always go to the project recorded in state. If the provider's key cannot act on that project, the plan fails with `Project not reachable`, or with a message that starts with `The API key cannot access project`, and the resource stays in state. A resource is never silently created again in another project. If the project itself no longer exists, the resources recorded in it are removed from state on refresh, and destroying them succeeds. Your options:
 
 - Restore the API key or `project_id` that was changed by mistake.
 - Stop managing the resource: `terraform state rm <address>`, or a `removed` block with `lifecycle { destroy = false }`. The resource stays in Hookdeck.
