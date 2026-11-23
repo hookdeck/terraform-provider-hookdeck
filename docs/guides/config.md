@@ -79,7 +79,7 @@ Once `terraform apply` (also with `-refresh-only`), `terraform refresh` or `terr
 
 3.1.0 does this on purpose: those versions treat every key in state as one you set, and their next apply would remove authentication, rate limits and other settings that are not in your `config`.
 
-To go back, remove the sources and destinations from state with `terraform state rm` and import them again on 3.0.x.
+To go back, remove the sources and destinations from state with `terraform state rm` and import them again on 3.0.x. The first plan after the import shows `config` as a change. Applying it sends your `config` and clears nothing else in Hookdeck.
 
 ## Known limitations
 
