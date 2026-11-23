@@ -1,12 +1,14 @@
 ---
 page_title: "Hookdeck Provider"
 description: |-
-  Manage Hookdeck Event Gateway projects, sources, destinations, connections and transformations.
+  Manage Hookdeck Event Gateway projects, sources, destinations, connections and transformations, and Outpost projects.
 ---
 
 # Hookdeck Provider
 
-The Hookdeck provider manages [Hookdeck Event Gateway](https://hookdeck.com) projects, sources, destinations, connections and transformations, and registers webhooks with third-party services.
+The Hookdeck provider manages [Hookdeck Event Gateway](https://hookdeck.com/docs) projects, sources, destinations, connections and transformations, and [Outpost](https://hookdeck.com/docs/outpost) projects and their configuration. It also registers webhooks with third-party services.
+
+For Outpost, see [Managing Outpost with Terraform](https://registry.terraform.io/providers/hookdeck/hookdeck/latest/docs/guides/outpost).
 
 Upgrading from v2? See the [v2 to v3 migration guide](https://registry.terraform.io/providers/hookdeck/hookdeck/latest/docs/guides/v2-to-v3-migration).
 

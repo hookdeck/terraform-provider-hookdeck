@@ -14,6 +14,20 @@ Tenants and destinations are not managed by Terraform. Your application creates 
 Use an organization API key (`hd_org_` prefix) with the `projects.read` and `projects.write` scopes. An organization admin creates one in the dashboard; see [API Keys](https://registry.terraform.io/providers/hookdeck/hookdeck/latest/docs#api-keys). A project API key cannot create projects. If the key is limited to specific projects, it gets access to the projects it creates.
 
 ```terraform
+terraform {
+  required_providers {
+    hookdeck = {
+      source  = "hookdeck/hookdeck"
+      version = "~> 3.1"
+    }
+  }
+}
+
+variable "hookdeck_org_api_key" {
+  type      = string
+  sensitive = true
+}
+
 provider "hookdeck" {
   api_key = var.hookdeck_org_api_key
 }
@@ -41,7 +55,7 @@ Only the keys you set are managed. Every other key keeps its value, and a key yo
 
 ## Use the project
 
-Your application talks to the project through the Outpost API at `https://api.outpost.hookdeck.com/2025-07-01`, or through an Outpost SDK, with an API key of the project. Terraform cannot create that key yet: create it in the dashboard, in the project's Settings under Secrets. The [quickstarts](https://hookdeck.com/docs/outpost/quickstarts/hookdeck-outpost-curl) show how to create a tenant and a destination and publish an event.
+Your application talks to the project through the Outpost API at `https://api.outpost.hookdeck.com/2025-07-01`, or through an Outpost SDK, with an API key of the project. Terraform does not create that key. Create it in the dashboard, in the project's Settings under Secrets. The [quickstarts](https://hookdeck.com/docs/outpost/quickstarts/hookdeck-outpost-curl) show how to create a tenant and a destination and publish an event.
 
 ## Credentials
 
@@ -84,20 +98,6 @@ output "retry_limit" {
 ```
 
 Credentials and keys the provider does not know to be non-sensitive are in `sensitive_config`, which is stored in the Terraform state like every other attribute.
-
-## Several projects
-
-Each Outpost project is a resource of its own, for example one per environment:
-
-```terraform
-resource "hookdeck_outpost_project" "staging" {
-  name = "deliveries-staging"
-}
-
-resource "hookdeck_outpost_project" "production" {
-  name = "deliveries-production"
-}
-```
 
 ## Import and deleting
 
