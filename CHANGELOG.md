@@ -1,3 +1,9 @@
+## 3.1.1 (Unreleased)
+
+NOTES:
+
+* The provider is built with Go 1.27, which includes security fixes in the Go standard library (crypto/tls, crypto/x509, net/http) and in golang.org/x/net, golang.org/x/text and gRPC. macOS builds require macOS 13 Ventura or later.
+
 ## 3.1.0 (2026-11-24)
 
 NOTES:
