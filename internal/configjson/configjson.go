@@ -120,12 +120,11 @@ func UnmarshalPaths(b []byte) (paths Paths, recorded bool, err error) {
 // Keys that exist only in state are ignored.
 //
 //   - A user null equals an absent or null key in state.
-//   - A user key that state lacks is accepted when its path is in managed,
-//     and returned in missing: Hookdeck dropped a key the provider sent
-//     earlier, which is not a change made outside Terraform. Its value is
-//     not compared, so editing it in the configuration plans nothing. Hookdeck
-//     returns every key it knows for the type, with null when unset, so only
-//     keys it does not know end up here.
+//   - A top-level user key that state lacks is accepted when its path is in
+//     managed, and returned in missing: Hookdeck returns every top-level key
+//     it knows for the type, with null when unset, so a key it does not return
+//     is one it does not know. Its value is not compared. A nested key that
+//     state lacks is a difference: Hookdeck leaves unset nested keys out.
 //   - Arrays match element by element, in order.
 //   - Scalars match when they denote the same value; see scalarEqual.
 func Covers(user, state map[string]any, managed Paths) (equal bool, missing []string) {
@@ -146,7 +145,7 @@ func coversObject(user, state map[string]any, managed Paths, prefix string, miss
 			continue
 		}
 		if !present {
-			if _, ok := managed[key]; ok {
+			if _, ok := managed[key]; ok && prefix == "" {
 				*missing = append(*missing, path)
 				continue
 			}

@@ -230,6 +230,33 @@ func TestAccMock_ConfigRemovedEntirelyIsCleared(t *testing.T) {
 	})
 }
 
+// Removing the whole config of a destination clears the keys that were set,
+// and the plan expects the update to change the timestamps.
+func TestAccMock_ConfigRemovedEntirelyFromDestination(t *testing.T) {
+	m := driftMock(t)
+	with := driftObject("hookdeck_gateway_destination", "mock-drift-dst", "MOCK_API", `{"delivery_timeout":30}`)
+	without := driftObject("hookdeck_gateway_destination", "mock-drift-dst", "MOCK_API", "")
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: acc.ProviderFactories,
+		Steps: []resource.TestStep{
+			{Config: with},
+			{
+				Config:           without,
+				ConfigPlanChecks: updatePlan(destinationAddr),
+				Check: func(*terraform.State) error {
+					sent := lastWrittenConfig(m, "/destinations/")
+					if v, present := sent["delivery_timeout"]; !present || v != nil {
+						return fmt.Errorf("delivery_timeout in the update = %v (present %v), want null", v, present)
+					}
+					return nil
+				},
+			},
+			{Config: without, ConfigPlanChecks: emptyPlan()},
+		},
+	})
+}
+
 // A key Hookdeck drops (it is not valid for the type) does not plan an
 // update on every run.
 func TestAccMock_ConfigKeyDroppedByHookdeck(t *testing.T) {
@@ -773,6 +800,85 @@ moved {
 					}
 					return nil
 				},
+			},
+		},
+	})
+}
+
+// A nested key the configuration sets is removed in the dashboard: Hookdeck no
+// longer returns it. That is drift and should plan an update.
+func TestAccMock_ConfigNestedKeyRemovedOutsideIsDrift(t *testing.T) {
+	m := driftMock(t)
+	config := driftDestination("hookdeck_gateway_destination",
+		`{"url":"https://mock.hookdeck.com","auth_type":"BASIC_AUTH","auth":{"username":"u","password":"p"}}`)
+	var id string
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: acc.ProviderFactories,
+		Steps: []resource.TestStep{
+			{Config: config, Check: captureID(destinationAddr, &id)},
+			{Config: config, ConfigPlanChecks: emptyPlan()},
+			{
+				PreConfig: func() {
+					m.setDestinationConfig(id, "auth", map[string]any{"username": "u"})
+				},
+				Config:           config,
+				ConfigPlanChecks: updatePlan(destinationAddr),
+			},
+		},
+	})
+}
+
+// An override deleted in the dashboard is drift, as for any other nested key.
+func TestAccMock_ConfigNestedOverrideRemovedOutsideIsDrift(t *testing.T) {
+	m := driftMock(t)
+	before := driftDestination("hookdeck_gateway_destination",
+		`{"url":"https://mock.hookdeck.com","delivery_policy":{"groups":{"key":"body.c","rate":5,"rate_period":"second","overrides":{"cust_a":{"rate":1,"rate_period":"second"}}}}}`)
+	var id string
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: acc.ProviderFactories,
+		Steps: []resource.TestStep{
+			{Config: before, Check: captureID(destinationAddr, &id)},
+			{Config: before, ConfigPlanChecks: emptyPlan()},
+			{
+				// The override is deleted in the dashboard.
+				PreConfig: func() {
+					m.setDestinationConfig(id, "delivery_policy", map[string]any{
+						"rate": nil, "period": nil,
+						"groups": map[string]any{"key": "body.c", "rate": 5, "rate_period": "second", "overrides": map[string]any{}},
+					})
+				},
+				Config:           before,
+				ConfigPlanChecks: updatePlan(destinationAddr),
+			},
+		},
+	})
+}
+
+// After the override is deleted in the dashboard, an edit to it in the
+// configuration plans an update.
+func TestAccMock_ConfigNestedKeyEditAfterOutsideRemoval(t *testing.T) {
+	m := driftMock(t)
+	before := driftDestination("hookdeck_gateway_destination",
+		`{"url":"https://mock.hookdeck.com","delivery_policy":{"groups":{"key":"body.c","rate":5,"rate_period":"second","overrides":{"cust_a":{"rate":1,"rate_period":"second"}}}}}`)
+	after := driftDestination("hookdeck_gateway_destination",
+		`{"url":"https://mock.hookdeck.com","delivery_policy":{"groups":{"key":"body.c","rate":5,"rate_period":"second","overrides":{"cust_a":{"rate":2,"rate_period":"second"}}}}}`)
+	var id string
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: acc.ProviderFactories,
+		Steps: []resource.TestStep{
+			{Config: before, Check: captureID(destinationAddr, &id)},
+			{
+				PreConfig: func() {
+					m.setDestinationConfig(id, "delivery_policy", map[string]any{
+						"rate": nil, "period": nil,
+						"groups": map[string]any{"key": "body.c", "rate": 5, "rate_period": "second", "overrides": map[string]any{}},
+					})
+				},
+				Config:           after,
+				ConfigPlanChecks: updatePlan(destinationAddr),
 			},
 		},
 	})

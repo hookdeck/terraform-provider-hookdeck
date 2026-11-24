@@ -10,6 +10,7 @@ import (
 	"strings"
 	"sync"
 	"testing"
+	"time"
 
 	"terraform-provider-hookdeck/internal/sdkclient"
 )
@@ -37,6 +38,7 @@ type mockAPI struct {
 	// faultHits counts the requests each fault answered.
 	faultHits map[string]int
 	seq       int
+	clock     int
 	requests  []mockRequest
 
 	outposts       map[string]*mockOutpost
@@ -515,10 +517,18 @@ func (m *mockAPI) handleObjects(w http.ResponseWriter, method string, key *mockK
 		if config, ok := body["config"].(map[string]any); ok {
 			m.writeConfig(kind, object, config)
 		}
+		object["updated_at"] = m.nextTime()
 	case http.MethodDelete:
 		delete(store, id)
 	}
 	writeJSON(w, 200, object)
+}
+
+// nextTime returns a timestamp later than every one it returned before, as
+// the API stamps an update. Call it with the mock locked.
+func (m *mockAPI) nextTime() string {
+	m.clock++
+	return time.Date(2026, 9, 1, 0, 0, 0, 0, time.UTC).Add(time.Duration(m.clock) * time.Second).Format("2006-01-02T15:04:05.000Z")
 }
 
 // setSourceConfig changes one config key of a source the way an edit in the
@@ -567,6 +577,7 @@ func (m *mockAPI) handleItems(w http.ResponseWriter, method string, key *mockKey
 		for k, v := range body {
 			item[k] = v
 		}
+		item["updated_at"] = m.nextTime()
 	case http.MethodDelete:
 		delete(m.items, id)
 	}

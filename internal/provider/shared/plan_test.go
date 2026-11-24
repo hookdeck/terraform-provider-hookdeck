@@ -71,6 +71,16 @@ func TestKeepUnchangedPlan(t *testing.T) {
 		})
 	}
 
+	t.Run("config unknown marks the timestamps unknown", func(t *testing.T) {
+		plan := tfsdk.Plan{Schema: s, Raw: object(map[string]tftypes.Value{"config": unknown})}
+		if d := KeepUnchangedPlan(ctx, tfsdk.State{Schema: s, Raw: state}, &plan); d.HasError() {
+			t.Fatal(d)
+		}
+		want := object(map[string]tftypes.Value{"config": unknown, "updated_at": unknown})
+		if !plan.Raw.Equal(want) {
+			t.Fatalf("plan = %s\nwant %s", plan.Raw, want)
+		}
+	})
 	t.Run("create", func(t *testing.T) {
 		plan := tfsdk.Plan{Schema: s, Raw: object(map[string]tftypes.Value{"id": unknown, "updated_at": unknown})}
 		before := plan.Raw.Copy()
