@@ -36,7 +36,7 @@ resource "hookdeck_gateway_source" "example" {
 
 ### Required
 
-- `name` (String) Name of the project
+- `name` (String) Name of the project, 1 to 40 characters
 
 ### Read-Only
 

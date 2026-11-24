@@ -33,7 +33,7 @@ func schemaAttributes(k kind) map[string]schema.Attribute {
 				stringvalidator.LengthBetween(1, 40),
 				stringvalidator.RegexMatches(noSurroundingSpace, "must not start or end with whitespace"),
 			},
-			Description: "Name of the project",
+			Description: "Name of the project, 1 to 40 characters",
 		},
 		"organization_id": schema.StringAttribute{
 			Computed:      true,

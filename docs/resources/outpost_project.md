@@ -63,7 +63,7 @@ The keys of `config` and `sensitive_config` are Outpost environment variable nam
 
 ### Required
 
-- `name` (String) Name of the project
+- `name` (String) Name of the project, 1 to 40 characters
 
 ### Optional
 

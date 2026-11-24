@@ -1,8 +1,8 @@
 # Hookdeck Terraform Provider
 
-_The [Hookdeck Event Gateway](https://hookdeck.com) enables engineering teams to build, deploy, observe, and scale event-driven applications. For more information, see the [Hookdeck documentation](https://hookdeck.com/docs)._
+_[Hookdeck](https://hookdeck.com) has two products: Event Gateway receives, routes and delivers events into your systems; [Outpost](https://hookdeck.com/docs/outpost) sends your events to your users' webhooks and other destinations. See the [Hookdeck documentation](https://hookdeck.com/docs)._
 
-The Hookdeck Terraform provider enables you to manage your Hookdeck projects using IaC (Infrastructure-as-Code), including managing your sources, destinations, connections, transformations, and more. It also supports webhook registration workflow that allows you to configure webhooks as part of your CI/CD processes.
+The Hookdeck Terraform provider manages Event Gateway projects (sources, destinations, connections, transformations) and Outpost projects and their configuration. It also registers webhooks with third-party services as part of your CI/CD processes.
 
 ## Installation
 
