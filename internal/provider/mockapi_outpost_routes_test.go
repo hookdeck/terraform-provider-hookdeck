@@ -34,8 +34,7 @@ var mockOutpostDefaults = map[string]string{
 	"DESTINATIONS_WEBHOOK_MODE": "default",
 }
 
-// mockOutpostKeys are the keys the mock API accepts. EXTRA_FUTURE_KEY is
-// one the provider does not know.
+// mockOutpostKeys are the keys the mock API accepts.
 var mockOutpostKeys = []string{
 	"TOPICS", "RETRY_INTERVAL_SECONDS", "MAX_RETRY_LIMIT", "IDGEN_TYPE", "DESTINATIONS_WEBHOOK_MODE",
 	"OTEL_SERVICE_NAME", "OTEL_EXPORTER_OTLP_ENDPOINT", "OTEL_EXPORTER_OTLP_HEADERS",

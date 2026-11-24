@@ -127,4 +127,6 @@ Reads, updates and deletes always go to the project recorded in state. If the pr
 - Stop managing the resource: `terraform state rm <address>`, or a `removed` block with `lifecycle { destroy = false }`. The resource stays in Hookdeck.
 - Move the resource to the other project: use an organization API key with access to both projects. The plan then shows a replacement.
 
+A deleted project is a different case. With an organization API key, the resources recorded in a project that no longer exists are removed from state on refresh, and destroying them succeeds.
+
 {{ .SchemaMarkdown | trimspace }}

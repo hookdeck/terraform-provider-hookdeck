@@ -31,7 +31,7 @@ resource "hookdeck_outpost_project" "example" {
     OTEL_EXPORTER_OTLP_ENDPOINT = "https://otel.example.com"
   }
 
-  # Values that are secrets or can carry credentials.
+  # Same as config, but the values are hidden in plan output.
   sensitive_config = {
     OTEL_EXPORTER_OTLP_HEADERS = var.otlp_headers
   }
@@ -47,10 +47,9 @@ resource "hookdeck_outpost_project" "example" {
 
 The keys of `config` and `sensitive_config` are Outpost environment variable names. The [configuration reference](https://hookdeck.com/docs/outpost/self-hosting/configuration) lists them with their values. The reference also covers self-hosted deployments: some of the settings it lists are managed by Hookdeck, and Hookdeck rejects them when they are set on a project.
 
-- Put a key in `config` or in `sensitive_config`, not in both. Keys whose values are secrets or can carry credentials must go in `sensitive_config`. These keys are `DESTINATIONS_PROXY_URL`, `OTEL_EXPORTER_OTLP_HEADERS`, `PUBLISH_AWS_SQS_SECRET_ACCESS_KEY`, `PUBLISH_AZURE_SERVICEBUS_CONNECTION_STRING`, `PUBLISH_GCP_PUBSUB_SERVICE_ACCOUNT_CREDENTIALS` and `PUBLISH_RABBITMQ_SERVER_URL`. A URL that includes a user or password also goes in `sensitive_config`, whatever its key. `terraform plan` fails if `config` holds one of these keys or such a URL. If a key in `config` is set to such a URL outside Terraform, the plan shows `(redacted: URL with credentials)` in place of the value. Values in `sensitive_config` are hidden in plan output and stored in the Terraform state.
-- The provider does not check values. Hookdeck rejects an invalid value at apply and the message names the key. A key the provider does not know gets a warning at plan, which usually means a typo. The warning does not stop the plan, so a key added to Outpost after this provider release still works; Hookdeck rejects a key that does not exist when you apply.
-- `OPERATOR_EVENTS_HTTP_URL` and `OPERATOR_EVENTS_TOPICS` are set by operator event destinations, and `DESTINATIONS_WEBHOOK_PROXY_URL` is a deprecated alias of `DESTINATIONS_PROXY_URL`. They cannot be set here.
-- Only the keys you set are managed. Other keys keep their value, and changes to them outside Terraform do not show in the plan; a change to a managed key does. Removing a key from the configuration returns it to its default. The [`hookdeck_outpost_project` data source](https://registry.terraform.io/providers/hookdeck/hookdeck/latest/docs/data-sources/outpost_project) returns the whole configuration, defaults included.
+- `config` and `sensitive_config` work the same way, and any key can go in either. Terraform hides the values in `sensitive_config` in plan output, and stores them in the state like every other attribute. Put the values you do not want shown there, such as secrets and URLs with a password. A key goes in one of the two maps, not both.
+- The provider does not check keys or values. Hookdeck rejects an invalid value, or a key that does not exist, when you apply, and the message names the key.
+- Only the keys you set, in either map, are managed. Other keys keep their value, and changes to them outside Terraform do not show in the plan; a change to a managed key does. Removing a key from the configuration returns it to its default. The [`hookdeck_outpost_project` data source](https://registry.terraform.io/providers/hookdeck/hookdeck/latest/docs/data-sources/outpost_project) returns the whole configuration, defaults included.
 
 ## Behavior
 
@@ -68,8 +67,8 @@ The keys of `config` and `sensitive_config` are Outpost environment variable nam
 
 ### Optional
 
-- `config` (Map of String) Outpost configuration to manage, keyed by Outpost environment variable name (for example `TOPICS` or `RETRY_INTERVAL_SECONDS`). Only the keys set here are managed and tracked; other keys keep their value. Removing a key restores its default. Keys that can carry credentials belong in `sensitive_config`.
-- `sensitive_config` (Map of String, Sensitive) Outpost configuration to manage like `config`, for keys whose values are secrets or can carry credentials, such as `OTEL_EXPORTER_OTLP_HEADERS`, `DESTINATIONS_PROXY_URL` and the `PUBLISH_*` connection strings and secret keys. Values are stored in the Terraform state.
+- `config` (Map of String) Outpost configuration to manage, keyed by Outpost environment variable name (for example `TOPICS` or `RETRY_INTERVAL_SECONDS`). Only the keys set here and in `sensitive_config` are managed and tracked; other keys keep their value. Removing a key restores its default. A key goes in `config` or in `sensitive_config`, not both.
+- `sensitive_config` (Map of String, Sensitive) The same as `config`, marked sensitive: Terraform hides the values in plan output. Any key can go in either map, so put the values you want hidden here. Values are stored in the Terraform state.
 - `timeouts` (Block, Optional) (see [below for nested schema](#nestedblock--timeouts))
 
 ### Read-Only

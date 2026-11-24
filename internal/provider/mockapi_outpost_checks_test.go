@@ -35,16 +35,6 @@ func TestAccMock_OutpostProject_PlanErrors(t *testing.T) {
 		ProtoV6ProviderFactories: acc.ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config:      outpostConfig("deliveries", "  config = {\n    OTEL_EXPORTER_OTLP_HEADERS = \"k=v\"\n  }\n"),
-				PlanOnly:    true,
-				ExpectError: regexp.MustCompile(`(?s)Credential key in config.*sensitive_config`),
-			},
-			{
-				Config:      outpostConfig("deliveries", "  sensitive_config = {\n    OPERATOR_EVENTS_TOPICS = \"x\"\n  }\n"),
-				PlanOnly:    true,
-				ExpectError: regexp.MustCompile(`OPERATOR_EVENTS_TOPICS cannot be set here`),
-			},
-			{
 				Config:      outpostConfig("deliveries", "  config = {\n    TOPICS = \"a\"\n  }\n  sensitive_config = {\n    TOPICS = \"a\"\n  }\n"),
 				PlanOnly:    true,
 				ExpectError: regexp.MustCompile(`TOPICS is set in both config and sensitive_config`),
@@ -104,8 +94,7 @@ func TestAccMock_OutpostProject_ProjectKeyIsRefused(t *testing.T) {
 }
 
 // The data source returns the whole configuration, Hookdeck defaults
-// included. Credential keys and keys the provider does not know are only in
-// sensitive_config.
+// included, in the one sensitive attribute config.
 func TestAccMock_OutpostProject_DataSource(t *testing.T) {
 	acc.SkipUnlessAcc(t)
 	m := mockOutpostOrganization(t)
@@ -126,15 +115,11 @@ func TestAccMock_OutpostProject_DataSource(t *testing.T) {
 		resource.TestCheckResourceAttr(outpostDataAddr, "config.TOPICS", "a,b"),
 		resource.TestCheckResourceAttr(outpostDataAddr, "config.MAX_RETRY_LIMIT", "10"),
 		resource.TestCheckNoResourceAttr(outpostDataAddr, "config.PORTAL_LOGO"),
-		resource.TestCheckNoResourceAttr(outpostDataAddr, "sensitive_config.PORTAL_LOGO"),
-		resource.TestCheckNoResourceAttr(outpostDataAddr, "config.OTEL_EXPORTER_OTLP_HEADERS"),
-		resource.TestCheckResourceAttr(outpostDataAddr, "sensitive_config.OTEL_EXPORTER_OTLP_HEADERS", "k=v"),
-		resource.TestCheckNoResourceAttr(outpostDataAddr, "config.DESTINATIONS_PROXY_URL"),
-		resource.TestCheckNoResourceAttr(outpostDataAddr, "config.DESTINATIONS_WEBHOOK_PROXY_URL"),
-		resource.TestCheckResourceAttr(outpostDataAddr, "sensitive_config.DESTINATIONS_PROXY_URL", "http://user:pass@proxy:8080"),
-		resource.TestCheckResourceAttr(outpostDataAddr, "sensitive_config.DESTINATIONS_WEBHOOK_PROXY_URL", "http://user:pass@proxy:8080"),
-		resource.TestCheckNoResourceAttr(outpostDataAddr, "config.EXTRA_FUTURE_KEY"),
-		resource.TestCheckResourceAttr(outpostDataAddr, "sensitive_config.EXTRA_FUTURE_KEY", "future"),
+		resource.TestCheckResourceAttr(outpostDataAddr, "config.OTEL_EXPORTER_OTLP_HEADERS", "k=v"),
+		resource.TestCheckResourceAttr(outpostDataAddr, "config.DESTINATIONS_PROXY_URL", "http://user:pass@proxy:8080"),
+		resource.TestCheckResourceAttr(outpostDataAddr, "config.DESTINATIONS_WEBHOOK_PROXY_URL", "http://user:pass@proxy:8080"),
+		resource.TestCheckResourceAttr(outpostDataAddr, "config.EXTRA_FUTURE_KEY", "future"),
+		resource.TestCheckNoResourceAttr(outpostDataAddr, "sensitive_config.%"),
 	)
 
 	resource.Test(t, resource.TestCase{

@@ -54,7 +54,7 @@ func (m *sourceAuthResourceModel) Refresh(source map[string]interface{}) diag.Di
 	return diags
 }
 
-func (m *sourceAuthResourceModel) doRetrieve(ctx context.Context, client *sdkclient.Client) (map[string]interface{}, diag.Diagnostics) {
+func (m *sourceAuthResourceModel) doRetrieve(ctx context.Context, client *sdkclient.Client, projectGoneOK bool) (map[string]interface{}, diag.Diagnostics) {
 	var diags diag.Diagnostics
 	response, err := client.RawClient.SendRequest(ctx, "GET", fmt.Sprintf("/%s/sources/%s", apiVersion, m.SourceID.ValueString()), &sdkclient.RequestOptions{
 		QueryParams: url.Values{
@@ -62,6 +62,9 @@ func (m *sourceAuthResourceModel) doRetrieve(ctx context.Context, client *sdkcli
 		},
 	})
 	if err != nil {
+		if projectGoneOK && sdkclient.IsProjectGone(err) {
+			return nil, diags
+		}
 		diags.AddError("Error reading source auth", err.Error())
 		return nil, diags
 	}
@@ -95,8 +98,11 @@ func (m *sourceAuthResourceModel) doRetrieve(ctx context.Context, client *sdkcli
 	return source, diags
 }
 
-func (m *sourceAuthResourceModel) Retrieve(ctx context.Context, client *sdkclient.Client) (bool, diag.Diagnostics) {
-	source, diags := m.doRetrieve(ctx, client)
+// Retrieve reads the resource. With projectGoneOK a missing project counts as a
+// missing resource. A resource's refresh sets it; a data source does not, so
+// a wrong project_id keeps saying the project does not exist.
+func (m *sourceAuthResourceModel) Retrieve(ctx context.Context, client *sdkclient.Client, projectGoneOK bool) (bool, diag.Diagnostics) {
+	source, diags := m.doRetrieve(ctx, client, projectGoneOK)
 	if diags.HasError() || source == nil {
 		return false, diags
 	}
@@ -107,7 +113,7 @@ func (m *sourceAuthResourceModel) Retrieve(ctx context.Context, client *sdkclien
 // existingSource is doRetrieve for create and update, where a missing source
 // is an error.
 func (m *sourceAuthResourceModel) existingSource(ctx context.Context, client *sdkclient.Client) (map[string]interface{}, diag.Diagnostics) {
-	source, diags := m.doRetrieve(ctx, client)
+	source, diags := m.doRetrieve(ctx, client, false)
 	if !diags.HasError() && source == nil {
 		diags.AddError("Source not found", fmt.Sprintf("No source with ID %s in this project.", m.SourceID.ValueString()))
 	}
@@ -173,7 +179,7 @@ func (m *sourceAuthResourceModel) Delete(ctx context.Context, client *sdkclient.
 	var diags diag.Diagnostics
 
 	// A missing source means its auth is already gone.
-	initSource, diags := m.doRetrieve(ctx, client)
+	initSource, diags := m.doRetrieve(ctx, client, true)
 	if diags.HasError() || initSource == nil {
 		return diags
 	}
@@ -204,6 +210,9 @@ func (m *sourceAuthResourceModel) Delete(ctx context.Context, client *sdkclient.
 		},
 	})
 	if err != nil {
+		if sdkclient.IsProjectGone(err) {
+			return nil
+		}
 		diags.AddError("Error deleting source auth", err.Error())
 		return diags
 	}

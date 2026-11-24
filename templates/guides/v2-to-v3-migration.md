@@ -311,7 +311,7 @@ The Hookdeck API refused access to the project named in the message. The message
 
 The title is `Error: Project not accessible` when the provider checks the new project of a replacement while planning. When the API refuses a request for a resource, the same message appears under that request's title, such as `Error: Error reading source` or `Error: Error creating destination`.
 
-Check `project_id` and the key. A resource that is already in state stays there.
+Check `project_id` and the key. A resource that is already in state stays there, unless the project no longer exists: then, with an organization API key, a refresh removes it.
 
 ### `Error: Missing project in import ID`
 

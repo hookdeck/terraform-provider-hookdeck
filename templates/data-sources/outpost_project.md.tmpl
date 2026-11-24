@@ -9,22 +9,11 @@ description: |-
 
 {{ .Description | trimspace }}
 
-Unlike the `hookdeck_outpost_project` resource, whose `config` holds the keys you manage, `config` and `sensitive_config` here hold the whole configuration of the project, defaults included. Keys the provider does not know to be non-sensitive, including keys added to Outpost after this provider release, are in `sensitive_config`. So is a value that is a URL with a user or password, and a value of a URL setting that is not a valid URL, whatever the key.
+Unlike the `hookdeck_outpost_project` resource, whose `config` and `sensitive_config` hold the keys you manage, `config` here holds the whole configuration of the project, defaults included.
 
-~> `sensitive_config` includes the project's credentials and is stored in the Terraform state, even when the data source is only used to look up a project's ID. Protect the state as you would for any secret.
+~> `config` is sensitive because it can include secrets, and it is stored in the Terraform state, even when the data source is only used to look up a project's ID. Protect the state as you would for any secret. To use a value that is not a secret in an output, wrap it in `nonsensitive()`.
 
 Works with an organization API key (`projects.read`) or the project's own API key.
-
-## Keys that move to `config`
-
-A key added to Outpost after this provider release is in `sensitive_config`. If it is not a credential, a later provider release returns it in `config` instead, and the changelog names it. A reference to `sensitive_config["KEY"]` then fails with "Invalid index". For such a key, write the reference so that it works in both releases:
-
-```terraform
-output "new_setting" {
-  value     = try(data.hookdeck_outpost_project.by_name.config["KEY"], data.hookdeck_outpost_project.by_name.sensitive_config["KEY"])
-  sensitive = true
-}
-```
 
 ## Example Usage
 

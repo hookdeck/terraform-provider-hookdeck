@@ -379,10 +379,8 @@ var sourceKind = mockKind{
 	configRequired: map[string]bool{"ZOOM": true},
 }
 
-// The mock is simpler than the API in ways no test depends on: a type change
-// keeps the config keys the request leaves out, where the API resets them,
-// and a destination sent "auth": null gets the default signature back, where
-// the API returns null.
+// The mock is simpler than the API in a way no test depends on: a type change
+// keeps the config keys the request leaves out, where the API resets them.
 var destinationKind = mockKind{
 	label:    "Destination",
 	idPrefix: "des_",

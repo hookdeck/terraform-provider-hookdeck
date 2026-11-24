@@ -54,7 +54,16 @@ type RawClient struct {
 	header      http.Header
 	httpClient  HTTPDoer
 	rateLimiter RateLimiter
+	// writeTimeout bounds a write request; zero means defaultWriteTimeout.
+	writeTimeout time.Duration
 }
+
+// defaultWriteTimeout bounds one write (POST, PUT, PATCH, DELETE). Writes
+// ignore cancellation of the operation's context (see SendRequest), so this
+// limit is what ends a write the server never answers. It is far above what a
+// healthy write takes, project creation included, so it only ever ends a
+// hung connection.
+const defaultWriteTimeout = 5 * time.Minute
 
 // HTTPDoer allows for mocking HTTP client in tests.
 type HTTPDoer interface {
@@ -230,31 +239,21 @@ func baseURL(base, fallback string) string {
 }
 
 // SendRequest sends an HTTP request with rate limiting.
+//
+// A deadline or cancellation of ctx stops the rate limiter wait and a GET in
+// flight. A write runs on a context detached from ctx once it is sent: when
+// Terraform is interrupted it cancels the operation's context while the API
+// may already have applied the write, and abandoning the request would leave
+// the object in Hookdeck but not in state. The write is bounded by
+// writeTimeout, or by the operation's deadline when that is later.
 func (c *RawClient) SendRequest(ctx context.Context, method, path string, opts *RequestOptions) (*http.Response, error) {
-	// IMPORTANT: Context Handling in Acceptance Tests
-	//
-	// We accept a context parameter to maintain interface compatibility, but we DO NOT use it
-	// for the HTTP request. This is specifically to work around an issue with Terraform's
-	// acceptance test framework, which cancels contexts aggressively during certain test
-	// operations (particularly during post-apply refresh), causing requests to fail with
-	// "context canceled" errors.
-	//
-	// Trade-off: We lose the ability to cancel in-flight requests, but this is acceptable
-	// because:
-	// - We're only making simple API calls without complex cancellation logic
-	// - The production provider currently doesn't pass context to HTTP requests either
-	// - Terraform operations need to complete for state consistency
-	//
-	// This matches the existing production behavior, so we're not losing any functionality.
-	//
-	// TODO: Understand acceptance test framework context cancellation and make it work properly
-	_ = ctx // Explicitly ignore the context parameter
-
-	// Apply rate limiting if configured
 	if c.rateLimiter != nil {
-		// Use context.Background() for rate limiting to ensure it's never canceled
-		// and we always respect API rate limits
-		if err := c.rateLimiter.Wait(context.Background()); err != nil {
+		if err := c.rateLimiter.Wait(ctx); err != nil {
+			// The limiter refuses a wait that would pass the deadline before
+			// the deadline arrives; report it as the deadline.
+			if _, hasDeadline := ctx.Deadline(); hasDeadline && ctx.Err() == nil {
+				err = fmt.Errorf("%w (%v)", context.DeadlineExceeded, err)
+			}
 			return nil, fmt.Errorf("rate limit wait failed: %w", err)
 		}
 	}
@@ -269,8 +268,24 @@ func (c *RawClient) SendRequest(ctx context.Context, method, path string, opts *
 		body = opts.Body
 	}
 
-	req, err := http.NewRequest(method, url, body)
+	reqCtx, cancel := ctx, context.CancelFunc(func() {})
+	if method != http.MethodGet && method != http.MethodHead {
+		timeout := c.writeTimeout
+		if timeout <= 0 {
+			timeout = defaultWriteTimeout
+		}
+		// An operation deadline later than the limit wins, so a resource's
+		// timeouts can allow a longer write.
+		limit := time.Now().Add(timeout)
+		if deadline, ok := ctx.Deadline(); ok && deadline.After(limit) {
+			limit = deadline
+		}
+		reqCtx, cancel = context.WithDeadline(context.WithoutCancel(ctx), limit)
+	}
+
+	req, err := http.NewRequestWithContext(reqCtx, method, url, body)
 	if err != nil {
+		cancel()
 		return nil, err
 	}
 
@@ -291,5 +306,28 @@ func (c *RawClient) SendRequest(ctx context.Context, method, path string, opts *
 		}
 	}
 
-	return c.httpClient.Do(req)
+	resp, err := c.httpClient.Do(req)
+	if err != nil {
+		cancel()
+		return nil, err
+	}
+	// The response body is read after this returns, so the write's time limit
+	// stays in force until the body is closed or the limit passes.
+	if resp.Body == nil {
+		resp.Body = http.NoBody
+	}
+	resp.Body = &cancelOnClose{ReadCloser: resp.Body, cancel: cancel}
+	return resp, nil
+}
+
+// cancelOnClose releases a request context when the response body is closed.
+type cancelOnClose struct {
+	io.ReadCloser
+	cancel context.CancelFunc
+}
+
+func (b *cancelOnClose) Close() error {
+	err := b.ReadCloser.Close()
+	b.cancel()
+	return err
 }

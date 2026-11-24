@@ -116,11 +116,17 @@ func (m *connectionResourceModel) Refresh(connection map[string]interface{}) dia
 	return diags
 }
 
-func (m *connectionResourceModel) Retrieve(ctx context.Context, client *sdkclient.Client) (bool, diag.Diagnostics) {
+// Retrieve reads the resource. With projectGoneOK a missing project counts as a
+// missing resource. A resource's refresh sets it; a data source does not, so
+// a wrong project_id keeps saying the project does not exist.
+func (m *connectionResourceModel) Retrieve(ctx context.Context, client *sdkclient.Client, projectGoneOK bool) (bool, diag.Diagnostics) {
 	var diags diag.Diagnostics
 
 	response, err := client.RawClient.SendRequest(ctx, "GET", fmt.Sprintf("/%s/connections/%s", apiVersion, m.ID.ValueString()), &sdkclient.RequestOptions{})
 	if err != nil {
+		if projectGoneOK && sdkclient.IsProjectGone(err) {
+			return false, diags
+		}
 		diags.AddError("Error reading connection", err.Error())
 		return false, diags
 	}
@@ -261,6 +267,9 @@ func (m *connectionResourceModel) Delete(ctx context.Context, client *sdkclient.
 
 	response, err := client.RawClient.SendRequest(ctx, "DELETE", fmt.Sprintf("/%s/connections/%s", apiVersion, m.ID.ValueString()), &sdkclient.RequestOptions{})
 	if err != nil {
+		if sdkclient.IsProjectGone(err) {
+			return nil
+		}
 		diags.AddError("Error deleting connection", err.Error())
 		return diags
 	}

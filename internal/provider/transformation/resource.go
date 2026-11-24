@@ -102,7 +102,7 @@ func (r *transformationResource) Read(ctx context.Context, req resource.ReadRequ
 	if !ok {
 		return
 	}
-	found, diags := data.Retrieve(ctx, client)
+	found, diags := data.Retrieve(ctx, client, true)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return

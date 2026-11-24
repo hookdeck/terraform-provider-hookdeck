@@ -60,6 +60,19 @@ func IsNotFound(err error) bool {
 	return errors.As(err, &apiErr) && IsGoneStatus(apiErr.Status)
 }
 
+// IsProjectGone reports whether err is the API answering 404 or 410 on the
+// project a request was scoped to: the project itself no longer exists.
+func IsProjectGone(err error) bool {
+	var refused *ProjectAccessError
+	return errors.As(err, &refused) && IsGoneStatus(refused.Status)
+}
+
+// IsGone reports whether err says the resource, or the project it lives in,
+// no longer exists.
+func IsGone(err error) bool {
+	return IsNotFound(err) || IsProjectGone(err)
+}
+
 // Do sends a JSON request to path under the API version and decodes the
 // response into out. A non-2xx status is returned as *APIError. payload and
 // out may be nil.

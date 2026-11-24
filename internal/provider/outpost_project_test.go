@@ -88,8 +88,7 @@ func TestAccOutpostProject_Lifecycle(t *testing.T) {
 					resource.TestCheckResourceAttr(outpostDataAddr, "type", "outpost"),
 					resource.TestCheckResourceAttr(outpostDataAddr, "config.MAX_RETRY_LIMIT", "10"),
 					resource.TestCheckResourceAttr(outpostDataAddr, "config.TOPICS", "orders.created,orders.updated"),
-					resource.TestCheckNoResourceAttr(outpostDataAddr, "config.OTEL_EXPORTER_OTLP_HEADERS"),
-					resource.TestCheckResourceAttr(outpostDataAddr, "sensitive_config.OTEL_EXPORTER_OTLP_HEADERS", "x-acc=1"),
+					resource.TestCheckResourceAttr(outpostDataAddr, "config.OTEL_EXPORTER_OTLP_HEADERS", "x-acc=1"),
 				),
 			},
 			{

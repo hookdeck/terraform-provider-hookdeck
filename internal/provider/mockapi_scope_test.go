@@ -145,37 +145,53 @@ func TestAccMock_OrgKeyLosesGrant(t *testing.T) {
 	})
 }
 
-// A project deleted outside Terraform, or a project_id that never existed,
-// is an error on refresh. The resources in it are not dropped from state.
-func TestAccMock_OrgKeyProjectNotFoundKeepsState(t *testing.T) {
+// A project deleted outside Terraform takes its resources with it: refresh
+// drops them from state, and destroying them succeeds.
+func TestAccMock_OrgKeyProjectDeletedDropsResources(t *testing.T) {
 	acc.SkipUnlessAcc(t)
 	m := mockOrganization(t)
 	acc.UseAPIKey(t, mockOrgKey)
-	var sourceID string
-	var removed *mockProject
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: acc.ProviderFactories,
+		Steps: []resource.TestStep{
+			{Config: sourceConfig(t, "mock", "tm_a")},
+			{
+				PreConfig: func() {
+					m.update(func() { delete(m.projects, "tm_a") })
+				},
+				Config: sourceConfig(t, "mock", "tm_a"),
+				// The refresh finds the source gone, so the plan creates it.
+				PlanOnly:           true,
+				ExpectNonEmptyPlan: true,
+			},
+			{
+				Config:  sourceConfig(t, "mock", "tm_a"),
+				Destroy: true,
+			},
+		},
+	})
+}
+
+// A data source looks a resource up and reports a project that does not
+// exist as such; only a resource's refresh treats a missing project as the
+// resource being gone.
+func TestAccMock_DataSourceInMissingProjectReportsTheProject(t *testing.T) {
+	acc.SkipUnlessAcc(t)
+	m := mockOrganization(t)
+	acc.UseAPIKey(t, mockOrgKey)
+	sourceID := m.createSource("tm_b", "mock-src", "WEBHOOK", nil)
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: acc.ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: sourceConfig(t, "mock", "tm_a"),
-				Check:  captureID(sourceAddr, &sourceID),
-			},
-			{
-				PreConfig: func() {
-					m.update(func() {
-						removed = m.projects["tm_a"]
-						delete(m.projects, "tm_a")
-					})
-				},
-				Config:      sourceConfig(t, "mock", "tm_a"),
-				ExpectError: regexp.MustCompile(`(?s)cannot access project tm_a.*does not exist`),
-			},
-			{
-				PreConfig:        func() { m.update(func() { m.projects["tm_a"] = removed }) },
-				Config:           sourceConfig(t, "mock", "tm_a"),
-				ConfigPlanChecks: emptyPlan(),
-				Check:            checkIDEquals(sourceAddr, &sourceID),
+				Config: fmt.Sprintf(`data "hookdeck_gateway_source" "test" {
+  id         = %q
+  project_id = "tm_missing"
+}
+`, sourceID),
+				ExpectError: regexp.MustCompile(`(?s)cannot access project tm_missing.*does not exist`),
 			},
 		},
 	})
